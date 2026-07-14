@@ -37,9 +37,11 @@ class WebsiteRefresher(
     private val robots = ConcurrentHashMap<String, List<String>>()
     private var urlCache: Map<String, String> = emptyMap()
 
-    fun refresh(resourcesRoot: Path): RefreshReport {
+    fun refresh(
+        resourcesRoot: Path,
+        catalogFile: Path = resourcesRoot.resolve("catalog/churches.json"),
+    ): RefreshReport {
         require(maxConcurrency in 1..32) { "maxConcurrency must be between 1 and 32" }
-        val catalogFile = resourcesRoot.resolve("catalog/churches.json")
         val manifestFile = resourcesRoot.resolve("crawl/manifest.json")
         val urlCacheFile = resourcesRoot.resolve("crawl/url-cache-map.json")
         urlCache = if (Files.isRegularFile(urlCacheFile)) json.decodeFromString(Files.readString(urlCacheFile)) else emptyMap()

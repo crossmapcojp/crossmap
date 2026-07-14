@@ -25,6 +25,7 @@ class SocialLinkPipelineTest {
         val church = ChurchRecord(
             id = "google:906297735827744432",
             name = "岡山バプテスト教会",
+            englishName = "Okayama Baptist Church",
             address = "〒700-0825 岡山県岡山市北区田町１丁目７−２８",
             location = GeoPoint(34.6619806, 133.9231824),
             websiteUrl = "http://okayama-baptist.jp/",

@@ -44,11 +44,14 @@ resources/crawl
 resources/raw
 !resources/raw/README.md
 
+resources/cleanup/english-name-llm-cache.json
+
 /experiments/
 /output/
 /cache/
 /downloads/
 /.crossmap/
+/webclient/church/
 
 # Runtime diagnostics
 *.log

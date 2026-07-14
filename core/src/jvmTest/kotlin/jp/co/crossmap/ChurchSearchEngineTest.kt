@@ -19,6 +19,7 @@ class ChurchSearchEngineTest {
                     id = "google:2225537460932230335",
                     googleCid = "2225537460932230335",
                     name = "日本聖公会東京聖アンデレ教会",
+                    englishName = "Tokyo St Andrew's Church",
                     denominationId = "ANGLICAN_JP",
                     address = "〒105-0011 東京都港区芝公園３丁目６−１８",
                     location = GeoPoint(35.6601808, 139.743601),
@@ -30,6 +31,7 @@ class ChurchSearchEngineTest {
                     id = "google:8462120116697061819",
                     googleCid = "8462120116697061819",
                     name = "日本聖公会札幌聖ミカエル教会",
+                    englishName = "Sapporo St Michael's Church",
                     denominationId = "ANGLICAN_JP",
                     address = "〒065-0019 北海道札幌市東区北１９条東３丁目４−５",
                     location = GeoPoint(43.0854662, 141.3545852),
@@ -87,6 +89,7 @@ class ChurchSearchEngineTest {
             val church = ChurchRecord(
                 id = "google:906297735827744432",
                 name = "岡山バプテスト教会",
+                englishName = "Okayama Baptist Church",
                 denominationId = "JBC",
                 address = "〒700-0825 岡山県岡山市北区田町１丁目７−２８",
                 location = GeoPoint(34.6619806, 133.9231824),
@@ -107,9 +110,9 @@ class ChurchSearchEngineTest {
         val root = Files.createTempDirectory("crossmap-prefecture")
         try {
             val churches = listOf(
-                ChurchRecord("google:2225537460932230335", name = "日本聖公会東京聖アンデレ教会", address = "〒105-0011 東京都港区芝公園３丁目６−１８", location = GeoPoint(35.6601808, 139.743601), websiteUrl = "http://www.st-andrew-tokyo.com/"),
-                ChurchRecord("google:16863838991523575183", name = "日本聖公会小笠原聖ジョージ教会", address = "〒100-2101 東京都小笠原村父島西町35,", location = GeoPoint(27.0933975, 142.1910068), websiteUrl = "http://www.nskk.org/tokyo/church/ogasawara/ogasawara.htm"),
-                ChurchRecord("google:12637710057937127475", name = "日本聖公会大阪聖パウロ教会", address = "〒530-0013 大阪府大阪市北区茶屋町２−３０", location = GeoPoint(34.7061457, 135.4999131), websiteUrl = "http://www.nskk.org/osaka/church/paul/"),
+                ChurchRecord("google:2225537460932230335", name = "日本聖公会東京聖アンデレ教会", englishName = "Tokyo St Andrew's Church", address = "〒105-0011 東京都港区芝公園３丁目６−１８", location = GeoPoint(35.6601808, 139.743601), websiteUrl = "http://www.st-andrew-tokyo.com/"),
+                ChurchRecord("google:16863838991523575183", name = "日本聖公会小笠原聖ジョージ教会", englishName = "Ogasawara St George's Church", address = "〒100-2101 東京都小笠原村父島西町35,", location = GeoPoint(27.0933975, 142.1910068), websiteUrl = "http://www.nskk.org/tokyo/church/ogasawara/ogasawara.htm"),
+                ChurchRecord("google:12637710057937127475", name = "日本聖公会大阪聖パウロ教会", englishName = "Osaka St Paul's Church", address = "〒530-0013 大阪府大阪市北区茶屋町２−３０", location = GeoPoint(34.7061457, 135.4999131), websiteUrl = "http://www.nskk.org/osaka/church/paul/"),
             )
             val index = root.resolve("index")
             ChurchIndex.build(index.toString().toPath(), churches)

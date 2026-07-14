@@ -35,7 +35,7 @@ class WebsiteRefresherTest {
             Files.createDirectories(root.resolve("crawl"))
             Files.writeString(
                 root.resolve("catalog/churches.json"),
-                json.encodeToString(listOf(ChurchRecord("google:906297735827744432", "906297735827744432", "岡山バプテスト教会", address = "〒700-0825 岡山県岡山市北区田町１丁目７−２８", location = GeoPoint(34.6619806, 133.9231824), websiteUrl = website))),
+                json.encodeToString(listOf(ChurchRecord("google:906297735827744432", "906297735827744432", "岡山バプテスト教会", "Okayama Baptist Church", address = "〒700-0825 岡山県岡山市北区田町１丁目７−２８", location = GeoPoint(34.6619806, 133.9231824), websiteUrl = website))),
             )
             Files.writeString(root.resolve("crawl/manifest.json"), "[]")
 
@@ -77,6 +77,7 @@ class WebsiteRefresherTest {
                         ChurchRecord(
                             "google:906297735827744432",
                             name = "岡山バプテスト教会",
+                            englishName = "Okayama Baptist Church",
                             address = "〒700-0825 岡山県岡山市北区田町１丁目７−２８",
                             location = GeoPoint(34.6619806, 133.9231824),
                             websiteUrl = "http://127.0.0.1:${server.address.port}/",
@@ -112,7 +113,7 @@ class WebsiteRefresherTest {
             Files.writeString(root.resolve("crawl/url-cache-map.json"), json.encodeToString(mapOf(website.sha1() to hash)))
             Files.writeString(
                 root.resolve("catalog/churches.json"),
-                json.encodeToString(listOf(ChurchRecord("google:2225537460932230335", name = "日本聖公会東京聖アンデレ教会", address = "〒105-0011 東京都港区芝公園３丁目６−１８", location = GeoPoint(35.6601808, 139.743601), websiteUrl = website))),
+                json.encodeToString(listOf(ChurchRecord("google:2225537460932230335", name = "日本聖公会東京聖アンデレ教会", englishName = "Tokyo St Andrew's Church", address = "〒105-0011 東京都港区芝公園３丁目６−１８", location = GeoPoint(35.6601808, 139.743601), websiteUrl = website))),
             )
             Files.writeString(root.resolve("crawl/manifest.json"), "[]")
 

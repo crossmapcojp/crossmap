@@ -68,7 +68,7 @@ data class ChurchRecord(
     val id: String,
     val googleCid: String? = null,
     val name: String,
-    val englishName: String? = null,
+    val englishName: String,
     val denominationId: String? = null,
     val category: String? = null,
     val address: String,
@@ -78,7 +78,11 @@ data class ChurchRecord(
     val socialProfiles: List<SocialProfile> = emptyList(),
     val determinations: List<FieldDetermination> = emptyList(),
     val updatedAt: String = "",
-)
+) {
+    init {
+        require(englishName.isNotBlank()) { "ChurchRecord.englishName must not be blank" }
+    }
+}
 
 @Serializable
 enum class GeoNameType { PREFECTURE, MUNICIPALITY, WARD, DEVICE }
@@ -124,6 +128,7 @@ data class MatchedPage(
 data class ChurchSearchHit(
     val churchId: String,
     val name: String,
+    val englishName: String,
     val denominationId: String? = null,
     val category: String? = null,
     val address: String,
@@ -154,6 +159,7 @@ data class ChurchDetailResponse(
     val indexVersion: String,
     val churchId: String,
     val name: String,
+    val englishName: String,
     val denominationId: String? = null,
     val category: String? = null,
     val address: String,

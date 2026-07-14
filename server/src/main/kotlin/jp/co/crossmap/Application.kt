@@ -99,6 +99,11 @@ fun Application.module(
             call.respondFile(archive)
         }
         get("/") { call.respondWebFile(webRoot.resolve("index.html"), ContentType.Text.Html) }
+        get("/church/{file}") {
+            val name = call.parameters["file"].orEmpty()
+            require(name.matches(Regex("[a-z0-9]+(?:-[a-z0-9]+)*\\.html"))) { "invalid church page name" }
+            call.respondWebFile(webRoot.resolve("church").resolve(name), ContentType.Text.Html)
+        }
         get("/church.html") { call.respondWebFile(webRoot.resolve("church.html"), ContentType.Text.Html) }
         get("/result.html") { call.respondWebFile(webRoot.resolve("result.html"), ContentType.Text.Html) }
         get("/app.js") { call.respondWebFile(webRoot.resolve("app.js"), ContentType.Application.JavaScript) }

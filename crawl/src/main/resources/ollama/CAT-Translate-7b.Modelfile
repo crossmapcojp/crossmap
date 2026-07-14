@@ -1,0 +1,7 @@
+FROM hf.co/mradermacher/CAT-Translate-7b-GGUF:Q4_K_M
+
+# Keep the initial working set within an 8 GB GPU while preserving enough
+# context for a church name plus short website/social evidence.
+PARAMETER num_ctx 4096
+PARAMETER temperature 0
+PARAMETER num_predict 512

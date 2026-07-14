@@ -41,6 +41,14 @@
         "proposed": false
     },
     {
+        "id": "HPBC",
+        "name": "Hawaii Pacific Baptist Convention",
+        "aliases": ["HPBC", "ハワイ・パシフィック・バプテスト・コンベンション"],
+        "officialWebsite": "https://www.hpbaptist.net/",
+        "churchListUrlList": ["https://www.hpbaptist.net/location/asia/"],
+        "proposed": false
+    },
+    {
         "id": "JACC",
         "name": "日本同盟基督教団",
         "aliases": [],

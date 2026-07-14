@@ -56,7 +56,8 @@ class SocialAccountLinkerTest {
     }
 
     private fun church(name: String) = ChurchRecord(
-        id = "google:2225537460932230335", name = name, address = "〒105-0011 東京都港区芝公園３丁目６−１８",
+        id = "google:2225537460932230335", name = name, englishName = "Tokyo St Andrew's Church",
+        address = "〒105-0011 東京都港区芝公園３丁目６−１８",
         location = GeoPoint(35.6601808, 139.743601), websiteUrl = "http://www.st-andrew-tokyo.com/",
     )
 

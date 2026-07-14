@@ -46,6 +46,7 @@ if (results) {
       $("#status").textContent = data.total ? `${data.total}件の教会` : "該当する教会はありません。";
       results.innerHTML = data.hits.map(hit => `<article class="result">
         <h2><a href="/church.html?id=${encodeURIComponent(hit.churchId)}">${escapeHtml(hit.name)}</a></h2>
+        <p>${escapeHtml(hit.englishName)}</p>
         <p>${escapeHtml(hit.address)}${hit.distanceKm == null ? "" : ` · ${hit.distanceKm.toFixed(1)} km`}</p>
         ${hit.matchedPages?.[0]?.snippet ? `<p class="snippet">${escapeHtml(hit.matchedPages[0].snippet)}</p>` : ""}
       </article>`).join("");
@@ -65,6 +66,7 @@ if (detail) {
     document.title = `${church.name} · Crossmap`;
     $("#status").textContent = "";
     detail.innerHTML = `<p class="eyebrow">CHURCH</p><h1>${escapeHtml(church.name)}</h1>
+      <p>${escapeHtml(church.englishName)}</p>
       ${church.denominationId ? `<p><strong>教派</strong><br>${escapeHtml(church.denominationId)}</p>` : ""}
       <p><strong>住所</strong><br>${escapeHtml(church.address)}</p>
       <p><strong>ウェブサイト</strong><br><a href="${escapeHtml(church.websiteUrl)}" rel="noopener">${escapeHtml(church.websiteUrl)}</a></p>

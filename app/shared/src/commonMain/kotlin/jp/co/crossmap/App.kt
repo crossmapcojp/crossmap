@@ -34,6 +34,7 @@ private sealed interface AppState {
     data object Ready : AppState
     data object Loading : AppState
     data class Results(val response: ChurchSearchResponse) : AppState
+    data class Detail(val church: ChurchDetailResponse) : AppState
     data class Error(val message: String) : AppState
 }
 
@@ -43,6 +44,7 @@ fun App(
     appDataPath: String? = null,
     serverBaseUrl: String = "http://10.0.2.2:8080",
     locationProvider: suspend () -> GeoPoint? = { null },
+    openUrl: (String) -> Unit = {},
 ) {
     val manager = remember(appDataPath, serverBaseUrl) {
         appDataPath?.let { SnapshotManager(it.toPath(), serverBaseUrl, HttpClient()) }
@@ -111,9 +113,18 @@ fun App(
                 is AppState.Error -> Text(current.message, color = MaterialTheme.colorScheme.error)
                 is AppState.Results -> {
                     Text("${current.response.total}件")
+                    if (current.response.hits.isEmpty()) {
+                        Text("該当する教会が見つかりませんでした。検索語や地域を変えてください。")
+                    }
                     LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         items(current.response.hits, key = { it.churchId }) { hit ->
-                            Card(modifier = Modifier.fillMaxWidth()) {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = {
+                                    state = engine?.church(hit.churchId)?.let { AppState.Detail(it) }
+                                        ?: AppState.Error("Church detail is unavailable: ${hit.churchId}")
+                                },
+                            ) {
                                 Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                     Text(hit.name, style = MaterialTheme.typography.titleMedium)
                                     Text(hit.address, style = MaterialTheme.typography.bodyMedium)
@@ -124,6 +135,19 @@ fun App(
                                 }
                             }
                         }
+                    }
+                }
+                is AppState.Detail -> {
+                    Button(onClick = { state = AppState.Ready }) { Text("検索に戻る") }
+                    Text(current.church.name, style = MaterialTheme.typography.headlineMedium)
+                    Text(current.church.englishName, style = MaterialTheme.typography.titleMedium)
+                    current.church.denominationId?.let { Text("教派: $it") }
+                    Text(current.church.address)
+                    if (current.church.websiteUrl.isNotBlank()) {
+                        Button(onClick = { openUrl(current.church.websiteUrl) }) { Text("ウェブサイト") }
+                    }
+                    current.church.socialProfiles.forEach { profile ->
+                        Button(onClick = { openUrl(profile.url) }) { Text(profile.platform.name) }
                     }
                 }
                 else -> Unit

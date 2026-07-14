@@ -76,6 +76,38 @@ class ApplicationTest {
     }
 
     @Test
+    fun servesGeneratedEnglishNameChurchPage() {
+        val webRoot = Files.createTempDirectory("crossmap-server-generated-church")
+        try {
+            val page = StaticSiteGenerator().generate(
+                churches = listOf(
+                    ChurchRecord(
+                        id = "official:tokyo-sophia",
+                        name = "東京ソフィア長老教会",
+                        englishName = "Tokyo Sophia International Presbyterian Church",
+                        denominationId = "XLSX_18816F940131",
+                        address = "東京都新宿区西早稲田",
+                        location = GeoPoint(35.708, 139.709),
+                        websiteUrl = "https://olivetassembly.or.jp/our-regions.html",
+                    ),
+                ),
+                denominationEnglishNames = mapOf("XLSX_18816F940131" to "Olivet Assembly Japan"),
+                outputDirectory = webRoot.resolve("church"),
+            ).single()
+
+            testApplication {
+                application { module(searchEngine = null, resourcesRoot = webRoot, webRoot = webRoot) }
+                val response = client.get("/church/${page.fileName}")
+                assertEquals(HttpStatusCode.OK, response.status)
+                assertTrue(response.bodyAsText().contains("Tokyo Sophia International Presbyterian Church"))
+                assertTrue(response.bodyAsText().contains("Olivet Assembly Japan"))
+            }
+        } finally {
+            webRoot.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun searchAndDetailReturnCanonicalJson() {
         val root = Files.createTempDirectory("crossmap-server")
         try {
@@ -86,6 +118,7 @@ class ApplicationTest {
                     ChurchRecord(
                         id = "google:906297735827744432",
                         name = "岡山バプテスト教会",
+                        englishName = "Okayama Baptist Church",
                         denominationId = "JBC",
                         address = "〒700-0825 岡山県岡山市北区田町１丁目７−２８",
                         location = GeoPoint(34.6619806, 133.9231824),
@@ -101,10 +134,12 @@ class ApplicationTest {
                 assertEquals(HttpStatusCode.OK, search.status)
                 val response = Json.decodeFromString<ChurchSearchResponse>(search.bodyAsText())
                 assertEquals("google:906297735827744432", response.hits.single().churchId)
+                assertEquals("Okayama Baptist Church", response.hits.single().englishName)
 
                 val detail = client.get("/api/v1/churches/google%3A906297735827744432")
                 assertEquals(HttpStatusCode.OK, detail.status)
                 val church = Json.decodeFromString<ChurchDetailResponse>(detail.bodyAsText())
+                assertEquals("Okayama Baptist Church", church.englishName)
                 assertEquals(SocialPlatform.YOUTUBE, church.socialProfiles.single().platform)
             }
         } finally {

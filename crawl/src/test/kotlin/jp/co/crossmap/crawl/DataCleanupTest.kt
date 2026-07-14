@@ -91,6 +91,45 @@ class DataCleanupTest {
         assertEquals(null, matcher.match(ambiguous, rules, emptyList()))
     }
 
+    @Suppress("DEPRECATION")
+    @Test
+    fun attachmentEnglishNameFunctionsDelegateToDeterministicAndLlmResolver() {
+        val resolver = ChurchEnglishNameResolver(
+            translator = { church ->
+                assertEquals("google:10291805004018342477", church.id)
+                ChurchEnglishNameGuess(
+                    englishName = "Hachioji Full Gospel Church",
+                    parts = listOf(
+                        TranslatedChurchNamePart("八王子", ChurchNamePartRole.GEONAME, "Hachioji"),
+                        TranslatedChurchNamePart("フルゴスペル", ChurchNamePartRole.TRADITION, "Full Gospel"),
+                        TranslatedChurchNamePart("教会", ChurchNamePartRole.CONGREGATION, "Church"),
+                    ),
+                    confidence = 0.92f,
+                    reasoning = "real Japanese church-name parts",
+                    model = "test-japanese-model",
+                )
+            },
+        )
+        val cleanup = PostCrawlCleanup(
+            matcher = EntityMatcher { EntityMatchDecision(null, 0.0, reasoning = "not used by English-name test") },
+            englishNameResolver = resolver,
+        )
+        val deterministic = church("google:906297735827744432", "岡山バプテスト教会").copy(
+            pages = listOf(
+                CrawledPage(
+                    "http://okayama-baptist.jp/",
+                    title = "Okayama Hope Church | 岡山バプテスト教会",
+                    text = "岡山県岡山市にある教会です。",
+                ),
+            ),
+        )
+        val llm = church("google:10291805004018342477", "フルゴスペル八王子教会")
+
+        assertEquals("Okayama Baptist Church", cleanup.findOutChurchEnglishName(deterministic))
+        assertEquals("Hachioji Full Gospel Church", cleanup.findSplitAndTranslateChurchNameToEnglishByLlm(llm))
+        assertEquals("Hachioji Full Gospel Church", cleanup.findSplitAndTranslateChurchNameToEnglishbyLlmz(llm))
+    }
+
     private fun church(id: String, name: String, denomination: String = NOT_DETERMINED): ChurchRecord {
         val real = mapOf(
             "google:2225537460932230335" to Triple("〒105-0011 東京都港区芝公園３丁目６−１８", GeoPoint(35.6601808, 139.743601), "http://www.st-andrew-tokyo.com/"),
@@ -103,6 +142,11 @@ class DataCleanupTest {
         return ChurchRecord(
         id = id,
         name = name,
+        englishName = when (name) {
+            "岡山バプテスト教会" -> "Okayama Baptist Church"
+            "日本聖公会東京聖アンデレ教会" -> "Tokyo St Andrew's Church"
+            else -> "Tokyo Sophia International Presbyterian Church"
+        },
         denominationId = denomination,
         address = real.first,
         location = real.second,

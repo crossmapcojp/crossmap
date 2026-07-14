@@ -87,6 +87,25 @@ df -h /media/joel/llms
 
 Decisions are written to `resources/cleanup/social-decisions.json`. Remove `--dry-run` to publish accepted profiles and their provenance into the canonical church catalog.
 
+English church names first use official English text found in cached webpages, the church domain, or linked social profiles. Only unresolved names are translated locally with CyberAgent CAT-Translate-7b. Install the exact Q4_K_M model and the checked-in 4096-token Ollama configuration:
+
+```sh
+df -h /media/joel/llms
+ollama pull hf.co/mradermacher/CAT-Translate-7b-GGUF:Q4_K_M
+ollama create cat-translate:7b-q4_k_m -f crawl/src/main/resources/ollama/CAT-Translate-7b.Modelfile
+```
+
+Then populate and validate the complete catalog. Publication fails instead of leaving any `englishName` blank:
+
+```sh
+df -h /media/joel/llms
+./gradlew :crawl:run --args='english-names --resources resources --model cat-translate:7b-q4_k_m --dry-run'
+```
+
+Remove `--dry-run` to atomically update `resources/catalog/churches.json`. `--programmatic-only` is available for an Ollama-free completeness check.
+
+The production cleanup entry point is `./gradlew :crawl:dataCleanup`. Every invocation writes a unique `logs/YYYY-MM-DD-HH-mm-data-cleanup-stat.log` report with deterministic/LLM counts, unresolved count, errors, LLM timeouts, duration, and throughput. `:server:generateChurchPages` depends on this cleanup gate.
+
 ## Build an index snapshot
 
 ```sh
@@ -112,7 +131,16 @@ The CLI automatically locates the latest local Crossmap snapshot unless an expli
 CROSSMAP_INDEX_DIR=resources/indexes/churches/local-dev/index ./gradlew :server:run
 ```
 
-Open the server root in a browser. The user flow is `index.html` -> `/api/v1/search` JSON -> `result.html` -> `/api/v1/churches/{id}` JSON -> `church.html`. All browser logic is vanilla JavaScript. Browser geolocation is requested only after the first search confirms that the query contains no geoname.
+Open the server root in a browser. The user flow is `index.html` -> `/api/v1/churches/search` JSON -> `result.html` -> `/api/v1/churches/{id}` JSON -> `church.html`. All browser logic is vanilla JavaScript. Browser geolocation is requested only after the first search confirms that the query contains no geoname.
+
+Static detail pages use `/church/{denomination-English}-{church-English}.html`. Supply a JSON object mapping denomination IDs to English names, for example `{"JBC":"Japan Baptist Convention"}`, then generate development or production pages:
+
+```sh
+./gradlew :server:generateChurchPages \
+  -PdenominationEnglishNames=resources/catalog/denomination-english-names.json
+```
+
+The default output is `webclient/church` (generated and gitignored). Generated page and canonical links are root-relative `/church/...` paths, so the same files work on localhost and production. Generation fails if a church English name, a known denomination English name, or a collision-disambiguating English location is absent.
 
 ## Mobile
 
@@ -121,7 +149,7 @@ Open the server root in a browser. The user flow is `index.html` -> `/api/v1/sea
 ./gradlew :app:shared:compileKotlinIosSimulatorArm64
 ```
 
-Android and iOS open the downloaded snapshot locally and search with lucene-kmp on device. Network access is only needed to download a new snapshot; an already activated index supports offline launch and search.
+Android and iOS open the downloaded snapshot locally and search with lucene-kmp on device. If a query has no Japanese geoname, the platform location provider supplies the default geo center when permission/location is available. Result taps open a local church detail with Japanese/English name, denomination, address, website, and social links; website/social buttons use the platform URL opener. Network access is only needed to download a new snapshot; an already activated index supports offline launch and search.
 
 ## Verification
 

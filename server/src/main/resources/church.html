@@ -3,11 +3,34 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Church · Crossmap</title>
+  <title>${japaneseName?html} · Crossmap</title>
+  <link rel="canonical" href="${canonicalUrl?html}">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="${englishName?html}">
+  <meta property="og:url" content="${pageUrl?html}">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <main><a href="/">← 検索に戻る</a><p id="status" role="status">読み込み中…</p><article id="church"></article></main>
-  <script src="/app.js"></script>
+  <main>
+    <a href="/">← 検索に戻る</a>
+    <article class="church-detail">
+      <p class="eyebrow">CHURCH</p>
+      <h1>${japaneseName?html}</h1>
+      <p lang="en" class="english-name">${englishName?html}</p>
+      <#if denominationEnglishName?has_content>
+        <p><strong>教派</strong><br><span lang="en">${denominationEnglishName?html}</span></p>
+      </#if>
+      <p><strong>住所</strong><br>${address?html}</p>
+      <p><strong>ウェブサイト</strong><br><a href="${websiteUrl?html}" rel="noopener">${websiteUrl?html}</a></p>
+      <#if socialProfiles?has_content>
+        <h2>ソーシャル</h2>
+        <ul>
+          <#list socialProfiles as profile>
+            <li><a href="${profile.url?html}" rel="noopener">${profile.platform?html}<#if profile.label?has_content> · ${profile.label?html}</#if></a></li>
+          </#list>
+        </ul>
+      </#if>
+    </article>
+  </main>
 </body>
 </html>

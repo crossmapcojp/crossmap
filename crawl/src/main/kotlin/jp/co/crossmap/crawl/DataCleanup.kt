@@ -17,6 +17,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 
 const val NOT_DETERMINED = "NOT_DETERMINED"
@@ -220,6 +221,9 @@ class PostCrawlCleanup(
     private val confidenceThreshold: Double = 0.80,
     private val programmaticMatcher: ProgrammaticDenominationMatcher = ProgrammaticDenominationMatcher(),
     private val webpageGuesser: DenominationGuesser? = null,
+    private val englishNameResolver: ChurchEnglishNameResolver = ChurchEnglishNameResolver(
+        translator = KoogChurchEnglishNameTranslator(),
+    ),
     private val json: Json = Json { ignoreUnknownKeys = true; prettyPrint = true; encodeDefaults = true },
 ) {
     init {
@@ -231,10 +235,10 @@ class PostCrawlCleanup(
         limit: Int = Int.MAX_VALUE,
         applyChanges: Boolean = true,
         enableLlm: Boolean = true,
+        catalogFile: Path = resourcesRoot.resolve("catalog/churches.json"),
     ): CleanupReport {
         val cleanupDir = resourcesRoot.resolve("cleanup")
         Files.createDirectories(cleanupDir)
-        val catalogFile = resourcesRoot.resolve("catalog/churches.json")
         val churches = json.decodeFromString<List<ChurchRecord>>(Files.readString(catalogFile))
         val candidates = readList<DenominationCandidate>(cleanupDir.resolve("denomination-candidates.json"))
         val rules = readList<DenominationRule>(cleanupDir.resolve("denomination-rules.json"))
@@ -388,12 +392,19 @@ class PostCrawlCleanup(
         determinedAt = determinedAt,
     )
 
-    fun findOutChurchEnglishName(c: ChurchRecord): String{
-        return TODO("implement with 2 steps 1: deteministic programatic analysis from downloaded church website domain, url, webpage html or social account names, then if no results, use llm to split the name into parts, for example 東京バプテスト教会 into 東京:geoname, バプテスト:traditionName, 教会:wordWhichMeansCongregation, then translate by for each part, then concat Tokyo Baptist Church, in edge case, none-denomination church (単立) can ommit the english denomination name, if there is name collision, put city/address name ahead of the church name")
+    fun findOutChurchEnglishName(c: ChurchRecord): String = runBlocking {
+        englishNameResolver.findOutChurchEnglishName(c)
     }
 
-    fun findSplitAndTranslateChurchNameToEnglishbyLlmz(c: ChurchRecord): String{
-        return TODO("implement with above requirement")
+    fun findSplitAndTranslateChurchNameToEnglishByLlm(c: ChurchRecord): String = runBlocking {
+        englishNameResolver.findSplitAndTranslateChurchNameToEnglishByLlm(c)
     }
+
+    @Deprecated(
+        message = "Use findSplitAndTranslateChurchNameToEnglishByLlm",
+        replaceWith = ReplaceWith("findSplitAndTranslateChurchNameToEnglishByLlm(c)"),
+    )
+    fun findSplitAndTranslateChurchNameToEnglishbyLlmz(c: ChurchRecord): String =
+        findSplitAndTranslateChurchNameToEnglishByLlm(c)
 
 }

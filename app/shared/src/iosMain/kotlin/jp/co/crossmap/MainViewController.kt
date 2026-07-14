@@ -14,6 +14,8 @@ import platform.CoreLocation.kCLAuthorizationStatusDenied
 import platform.CoreLocation.kCLAuthorizationStatusRestricted
 import platform.Foundation.NSError
 import platform.Foundation.NSHomeDirectory
+import platform.Foundation.NSURL
+import platform.UIKit.UIApplication
 import platform.darwin.NSObject
 import kotlin.coroutines.resume
 
@@ -62,5 +64,6 @@ fun MainViewController() = ComposeUIViewController {
     App(
         appDataPath = "${NSHomeDirectory()}/Documents/crossmap",
         locationProvider = locationProvider::currentLocation,
+        openUrl = { value -> NSURL.URLWithString(value)?.let(UIApplication.sharedApplication::openURL) },
     )
 }

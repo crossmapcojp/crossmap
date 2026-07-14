@@ -205,6 +205,7 @@ class CliTest {
             ChurchRecord(
                 id = "google:2225537460932230335", googleCid = "2225537460932230335",
                 name = "日本聖公会東京聖アンデレ教会", denominationId = "ANGLICAN_JP",
+                englishName = "Tokyo St Andrew's Church",
                 address = "〒105-0011 東京都港区芝公園３丁目６−１８", location = GeoPoint(35.6601808, 139.743601),
                 websiteUrl = "http://www.st-andrew-tokyo.com/",
                 pages = listOf(CrawledPage("http://www.st-andrew-tokyo.com/", title = "聖アンデレ教会", text = "礼拝スケジュール 子供と祝うユーカリスト ボーイスカウト・ガールスカウト")),
@@ -212,42 +213,50 @@ class CliTest {
             ChurchRecord(
                 id = "google:906297735827744432", googleCid = "906297735827744432",
                 name = "岡山バプテスト教会", denominationId = "JBC",
+                englishName = "Okayama Baptist Church",
                 address = "〒700-0825 岡山県岡山市北区田町１丁目７−２８", location = GeoPoint(34.6619806, 133.9231824),
                 websiteUrl = "http://okayama-baptist.jp/",
                 pages = listOf(CrawledPage("http://okayama-baptist.jp/", title = "岡山バプテスト教会", text = "日本バプテスト連盟 集会案内 週報 牧師紹介")),
             ),
             ChurchRecord(
                 id = "google:8462120116697061819", name = "日本聖公会札幌聖ミカエル教会", denominationId = "ANGLICAN_JP",
+                englishName = "Sapporo St Michael's Church",
                 address = "〒065-0019 北海道札幌市東区北１９条東３丁目４−５", location = GeoPoint(43.0854662, 141.3545852),
                 websiteUrl = "http://www.sapporo-michael.org/",
             ),
             ChurchRecord(
                 id = "google:12083726217471771398", name = "横浜山手聖公会", denominationId = "ANGLICAN_JP",
+                englishName = "Yokohama Yamate Anglican Church",
                 address = "〒231-0862 神奈川県横浜市中区山手町２３５", location = GeoPoint(35.4380585, 139.6524249),
                 websiteUrl = "https://yamate-anglican.jpn.org/",
             ),
             ChurchRecord(
                 id = "google:16863838991523575183", name = "日本聖公会小笠原聖ジョージ教会", denominationId = "ANGLICAN_JP",
+                englishName = "Ogasawara St George's Church",
                 address = "〒100-2101 東京都小笠原村父島西町35,", location = GeoPoint(27.0933975, 142.1910068),
                 websiteUrl = "http://www.nskk.org/tokyo/church/ogasawara/ogasawara.htm",
             ),
             ChurchRecord(
                 id = "google:12637710057937127475", name = "日本聖公会大阪聖パウロ教会", denominationId = "ANGLICAN_JP",
+                englishName = "Osaka St Paul's Church",
                 address = "〒530-0013 大阪府大阪市北区茶屋町２−３０", location = GeoPoint(34.7061457, 135.4999131),
                 websiteUrl = "http://www.nskk.org/osaka/church/paul/",
             ),
             ChurchRecord(
                 id = "google:12966940111826391654", name = "カトリック麹町 聖イグナチオ教会", denominationId = "CATHOLIC_JP",
+                englishName = "St Ignatius Church",
                 address = "〒102-0083 東京都千代田区麹町６丁目５−１", location = GeoPoint(35.6851661, 139.7312516),
                 websiteUrl = "https://www.ignatius.gr.jp/",
             ),
             ChurchRecord(
                 id = "google:11669795733969339645", name = "日本バプテスト連盟 府中キリスト教会", denominationId = "JBC",
+                englishName = "Fuchu Christ Church",
                 address = "〒183-0054 東京都府中市幸町１丁目９−７", location = GeoPoint(35.678658, 139.480426),
                 websiteUrl = "https://www.google.com/maps?cid=11669795733969339645",
             ),
             ChurchRecord(
                 id = "google:3344590218577063144", name = "日本アライアンス教団府中キリスト教会", denominationId = "JAC",
+                englishName = "Fuchu Christ Church",
                 address = "〒726-0003 広島県府中市元町５４１", location = GeoPoint(34.575485, 133.236118),
                 websiteUrl = "https://www.google.com/maps?cid=3344590218577063144",
             ),

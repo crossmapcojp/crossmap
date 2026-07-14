@@ -11,9 +11,13 @@
 ## 2. Canonical resources and crawler
 
 - [x] Create the canonical `resources/raw`, `resources/crawl`, `resources/catalog`, `resources/geonames`, and versioned index layout.
-- [ ] Port the gmap church, denomination, normalization, Google Maps parsing, exclusions, and website extraction behavior needed by Crossmap.
+- [ ] Reimplement the gmap Saved Places workflow—CSV seeds, exclusions, CID cache/fetch, Google Maps parsing, normalization, website extraction, and reporting—inside standalone Crossmap stages.
 - [x] Seed the standalone Crossmap catalog from the clean historical corpus; no runtime/build dependency on the gmap repository remains.
-- [ ] Reimplement place-seed/CID acquisition, Google place parsing, exclusions, normalization, denomination discovery, and post-run reporting as native Crossmap stages.
+- [x] Add a standalone RFC 4180 Google Takeout Saved Places reader for the real Japanese `タイトル,メモ,URL,コメント` format, stable CID extraction, cross-list deduplication, error reporting, and raw seed JSON.
+- [x] Resolve raw Saved Places seeds through copied CID HTML cache first, plain HTTP second, and lightweight Lightpanda rendering last; parse name, coordinates, address, website, and category into raw church candidates with an audit report.
+- [ ] Apply exclusion lists and Catholic-list non-church filtering from gmap (done), then complete candidate-name normalization and entity-level deduplication before promotion.
+- [ ] Feed resolved candidates into the existing Crossmap deterministic → official-directory/page evidence → LLM → human-override cleanup workflow; do not create a parallel cleanup implementation.
+- [ ] Produce timestamped source/crawl/cleanup completeness reports and promote only complete records into the canonical catalog.
 - [x] Replace denomination-specific control flow with a generic evidence -> candidate -> resolution -> review -> publication pipeline.
 - [x] Model church, denomination directory, website, social profile, and sermon inputs as typed evidence records with durable provenance.
 - [x] Add a data-driven denomination catalog and directory-source configurations so coverage is not limited to the old hand-coded subset.
@@ -45,6 +49,9 @@
 - [x] Add deterministic fake-matcher tests; never require Ollama for the unit-test suite.
 - [x] Resolve social accounts in precedence order: direct cached-page hyperlink, exact/either-name-contains match, then bounded LLM fallback; leave low or ambiguous scores unmatched.
 - [x] Publish accepted social profiles and field provenance into the standalone church catalog while retaining an auditable `social-decisions.json`.
+- [x] Resolve each church `englishName` first from official webpage, URL/domain, or linked social evidence, then fall back to Koog + Ollama translation with auditable name-part roles.
+- [x] Add an `english-names` crawl command that atomically updates the catalog and refuses a partial result so every publishable church has an English-name URL component.
+- [x] Install the `cyberagent/CAT-Translate-7b` Q4_K_M GGUF as `cat-translate:7b-q4_k_m`, configure a 4096-token context, and verify it runs fully on GPU.
 - [ ] Check disk capacity with `df` before any Ollama inference or model pull, then evaluate installed Japanese-capable models on labeled fixtures.
 
 ## 4. Shared Lucene index and search
@@ -56,7 +63,7 @@
 - [x] Keep crawled content type and optional sermon metadata independently indexable for a future sermon-result document model.
 - [x] Implement shared text-plus-geo search, exact totals, stable ordering, pagination, distance, matching page detection, and snippets.
 - [x] Implement deterministic versioned snapshot creation with manifest, document count, lucene-kmp version, archive size, and SHA-256.
-- [ ] Complete shared search coverage for every indexed field, geo behavior, ordering, pagination, and JSON round trips. (Initial real-index tests pass.)
+- [x] Complete shared search coverage for every indexed field, geo behavior, ordering, pagination, and JSON round trips. (Real-index and 19-scenario Clikt tests pass.)
 
 ## 5. `cm` CLI
 
@@ -77,6 +84,9 @@
 - [x] Serve the vanilla HTML/JavaScript client from Ktor.
 - [x] Implement query, loading, error, empty, result, distance, snippet, link, and pagination UI states.
 - [x] Implement the vanilla-JavaScript `index.html` -> JSON-backed `result.html` -> JSON-backed `church.html` navigation flow.
+- [x] Generate static FreeMarker church detail pages at English denomination/name slugs using root-relative page and canonical links.
+- [x] Fail static publication when an English church name, known denomination English name, or collision-disambiguating English location is missing.
+- [x] Serve generated `/church/{english-slug}.html` pages and provide the `generateChurchPages` Gradle task.
 - [x] Add Ktor API tests and a Lightpanda browser smoke test against `./gradlew :server:run`, covering index -> search JSON -> rendered result page -> church detail JSON/page.
 
 ## 7. Android and iOS app
@@ -85,7 +95,7 @@
 - [x] Implement full-snapshot download to `.part`, SHA-256 verification, staging extraction, manifest validation, and atomic active-version switching.
 - [x] Retain the previous working snapshot and support retry/redownload/offline launch.
 - [x] Run all mobile searches locally through the shared lucene-kmp engine.
-- [ ] Implement platform link opening and all download/search/result/error UI states.
+- [x] Implement platform link opening and all download/search/result/detail/error UI states.
 - [x] Implement optional Android/iOS location permission and pass device coordinates as the no-geoname search fallback.
 - [ ] Verify Android build/tests and an Android emulator search flow with the Android CLI.
 - [ ] Verify iOS framework/tests and the shared golden-query fixture.

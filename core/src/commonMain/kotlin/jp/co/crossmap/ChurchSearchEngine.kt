@@ -38,6 +38,7 @@ class ChurchSearchEngine(
                     indexVersion = indexVersion,
                     churchId = record.id,
                     name = record.name,
+                    englishName = record.englishName,
                     denominationId = record.denominationId,
                     category = record.category,
                     address = record.address,
@@ -88,6 +89,7 @@ class ChurchSearchEngine(
                 ChurchSearchHit(
                     churchId = record.id,
                     name = record.name,
+                    englishName = record.englishName,
                     denominationId = record.denominationId,
                     category = record.category,
                     address = record.address,

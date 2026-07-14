@@ -22,6 +22,7 @@ clikt = "5.0.3"
 koog = "1.0.0"
 lucene-kmp = "10.2.0-alpha14"
 jsoup = "1.21.2"
+freemarker = "2.3.34"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -55,6 +56,7 @@ lucene-kmp-queryparser = { module = "org.gnit.lucene-kmp:lucene-kmp-queryparser"
 lucene-kmp-analysis-common = { module = "org.gnit.lucene-kmp:lucene-kmp-analysis-common", version.ref = "lucene-kmp" }
 lucene-kmp-analysis-kuromoji = { module = "org.gnit.lucene-kmp:lucene-kmp-analysis-kuromoji", version.ref = "lucene-kmp" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
+freemarker = { module = "org.freemarker:freemarker", version.ref = "freemarker" }
 ktor-clientCore = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-clientCio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
 ktor-clientDarwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }

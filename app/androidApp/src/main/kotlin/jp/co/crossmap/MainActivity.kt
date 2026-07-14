@@ -3,6 +3,8 @@ package jp.co.crossmap
 import android.os.Bundle
 import android.Manifest
 import android.content.pm.PackageManager
+import android.content.Intent
+import android.net.Uri
 import android.location.LocationManager
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
@@ -23,6 +25,7 @@ class MainActivity : ComponentActivity() {
             App(
                 appDataPath = filesDir.resolve("crossmap").absolutePath,
                 locationProvider = { lastKnownLocation() },
+                openUrl = { url -> startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) },
             )
         }
     }
