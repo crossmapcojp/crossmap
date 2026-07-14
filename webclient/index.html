@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Crossmap Church Search</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main>
+    <header><p class="eyebrow">CROSSMAP</p><h1>教会を探す</h1><p>教会名、地域、教派、ウェブサイトに書かれた言葉から検索できます。</p></header>
+    <form id="search-form">
+      <input id="query" name="q" type="search" required autofocus placeholder="例: 横浜 バプテスト">
+      <button type="submit">検索</button>
+    </form>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>
+*** Add File: /home/joel/code/crossmap/webclient/result.html
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>検索結果 · Crossmap</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main>
+    <a href="/">← 検索に戻る</a>
+    <header><p class="eyebrow">SEARCH RESULTS</p><h1 id="result-title">教会検索</h1></header>
+    <p id="status" role="status">検索中…</p>
+    <section id="results" aria-live="polite"></section>
+    <nav id="pagination" aria-label="検索結果ページ"></nav>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>

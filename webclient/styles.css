@@ -1,0 +1,13 @@
+:root { font-family: Inter, system-ui, sans-serif; color: #17231d; background: #f3f0e8; }
+body { margin: 0; }
+main { width: min(760px, calc(100% - 32px)); margin: 0 auto; padding: 64px 0; }
+.eyebrow { color: #32634a; font-size: .75rem; font-weight: 800; letter-spacing: .18em; }
+h1 { font-size: clamp(2rem, 8vw, 4.5rem); line-height: 1; margin: .25em 0; }
+form { display: flex; gap: 8px; margin: 40px 0 24px; }
+input { flex: 1; min-width: 0; padding: 14px 16px; border: 1px solid #96a298; border-radius: 8px; font: inherit; background: white; }
+button { padding: 12px 20px; border: 0; border-radius: 8px; color: white; background: #245b3e; font: inherit; font-weight: 700; cursor: pointer; }
+.result { padding: 22px 0; border-top: 1px solid #c9cec8; }
+.result h2 { margin: 0; }
+a { color: #174d34; }
+.snippet { color: #536057; line-height: 1.6; }
+#pagination { display: flex; gap: 8px; margin-top: 24px; }

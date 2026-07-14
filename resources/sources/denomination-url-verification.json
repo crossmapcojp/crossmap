@@ -1,0 +1,984 @@
+[
+  {
+    "denominationId": "UCCJ",
+    "name": "日本基督教団",
+    "inputUrl": "http://uccj.org/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "http://uccj.org/",
+    "churchListCandidates": [
+      "http://uccj.org/diocese"
+    ],
+    "checkedAt": "2026-07-13T16:28:37.289Z"
+  },
+  {
+    "denominationId": "XLSX_1297FC856C21",
+    "name": "カトリック中央協議会",
+    "inputUrl": "https://www.cbcj.catholic.jp/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://www.cbcj.catholic.jp/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:38.156Z"
+  },
+  {
+    "denominationId": "ANGLICAN_JP",
+    "name": "日本聖公会",
+    "inputUrl": "http://www.nskk.org/province/index.html",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "http://www.nskk.org/province/index.html",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:37.025Z"
+  },
+  {
+    "denominationId": "JBC",
+    "name": "日本バプテスト連盟",
+    "inputUrl": "https://www.bapren.jp/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://bapren.jp/",
+    "churchListCandidates": [
+      "https://bapren.jp/church/",
+      "https://bapren.jp/2026/church/"
+    ],
+    "checkedAt": "2026-07-13T16:28:37.788Z"
+  },
+  {
+    "denominationId": "JACC",
+    "name": "日本同盟基督教団",
+    "inputUrl": "https://domei.site/wp/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://domei.site/wp/",
+    "churchListCandidates": [
+      "https://domei.site/wp/%e6%95%99%e4%bc%9a%e3%82%92%e6%8e%a2%e3%81%99/",
+      "https://domei.site/wp/%E6%95%99%E4%BC%9A%E3%82%92%E6%8E%A2%E3%81%99/"
+    ],
+    "checkedAt": "2026-07-13T16:28:40.166Z"
+  },
+  {
+    "denominationId": "JAG",
+    "name": "日本アッセンブリーズ・オブ・ゴッド教団",
+    "inputUrl": "https://j-ag.org/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://j-ag.org/",
+    "churchListCandidates": [
+      "https://j-ag.org/cmcchurch-media-community/",
+      "https://j-ag.org/church-introduction/",
+      "https://j-ag.org/give-for-churches/"
+    ],
+    "checkedAt": "2026-07-13T16:28:37.814Z"
+  },
+  {
+    "denominationId": "JECA",
+    "name": "日本福音キリスト教会連合",
+    "inputUrl": "http://www.jeca.jp/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://jeca.jp/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:38.256Z"
+  },
+  {
+    "denominationId": "SDA_JP",
+    "name": "セブンスデー・アドベンチスト教団",
+    "inputUrl": "http://adventist.jp/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "http://adventist.jp/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:38.723Z"
+  },
+  {
+    "denominationId": "JHC",
+    "name": "日本ホーリネス教団",
+    "inputUrl": "http://www.jhc.or.jp/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://www.jhc.or.jp/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:38.722Z"
+  },
+  {
+    "denominationId": "RCJ",
+    "name": "日本キリスト改革派教会",
+    "inputUrl": "http://www.rcj-net.org/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://rcj-net.org/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:38.486Z"
+  },
+  {
+    "denominationId": "CCJ",
+    "name": "日本キリスト教会",
+    "inputUrl": "http://www.nikki-church.org/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "http://www.nikki-church.org/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:38.680Z"
+  },
+  {
+    "denominationId": "JCCJ",
+    "name": "日本イエス・キリスト教団",
+    "inputUrl": "http://jccj.info/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://jccj.info/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:38.838Z"
+  },
+  {
+    "denominationId": "JELC",
+    "name": "日本福音ルーテル教会",
+    "inputUrl": "http://www.jelc.or.jp/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://jelc.or.jp/",
+    "churchListCandidates": [
+      "https://jelc.or.jp/welcome-to-the-jelc/congregations/",
+      "https://jelc.or.jp/ABOUT"
+    ],
+    "checkedAt": "2026-07-13T16:28:40.262Z"
+  },
+  {
+    "denominationId": "IGM",
+    "name": "イムマヌエル綜合伝道団",
+    "inputUrl": "http://www.immanuel.or.jp/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "http://www.immanuel.or.jp/",
+    "churchListCandidates": [
+      "http://www.immanuel.or.jp/link.html"
+    ],
+    "checkedAt": "2026-07-13T16:28:39.437Z"
+  },
+  {
+    "denominationId": "TLEA",
+    "name": "The Light of Eternal Agape",
+    "inputUrl": "https://tlea.tokyoantioch.com/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://tlea.tokyoantioch.com/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:39.901Z"
+  },
+  {
+    "denominationId": "HEJ",
+    "name": "聖イエス会",
+    "inputUrl": "https://www.seiiesukai.org/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://seiiesukai.org/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:39.447Z"
+  },
+  {
+    "denominationId": "KCCJ",
+    "name": "在日大韓基督教会",
+    "inputUrl": "https://kccj.jp/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://kccj.jp/",
+    "churchListCandidates": [
+      "https://kccj.jp/church_list.php"
+    ],
+    "checkedAt": "2026-07-13T16:28:39.205Z"
+  },
+  {
+    "denominationId": "JBBF",
+    "name": "日本バプテスト・バイブル・フェローシップ",
+    "inputUrl": "http://jbbf.or.jp/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "http://jbbf.or.jp/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:40.430Z"
+  },
+  {
+    "denominationId": "FGJA",
+    "name": "日本フルゴスペル教団",
+    "inputUrl": "http://www.fgtc.jp/fullgospeltokyo/sanctuary-church/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://www.fgtc.jp/fullgospeltokyo/sanctuary-church/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:40.192Z"
+  },
+  {
+    "denominationId": "JCBA",
+    "name": "保守バプテスト同盟",
+    "inputUrl": "http://doumei.holy.jp/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://doumei.holy.jp/",
+    "churchListCandidates": [
+      "https://doumei.holy.jp/churches/"
+    ],
+    "checkedAt": "2026-07-13T16:28:42.632Z"
+  },
+  {
+    "denominationId": "COTN_JP",
+    "name": "日本ナザレン教団",
+    "inputUrl": "http://www.nazarene.or.jp/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "http://www.nazarene.or.jp/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:40.353Z"
+  },
+  {
+    "denominationId": "JBU",
+    "name": "日本バプテスト同盟",
+    "inputUrl": "http://www.jbu.or.jp/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "http://www.jbu.or.jp/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:40.893Z"
+  },
+  {
+    "denominationId": "PCJ",
+    "name": "日本長老教会",
+    "inputUrl": "http://cms.chorokyokai.jp/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://chorokyokai.jp/",
+    "churchListCandidates": [
+      "https://chorokyokai.jp/churches/"
+    ],
+    "checkedAt": "2026-07-13T16:28:41.706Z"
+  },
+  {
+    "denominationId": "TPKF",
+    "name": "単立ペンテコステ教会フェローシップ",
+    "inputUrl": "https://tpkf.org/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://tpkf.org/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:40.639Z"
+  },
+  {
+    "denominationId": "EFC_JP",
+    "name": "日本福音自由教会協議会",
+    "inputUrl": "https://efcj.org/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://efcj.org/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:40.636Z"
+  },
+  {
+    "denominationId": "BCC",
+    "name": "基督兄弟団",
+    "inputUrl": "http://kyodaidan.net/",
+    "status": 0,
+    "ok": false,
+    "error": "Error:Unable to connect. Is the computer able to access the url?",
+    "checkedAt": "2026-07-13T16:28:48.058Z"
+  },
+  {
+    "denominationId": "BGC_JP",
+    "name": "日本バプテスト教会連合",
+    "inputUrl": "http://www.rengo.ne.jp/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://rengo.ne.jp/",
+    "churchListCandidates": [
+      "https://rengo.ne.jp/chruch-list/"
+    ],
+    "checkedAt": "2026-07-13T16:28:41.884Z"
+  },
+  {
+    "denominationId": "XLSX_8DC4948B053C",
+    "name": "日本ハリストス正教会教団",
+    "inputUrl": "https://www.orthodoxjapan.jp/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://www.orthodoxjapan.jp/",
+    "churchListCandidates": [
+      "https://www.orthodoxjapan.jp/area-tokyo.html",
+      "https://www.orthodoxjapan.jp/seizou.html"
+    ],
+    "checkedAt": "2026-07-13T16:28:40.980Z"
+  },
+  {
+    "denominationId": "GEC",
+    "name": "福音伝道教団",
+    "inputUrl": "https://fukuindendou.org/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://fukuindendou.org/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:41.170Z"
+  },
+  {
+    "denominationId": "SA_JP",
+    "name": "救世軍",
+    "inputUrl": "http://www.salvationarmy.or.jp/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://www.salvationarmy.or.jp/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:42.361Z"
+  },
+  {
+    "denominationId": "JEC",
+    "name": "日本福音教会",
+    "inputUrl": "https://www.jec-net.org/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://www.jec-net.org/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:42.947Z"
+  },
+  {
+    "denominationId": "WJELC",
+    "name": "西日本福音ルーテル教会",
+    "inputUrl": "http://www.wjelc.or.jp/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://www.wjelc.or.jp/",
+    "churchListCandidates": [
+      "https://www.wjelc.or.jp/about/churchlist/"
+    ],
+    "checkedAt": "2026-07-13T16:28:43.215Z"
+  },
+  {
+    "denominationId": "JAC",
+    "name": "日本アライアンス教団",
+    "inputUrl": "http://jac-hij.sakura.ne.jp/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "http://jac-hij.sakura.ne.jp/",
+    "churchListCandidates": [
+      "http://jac-hij.sakura.ne.jp/profile.html"
+    ],
+    "checkedAt": "2026-07-13T16:28:42.384Z"
+  },
+  {
+    "denominationId": "WHCJ",
+    "name": "ウェスレアン・ホーリネス教団",
+    "inputUrl": "https://whchurch.jimdo.com/",
+    "status": 0,
+    "ok": false,
+    "error": "Error:Unable to connect. Is the computer able to access the url?",
+    "checkedAt": "2026-07-13T16:28:42.726Z"
+  },
+  {
+    "denominationId": "JFGC",
+    "name": "日本フォースクエア福音教団",
+    "inputUrl": "https://www.japan-foursquare.jp/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://www.japan-foursquare.jp/",
+    "churchListCandidates": [
+      "https://www.japan-foursquare.jp/cont2/main.html"
+    ],
+    "checkedAt": "2026-07-13T16:28:43.206Z"
+  },
+  {
+    "denominationId": "OBC",
+    "name": "沖縄バプテスト連盟",
+    "inputUrl": "http://okinawabaptist.com/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "http://okinawabaptist.com/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:43.140Z"
+  },
+  {
+    "denominationId": "SEIKYODAN",
+    "name": "基督聖協団",
+    "inputUrl": "http://www.seikyodan.com/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "http://www.seikyodan.com/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:43.480Z"
+  },
+  {
+    "denominationId": "JLC",
+    "name": "日本ルーテル教団",
+    "inputUrl": "http://www.jlc.or.jp/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "http://www.jlc.or.jp/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:43.836Z"
+  },
+  {
+    "denominationId": "WMC",
+    "name": "ワールドミッション教団",
+    "inputUrl": "https://worldmission.or.jp/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://worldmission.or.jp/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:44.942Z"
+  },
+  {
+    "denominationId": "JFEC",
+    "name": "同盟福音基督教会",
+    "inputUrl": "http://www.doumeifukuin.net/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "http://www.doumeifukuin.net/",
+    "churchListCandidates": [
+      "http://www.doumeifukuin.net/",
+      "http://www.doumeifukuin.net/shyozokukyoukai/",
+      "http://www.doumeifukuin.net/aihopechurch/"
+    ],
+    "checkedAt": "2026-07-13T16:28:45.412Z"
+  },
+  {
+    "denominationId": "JLBC",
+    "name": "日本ルーテル同胞教団",
+    "inputUrl": "https://mafumikudo.wixsite.com/lbcj",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://mafumikudo.wixsite.com/lbcj",
+    "churchListCandidates": [
+      "https://mafumikudo.wixsite.com/lbcj"
+    ],
+    "checkedAt": "2026-07-13T16:28:43.856Z"
+  },
+  {
+    "denominationId": "KELC",
+    "name": "近畿福音ルーテル教会",
+    "inputUrl": "http://www.kelc.net/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "http://www.kelc.net/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:44.690Z"
+  },
+  {
+    "denominationId": "FMC_JP",
+    "name": "日本フリーメソジスト教団",
+    "inputUrl": "http://fmcjp.org/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "http://fmcjp.org/",
+    "churchListCandidates": [
+      "https://fmcjp.org/?page_id=61"
+    ],
+    "checkedAt": "2026-07-13T16:28:44.756Z"
+  },
+  {
+    "denominationId": "NFK",
+    "name": "日本福音教団",
+    "inputUrl": "https://nihonfukuin.imagodei.jp/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://nihonfukuin.imagodei.jp/",
+    "churchListCandidates": [
+      "https://nihonfukuin.imagodei.jp/%e6%89%80%e5%b1%9e%e6%95%99%e4%bc%9a/"
+    ],
+    "checkedAt": "2026-07-13T16:28:44.924Z"
+  },
+  {
+    "denominationId": "XLSX_D28E72A71D3C",
+    "name": "聖書キリスト教会",
+    "inputUrl": "http://seishokirisuto.com/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://seishokirisuto.com/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:47.675Z"
+  },
+  {
+    "denominationId": "NSKK",
+    "name": "日本聖契キリスト教団",
+    "inputUrl": "https://nskk.webnode.jp/",
+    "status": 404,
+    "ok": false,
+    "finalUrl": "https://nskk.webnode.jp/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:46.230Z"
+  },
+  {
+    "denominationId": "XLSX_E6B8AA1C0D52",
+    "name": "グレース宣教会",
+    "inputUrl": "http://gracemission.jp/",
+    "status": 0,
+    "ok": false,
+    "error": "Error:Unable to connect. Is the computer able to access the url?",
+    "checkedAt": "2026-07-13T16:28:45.379Z"
+  },
+  {
+    "denominationId": "FUKUIN_DENDO",
+    "name": "日本伝道福音教団",
+    "inputUrl": "https://church.ne.jp/niigatabible_ch/main/denpuku.html",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://church.ne.jp/niigatabible_ch/main/denpuku.html",
+    "churchListCandidates": [
+      "https://church.ne.jp/niigatabible_ch/",
+      "https://church.ne.jp/niigatabible_ch/main/denpuku.html"
+    ],
+    "checkedAt": "2026-07-13T16:28:45.494Z"
+  },
+  {
+    "denominationId": "JECU",
+    "name": "日本福音教会連合",
+    "inputUrl": "http://myazawa.web.fc2.com/",
+    "status": 0,
+    "ok": false,
+    "error": "Error:Unable to connect. Is the computer able to access the url?",
+    "checkedAt": "2026-07-13T16:28:45.792Z"
+  },
+  {
+    "denominationId": "ICHIBAKU",
+    "name": "活けるキリスト一麦の群",
+    "inputUrl": "http://www.ichibaku.org/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "http://www.ichibaku.org/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:46.142Z"
+  },
+  {
+    "denominationId": "SEIYAKU",
+    "name": "日本聖約キリスト教団",
+    "inputUrl": "http://www.seiyaku.jp/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "http://www.seiyaku.jp/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:46.650Z"
+  },
+  {
+    "denominationId": "YUAI",
+    "name": "友愛グループ教会連合",
+    "inputUrl": "https://www.yuaichristianchurch.org/",
+    "status": 0,
+    "ok": false,
+    "error": "Error:Unable to connect. Is the computer able to access the url?",
+    "checkedAt": "2026-07-13T16:28:46.891Z"
+  },
+  {
+    "denominationId": "OBC_JP",
+    "name": "日本オープンバイブル教団",
+    "inputUrl": "https://open-bible.jimdofree.com/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://open-bible.jimdofree.com/",
+    "churchListCandidates": [
+      "https://open-bible.jimdofree.com/"
+    ],
+    "checkedAt": "2026-07-13T16:28:47.247Z"
+  },
+  {
+    "denominationId": "JBA",
+    "name": "日本バプテスト連合",
+    "inputUrl": "https://www.jbaptist.org/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://www.jbaptist.org/",
+    "churchListCandidates": [
+      "https://www.jbaptist.org/blank-2"
+    ],
+    "checkedAt": "2026-07-13T16:28:48.898Z"
+  },
+  {
+    "denominationId": "XLSX_EB798427F502",
+    "name": "日本メノナイト・キリスト教会協議会",
+    "inputUrl": "http://www.mennonite.jp/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "http://www.mennonite.jp/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:47.568Z"
+  },
+  {
+    "denominationId": "XLSX_63AE906088CD",
+    "name": "キリスト伝道隊",
+    "inputUrl": "http://www.dendoutai.org/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://dendoutai.org/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:50.417Z"
+  },
+  {
+    "denominationId": "XLSX_1DDC0311E89D",
+    "name": "チャーチ・オブ・ゴッド",
+    "inputUrl": "http://www.cogjapan.net/",
+    "status": 0,
+    "ok": false,
+    "error": "Error:Unable to connect. Is the computer able to access the url?",
+    "checkedAt": "2026-07-13T16:28:47.589Z"
+  },
+  {
+    "denominationId": "XLSX_9321CB4C0350",
+    "name": "世界福音伝道会",
+    "inputUrl": "https://www.sfdk.org/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://www.sfdk.org/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:48.082Z"
+  },
+  {
+    "denominationId": "XLSX_BA946C239DBB",
+    "name": "日本バプテスト宣教団",
+    "inputUrl": "https://church.ne.jp/inokoshi/Nagoya_Inokoshi_Christ_Church/society.html",
+    "status": 404,
+    "ok": false,
+    "finalUrl": "https://church.ne.jp/inokoshi/Nagoya_Inokoshi_Christ_Church/society.html",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:47.616Z"
+  },
+  {
+    "denominationId": "XLSX_1EA291CEE6E2",
+    "name": "日本メノナイト・キリスト教会会議",
+    "inputUrl": "http://mennonite.jpn.org/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://mennonite.jpn.org/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:48.151Z"
+  },
+  {
+    "denominationId": "XLSX_2CC6DEEC710A",
+    "name": "カルバリーチャペルグループ",
+    "inputUrl": "http://www.yamatocalvarychapel.com/service/branch_01.php",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://www.yamatocalvarychapel.com/service/branch_01.php",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:48.341Z"
+  },
+  {
+    "denominationId": "XLSX_4D9409428C0E",
+    "name": "日本福音宣教会",
+    "inputUrl": "http://senkyokai.com/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "http://senkyokai.com/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:48.559Z"
+  },
+  {
+    "denominationId": "XLSX_BEA51A6EF98C",
+    "name": "福音交友会",
+    "inputUrl": "http://fkk-web.net/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "http://fkk-web.net/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:48.479Z"
+  },
+  {
+    "denominationId": "XLSX_C295CA6955BA",
+    "name": "インドネシア福音教会",
+    "inputUrl": "https://www.giii-japan.org/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://www.giii-japan.org/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:48.753Z"
+  },
+  {
+    "denominationId": "XLSX_A3D05694DBA6",
+    "name": "カルバリーチャペルミニストリー JAPAN",
+    "inputUrl": "http://www.calvaryjapan.com/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "http://www.calvaryjapan.com/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:49.442Z"
+  },
+  {
+    "denominationId": "XLSX_FF7A146A1BE6",
+    "name": "カンバーランド長老キリスト教会日本中会",
+    "inputUrl": "https://www.cumberland.jp/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://www.cumberland.jp/",
+    "churchListCandidates": [
+      "https://www.cumberland.jp/introduction/"
+    ],
+    "checkedAt": "2026-07-13T16:28:50.487Z"
+  },
+  {
+    "denominationId": "XLSX_F60319F0776D",
+    "name": "チャーチオブクライストニュージーランド日本",
+    "inputUrl": "http://www.ccnz.jp/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://www.ccnz.jp/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:49.137Z"
+  },
+  {
+    "denominationId": "XLSX_FEB604A8F53F",
+    "name": "ニューホープ・インターナショナル・アジア・ジャパン",
+    "inputUrl": "http://newhope.jp/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://newhope.jp/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:49.191Z"
+  },
+  {
+    "denominationId": "XLSX_90E593F1346C",
+    "name": "日本神の教会連盟",
+    "inputUrl": "http://日本神の教会連盟.com/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "http://xn--u9j463geip7pa94cc38by5dpv1d.com/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:49.458Z"
+  },
+  {
+    "denominationId": "XLSX_5355391F89A4",
+    "name": "OMFインターナショナル（国際福音宣教会）",
+    "inputUrl": "https://omf.org/jp/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://omf.org/jp/",
+    "churchListCandidates": [
+      "https://omf.org/jp/resources/church-leaders"
+    ],
+    "checkedAt": "2026-07-13T16:28:50.150Z"
+  },
+  {
+    "denominationId": "XLSX_721D0BFD4CC8",
+    "name": "日本チャーチオブゴッド教団",
+    "inputUrl": "https://www.japanchurchofgod.org/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://www.japanchurchofgod.org/",
+    "churchListCandidates": [
+      "https://www.japanchurchofgod.org/family"
+    ],
+    "checkedAt": "2026-07-13T16:28:49.731Z"
+  },
+  {
+    "denominationId": "XLSX_6A651D97024C",
+    "name": "日本福音ペンテコステ教団",
+    "inputUrl": "https://jgpc.jimdofree.com/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://jgpc.jimdofree.com/",
+    "churchListCandidates": [
+      "https://jgpc.jimdofree.com/%E6%95%99%E4%BC%9A%E4%B8%80%E8%A6%A7/"
+    ],
+    "checkedAt": "2026-07-13T16:28:50.352Z"
+  },
+  {
+    "denominationId": "XLSX_F5981F2CF029",
+    "name": "福音バプテスト宣教団",
+    "inputUrl": "http://jfwb.net/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "http://jfwb.net/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:51.585Z"
+  },
+  {
+    "denominationId": "XLSX_D84CFD1F2BBA",
+    "name": "聖書教会連盟",
+    "inputUrl": "http://www.kyoukai.com/rennmei/index.html",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "http://www.kyoukai.com/rennmei/index.html",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:50.453Z"
+  },
+  {
+    "denominationId": "XLSX_8523C06CDDF6",
+    "name": "日本アライアンス・ミッション",
+    "inputUrl": "https://japanalliancemission.org/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://japanalliancemission.org/",
+    "churchListCandidates": [
+      "https://japanalliancemission.org/info/alliance-church-network/"
+    ],
+    "checkedAt": "2026-07-13T16:28:51.357Z"
+  },
+  {
+    "denominationId": "XLSX_1B16B781A295",
+    "name": "東京フリー・メソジスト教団",
+    "inputUrl": "http://www.tokyofree.net/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://tokyofree.net/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:51.421Z"
+  },
+  {
+    "denominationId": "XLSX_1D8ABC2DE297",
+    "name": "アライズ5",
+    "inputUrl": "http://www.arise5.com/distinations/japan/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://www.hugedomains.com/domain_profile.cfm?d=arise5.com",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:52.158Z"
+  },
+  {
+    "denominationId": "XLSX_9169E40B4959",
+    "name": "ニューライフ・ミニストリーズ",
+    "inputUrl": "https://www.newlifeministries.jp/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://www.newlifeministries.jp/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:51.133Z"
+  },
+  {
+    "denominationId": "XLSX_7BB40E57E76B",
+    "name": "勝利教会グループ",
+    "inputUrl": "http://www5a.biglobe.ne.jp/~vct/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "http://www5a.biglobe.ne.jp/~vct/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:50.751Z"
+  },
+  {
+    "denominationId": "XLSX_E7E83E768771",
+    "name": "日本聖泉基督教会連合",
+    "inputUrl": "http://seisen-rengou.blogspot.com/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://seisen-rengou.blogspot.com/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:52.128Z"
+  },
+  {
+    "denominationId": "XLSX_8BB687C6219E",
+    "name": "エブリネイションチャーチズジャパン",
+    "inputUrl": "http://www.everynation.jp/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://everynation.jp/",
+    "churchListCandidates": [
+      "https://everynation.jp/directory/"
+    ],
+    "checkedAt": "2026-07-13T16:28:57.601Z"
+  },
+  {
+    "denominationId": "XLSX_18816F940131",
+    "name": "日本オリベットアッセンブリー教団",
+    "inputUrl": "https://olivetassembly.or.jp/",
+    "status": 403,
+    "ok": false,
+    "finalUrl": "https://olivetassembly.or.jp/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:52.061Z"
+  },
+  {
+    "denominationId": "XLSX_84B3A8F19118",
+    "name": "日本キリスト合同教会",
+    "inputUrl": "http://web.archive.org/web/20180317203733/http:/www.godo.or.jp/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "http://web.archive.org/web/20180317203733/http:/www.godo.or.jp/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:53.555Z"
+  },
+  {
+    "denominationId": "XLSX_2ECC6D4AB227",
+    "name": "真イエス教会",
+    "inputUrl": "https://tjc.org/jp/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://tjc.org/jp/",
+    "churchListCandidates": [
+      "https://tjc.org/zh/find-a-church/",
+      "https://tjc.org/zh/get-in-touch/"
+    ],
+    "checkedAt": "2026-07-13T16:28:52.139Z"
+  },
+  {
+    "denominationId": "XLSX_0F16B6B5691C",
+    "name": "日本華僑基督教団",
+    "inputUrl": "https://occj.net/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://www.occj.net/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:54.317Z"
+  },
+  {
+    "denominationId": "XLSX_4426359AB1AC",
+    "name": "国際福音キリスト教会",
+    "inputUrl": "http://agapechapel.net/",
+    "status": 0,
+    "ok": false,
+    "error": "Error:Unable to connect. Is the computer able to access the url?",
+    "checkedAt": "2026-07-13T16:28:52.514Z"
+  },
+  {
+    "denominationId": "XLSX_5C2D4AC4E6C3",
+    "name": "日本キリスト改革長老教会",
+    "inputUrl": "http://www.rpjapan.org/",
+    "status": 0,
+    "ok": false,
+    "error": "AbortError:The operation was aborted.",
+    "checkedAt": "2026-07-13T16:29:07.140Z"
+  },
+  {
+    "denominationId": "XLSX_E0A6CC3F86EB",
+    "name": "日本自由メソヂスト教団",
+    "inputUrl": "http://blog.livedoor.jp/methodist_free/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "http://blog.livedoor.jp/methodist_free/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:53.444Z"
+  },
+  {
+    "denominationId": "XLSX_AFDE972C6C12",
+    "name": "キリスト友会日本年会",
+    "inputUrl": "http://www.kirisutoyuukai.org/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "http://www.kirisutoyuukai.org/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:53.081Z"
+  },
+  {
+    "denominationId": "XLSX_958D0B351E84",
+    "name": "キリスト同信会",
+    "inputUrl": "http://nakano-psc.org/about/other_area/",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://nakano-psc.org/about/other_area/",
+    "churchListCandidates": [],
+    "checkedAt": "2026-07-13T16:28:54.505Z"
+  },
+  {
+    "denominationId": "XLSX_7998D313189E",
+    "name": "新生キリスト教会連合",
+    "inputUrl": "https://mccjapa8.wixsite.com/mccjapan/--c1k3t",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://mccjapa8.wixsite.com/mccjapan/--c1k3t",
+    "churchListCandidates": [
+      "https://mccjapa8.wixsite.com/mccjapan/churchinfo"
+    ],
+    "checkedAt": "2026-07-13T16:28:55.638Z"
+  },
+  {
+    "denominationId": "XLSX_6D96285EBB53",
+    "name": "ｴﾊﾞﾝｼﾞｪﾘｶﾙ･ｺﾝｸﾞﾘｹﾞｰｼｮﾅﾙ･ﾁｬｰﾁ",
+    "inputUrl": "http://churchkyodo.sunnyday.jp/%e5%bd%93%e6%95%99%e4%bc%9a%e3%81%ab%e3%81%a4%e3%81%84%e3%81%a6/",
+    "status": 404,
+    "ok": false,
+    "finalUrl": "http://churchkyodo.sunnyday.jp/%e5%bd%93%e6%95%99%e4%bc%9a%e3%81%ab%e3%81%a4%e3%81%84%e3%81%a6/",
+    "churchListCandidates": [
+      "https://churchkyodo.sunnyday.jp/%e3%83%aa%e3%83%b3%e3%82%af/"
+    ],
+    "checkedAt": "2026-07-13T16:28:54.541Z"
+  }
+]

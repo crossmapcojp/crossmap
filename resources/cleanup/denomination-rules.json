@@ -1,0 +1,2614 @@
+[
+  {
+    "denominationId": "ADVENT",
+    "name": "日本アドベント・キリスト教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Advent"
+  },
+  {
+    "denominationId": "ANGLICAN_JP",
+    "name": "日本聖公会",
+    "churchNameComponents": [
+      "聖公会"
+    ],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "mtsjapan.org",
+      "nskk.org",
+      "nskk-hokkaido.jp",
+      "nskk-tohoku.com",
+      "nskk-kitakanto.org",
+      "anglican.yokohama",
+      "nskk-chubu.org",
+      "nskk-kobe.org",
+      "anglican-kyushu.jp",
+      "anglican-okinawa.jp"
+    ],
+    "officialChurchNames": [
+      "日本聖公会札幌キリスト教会",
+      "日本聖公会札幌聖ミカエル教会",
+      "日本聖公会札幌聖マーガレット教会",
+      "日本聖公会新札幌聖ニコラス教会",
+      "小樽聖公会",
+      "日本聖公会岩見沢聖十字教会",
+      "日本聖公会旭川聖マルコ教会",
+      "日本聖公会深川聖三一教会",
+      "日本聖公会留萌キリスト教会",
+      "稚内聖公会",
+      "日本聖公会網走聖ペテロ教会",
+      "日本聖公会北見聖ヤコブ教会",
+      "日本聖公会紋別聖マリヤ教会",
+      "帯広聖公会",
+      "日本聖公会釧路聖パウロ教会",
+      "日本聖公会厚岸聖オーガスチン教会",
+      "日本聖公会函館聖ヨハネ教会",
+      "日本聖公会今金インマヌエル教会",
+      "有珠聖公会",
+      "日本聖公会室蘭聖マタイ教会",
+      "日本聖公会苫小牧聖ルカ教会",
+      "平取聖公会",
+      "日本聖公会新冠聖フランシス教会",
+      "日本聖公会青森聖アンデレ教会",
+      "日本聖公会むつ会衆",
+      "日本聖公会松丘聖ミカエル教会",
+      "日本聖公会八戸聖ルカ教会",
+      "日本聖公会弘前昇天教会",
+      "盛岡聖公会",
+      "日本聖公会釜石神愛教会",
+      "日本聖公会室根聖ナタナエル教会",
+      "日本聖公会秋田聖救主教会",
+      "日本聖公会能代キリスト教会",
+      "日本聖公会大館聖パウロ教会",
+      "日本聖公会鉛山聖救主礼拝堂",
+      "日本聖公会仙台キリスト教会",
+      "日本聖公会聖ペテロ伝道所",
+      "日本聖公会仙台聖フランシス教会",
+      "日本聖公会山形聖ペテロ教会",
+      "日本聖公会米沢聖ヨハネ教会",
+      "日本聖公会福島聖ステパノ教会",
+      "日本聖公会若松諸聖徒教会",
+      "日本聖公会郡山聖ペテロ聖パウロ教会",
+      "日本聖公会磯山聖ヨハネ教会",
+      "日本聖公会小名浜聖テモテ教会",
+      "日本聖公会日立聖アンデレ教会",
+      "日本聖公会水戸聖ステパノ教会",
+      "日本聖公会土浦聖バルナバ教会",
+      "下館聖公教会",
+      "日本聖公会鹿島聖オーガスチン礼拝堂",
+      "日本聖公会日光真光教会",
+      "日本聖公会宇都宮聖ヨハネ教会",
+      "日本聖公会小山聖ミカエル教会",
+      "日本聖公会栃木聖アルバン教会",
+      "日本聖公会小山祈りの家",
+      "日本聖公会前橋聖マッテア教会",
+      "日本聖公会高崎聖オーガスチン教会",
+      "日本聖公会新町聖マルコ教会",
+      "榛名聖公教会",
+      "日本聖公会草津聖バルナバ教会",
+      "日本聖公会聖慰主教会",
+      "日本聖公会熊谷聖パウロ教会",
+      "日本聖公会大宮聖愛教会",
+      "日本聖公会浦和諸聖徒教会",
+      "日本聖公会川越キリスト教会",
+      "日本聖公会東松山聖ルカ教会",
+      "日本聖公会毛呂山聖霊教会",
+      "日本聖公会幸手キリスト教会",
+      "日本聖公会志木聖母教会",
+      "日本聖公会立教学院聖パウロ礼拝堂",
+      "日本聖公会東京聖アンデレ教会",
+      "日本聖公会聖オルバン教会",
+      "日本聖公会三光教会",
+      "日本聖公会真光教会",
+      "日本聖公会東京聖マリア教会",
+      "日本聖公会大森聖アグネス教会",
+      "日本聖公会聖パウロ教会",
+      "日本聖公会渋谷聖公会聖ミカエル教会",
+      "日本聖公会香蘭女学校礼拝堂",
+      "目白聖公会",
+      "日本聖公会東京諸聖徒教会",
+      "日本聖公会東京聖テモテ教会",
+      "日本聖公会神田キリスト教会",
+      "月島聖公会",
+      "日本聖公会浅草聖ヨハネ教会",
+      "日本聖公会聖救主教会",
+      "日本聖公会神愛教会",
+      "日本聖公会千住キリスト教会",
+      "日本聖公会葛飾茨十字教会",
+      "日本聖公会聖路加国際病院聖ルカ礼拝堂",
+      "日本聖公会東京聖三一教会",
+      "日本聖公会東京聖十字教会",
+      "日本聖公会聖愛教会",
+      "日本聖公会東京聖マーガレット教会",
+      "日本聖公会立教女学院聖マーガレット礼拝堂",
+      "日本聖公会立教女学院聖マリヤ礼拝堂",
+      "日本聖公会聖公会神学院諸聖徒礼拝堂",
+      "日本聖公会ナザレ修女会聖家族礼拝堂",
+      "日本聖公会阿佐ヶ谷聖ペテロ教会",
+      "日本聖公会インマヌエル新生教会",
+      "日本聖公会立教学院諸聖徒礼拝堂",
+      "日本聖公会立教学院諸天使礼拝堂",
+      "日本聖公会清瀬聖母教会",
+      "日本聖公会聖フランシス聖エリザベツ礼拝堂",
+      "日本聖公会八王子復活教会",
+      "日本聖公会聖パトリック教会",
+      "日本聖公会府中聖マルコ教会",
+      "小金井聖公会",
+      "日本聖公会滝野川学園聖三一礼拝堂",
+      "日本聖公会小笠原聖ジョージ教会",
+      "日本聖公会横浜聖アンデレ教会",
+      "横浜山手聖公会",
+      "日本聖公会横浜クライスト・チャーチ",
+      "日本聖公会横浜聖クリストファー教会",
+      "日本聖公会川崎聖パウロ教会",
+      "日本聖公会鎌倉聖ミカエル教会",
+      "日本聖公会逗子聖ペテロ教会",
+      "日本聖公会藤沢聖マルコ教会",
+      "日本聖公会平塚聖マリヤ教会",
+      "日本聖公会大磯聖ステパノ礼拝堂",
+      "日本聖公会厚木聖ヨハネ教会",
+      "日本聖公会小田原聖十字教会",
+      "日本聖公会秦野聖ルカ教会",
+      "日本聖公会林間聖バルナバ教会",
+      "日本聖公会ベタニヤホーム聖ヒルダ礼拝堂",
+      "日本聖公会市川聖マリヤ教会",
+      "日本聖公会松戸聖パウロ教会",
+      "日本聖公会柏聖アンデレ教会",
+      "日本聖公会千葉復活教会",
+      "福田聖公会",
+      "日本聖公会茂原昇天教会",
+      "日本聖公会八日市場聖三一教会",
+      "日本聖公会九十九里ホーム聖マァガレット礼拝堂",
+      "日本聖公会銚子諸聖徒教会",
+      "日本聖公会館山聖アンデレ教会",
+      "日本聖公会南三原聖ルカ教会",
+      "日本聖公会安房大貫キリスト教会",
+      "日本聖公会鴨川聖フランシス教会",
+      "日本聖公会沼津聖ヨハネ教会",
+      "日本聖公会清水聖ヤコブ教会",
+      "日本聖公会静岡聖ペテロ教会",
+      "日本聖公会浜松聖アンデレ教会",
+      "日本聖公会伊豆聖マリヤ教会",
+      "日本聖公会甲府聖オーガスチン教会",
+      "日本聖公会清里聖アンデレ教会",
+      "日本聖公会長坂聖マリヤ教会",
+      "日本聖公会名古屋聖マタイ教会",
+      "日本聖公会名古屋聖マルコ教会",
+      "日本聖公会名古屋聖ヨハネ教会",
+      "日本聖公会名古屋聖ステパノ教会",
+      "日本聖公会愛知聖ルカ教会・愛知聖ルカセンター",
+      "日本聖公会豊田聖ペテロ聖パウロ教会",
+      "日本聖公会豊橋昇天教会",
+      "日本聖公会一宮聖光教会",
+      "日本聖公会岐阜聖パウロ教会",
+      "日本聖公会大垣聖ペテロ教会",
+      "日本聖公会可児聖三一教会",
+      "日本聖公会飯田聖アンデレ教会",
+      "日本聖公会岡谷聖バルナバ教会",
+      "日本聖公会松本聖十字教会",
+      "日本聖公会福島教会",
+      "日本聖公会長野聖救主教会",
+      "日本聖公会稲荷山諸聖徒教会",
+      "日本聖公会上田聖ミカエル及諸天使教会",
+      "日本聖公会軽井沢ショー記念礼拝堂",
+      "日本聖公会飯山復活教会",
+      "日本聖公会新生礼拝堂",
+      "日本聖公会高田降臨教会",
+      "日本聖公会直江津聖上智教会",
+      "日本聖公会長岡聖ルカ教会",
+      "日本聖公会三条聖母マリア教会",
+      "日本聖公会新潟聖パウロ教会",
+      "日本聖公会京都聖三一教会",
+      "日本聖公会京都聖アグネス教会",
+      "日本聖公会京都聖ヨハネ教会",
+      "日本聖公会京都聖マリア教会",
+      "日本聖公会京都復活教会",
+      "日本聖公会下鴨キリスト教会",
+      "日本聖公会京都聖光教会",
+      "日本聖公会桃山キリスト教会",
+      "日本聖公会京都聖ステパノ教会",
+      "日本聖公会平安女学院礼拝堂",
+      "日本聖公会平安女学院大学聖アグネス礼拝堂",
+      "日本聖公会大津聖マリア教会",
+      "日本聖公会彦根聖愛教会",
+      "日本聖公会加悦聖三一教会",
+      "日本聖公会宮津聖アンデレ教会",
+      "日本聖公会東舞鶴聖パウロ教会",
+      "日本聖公会小浜聖ルカ教会",
+      "日本聖公会岸和田復活教会",
+      "日本聖公会和歌山聖救主教会",
+      "日本聖公会貴志川キリスト教会",
+      "新宮聖公会",
+      "田辺聖公会",
+      "田辺聖公会愛の園聖シオン礼拝堂",
+      "日本聖公会初島聖十字教会",
+      "日本聖公会廣キリスト教会",
+      "日本聖公会橋本キリスト教会",
+      "日本聖公会笠田キリスト教会",
+      "日本聖公会奈良キリスト教会",
+      "日本聖公会西大和聖ペテロ教会",
+      "日本聖公会八木キリスト教会",
+      "日本聖公会高田キリスト教会",
+      "日本聖公会百済キリスト教会",
+      "日本聖公会桜井聖保羅教会",
+      "日本聖公会田原本聖救主教会",
+      "日本聖公会五條聖三一教会",
+      "日本聖公会桑名エピファニー教会",
+      "日本聖公会四日市聖アンデレ教会",
+      "日本聖公会菰野聖マリア教会",
+      "日本聖公会津聖ヤコブ教会",
+      "日本聖公会伊勢聖マルコ教会",
+      "日本聖公会上野聖ヨハネ教会",
+      "日本聖公会福井聖三一教会",
+      "日本聖公会敦賀キリスト教会",
+      "日本聖公会金沢聖ヨハネ教会",
+      "日本聖公会富山聖マリア教会",
+      "日本聖公会川口キリスト教会",
+      "日本聖公会大阪聖ヨハネ教会",
+      "日本聖公会大阪聖パウロ教会",
+      "日本聖公会大阪城南キリスト教会",
+      "日本聖公会大阪聖愛教会",
+      "日本聖公会聖バルナバ病院礼拝堂",
+      "日本聖公会聖ガブリエル教会",
+      "日本聖公会プール学院礼拝堂",
+      "日本聖公会桃山学院教育大学エレノア・チャペル",
+      "日本聖公会大阪聖アンデレ教会",
+      "日本聖公会聖贖主教会",
+      "日本聖公会大阪聖三一教会",
+      "日本聖公会堺聖テモテ教会",
+      "日本聖公会東光学園聖ルカ教会",
+      "日本聖公会桃山学院大学聖救主礼拝堂",
+      "日本聖公会富田林聖アグネス教会",
+      "日本聖公会聖ルシヤ教会",
+      "日本聖公会恵我之荘聖マタイ教会",
+      "日本聖公会守口聖オーガスティン教会",
+      "日本聖公会高槻聖マリヤ教会",
+      "日本聖公会聖ヨハネ学園礼拝堂",
+      "日本聖公会石橋聖トマス教会",
+      "日本聖公会東豊中聖ミカエル教会",
+      "日本聖公会庄内キリスト教会",
+      "日本聖公会尼崎聖ステパノ教会",
+      "日本聖公会西宮聖ペテロ教会",
+      "日本聖公会芦屋聖マルコ教会",
+      "日本聖公会神戸聖ミカエル教会",
+      "日本聖公会垂水伝道所",
+      "日本聖公会神戸聖ペテロ教会",
+      "日本聖公会神戸昇天教会",
+      "日本聖公会神戸聖ヨハネ教会",
+      "日本聖公会明石聖マリア・マグダレン教会",
+      "日本聖公会姫路顕栄教会",
+      "日本聖公会洲本眞光教会",
+      "日本聖公会八代学院礼拝堂",
+      "日本聖公会松陰中学校・高等学校礼拝堂（レオノア・チャペル）",
+      "日本聖公会神戸国際大学諸聖徒礼拝堂",
+      "日本聖公会神戸松蔭女子学院大学・マグダレンチャペル",
+      "日本聖公会ザ・ミッション・ツー・シーフェラーズ神戸",
+      "日本聖公会岡山聖オーガスチン教会",
+      "日本聖公会倉敷聖クリストファー教会",
+      "日本聖公会福山諸聖徒教会",
+      "日本聖公会広島復活教会",
+      "日本聖公会聖モニカ礼拝堂",
+      "日本聖公会呉信愛教会",
+      "日本聖公会徳山聖マリア教会",
+      "日本聖公会下関聖フランシス・ザビエル教会",
+      "日本聖公会浜田キリスト教会",
+      "日本聖公会松江キリスト教会",
+      "日本聖公会広瀬キリスト教会",
+      "日本聖公会米子聖ニコラス教会",
+      "日本聖公会境復活教会",
+      "日本聖公会鳥取聖ルカ教会",
+      "日本聖公会松山聖アンデレ教会",
+      "大洲聖公会",
+      "日本聖公会高松聖ヤコブ教会",
+      "日本聖公会高知聖パウロ教会",
+      "日本聖公会徳島インマヌエル教会",
+      "日本聖公会徳島聖テモテ教会",
+      "日本聖公会富岡キリスト教会",
+      "日本聖公会鳴門聖パウロ教会",
+      "日本聖公会福岡聖パウロ教会",
+      "日本聖公会福岡ベテル教会",
+      "日本聖公会小倉インマヌエル教会",
+      "日本聖公会八幡聖オーガスチン教会",
+      "日本聖公会戸畑聖アンデレ教会",
+      "日本聖公会直方キリスト教会",
+      "久留米聖公教会",
+      "日本聖公会宗像聖パウロ教会",
+      "日本聖公会佐賀聖ルカ伝道所",
+      "日本聖公会長崎聖三一教会",
+      "日本聖公会佐世保復活教会",
+      "日本聖公会厳原聖ヨハネ教会",
+      "日本聖公会熊本聖三一教会",
+      "日本聖公会降臨教会礼拝堂",
+      "日本聖公会菊池黎明教会",
+      "日本聖公会鹿児島復活教会",
+      "大口聖公会",
+      "日本聖公会宮崎聖三一教会",
+      "日本聖公会延岡聖ステパノ教会",
+      "大分聖公会",
+      "日本聖公会三原聖ペテロ聖パウロ教会",
+      "日本聖公会首里アンデレ教会",
+      "日本聖公会小禄聖マタイ教会",
+      "日本聖公会豊見城聖マルコ教会",
+      "日本聖公会北谷諸魂教会",
+      "日本聖公会島袋諸聖徒教会",
+      "日本聖公会名護聖ヨハネ教会",
+      "日本聖公会屋我地聖ルカ教会",
+      "日本聖公会愛楽園祈りの家教会",
+      "日本聖公会宮古聖ヤコブ教会",
+      "日本聖公会南静園聖ミカエル教会",
+      "日本聖公会石垣キリスト教会"
+    ],
+    "source": "crossmap:denomination-seed/AnglicanJp"
+  },
+  {
+    "denominationId": "BCC",
+    "name": "基督兄弟団",
+    "churchNameComponents": [
+      "基督兄弟団"
+    ],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "https://sakaichrist.hatenablog.com/",
+      "http://ryu-church.sakura.ne.jp/",
+      "kyodaidan.org"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Bcc"
+  },
+  {
+    "denominationId": "BGC_JP",
+    "name": "日本バプテスト教会連合",
+    "churchNameComponents": [
+      "日本バプテスト教会連合",
+      "上福岡バプテスト教会",
+      "北松戸福音教会",
+      "木本キリスト教会",
+      "清瀬バプテスト教会",
+      "けいはんなキリスト教会"
+    ],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "http://rengo.ne.jp/",
+      "http://kadoma.imw.jp/",
+      "rengo.ne.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/BcgJp"
+  },
+  {
+    "denominationId": "CATHOLIC_JP",
+    "name": "カトリック教会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "cbcj.catholic.jp",
+      "csd.or.jp",
+      "sendai.catholic.jp",
+      "catholic-niigata.net",
+      "saitama-kyoku.net",
+      "tokyo.catholic.jp",
+      "yokohama.catholic.jp",
+      "nagoya.catholic.jp",
+      "kyoto.catholic.jp",
+      "osaka.catholic.jp",
+      "hiroshima.catholic.jp",
+      "takamatsu.catholic.ne.jp",
+      "fukuoka.catholic.jp",
+      "nagasaki.catholic.jp",
+      "oita-catholic.jp",
+      "kagoshima-catholic.jp",
+      "naha.catholic.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/CatholicJp"
+  },
+  {
+    "denominationId": "CCJ",
+    "name": "日本キリスト教会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "nikki-church.org"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Ccj"
+  },
+  {
+    "denominationId": "COTN_JP",
+    "name": "日本ナザレン教団",
+    "churchNameComponents": [
+      "日本ナザレン教団",
+      "ナザレン教団",
+      "Church of the Nazarene"
+    ],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "nazarenechurchnagoya.wordpress.com",
+      "nazarene.or.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/CotnJp"
+  },
+  {
+    "denominationId": "EFC_JP",
+    "name": "日本福音自由教会協議会",
+    "churchNameComponents": [
+      "福音自由教会",
+      "日本福音自由教会",
+      "グレース宣教会",
+      "クライストコミュニティ",
+      "北上尾チャペル",
+      "けやき通りキリスト教会",
+      "千歳ライトチャペル",
+      "Tokyo Multicultural Church",
+      "東京センターチャーチ",
+      "八潮ホープフル・チャーチ",
+      "ニューホープチャーチ",
+      "洛西上里チャペル",
+      "枚方コミュニティチャペル",
+      "祝園チャペル"
+    ],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "efcj.org"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/EfcJp"
+  },
+  {
+    "denominationId": "FGJA",
+    "name": "日本フルゴスペル教団",
+    "churchNameComponents": [
+      "日本フルゴスペル教団",
+      "フルゴスペル",
+      "純福音"
+    ],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "https://www.fgtc.jp/",
+      "fgtc.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Fgja"
+  },
+  {
+    "denominationId": "FMC_JP",
+    "name": "日本フリーメソジスト教団",
+    "churchNameComponents": [
+      "日本フリーメソジスト"
+    ],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "fmcjp.org"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/FmcJp"
+  },
+  {
+    "denominationId": "FUKUIN_DENDO",
+    "name": "日本伝道福音教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "church.ne.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/FukuinDendo"
+  },
+  {
+    "denominationId": "GEC",
+    "name": "福音伝道教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "fukuindendou.org"
+    ],
+    "officialChurchNames": [
+      "伊勢崎キリスト教会",
+      "大泉キリスト教会",
+      "大胡キリスト教会",
+      "太田キリスト教会",
+      "大間々キリスト教会",
+      "尾島キリスト教会",
+      "桐生キリスト教会",
+      "境キリスト教会",
+      "渋川キリスト教会",
+      "新町キリスト教会",
+      "高崎キリスト教会",
+      "館林キリスト教会",
+      "富岡キリスト教会",
+      "中之条キリスト教会",
+      "沼田キリスト教会",
+      "藤岡キリスト教会",
+      "芳賀チャペル",
+      "前橋キリスト教会",
+      "浦和キリスト教会",
+      "小川キリスト教会",
+      "希望の丘キリスト教会",
+      "久喜キリスト教会",
+      "熊谷キリスト教会",
+      "行田キリスト教会",
+      "倉松キリスト教会",
+      "聖泉チャペル",
+      "白岡キリスト教会",
+      "花崎キリスト教会",
+      "羽生キリスト教会",
+      "東川口キリスト教会",
+      "本庄キリスト教会",
+      "嵐山チャペル",
+      "足尾キリスト教会",
+      "足利キリスト教会",
+      "今市キリスト教会",
+      "宇都宮キリスト教会",
+      "大沢バイブルチャーチ",
+      "小山聖書キリスト教会",
+      "鹿沼キリスト教会",
+      "佐野オリーブ教会",
+      "栃木キリスト教会",
+      "益子キリスト福音館",
+      "葛西福音キリスト教会",
+      "笹塚キリスト教会",
+      "福音キリスト教会西荻チャペル",
+      "戸塚めぐみキリスト教会"
+    ],
+    "source": "crossmap:denomination-seed/Gec"
+  },
+  {
+    "denominationId": "HEJ",
+    "name": "聖イエス会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "seiiesukai.org"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Hej"
+  },
+  {
+    "denominationId": "ICHIBAKU",
+    "name": "活けるキリスト一麦の群",
+    "churchNameComponents": [
+      "一麦"
+    ],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "ichibaku.org"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Ichibaku"
+  },
+  {
+    "denominationId": "IGM",
+    "name": "イムマヌエル綜合伝道団",
+    "churchNameComponents": [
+      "イムマヌエル綜合伝道団",
+      "インマヌエル綜合伝道団"
+    ],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "immanuel.or.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Igm"
+  },
+  {
+    "denominationId": "INDEPENDENT_BAPTIST",
+    "name": "単立バプテスト",
+    "churchNameComponents": [
+      "単立バプテスト",
+      "大船渡聖書バプテスト教会"
+    ],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/IndependentBaptistJp"
+  },
+  {
+    "denominationId": "INDEPENDENT_CHURCH",
+    "name": "単立",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "単立"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Independent"
+  },
+  {
+    "denominationId": "JAC",
+    "name": "日本アライアンス教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "jac-hij.sakura.ne.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Jac"
+  },
+  {
+    "denominationId": "JACC",
+    "name": "日本同盟基督教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "https://domei.site/",
+      "https://db.jacc.info/",
+      "domei.site",
+      "gospel.sakura.ne.jp",
+      "niigata-yamagata.blog.jp",
+      "tokaiwest01.web.fc2.com",
+      "doumeikansai.jimdofree.com",
+      "jaws21.com"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Jacc"
+  },
+  {
+    "denominationId": "JAG",
+    "name": "日本アッセンブリーズ・オブ・ゴッド教団",
+    "churchNameComponents": [
+      "日本アッセンブリーズ・オブ・ゴッド教団",
+      "日本アッセンブリー教団",
+      "日本アッセンブリーズ・オブ・ゴッド",
+      "アッセンブリーズ・オブ・ゴッド",
+      "アッセンブリーズオブゴッド",
+      "アッセンブリーオフゴット",
+      "アッセンブリー教団",
+      "アッセンブリー教会",
+      "アッセンブリーズ",
+      "アッセンブリー",
+      "Assemblies of God",
+      "Japão Missão Evangélica Assembleia de Deus",
+      "JMEAD",
+      "Jmead",
+      "J.MEAD",
+      "アッセンブレイア・ デ・ デウス",
+      "Assembleia de Deus",
+      "Assembléia de Deus"
+    ],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "j-ag.org",
+      "ag-kansai.com",
+      "assembleiadedeusjapao.com"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Jag"
+  },
+  {
+    "denominationId": "JBA",
+    "name": "日本バプテスト連合",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "jbaptist.org"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Jba"
+  },
+  {
+    "denominationId": "JBBF",
+    "name": "日本バプテスト・バイブル・フェローシップ",
+    "churchNameComponents": [
+      "JBBF",
+      "日本バプテスト・バイブル・フェローシップ",
+      "バイブルバプテスト教会",
+      "札幌聖書バプテスト教会",
+      "めぐみ聖書バプテスト教会",
+      "札幌東聖書バプテスト教会",
+      "すずらん聖書バプテスト教会",
+      "足利聖書バプテスト教会",
+      "大平聖書バプテスト教会",
+      "太田聖書バプテスト教会",
+      "高林聖書バプテスト教会",
+      "桶川聖書バプテスト教会",
+      "浦和聖書バプテスト教会",
+      "草加聖書バプテスト教会",
+      "若葉聖書バプテスト教会",
+      "野田聖書バプテスト教会",
+      "佐倉聖書バプテスト教会",
+      "千葉ニュータウン聖書バプテスト教会",
+      "仁戸名聖書バプテスト教会",
+      "市原聖書バプテスト教会",
+      "稲毛聖書バプテスト教会",
+      "検見川聖書バプテスト教会",
+      "幕張聖書バプテスト教会",
+      "八千代聖書バプテスト教会",
+      "船橋聖書バプテスト教会",
+      "船橋聖書バプテスト教会 柏伝道所",
+      "東京聖書バプテスト教会",
+      "葛西聖書バプテスト教会",
+      "滝山聖書バプテスト教会",
+      "立川聖書バプテスト教会",
+      "調布聖書バプテスト教会",
+      "八王子聖書バプテスト教会",
+      "横浜聖書バプテスト教会",
+      "港北ニュータウン聖書バプテスト教会",
+      "港北聖書バプテスト教会",
+      "平塚聖書バプテスト教会",
+      "アガペー聖書バプテスト教会",
+      "上越聖書バプテスト教会",
+      "歌の森聖書バプテスト教会",
+      "金沢聖書バプテスト教会",
+      "希望の丘聖書バプテスト教会",
+      "福井聖書バプテスト教会",
+      "甲府聖書バプテスト教会",
+      "浅間聖書バプテスト教会",
+      "長野聖書バプテスト教会",
+      "上田聖書バプテスト教会",
+      "清水聖書バプテスト教会",
+      "清水聖書バプテスト教会　伝道所",
+      "千本浜聖書バプテスト教会",
+      "掛川聖書バプテスト教会",
+      "浜松聖書バプテスト教会",
+      "豊橋ひかり聖書バプテスト教会",
+      "岡崎聖書バプテスト教会",
+      "名古屋聖書バプテスト教会",
+      "瀬戸聖書バプテスト教会",
+      "京都聖書バプテスト教会",
+      "亀岡聖書バプテスト教会",
+      "高槻聖書バプテスト教会",
+      "茨木聖書バプテスト教会",
+      "枚方聖書バプテスト教会",
+      "甲子園聖書バプテスト教会",
+      "葛城聖書バプテスト教会",
+      "松江聖書バプテスト教会",
+      "瀬戸内聖書バプテスト教会",
+      "高知聖書バプテスト教会",
+      "北九州聖書バプテスト教会",
+      "小倉聖書バプテスト教会",
+      "甘木聖書バプテスト教会",
+      "大分聖書バプテスト教会",
+      "沖縄聖書バプテスト教会",
+      "琉球聖書バプテスト教会",
+      "浦添聖書バプテスト教会",
+      "やんばる聖書バプテスト教会"
+    ],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "jbbf.or.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Jbbf"
+  },
+  {
+    "denominationId": "JBC",
+    "name": "日本バプテスト連盟",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "bapren.jp",
+      "hokkaidobap.jimdofree.com",
+      "facebook.com",
+      "church-church.com",
+      "tba-jbc.org",
+      "kanagawa-baptist.blogspot.com",
+      "fukbapren.jimdofree.com",
+      "bap-kitaq.jimdofree.com",
+      "minamichihou.jimdofree.com"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Jbc"
+  },
+  {
+    "denominationId": "JBU",
+    "name": "日本バプテスト同盟",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "jbu.or.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Jbu"
+  },
+  {
+    "denominationId": "JCBA",
+    "name": "保守バプテスト同盟",
+    "churchNameComponents": [
+      "保守バプテスト同盟",
+      "保守バプテスト"
+    ],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "doumei.holy.jp"
+    ],
+    "officialChurchNames": [
+      "ふるさとキリスト教会",
+      "盛岡聖書バプテスト教会",
+      "水沢聖書バプテスト教会",
+      "北上聖書バプテスト教会",
+      "秋田聖書バプテスト教会",
+      "湯沢聖書バプテスト教会",
+      "横手聖書やすらぎ教会",
+      "大曲聖書バプテスト教会",
+      "東北聖書バプテスト十文字教会",
+      "仙台聖書バプテスト教会",
+      "泉聖書バプテスト教会",
+      "バプテスト仙台北キリスト教会",
+      "西多賀聖書バプテスト教会",
+      "八木山聖書バプテスト教会",
+      "いこいの汀教会",
+      "名取ニューライフキリスト教会",
+      "塩釜聖書バプテスト教会",
+      "ぐれいす岩切エクレシア",
+      "いしのみなと教会",
+      "栗駒高原バプテスト教会",
+      "牧羊キリスト教会",
+      "気仙沼第一聖書バプテスト教会",
+      "船岡聖書バプテスト教会",
+      "古川聖書バプテスト教会",
+      "山形第一聖書バプテスト教会",
+      "寒河江キリスト教会",
+      "鈴川キリスト教会",
+      "蔵王キリスト教会",
+      "山形聾者キリスト教会",
+      "あかねヶ丘キリスト教会",
+      "長井聖書バプテスト教会",
+      "天童聖書バプテスト教会",
+      "酒田緑ヶ丘聖書バプテスト教会",
+      "上山聖書バプテスト教会",
+      "北信カルバリー教会",
+      "福島バプテスト教会",
+      "郡山聖書バプテスト教会",
+      "いわき希望教会",
+      "福島第一聖書バプテスト教会",
+      "水戸聖書バプテスト教会",
+      "水戸第一聖書バプテスト教会",
+      "宇都宮聖書バプテスト教会",
+      "大田原キリスト教会",
+      "那須のぞみキリスト教会",
+      "さくらコミュニティチャーチ",
+      "高崎キリスト福音宣教会",
+      "御徒町キリスト教会",
+      "田園グレースチャペル",
+      "市ヶ尾キリスト教会",
+      "酒々井キリスト教会",
+      "ぶどうの木聖書教会"
+    ],
+    "source": "crossmap:denomination-seed/Jbca"
+  },
+  {
+    "denominationId": "JCCJ",
+    "name": "日本イエス・キリスト教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "jccj.info"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Jccj"
+  },
+  {
+    "denominationId": "JEB",
+    "name": "日本伝道隊",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Jeb"
+  },
+  {
+    "denominationId": "JEC",
+    "name": "日本福音教会",
+    "churchNameComponents": [
+      "JEC"
+    ],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "jec-net.org"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/JapanEvangelicalChurches"
+  },
+  {
+    "denominationId": "JECA",
+    "name": "日本福音キリスト教会連合",
+    "churchNameComponents": [
+      "日本福音キリスト教会連合",
+      "日本福音基督教会連合",
+      "JECA"
+    ],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "jeca.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Jeca"
+  },
+  {
+    "denominationId": "JECU",
+    "name": "日本福音教会連合",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "church.ne.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Jecu"
+  },
+  {
+    "denominationId": "JELC",
+    "name": "日本福音ルーテル教会",
+    "churchNameComponents": [
+      "日本福音ルーテル教会",
+      "日本福音ルーテル"
+    ],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "jelc.or.jp",
+      "www11.big.or.jp",
+      "jelc-higashi.org",
+      "jelctokai.org",
+      "nishi.jelc.or.jp",
+      "jelc-kyushyu.org"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Jelc"
+  },
+  {
+    "denominationId": "JFEC",
+    "name": "同盟福音基督教会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "doumeifukuin.net"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/JfecData"
+  },
+  {
+    "denominationId": "JFGC",
+    "name": "日本フォースクエア福音教団",
+    "churchNameComponents": [
+      "フォースクエア福音"
+    ],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "japan-foursquare.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Jfgc"
+  },
+  {
+    "denominationId": "JHC",
+    "name": "日本ホーリネス教団",
+    "churchNameComponents": [
+      "日本ホーリネス教団"
+    ],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "http://jhc.holy.jp/jhcod/tokyotohzai/",
+      "http://jhc-kanagawa.sakuraweb.com/",
+      "http://jhcs.org/",
+      "jhc.or.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Jhc"
+  },
+  {
+    "denominationId": "JLBC",
+    "name": "日本ルーテル同胞教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "mafumikudo.wixsite.com"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Jlbc"
+  },
+  {
+    "denominationId": "JLC",
+    "name": "日本ルーテル教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "jlc.or.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Jlc"
+  },
+  {
+    "denominationId": "JMA",
+    "name": "日本宣教連合会",
+    "churchNameComponents": [
+      "KPCA"
+    ],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Jma"
+  },
+  {
+    "denominationId": "JMBC",
+    "name": "日本メノナイトブレザレン教団",
+    "churchNameComponents": [
+      "メノナイトブレザレン"
+    ],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Jmbc"
+  },
+  {
+    "denominationId": "JPC",
+    "name": "日本ペンテコステ教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Jpc"
+  },
+  {
+    "denominationId": "KCCJ",
+    "name": "在日大韓基督教会",
+    "churchNameComponents": [
+      "在日大韓基督教会",
+      "在日大韓キリスト教会",
+      "在日大韓基督教",
+      "在日大韓キリスト教"
+    ],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "kccj.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Kccj"
+  },
+  {
+    "denominationId": "KELC",
+    "name": "近畿福音ルーテル教会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "kelc.net"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Kelc"
+  },
+  {
+    "denominationId": "NFK",
+    "name": "日本福音教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "nihonfukuin.imagodei.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/NihonFukuinKyodan"
+  },
+  {
+    "denominationId": "NSKK",
+    "name": "日本聖契キリスト教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "nskk.gr.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Nskk"
+  },
+  {
+    "denominationId": "NTM",
+    "name": "日本ネクスト・タウンズ・ミッション",
+    "churchNameComponents": [
+      "ネクスト・タウンズ"
+    ],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Ntm"
+  },
+  {
+    "denominationId": "OBC",
+    "name": "沖縄バプテスト連盟",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "okinawabaptist.com"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Obc"
+  },
+  {
+    "denominationId": "OBC_JP",
+    "name": "日本オープンバイブル教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "open-bible.jimdofree.com"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/ObcJp"
+  },
+  {
+    "denominationId": "ORTHODOX_JP",
+    "name": "日本ハリストス正教会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "https://www.orthodoxjapan.jp/",
+      "http://www.orthodox-jp.com/kushiro/",
+      "orthodoxjapan.jp"
+    ],
+    "officialChurchNames": [
+      "東京復活大聖堂",
+      "須賀ハリストス正教会",
+      "手賀ハリストス正教会",
+      "山手ハリストス正教会",
+      "前橋ハリストス正教会",
+      "須川ハリストス正教会",
+      "高崎ハリストス正教会",
+      "横浜ハリストス正教会",
+      "足利ハリストス正教会",
+      "鹿沼ハリストス正教会",
+      "馬頭ハリストス正教会",
+      "宇都宮ハリストス正教会",
+      "圷ハリストス正教会",
+      "小田原ハリストス正教会",
+      "静岡ハリストス正教会",
+      "修善寺ハリストス正教会",
+      "柏久保ハリストス正教会",
+      "平塚ハリストス正教会",
+      "浜松ハリストス正教会",
+      "仙台ハリストス正教会",
+      "中新田ハリストス正教会",
+      "白河ハリストス正教会",
+      "石巻ハリストス正教会",
+      "高清水ハリストス正教会",
+      "佐沼ハリストス正教会",
+      "上下堤ハリストス正教会",
+      "涌谷ハリストス正教会",
+      "函館ハリストス正教会",
+      "上磯ハリストス正教会",
+      "札幌ハリストス正教会",
+      "小樽ハリストス正教会",
+      "苫小牧ハリストス正教会",
+      "釧路ハリストス正教会",
+      "上武佐ハリストス正教会",
+      "斜里ハリストス正教会",
+      "盛岡ハリストス正教会",
+      "北鹿ハリストス正教会",
+      "岩谷堂ハリストス正教会",
+      "山田ハリストス正教会",
+      "一関ハリストス正教会",
+      "気仙沼ハリストス正教会",
+      "金成ハリストス正教会",
+      "日形ハリストス正教会",
+      "十文字ハリストス正教会",
+      "盛ハリストス正教会",
+      "大原ハリストス正教会",
+      "奥玉ハリストス正教会",
+      "曾慶ハリストス正教会",
+      "遠野正教会",
+      "京都ハリストス正教会",
+      "名古屋ハリストス正教会",
+      "豊橋ハリストス正教会",
+      "半田ハリストス正教会",
+      "大阪ハリストス正教会",
+      "広島ハリストス正教会",
+      "神戸ハリストス正教会",
+      "徳島ハリストス正教会",
+      "柳井原ハリストス正教会",
+      "和歌山ハリストス正教会",
+      "人吉ハリストス正教会",
+      "熊本ハリストス正教会",
+      "鹿児島ハリストス正教会",
+      "九州北ハリストス正教会"
+    ],
+    "source": "crossmap:denomination-seed/OrthodoxJp"
+  },
+  {
+    "denominationId": "PCJ",
+    "name": "日本長老教会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "chorokyokai.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Pcj"
+  },
+  {
+    "denominationId": "RCJ",
+    "name": "日本キリスト改革派教会",
+    "churchNameComponents": [
+      "日本キリスト改革派教会",
+      "日本キリスト改革派"
+    ],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "https://www.rcj.gr.jp/",
+      "rcj-net.org"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Rcj"
+  },
+  {
+    "denominationId": "SA_JP",
+    "name": "救世軍",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "salvationarmy.or.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/SalvationArmy"
+  },
+  {
+    "denominationId": "SDA_JP",
+    "name": "セブンスデー・アドベンチスト教団",
+    "churchNameComponents": [
+      "セブンスデー・アドベンチスト教団",
+      "セブンスデーアドベンチスト教団",
+      "セブンスデー・アドベンチスト教会",
+      "セブンスデーアドベンチスト教会",
+      "セブンスデー・アドベンチスト",
+      "セブンスデーアドベンチスト",
+      "ＳＤＡ",
+      "Seventh-day Adventist",
+      "Adventista do Sétimo Dia"
+    ],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "adventist.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Sda"
+  },
+  {
+    "denominationId": "SEIKYODAN",
+    "name": "基督聖協団",
+    "churchNameComponents": [
+      "キリスト聖協団"
+    ],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "seikyodan.com"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Seikyodan"
+  },
+  {
+    "denominationId": "SEIYAKU",
+    "name": "日本聖約キリスト教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "seiyaku.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Seiyaku"
+  },
+  {
+    "denominationId": "SJC",
+    "name": "イエス之御霊教会教団",
+    "churchNameComponents": [
+      "イエス之御霊教会"
+    ],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Sjc"
+  },
+  {
+    "denominationId": "TLEA",
+    "name": "The Light of Eternal Agape",
+    "churchNameComponents": [
+      "TLEA",
+      "The Light of Eternal Agape",
+      "主の十字架クリスチャンセンター"
+    ],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "tlea.tokyoantioch.com"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Tlea"
+  },
+  {
+    "denominationId": "TPKF",
+    "name": "単立ペンテコステ教会フェローシップ",
+    "churchNameComponents": [
+      "TPKF"
+    ],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "https://tpkf.org/",
+      "tpkf.org"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Tpkf"
+  },
+  {
+    "denominationId": "UCCJ",
+    "name": "日本基督教団",
+    "churchNameComponents": [
+      "日本基督教団",
+      "日本キリスト教団",
+      "日本ｷﾘｽﾄ教団"
+    ],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "https://uccj.org/",
+      "http://www.uccj.jp/",
+      "uccj.org",
+      "hokkai-net.jp",
+      "ouukyouku.blogspot.com",
+      "tohoku.uccj.jp",
+      "uccjkanto.holy.jp",
+      "church.ne.jp",
+      "chiba-shiku.org",
+      "uccj-wt.org",
+      "uccj-kanagawa-homepage-project.org",
+      "www5a.biglobe.ne.jp",
+      "uccj-chubu.com",
+      "uccj-kyoto.com",
+      "pure.ne.jp",
+      "hyogokyouku.web.fc2.com",
+      "uccj-higashi-chugoku.org",
+      "hiroshimakitabunku.wixsite.com",
+      "uccjshikoku.wixsite.com",
+      "qsyu.tank.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Uccj"
+  },
+  {
+    "denominationId": "UPC_JP",
+    "name": "日本ユナイテッド・ペンテコステ教団",
+    "churchNameComponents": [
+      "日本ユナイテッド・ペンテコステ教団",
+      "ユナイテッド・ペンテコステ",
+      "ユナイテッドペンテコステ",
+      "Japan UPC",
+      "United Pentecostal",
+      "バイブルフェローシップ所沢",
+      "グローバルインパクトセンター",
+      "福音グローアップチャーチ",
+      "福岡インパクトセンター",
+      "西原インパクトセンター",
+      "バイブルフェローシップ名古屋"
+    ],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/UpcJp"
+  },
+  {
+    "denominationId": "WHCJ",
+    "name": "ウェスレアン・ホーリネス教団",
+    "churchNameComponents": [
+      "ウェスレアン・ホーリネス"
+    ],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "whchurch.jimdo.com"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Whcj"
+  },
+  {
+    "denominationId": "WJELC",
+    "name": "西日本福音ルーテル教会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "wjelc.or.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Wjelc"
+  },
+  {
+    "denominationId": "WMC",
+    "name": "ワールドミッション教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "worldmission.or.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Wmc"
+  },
+  {
+    "denominationId": "XLSX_00B215A90EF6",
+    "name": "日本新使徒教会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_00b215a90ef6"
+  },
+  {
+    "denominationId": "XLSX_02AA52956DC4",
+    "name": "日本福音基督教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_02aa52956dc4"
+  },
+  {
+    "denominationId": "XLSX_05EE80C87704",
+    "name": "東洋宣教団きよめキリスト教会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_05ee80c87704"
+  },
+  {
+    "denominationId": "XLSX_06AC1B7DBD49",
+    "name": "キリスト教ガリラヤ福音教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_06ac1b7dbd49"
+  },
+  {
+    "denominationId": "XLSX_0823A1C9E8C1",
+    "name": "希望の教会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_0823a1c9e8c1"
+  },
+  {
+    "denominationId": "XLSX_0D532E2005B3",
+    "name": "日本自由福音教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_0d532e2005b3"
+  },
+  {
+    "denominationId": "XLSX_0E0AC535C8DF",
+    "name": "日本キリスト兄弟団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_0e0ac535c8df"
+  },
+  {
+    "denominationId": "XLSX_0F16B6B5691C",
+    "name": "日本華僑基督教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "occj.net"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_0f16b6b5691c"
+  },
+  {
+    "denominationId": "XLSX_103813112184",
+    "name": "クリスチャンズ・イン・アクション宣教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_103813112184"
+  },
+  {
+    "denominationId": "XLSX_11D4B56CEEBA",
+    "name": "ブレッシング・フェローシップ・グループ",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_11d4b56ceeba"
+  },
+  {
+    "denominationId": "XLSX_13299774B479",
+    "name": "東洋宣教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_13299774b479"
+  },
+  {
+    "denominationId": "XLSX_1761F2AD5674",
+    "name": "サンビ教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_1761f2ad5674"
+  },
+  {
+    "denominationId": "XLSX_17A6C6C826C3",
+    "name": "日本ヴィンヤード・クリスチャン・フェロシップ",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_17a6c6c826c3"
+  },
+  {
+    "denominationId": "XLSX_18816F940131",
+    "name": "日本オリベットアッセンブリー教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "olivetassembly.or.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_18816f940131"
+  },
+  {
+    "denominationId": "XLSX_18A9344E85E0",
+    "name": "ユース･ウィズ･ア･ミッション",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_18a9344e85e0"
+  },
+  {
+    "denominationId": "XLSX_1B16B781A295",
+    "name": "東京フリー・メソジスト教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "tokyofree.net"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_1b16b781a295"
+  },
+  {
+    "denominationId": "XLSX_1CE33E34700C",
+    "name": "美濃ミッション",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_1ce33e34700c"
+  },
+  {
+    "denominationId": "XLSX_1D64F4CB6767",
+    "name": "日本ベテスダ教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_1d64f4cb6767"
+  },
+  {
+    "denominationId": "XLSX_1D8ABC2DE297",
+    "name": "アライズ5",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "hugedomains.com"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_1d8abc2de297"
+  },
+  {
+    "denominationId": "XLSX_1DDC0311E89D",
+    "name": "チャーチ・オブ・ゴッド",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "cogjapan.com"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_1ddc0311e89d"
+  },
+  {
+    "denominationId": "XLSX_1DEA8E7DF7EC",
+    "name": "基督教カナン教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_1dea8e7df7ec"
+  },
+  {
+    "denominationId": "XLSX_1EA291CEE6E2",
+    "name": "日本メノナイト・キリスト教会会議",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "mennonite.jpn.org"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_1ea291cee6e2"
+  },
+  {
+    "denominationId": "XLSX_1EF0B120EB4B",
+    "name": "神の家族キリスト教会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_1ef0b120eb4b"
+  },
+  {
+    "denominationId": "XLSX_292583FF8978",
+    "name": "復活之キリスト教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_292583ff8978"
+  },
+  {
+    "denominationId": "XLSX_2CC6DEEC710A",
+    "name": "カルバリーチャペルグループ",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "yamatocalvarychapel.com"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_2cc6deec710a"
+  },
+  {
+    "denominationId": "XLSX_2ECC6D4AB227",
+    "name": "真イエス教会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "tjc.org"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_2ecc6d4ab227"
+  },
+  {
+    "denominationId": "XLSX_2FB1B342A35B",
+    "name": "栄光の福音キリスト教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_2fb1b342a35b"
+  },
+  {
+    "denominationId": "XLSX_3A801EBEDE90",
+    "name": "インターナショナル・フルゴスペル・フェローシップ",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_3a801ebede90"
+  },
+  {
+    "denominationId": "XLSX_3AA37D2FE37D",
+    "name": "東京ホライズンチャペル",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_3aa37d2fe37d"
+  },
+  {
+    "denominationId": "XLSX_3BB530AF6C0B",
+    "name": "高松コミュニティ・チャーチ（TCCh）",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_3bb530af6c0b"
+  },
+  {
+    "denominationId": "XLSX_3CB0D9712A01",
+    "name": "国際基督教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_3cb0d9712a01"
+  },
+  {
+    "denominationId": "XLSX_3D7DF0C98A2D",
+    "name": "日本聖公会東京教区　",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_3d7df0c98a2d"
+  },
+  {
+    "denominationId": "XLSX_3D8857781562",
+    "name": "札幌キリスト召団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_3d8857781562"
+  },
+  {
+    "denominationId": "XLSX_3E8F489A41CF",
+    "name": "センド国際宣教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_3e8f489a41cf"
+  },
+  {
+    "denominationId": "XLSX_3FDA285A9665",
+    "name": "ト－タル・クリスチャン・チャ－チグループ",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_3fda285a9665"
+  },
+  {
+    "denominationId": "XLSX_419457CD203E",
+    "name": "カルバリー　バプテスト",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_419457cd203e"
+  },
+  {
+    "denominationId": "XLSX_4351A1B72E63",
+    "name": "キリストの教会（クリスチャン・チャーチ系",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_4351a1b72e63"
+  },
+  {
+    "denominationId": "XLSX_4426359AB1AC",
+    "name": "国際福音キリスト教会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "agapechapel.net"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_4426359ab1ac"
+  },
+  {
+    "denominationId": "XLSX_46CCA3B8CC05",
+    "name": "聖流の群（旧：キリスト福音宣教会）",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_46cca3b8cc05"
+  },
+  {
+    "denominationId": "XLSX_474EBF9142BE",
+    "name": "スウェーデン同盟キリスト教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_474ebf9142be"
+  },
+  {
+    "denominationId": "XLSX_4AE62F1BB60E",
+    "name": "在日スエーデン東洋福音伝道団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_4ae62f1bb60e"
+  },
+  {
+    "denominationId": "XLSX_4C7E0C0CC240",
+    "name": "ジーザス・クライスト・ミニストリーズ",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_4c7e0c0cc240"
+  },
+  {
+    "denominationId": "XLSX_4D9409428C0E",
+    "name": "日本福音宣教会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "senkyokai.com"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_4d9409428c0e"
+  },
+  {
+    "denominationId": "XLSX_5119DF175DF7",
+    "name": "聖書友の会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_5119df175df7"
+  },
+  {
+    "denominationId": "XLSX_5355391F89A4",
+    "name": "OMFインターナショナル（国際福音宣教会）",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "omf.org"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_5355391f89a4"
+  },
+  {
+    "denominationId": "XLSX_54E7F69F30D8",
+    "name": "基督伝道隊",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_54e7f69f30d8"
+  },
+  {
+    "denominationId": "XLSX_5896CFA22330",
+    "name": "ｸﾘｽﾁｬﾝ・ﾗｲﾌ・ﾁｬｰﾁｽﾞ・ｲﾝﾀｰﾅｼｮﾅﾙ",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_5896cfa22330"
+  },
+  {
+    "denominationId": "XLSX_5A967B84695B",
+    "name": "ジャパン・ベサニー・ミッション",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_5a967b84695b"
+  },
+  {
+    "denominationId": "XLSX_5C2D4AC4E6C3",
+    "name": "日本キリスト改革長老教会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "rpjapan.org"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_5c2d4ac4e6c3"
+  },
+  {
+    "denominationId": "XLSX_60ADAA925B2E",
+    "name": "カルバリキリスト教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_60adaa925b2e"
+  },
+  {
+    "denominationId": "XLSX_6177372D6810",
+    "name": "大韓イエス教長老会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_6177372d6810"
+  },
+  {
+    "denominationId": "XLSX_63AE906088CD",
+    "name": "キリスト伝道隊",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "dendoutai.org"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_63ae906088cd"
+  },
+  {
+    "denominationId": "XLSX_6924CFBED8AA",
+    "name": "日本キリストの教会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_6924cfbed8aa"
+  },
+  {
+    "denominationId": "XLSX_6A651D97024C",
+    "name": "日本福音ペンテコステ教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "jgpc.jimdofree.com"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_6a651d97024c"
+  },
+  {
+    "denominationId": "XLSX_6D96285EBB53",
+    "name": "ｴﾊﾞﾝｼﾞｪﾘｶﾙ･ｺﾝｸﾞﾘｹﾞｰｼｮﾅﾙ･ﾁｬｰﾁ",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "churchkyodo.sunnyday.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_6d96285ebb53"
+  },
+  {
+    "denominationId": "XLSX_71C98E08D182",
+    "name": "東洋ローア・キリスト伝道教会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_71c98e08d182"
+  },
+  {
+    "denominationId": "XLSX_721D0BFD4CC8",
+    "name": "日本チャーチオブゴッド教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "japanchurchofgod.org"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_721d0bfd4cc8"
+  },
+  {
+    "denominationId": "XLSX_76E20D9095D1",
+    "name": "活水基督教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_76e20d9095d1"
+  },
+  {
+    "denominationId": "XLSX_7998D313189E",
+    "name": "新生キリスト教会連合",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "mccjapa8.wixsite.com"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_7998d313189e"
+  },
+  {
+    "denominationId": "XLSX_7BB40E57E76B",
+    "name": "勝利教会グループ",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "www5a.biglobe.ne.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_7bb40e57e76b"
+  },
+  {
+    "denominationId": "XLSX_807DD8E42AB3",
+    "name": "日本べテルミッション",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_807dd8e42ab3"
+  },
+  {
+    "denominationId": "XLSX_844629460C39",
+    "name": "ルーテル福音キリスト教会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_844629460c39"
+  },
+  {
+    "denominationId": "XLSX_84B3A8F19118",
+    "name": "日本キリスト合同教会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "web.archive.org"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_84b3a8f19118"
+  },
+  {
+    "denominationId": "XLSX_8523C06CDDF6",
+    "name": "日本アライアンス・ミッション",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "japanalliancemission.org"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_8523c06cddf6"
+  },
+  {
+    "denominationId": "XLSX_8804EF621256",
+    "name": "日本宣教会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_8804ef621256"
+  },
+  {
+    "denominationId": "XLSX_89B89F77D9FB",
+    "name": "九州キリスト福音フェローシップ",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_89b89f77d9fb"
+  },
+  {
+    "denominationId": "XLSX_8B3FFE59DB9E",
+    "name": "イエス・キリスト福音の群",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_8b3ffe59db9e"
+  },
+  {
+    "denominationId": "XLSX_8BB687C6219E",
+    "name": "エブリネイションチャーチズジャパン",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "everynation.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_8bb687c6219e"
+  },
+  {
+    "denominationId": "XLSX_8E92CC576638",
+    "name": "ハレルヤコミュニティチャーチ",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_8e92cc576638"
+  },
+  {
+    "denominationId": "XLSX_90E593F1346C",
+    "name": "日本神の教会連盟",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "xn--u9j463geip7pa94cc38by5dpv1d.com"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_90e593f1346c"
+  },
+  {
+    "denominationId": "XLSX_9169E40B4959",
+    "name": "ニューライフ・ミニストリーズ",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "newlifeministries.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_9169e40b4959"
+  },
+  {
+    "denominationId": "XLSX_9321CB4C0350",
+    "name": "世界福音伝道会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "sfdk.org"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_9321cb4c0350"
+  },
+  {
+    "denominationId": "XLSX_958D0B351E84",
+    "name": "キリスト同信会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "nakano-psc.org"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_958d0b351e84"
+  },
+  {
+    "denominationId": "XLSX_99044433EA4A",
+    "name": "正統長老教会日本ミッション",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_99044433ea4a"
+  },
+  {
+    "denominationId": "XLSX_A0114277D55E",
+    "name": "東洋福音教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_a0114277d55e"
+  },
+  {
+    "denominationId": "XLSX_A125DDD08C3C",
+    "name": "キリスト教国際福音教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_a125ddd08c3c"
+  },
+  {
+    "denominationId": "XLSX_A3D05694DBA6",
+    "name": "カルバリーチャペルミニストリー JAPAN",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "calvaryjapan.com"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_a3d05694dba6"
+  },
+  {
+    "denominationId": "XLSX_A62900A57458",
+    "name": "関西福音交友会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_a62900a57458"
+  },
+  {
+    "denominationId": "XLSX_A9CF9ED2FE17",
+    "name": "東京地区メノナイト教会連合",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_a9cf9ed2fe17"
+  },
+  {
+    "denominationId": "XLSX_AEB91C317F1E",
+    "name": "日本使徒キリスト教会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_aeb91c317f1e"
+  },
+  {
+    "denominationId": "XLSX_AFDE972C6C12",
+    "name": "キリスト友会日本年会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "kirisutoyuukai.org"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_afde972c6c12"
+  },
+  {
+    "denominationId": "XLSX_B0F67BB89696",
+    "name": "インターナショナル・チャペル・ ﾐﾆｽﾄﾘｰｽﾞ",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_b0f67bb89696"
+  },
+  {
+    "denominationId": "XLSX_B42A3359EEB8",
+    "name": "全日本バプテスト・ミド・ミッション",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_b42a3359eeb8"
+  },
+  {
+    "denominationId": "XLSX_BA946C239DBB",
+    "name": "日本バプテスト宣教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "jbm.or.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_ba946c239dbb"
+  },
+  {
+    "denominationId": "XLSX_BEA51A6EF98C",
+    "name": "福音交友会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "fkk-web.net"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_bea51a6ef98c"
+  },
+  {
+    "denominationId": "XLSX_BEAF2936F9D6",
+    "name": "キリストの教会（チャーチオブクラィスト系",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_beaf2936f9d6"
+  },
+  {
+    "denominationId": "XLSX_BFA7FEB22CB5",
+    "name": "キリスト信徒の集会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_bfa7feb22cb5"
+  },
+  {
+    "denominationId": "XLSX_C295CA6955BA",
+    "name": "インドネシア福音教会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "giii-japan.org"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_c295ca6955ba"
+  },
+  {
+    "denominationId": "XLSX_C2B6E3644D67",
+    "name": "イエス福音教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_c2b6e3644d67"
+  },
+  {
+    "denominationId": "XLSX_C4158BABCB9E",
+    "name": "福音バプテスト連合 ",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_c4158babcb9e"
+  },
+  {
+    "denominationId": "XLSX_C6D37E8056ED",
+    "name": "シオン・クリスチャン・フェロシップ",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_c6d37e8056ed"
+  },
+  {
+    "denominationId": "XLSX_C8ACE915CF1A",
+    "name": "日本基督会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_c8ace915cf1a"
+  },
+  {
+    "denominationId": "XLSX_CA8ACD3C790A",
+    "name": "キリスト教日本バプテスト会(連盟)",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_ca8acd3c790a"
+  },
+  {
+    "denominationId": "XLSX_CBE40805F5F2",
+    "name": "ミッション東北",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_cbe40805f5f2"
+  },
+  {
+    "denominationId": "XLSX_CD5426A9421A",
+    "name": "クリスター日本宣教団体",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_cd5426a9421a"
+  },
+  {
+    "denominationId": "XLSX_CE46A4A351D1",
+    "name": "シオン宣教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_ce46a4a351d1"
+  },
+  {
+    "denominationId": "XLSX_D28E72A71D3C",
+    "name": "聖書キリスト教会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "seishokirisuto.com"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_d28e72a71d3c"
+  },
+  {
+    "denominationId": "XLSX_D63906A6E148",
+    "name": "保守バプテスト日本宣教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_d63906a6e148"
+  },
+  {
+    "denominationId": "XLSX_D84CFD1F2BBA",
+    "name": "聖書教会連盟",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "kyoukai.com"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_d84cfd1f2bba"
+  },
+  {
+    "denominationId": "XLSX_DB37274D5EFE",
+    "name": "萬国福音教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_db37274d5efe"
+  },
+  {
+    "denominationId": "XLSX_DCBDD0636D26",
+    "name": "シオンの群",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_dcbdd0636d26"
+  },
+  {
+    "denominationId": "XLSX_DEC43EF23B86",
+    "name": "無教会主義集会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_dec43ef23b86"
+  },
+  {
+    "denominationId": "XLSX_E0A6CC3F86EB",
+    "name": "日本自由メソヂスト教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "blog.livedoor.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_e0a6cc3f86eb"
+  },
+  {
+    "denominationId": "XLSX_E5F97C9F58CD",
+    "name": "聖書研究会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_e5f97c9f58cd"
+  },
+  {
+    "denominationId": "XLSX_E616CBB5A18D",
+    "name": "日本福音宣教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_e616cbb5a18d"
+  },
+  {
+    "denominationId": "XLSX_E61DA6DA7815",
+    "name": "シオン・キリスト教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_e61da6da7815"
+  },
+  {
+    "denominationId": "XLSX_E6B8AA1C0D52",
+    "name": "グレース宣教会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "gmi.or.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_e6b8aa1c0d52"
+  },
+  {
+    "denominationId": "XLSX_E7BC111F3436",
+    "name": "バルナバ福音宣教会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_e7bc111f3436"
+  },
+  {
+    "denominationId": "XLSX_E7E83E768771",
+    "name": "日本聖泉基督教会連合",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "seisen-rengou.blogspot.com"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_e7e83e768771"
+  },
+  {
+    "denominationId": "XLSX_EB798427F502",
+    "name": "日本メノナイト・キリスト教会協議会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "mennonite.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_eb798427f502"
+  },
+  {
+    "denominationId": "XLSX_EDAF8C8A844F",
+    "name": "藤原キリスト世界伝道団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_edaf8c8a844f"
+  },
+  {
+    "denominationId": "XLSX_EE14F32CD273",
+    "name": "日本フェローシップ・ディコンリー伝道会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_ee14f32cd273"
+  },
+  {
+    "denominationId": "XLSX_EEF39A83CE96",
+    "name": "日本バイブル・プロテスタント基督教会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_eef39a83ce96"
+  },
+  {
+    "denominationId": "XLSX_F045736C8A00",
+    "name": "ベタニヤ・クリスチャン・アッセンブリーズ",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_f045736c8a00"
+  },
+  {
+    "denominationId": "XLSX_F0AD5C26DFDF",
+    "name": "日本リバイバル連盟",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_f0ad5c26dfdf"
+  },
+  {
+    "denominationId": "XLSX_F19B6F1644A2",
+    "name": "キリスト伝道団　",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_f19b6f1644a2"
+  },
+  {
+    "denominationId": "XLSX_F4AF1AFE226E",
+    "name": "デフ聖書バプテスト教会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_f4af1afe226e"
+  },
+  {
+    "denominationId": "XLSX_F5981F2CF029",
+    "name": "福音バプテスト宣教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "jfwb.net"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_f5981f2cf029"
+  },
+  {
+    "denominationId": "XLSX_F60319F0776D",
+    "name": "チャーチオブクライストニュージーランド日本",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "ccnz.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_f60319f0776d"
+  },
+  {
+    "denominationId": "XLSX_F88D24BA9CA6",
+    "name": "イエス教日本世界宣教会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_f88d24ba9ca6"
+  },
+  {
+    "denominationId": "XLSX_FE1793D78D3E",
+    "name": "基督心宗教団",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_fe1793d78d3e"
+  },
+  {
+    "denominationId": "XLSX_FEB604A8F53F",
+    "name": "ニューホープ・インターナショナル・アジア・ジャパン",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "newhope.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_feb604a8f53f"
+  },
+  {
+    "denominationId": "XLSX_FF7A146A1BE6",
+    "name": "カンバーランド長老キリスト教会日本中会",
+    "churchNameComponents": [],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "cumberland.jp"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-source/xlsx_ff7a146a1be6"
+  },
+  {
+    "denominationId": "YUAI",
+    "name": "友愛グループ教会連合",
+    "churchNameComponents": [
+      "友愛グループ"
+    ],
+    "churchNameExcludes": [],
+    "websiteComponents": [
+      "yuaichristianchurch.org"
+    ],
+    "officialChurchNames": [],
+    "source": "crossmap:denomination-seed/Yuai"
+  }
+]

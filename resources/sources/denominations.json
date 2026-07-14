@@ -1,0 +1,4238 @@
+[
+  {
+    "id": "uccj",
+    "denominationId": "UCCJ",
+    "denominationName": "日本基督教団",
+    "denominationWebsiteUrl": "http://uccj.org/",
+    "churchListUrlList": [
+      "http://uccj.org/diocese"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 2,
+    "lastVerifiedAt": "2026-07-13T16:28:37.289Z",
+    "jurisdictionList": [
+      {
+        "id": "051650959251",
+        "name": "北海教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://hokkai-net.jp",
+        "churchListUrlList": [
+          "http://hokkai-net.jp"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "323cca16f643",
+        "name": "奥羽教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://ouukyouku.blogspot.com",
+        "churchListUrlList": [
+          "https://ouukyouku.blogspot.com"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "72de48321638",
+        "name": "東北教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://tohoku.uccj.jp",
+        "churchListUrlList": [
+          "http://tohoku.uccj.jp"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "5e14396de38c",
+        "name": "関東教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://uccjkanto.holy.jp",
+        "churchListUrlList": [
+          "http://uccjkanto.holy.jp"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "6e73c3a15437",
+        "name": "東京教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://uccj.org/organization/organization14",
+        "churchListUrlList": [
+          "https://uccj.org/organization/organization14"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "03ba6e6d3175",
+        "name": "東京教区東支区",
+        "kind": "BRANCH",
+        "parentJurisdictionId": "6e73c3a15437",
+        "jurisdictionWebsiteUrl": "https://church.ne.jp/tokyo-higashi",
+        "churchListUrlList": [
+          "https://church.ne.jp/tokyo-higashi"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "a6387bd88ca0",
+        "name": "東京教区西南支区",
+        "kind": "BRANCH",
+        "parentJurisdictionId": "6e73c3a15437",
+        "jurisdictionWebsiteUrl": "https://church.ne.jp/seinan",
+        "churchListUrlList": [
+          "https://church.ne.jp/seinan"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "bfb2490ad4d8",
+        "name": "東京教区南支区",
+        "kind": "BRANCH",
+        "parentJurisdictionId": "6e73c3a15437",
+        "jurisdictionWebsiteUrl": "https://church.ne.jp/tokyo-minami",
+        "churchListUrlList": [
+          "https://church.ne.jp/tokyo-minami"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "ab7490cf7b51",
+        "name": "東京教区北支区",
+        "kind": "BRANCH",
+        "parentJurisdictionId": "6e73c3a15437",
+        "jurisdictionWebsiteUrl": "https://uccj.org/organization/organization14",
+        "churchListUrlList": [
+          "https://uccj.org/organization/organization14"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "cb9993484258",
+        "name": "東京教区千葉支区",
+        "kind": "BRANCH",
+        "parentJurisdictionId": "6e73c3a15437",
+        "jurisdictionWebsiteUrl": "https://chiba-shiku.org",
+        "churchListUrlList": [
+          "https://chiba-shiku.org"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "9ba309335f9e",
+        "name": "西東京教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://www.uccj-wt.org",
+        "churchListUrlList": [
+          "https://www.uccj-wt.org"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "80e00adcfb22",
+        "name": "神奈川教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://www.uccj-kanagawa-homepage-project.org",
+        "churchListUrlList": [
+          "http://www.uccj-kanagawa-homepage-project.org"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "f2b1fb5a7fbf",
+        "name": "東海教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://www5a.biglobe.ne.jp/~tkyouku",
+        "churchListUrlList": [
+          "http://www5a.biglobe.ne.jp/~tkyouku"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "77472a9724ba",
+        "name": "中部教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://uccj-chubu.com",
+        "churchListUrlList": [
+          "http://uccj-chubu.com"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "43fe64be219f",
+        "name": "京都教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://www.uccj-kyoto.com",
+        "churchListUrlList": [
+          "http://www.uccj-kyoto.com"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "24bba22cfc40",
+        "name": "大阪教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://www.pure.ne.jp/~uccj-osk",
+        "churchListUrlList": [
+          "http://www.pure.ne.jp/~uccj-osk"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "b6289fbb7646",
+        "name": "兵庫教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://hyogokyouku.web.fc2.com",
+        "churchListUrlList": [
+          "https://hyogokyouku.web.fc2.com"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "227cb5c6f135",
+        "name": "東中国教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://uccj-higashi-chugoku.org",
+        "churchListUrlList": [
+          "http://uccj-higashi-chugoku.org"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "24b9afe6cb72",
+        "name": "西中国教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://uccj.org/organization/organization14",
+        "churchListUrlList": [
+          "https://uccj.org/organization/organization14"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "0b56322e8c73",
+        "name": "西中国教区広島北分区",
+        "kind": "BRANCH",
+        "parentJurisdictionId": "24b9afe6cb72",
+        "jurisdictionWebsiteUrl": "https://hiroshimakitabunku.wixsite.com/homepage/",
+        "churchListUrlList": [
+          "https://hiroshimakitabunku.wixsite.com/homepage/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "26f30bf20ed8",
+        "name": "四国教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://uccjshikoku.wixsite.com/shikokukyouku",
+        "churchListUrlList": [
+          "https://uccjshikoku.wixsite.com/shikokukyouku"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "f62e882eed5a",
+        "name": "九州教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://qsyu.tank.jp",
+        "churchListUrlList": [
+          "http://qsyu.tank.jp"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "faff818db4fe",
+        "name": "沖縄教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://uccj.org/organization/organization14",
+        "churchListUrlList": [
+          "https://uccj.org/organization/organization14"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      }
+    ]
+  },
+  {
+    "id": "catholic_jp",
+    "denominationId": "CATHOLIC_JP",
+    "denominationName": "カトリック中央協議会",
+    "denominationWebsiteUrl": "https://www.cbcj.catholic.jp/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 3,
+    "lastVerifiedAt": "2026-07-13T16:28:38.156Z",
+    "jurisdictionList": [
+      {
+        "id": "bcd44064499e",
+        "name": "札幌教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://csd.or.jp/",
+        "churchListUrlList": [
+          "https://csd.or.jp/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "8bfbbdb80781",
+        "name": "仙台教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://www.sendai.catholic.jp/",
+        "churchListUrlList": [
+          "http://www.sendai.catholic.jp/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "745bb01878da",
+        "name": "新潟教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://www.catholic-niigata.net/",
+        "churchListUrlList": [
+          "http://www.catholic-niigata.net/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "1f5fa90d16b3",
+        "name": "さいたま教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://saitama-kyoku.net/",
+        "churchListUrlList": [
+          "http://saitama-kyoku.net/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "19029c8d7c8a",
+        "name": "東京大司教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://tokyo.catholic.jp/",
+        "churchListUrlList": [
+          "https://tokyo.catholic.jp/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "78a7987e351d",
+        "name": "横浜教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://www.yokohama.catholic.jp/",
+        "churchListUrlList": [
+          "http://www.yokohama.catholic.jp/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "cf7a1b392af1",
+        "name": "名古屋教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://nagoya.catholic.jp/",
+        "churchListUrlList": [
+          "http://nagoya.catholic.jp/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "b0da0ea8c20e",
+        "name": "京都教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://www.kyoto.catholic.jp/",
+        "churchListUrlList": [
+          "http://www.kyoto.catholic.jp/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "a7c44672d93a",
+        "name": "大阪大司教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://www.osaka.catholic.jp/",
+        "churchListUrlList": [
+          "http://www.osaka.catholic.jp/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "fece939c49cd",
+        "name": "広島教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://hiroshima.catholic.jp/",
+        "churchListUrlList": [
+          "http://hiroshima.catholic.jp/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "a77e524c54a0",
+        "name": "高松教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://www.takamatsu.catholic.ne.jp/",
+        "churchListUrlList": [
+          "http://www.takamatsu.catholic.ne.jp/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "4c406fca8685",
+        "name": "福岡教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://fukuoka.catholic.jp/",
+        "churchListUrlList": [
+          "http://fukuoka.catholic.jp/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "e11048504db4",
+        "name": "長崎大司教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://www.nagasaki.catholic.jp/",
+        "churchListUrlList": [
+          "https://www.nagasaki.catholic.jp/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "ecd552aa68f0",
+        "name": "大分教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://oita-catholic.jp/",
+        "churchListUrlList": [
+          "https://oita-catholic.jp/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "004d4047e491",
+        "name": "鹿児島教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://kagoshima-catholic.jp/",
+        "churchListUrlList": [
+          "https://kagoshima-catholic.jp/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "75293913fb96",
+        "name": "那覇教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://www.naha.catholic.jp/",
+        "churchListUrlList": [
+          "http://www.naha.catholic.jp/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      }
+    ]
+  },
+  {
+    "id": "anglican_jp",
+    "denominationId": "ANGLICAN_JP",
+    "denominationName": "日本聖公会",
+    "denominationWebsiteUrl": "http://www.nskk.org/province/index.html",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 4,
+    "lastVerifiedAt": "2026-07-13T16:28:37.025Z",
+    "jurisdictionList": [
+      {
+        "id": "25d07732e841",
+        "name": "北海道教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://nskk-hokkaido.jp/",
+        "churchListUrlList": [
+          "http://nskk-hokkaido.jp/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "e86b094efcb9",
+        "name": "東北教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://nskk-tohoku.com/",
+        "churchListUrlList": [
+          "https://nskk-tohoku.com/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "0b6e126e6bcb",
+        "name": "北関東教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://nskk-kitakanto.org/",
+        "churchListUrlList": [
+          "http://nskk-kitakanto.org/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "b70340358f93",
+        "name": "東京教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://www.nskk.org/tokyo/",
+        "churchListUrlList": [
+          "https://www.nskk.org/tokyo/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "3a13fa9eca4a",
+        "name": "横浜教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://anglican.yokohama/",
+        "churchListUrlList": [
+          "https://anglican.yokohama/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "6127a9583651",
+        "name": "中部教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://nskk-chubu.org/",
+        "churchListUrlList": [
+          "https://nskk-chubu.org/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "1092da7fa7a8",
+        "name": "京都教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://www.nskk.org/kyoto/",
+        "churchListUrlList": [
+          "http://www.nskk.org/kyoto/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "cdd7f4c30a32",
+        "name": "大阪教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://www.nskk.org/osaka/",
+        "churchListUrlList": [
+          "http://www.nskk.org/osaka/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "1d46a31ff9c3",
+        "name": "神戸教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://www.nskk-kobe.org/",
+        "churchListUrlList": [
+          "https://www.nskk-kobe.org/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "bea29d43bf28",
+        "name": "九州教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://anglican-kyushu.jp/",
+        "churchListUrlList": [
+          "http://anglican-kyushu.jp/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "156e841b5604",
+        "name": "沖縄教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://anglican-okinawa.jp/",
+        "churchListUrlList": [
+          "http://anglican-okinawa.jp/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      }
+    ]
+  },
+  {
+    "id": "jbc",
+    "denominationId": "JBC",
+    "denominationName": "日本バプテスト連盟",
+    "denominationWebsiteUrl": "https://bapren.jp/",
+    "churchListUrlList": [
+      "https://bapren.jp/church/",
+      "https://bapren.jp/2026/church/"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 5,
+    "lastVerifiedAt": "2026-07-13T16:28:37.788Z",
+    "jurisdictionList": [
+      {
+        "id": "3c9356a9ac62",
+        "name": "北海道地方連合",
+        "kind": "DISTRICT",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://hokkaidobap.jimdofree.com/",
+        "churchListUrlList": [
+          "https://hokkaidobap.jimdofree.com/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "e32d09ff0aad",
+        "name": "東北地方連合",
+        "kind": "DISTRICT",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://www.facebook.com/tohokubap",
+        "churchListUrlList": [
+          "https://www.facebook.com/tohokubap"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "15728126e286",
+        "name": "北関東地方連合",
+        "kind": "DISTRICT",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://church-church.com/",
+        "churchListUrlList": [
+          "https://church-church.com/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "904ebfbd5575",
+        "name": "東京地方連合",
+        "kind": "DISTRICT",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://tba-jbc.org/",
+        "churchListUrlList": [
+          "https://tba-jbc.org/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "4c16364bf154",
+        "name": "神奈川地方連合",
+        "kind": "DISTRICT",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://kanagawa-baptist.blogspot.com/",
+        "churchListUrlList": [
+          "http://kanagawa-baptist.blogspot.com/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "e4146f2b98ef",
+        "name": "西関東地方連合",
+        "kind": "DISTRICT",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://www.bapren.jp/%e6%95%99%e4%bc%9a%e3%83%bb%e4%bc%9d%e9%81%93%e6%89%80/%e8%a5%bf%e9%96%a2%e6%9d%b1%e5%9c%b0%e6%96%b9%e9%80%a3%e5%90%88",
+        "churchListUrlList": [
+          "https://www.bapren.jp/%e6%95%99%e4%bc%9a%e3%83%bb%e4%bc%9d%e9%81%93%e6%89%80/%e8%a5%bf%e9%96%a2%e6%9d%b1%e5%9c%b0%e6%96%b9%e9%80%a3%e5%90%88"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "c5aeb77829b7",
+        "name": "中部地方連合",
+        "kind": "DISTRICT",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://www.bapren.jp/%E6%95%99%E4%BC%9A%E3%83%BB%E4%BC%9D%E9%81%93%E6%89%80/%E4%B8%AD%E9%83%A8%E5%9C%B0%E6%96%B9%E9%80%A3%E5%90%88",
+        "churchListUrlList": [
+          "https://www.bapren.jp/%E6%95%99%E4%BC%9A%E3%83%BB%E4%BC%9D%E9%81%93%E6%89%80/%E4%B8%AD%E9%83%A8%E5%9C%B0%E6%96%B9%E9%80%A3%E5%90%88"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "de71acd1cdb5",
+        "name": "関西地方連合",
+        "kind": "DISTRICT",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://www.bapren.jp/%e6%95%99%e4%bc%9a%e3%83%bb%e4%bc%9d%e9%81%93%e6%89%80/%e9%96%a2%e8%a5%bf%e5%9c%b0%e6%96%b9%e9%80%a3%e5%90%88",
+        "churchListUrlList": [
+          "https://www.bapren.jp/%e6%95%99%e4%bc%9a%e3%83%bb%e4%bc%9d%e9%81%93%e6%89%80/%e9%96%a2%e8%a5%bf%e5%9c%b0%e6%96%b9%e9%80%a3%e5%90%88"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "df3e20d0a8e1",
+        "name": "中四国地方連合",
+        "kind": "DISTRICT",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://www.bapren.jp/%E6%95%99%E4%BC%9A%E3%83%BB%E4%BC%9D%E9%81%93%E6%89%80/%E4%B8%AD%E5%9B%9B%E5%9B%BD%E5%9C%B0%E6%96%B9%E9%80%A3%E5%90%88",
+        "churchListUrlList": [
+          "https://www.bapren.jp/%E6%95%99%E4%BC%9A%E3%83%BB%E4%BC%9D%E9%81%93%E6%89%80/%E4%B8%AD%E5%9B%9B%E5%9B%BD%E5%9C%B0%E6%96%B9%E9%80%A3%E5%90%88"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "d8ec6fad5f87",
+        "name": "福岡地方連合",
+        "kind": "DISTRICT",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://fukbapren.jimdofree.com/",
+        "churchListUrlList": [
+          "https://fukbapren.jimdofree.com/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "c0462cc6272d",
+        "name": "北九州地方連合",
+        "kind": "DISTRICT",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://bap-kitaq.jimdofree.com/",
+        "churchListUrlList": [
+          "https://bap-kitaq.jimdofree.com/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "23a685217e65",
+        "name": "西九州地方連合",
+        "kind": "DISTRICT",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://www.bapren.jp/%E6%95%99%E4%BC%9A%E3%83%BB%E4%BC%9D%E9%81%93%E6%89%80/%E8%A5%BF%E4%B9%9D%E5%B7%9E%E5%9C%B0%E6%96%B9%E9%80%A3%E5%90%88",
+        "churchListUrlList": [
+          "https://www.bapren.jp/%E6%95%99%E4%BC%9A%E3%83%BB%E4%BC%9D%E9%81%93%E6%89%80/%E8%A5%BF%E4%B9%9D%E5%B7%9E%E5%9C%B0%E6%96%B9%E9%80%A3%E5%90%88"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "cdb25d0c1776",
+        "name": "南九州地方連合",
+        "kind": "DISTRICT",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://minamichihou.jimdofree.com/",
+        "churchListUrlList": [
+          "https://minamichihou.jimdofree.com/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      }
+    ]
+  },
+  {
+    "id": "jacc",
+    "denominationId": "JACC",
+    "denominationName": "日本同盟基督教団",
+    "denominationWebsiteUrl": "https://domei.site/wp/",
+    "churchListUrlList": [
+      "https://domei.site/wp/%e6%95%99%e4%bc%9a%e3%82%92%e6%8e%a2%e3%81%99/",
+      "https://domei.site/wp/%E6%95%99%E4%BC%9A%E3%82%92%E6%8E%A2%E3%81%99/"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 6,
+    "lastVerifiedAt": "2026-07-13T16:28:40.166Z",
+    "jurisdictionList": [
+      {
+        "id": "8e303822b971",
+        "name": "北海道宣教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://domei.site/wp/2019/05/10/%E5%8C%97%E6%B5%B7%E9%81%93%E5%AE%A3%E6%95%99%E5%8C%BA%E7%B4%B9%E4%BB%8B/",
+        "churchListUrlList": [
+          "https://domei.site/wp/2019/05/10/%E5%8C%97%E6%B5%B7%E9%81%93%E5%AE%A3%E6%95%99%E5%8C%BA%E7%B4%B9%E4%BB%8B/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "ffca5cf0327b",
+        "name": "東北宣教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://domei.site/wp/2019/05/10/%e6%9d%b1%e5%8c%97%e5%ae%a3%e6%95%99%e5%8c%ba%e7%b4%b9%e4%bb%8b/",
+        "churchListUrlList": [
+          "https://domei.site/wp/2019/05/10/%e6%9d%b1%e5%8c%97%e5%ae%a3%e6%95%99%e5%8c%ba%e7%b4%b9%e4%bb%8b/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "7cd1e28e524e",
+        "name": "常磐宣教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://domei.site/wp/2019/05/10/%E5%B8%B8%E7%A3%90%E5%AE%A3%E6%95%99%E5%8C%BA%E7%B4%B9%E4%BB%8B/",
+        "churchListUrlList": [
+          "https://domei.site/wp/2019/05/10/%E5%B8%B8%E7%A3%90%E5%AE%A3%E6%95%99%E5%8C%BA%E7%B4%B9%E4%BB%8B/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "74b6b2f8b78e",
+        "name": "千葉宣教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://domei.site/wp/2019/05/10/%E5%8D%83%E8%91%89%E5%AE%A3%E6%95%99%E5%8C%BA%E7%B4%B9%E4%BB%8B/",
+        "churchListUrlList": [
+          "https://domei.site/wp/2019/05/10/%E5%8D%83%E8%91%89%E5%AE%A3%E6%95%99%E5%8C%BA%E7%B4%B9%E4%BB%8B/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "aae4363d804d",
+        "name": "関東宣教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://gospel.sakura.ne.jp/kanto/",
+        "churchListUrlList": [
+          "http://gospel.sakura.ne.jp/kanto/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "540f76d16382",
+        "name": "東京宣教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://domei.site/wp/2019/05/10/%E6%9D%B1%E4%BA%AC%E5%AE%A3%E6%95%99%E5%8C%BA%E7%B4%B9%E4%BB%8B/",
+        "churchListUrlList": [
+          "https://domei.site/wp/2019/05/10/%E6%9D%B1%E4%BA%AC%E5%AE%A3%E6%95%99%E5%8C%BA%E7%B4%B9%E4%BB%8B/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "20afbd4035c9",
+        "name": "神奈川伊豆宣教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://domei.site/wp/2019/05/10/%E7%A5%9E%E5%A5%88%E5%B7%9D%E4%BC%8A%E8%B1%86%E5%AE%A3%E6%95%99%E5%8C%BA%E7%B4%B9%E4%BB%8B/",
+        "churchListUrlList": [
+          "https://domei.site/wp/2019/05/10/%E7%A5%9E%E5%A5%88%E5%B7%9D%E4%BC%8A%E8%B1%86%E5%AE%A3%E6%95%99%E5%8C%BA%E7%B4%B9%E4%BB%8B/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "328b19f199ce",
+        "name": "信州宣教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://domei.site/wp/2019/05/10/%E4%BF%A1%E5%B7%9E%E5%AE%A3%E6%95%99%E5%8C%BA%E7%B4%B9%E4%BB%8B-2/",
+        "churchListUrlList": [
+          "https://domei.site/wp/2019/05/10/%E4%BF%A1%E5%B7%9E%E5%AE%A3%E6%95%99%E5%8C%BA%E7%B4%B9%E4%BB%8B-2/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "8e24531654a2",
+        "name": "新潟山形宣教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://niigata-yamagata.blog.jp/",
+        "churchListUrlList": [
+          "https://niigata-yamagata.blog.jp/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "0254bf02fc5f",
+        "name": "北陸飛騨宣教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://domei.site/wp/2019/05/10/%E5%8C%97%E9%99%B8%E9%A3%9B%E9%A8%A8%E5%AE%A3%E6%95%99%E5%8C%BA%E7%B4%B9%E4%BB%8B/",
+        "churchListUrlList": [
+          "https://domei.site/wp/2019/05/10/%E5%8C%97%E9%99%B8%E9%A3%9B%E9%A8%A8%E5%AE%A3%E6%95%99%E5%8C%BA%E7%B4%B9%E4%BB%8B/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "4d108fe19c37",
+        "name": "東海東宣教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://domei.site/wp/2019/05/10/%E6%9D%B1%E6%B5%B7%E6%9D%B1%E5%AE%A3%E6%95%99%E5%8C%BA%E7%B4%B9%E4%BB%8B/",
+        "churchListUrlList": [
+          "https://domei.site/wp/2019/05/10/%E6%9D%B1%E6%B5%B7%E6%9D%B1%E5%AE%A3%E6%95%99%E5%8C%BA%E7%B4%B9%E4%BB%8B/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "746489faba37",
+        "name": "東海西宣教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://tokaiwest01.web.fc2.com/",
+        "churchListUrlList": [
+          "http://tokaiwest01.web.fc2.com/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "6da8610f00ce",
+        "name": "関西宣教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://doumeikansai.jimdofree.com/",
+        "churchListUrlList": [
+          "https://doumeikansai.jimdofree.com/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "30353c9e77f0",
+        "name": "中国四国宣教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://domei.site/wp/2019/05/10/%E4%B8%AD%E5%9B%BD%E5%9B%9B%E5%9B%BD%E5%AE%A3%E6%95%99%E5%8C%BA%E7%B4%B9%E4%BB%8B/",
+        "churchListUrlList": [
+          "https://domei.site/wp/2019/05/10/%E4%B8%AD%E5%9B%BD%E5%9B%9B%E5%9B%BD%E5%AE%A3%E6%95%99%E5%8C%BA%E7%B4%B9%E4%BB%8B/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "73191cac9d73",
+        "name": "九州宣教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://domei.site/wp/2019/05/10/%E4%B9%9D%E5%B7%9E%E5%AE%A3%E6%95%99%E5%8C%BA%E7%B4%B9%E4%BB%8B/",
+        "churchListUrlList": [
+          "https://domei.site/wp/2019/05/10/%E4%B9%9D%E5%B7%9E%E5%AE%A3%E6%95%99%E5%8C%BA%E7%B4%B9%E4%BB%8B/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "1ac2194e4f49",
+        "name": "沖縄宣教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://domei.site/wp/2019/05/10/%E6%B2%96%E7%B8%84%E5%AE%A3%E6%95%99%E5%8C%BA%E7%B4%B9%E4%BB%8B/",
+        "churchListUrlList": [
+          "https://domei.site/wp/2019/05/10/%E6%B2%96%E7%B8%84%E5%AE%A3%E6%95%99%E5%8C%BA%E7%B4%B9%E4%BB%8B/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "feba54e4ea4d",
+        "name": "海外教会",
+        "kind": "OTHER",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://www.jaws21.com/",
+        "churchListUrlList": [
+          "https://www.jaws21.com/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      }
+    ]
+  },
+  {
+    "id": "jag",
+    "denominationId": "JAG",
+    "denominationName": "日本アッセンブリーズ・オブ・ゴッド教団",
+    "denominationWebsiteUrl": "https://j-ag.org/",
+    "churchListUrlList": [
+      "https://j-ag.org/cmcchurch-media-community/",
+      "https://j-ag.org/church-introduction/",
+      "https://j-ag.org/give-for-churches/"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 7,
+    "lastVerifiedAt": "2026-07-13T16:28:37.814Z",
+    "jurisdictionList": [
+      {
+        "id": "47a15b1b8a95",
+        "name": "北海道教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://j-ag.org/church-info/hokkaido-kyoku/",
+        "churchListUrlList": [
+          "https://j-ag.org/church-info/hokkaido-kyoku/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "db89bdf2c58a",
+        "name": "東北教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://j-ag.org/church-info/tohoku-kyoku/",
+        "churchListUrlList": [
+          "https://j-ag.org/church-info/tohoku-kyoku/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "440f7f92e5fb",
+        "name": "関東北東教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://j-ag.org/church-info/kantohokuto-kyoku/",
+        "churchListUrlList": [
+          "https://j-ag.org/church-info/kantohokuto-kyoku/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "b649dc6f32c1",
+        "name": "関東南西教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://j-ag.org/church-info/kantonansei-kyoku/",
+        "churchListUrlList": [
+          "https://j-ag.org/church-info/kantonansei-kyoku/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "13a0a905fbca",
+        "name": "東海教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://j-ag.org/church-info/tokai-kyoku/",
+        "churchListUrlList": [
+          "https://j-ag.org/church-info/tokai-kyoku/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "877a72dad485",
+        "name": "北陸教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://j-ag.org/church-info/hokuriku-kyoku/",
+        "churchListUrlList": [
+          "https://j-ag.org/church-info/hokuriku-kyoku/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "7cf7e6abe986",
+        "name": "関西教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://ag-kansai.com/",
+        "churchListUrlList": [
+          "https://ag-kansai.com/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "38419bd3077a",
+        "name": "中国教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://j-ag.org/church/chugoku-kyoku/",
+        "churchListUrlList": [
+          "https://j-ag.org/church/chugoku-kyoku/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "4fa9f1689ee9",
+        "name": "四国教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://j-ag.org/church-info/shikoku-kyoku/",
+        "churchListUrlList": [
+          "https://j-ag.org/church-info/shikoku-kyoku/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "6b567f6a14f7",
+        "name": "九州教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://j-ag.org/church-info/kyushu-kyoku/",
+        "churchListUrlList": [
+          "https://j-ag.org/church-info/kyushu-kyoku/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "9ae13e2ba06d",
+        "name": "沖縄教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://j-ag.org/church-info/okinawa-kyoku/",
+        "churchListUrlList": [
+          "https://j-ag.org/church-info/okinawa-kyoku/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "17a680387b7e",
+        "name": "言語教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://assembleiadedeusjapao.com/",
+        "churchListUrlList": [
+          "http://assembleiadedeusjapao.com/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      }
+    ]
+  },
+  {
+    "id": "sjc",
+    "denominationId": "SJC",
+    "denominationName": "イエス之御霊教会教団",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 8,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "jeca",
+    "denominationId": "JECA",
+    "denominationName": "日本福音キリスト教会連合",
+    "denominationWebsiteUrl": "https://jeca.jp/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 9,
+    "lastVerifiedAt": "2026-07-13T16:28:38.256Z",
+    "jurisdictionList": [
+      {
+        "id": "13daeb36a0ee",
+        "name": "北海道地区",
+        "kind": "DISTRICT",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://www.jeca.jp/church/church/hokkaido.html",
+        "churchListUrlList": [
+          "http://www.jeca.jp/church/church/hokkaido.html"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "661e204515fe",
+        "name": "東北地区",
+        "kind": "DISTRICT",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://www.jeca.jp/church/church/touhoku.html",
+        "churchListUrlList": [
+          "http://www.jeca.jp/church/church/touhoku.html"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "dba589f89b37",
+        "name": "北関東地区",
+        "kind": "DISTRICT",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://www.jeca.jp/church/church/kitakanto.html",
+        "churchListUrlList": [
+          "http://www.jeca.jp/church/church/kitakanto.html"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "5613d8f5cb5e",
+        "name": "東関東地区",
+        "kind": "DISTRICT",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://www.jeca.jp/church/church/nakakanto.html",
+        "churchListUrlList": [
+          "http://www.jeca.jp/church/church/nakakanto.html"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "831adf306ebf",
+        "name": "西関東地区",
+        "kind": "DISTRICT",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://www.jeca.jp/church/church/nishikanto.html",
+        "churchListUrlList": [
+          "http://www.jeca.jp/church/church/nishikanto.html"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "1486493c7910",
+        "name": "南関東地区",
+        "kind": "DISTRICT",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://www.jeca.jp/church/church/minamikanto.html",
+        "churchListUrlList": [
+          "http://www.jeca.jp/church/church/minamikanto.html"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "d808c593606b",
+        "name": "中部地区",
+        "kind": "DISTRICT",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://www.jeca.jp/church/church/chubu.html",
+        "churchListUrlList": [
+          "http://www.jeca.jp/church/church/chubu.html"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "3fca13836625",
+        "name": "西日本地区",
+        "kind": "DISTRICT",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://jeca.jp/nishinihon/",
+        "churchListUrlList": [
+          "http://jeca.jp/nishinihon/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "ee85ae08b823",
+        "name": "沖縄地区",
+        "kind": "DISTRICT",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://www.jeca.jp/church/church/okinawa.html",
+        "churchListUrlList": [
+          "http://www.jeca.jp/church/church/okinawa.html"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      }
+    ]
+  },
+  {
+    "id": "sda_jp",
+    "denominationId": "SDA_JP",
+    "denominationName": "セブンスデー・アドベンチスト教団",
+    "denominationWebsiteUrl": "http://adventist.jp/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 10,
+    "lastVerifiedAt": "2026-07-13T16:28:38.723Z",
+    "jurisdictionList": [
+      {
+        "id": "1d72d830efef",
+        "name": "東日本教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://adventist.jp/%E6%9D%B1%E6%97%A5%E6%9C%AC%E6%95%99%E5%8C%BA/",
+        "churchListUrlList": [
+          "https://adventist.jp/%E6%9D%B1%E6%97%A5%E6%9C%AC%E6%95%99%E5%8C%BA/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "ad6c6ab95eb4",
+        "name": "西日本教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://adventist.jp/%E8%A5%BF%E6%97%A5%E6%9C%AC%E6%95%99%E5%8C%BA/",
+        "churchListUrlList": [
+          "https://adventist.jp/%E8%A5%BF%E6%97%A5%E6%9C%AC%E6%95%99%E5%8C%BA/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "ef151ab0698e",
+        "name": "沖縄教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://adventist.jp/okinawa_mission/",
+        "churchListUrlList": [
+          "https://adventist.jp/okinawa_mission/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      }
+    ]
+  },
+  {
+    "id": "jhc",
+    "denominationId": "JHC",
+    "denominationName": "日本ホーリネス教団",
+    "denominationWebsiteUrl": "https://www.jhc.or.jp/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 11,
+    "lastVerifiedAt": "2026-07-13T16:28:38.722Z"
+  },
+  {
+    "id": "rcj",
+    "denominationId": "RCJ",
+    "denominationName": "日本キリスト改革派教会",
+    "denominationWebsiteUrl": "https://rcj-net.org/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 12,
+    "lastVerifiedAt": "2026-07-13T16:28:38.486Z"
+  },
+  {
+    "id": "ccj",
+    "denominationId": "CCJ",
+    "denominationName": "日本キリスト教会",
+    "denominationWebsiteUrl": "http://www.nikki-church.org/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 13,
+    "lastVerifiedAt": "2026-07-13T16:28:38.680Z"
+  },
+  {
+    "id": "jccj",
+    "denominationId": "JCCJ",
+    "denominationName": "日本イエス・キリスト教団",
+    "denominationWebsiteUrl": "https://jccj.info/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 14,
+    "lastVerifiedAt": "2026-07-13T16:28:38.838Z"
+  },
+  {
+    "id": "jelc",
+    "denominationId": "JELC",
+    "denominationName": "日本福音ルーテル教会",
+    "denominationWebsiteUrl": "https://jelc.or.jp/",
+    "churchListUrlList": [
+      "https://jelc.or.jp/welcome-to-the-jelc/congregations/",
+      "https://jelc.or.jp/ABOUT"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 15,
+    "lastVerifiedAt": "2026-07-13T16:28:40.262Z",
+    "jurisdictionList": [
+      {
+        "id": "1a8d311ce812",
+        "name": "北海道特別教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://www11.big.or.jp/~jelc-h/wp/",
+        "churchListUrlList": [
+          "https://www11.big.or.jp/~jelc-h/wp/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "1f6f88b1d56d",
+        "name": "東教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://jelc-higashi.org/",
+        "churchListUrlList": [
+          "https://jelc-higashi.org/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "6964cae0dd32",
+        "name": "東海教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://jelctokai.org/",
+        "churchListUrlList": [
+          "https://jelctokai.org/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "0a9988dcee00",
+        "name": "西教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://nishi.jelc.or.jp/",
+        "churchListUrlList": [
+          "https://nishi.jelc.or.jp/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "87554180b54a",
+        "name": "九州教区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "http://www.jelc-kyushyu.org/",
+        "churchListUrlList": [
+          "http://www.jelc-kyushyu.org/"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      }
+    ]
+  },
+  {
+    "id": "igm",
+    "denominationId": "IGM",
+    "denominationName": "イムマヌエル綜合伝道団",
+    "denominationWebsiteUrl": "http://www.immanuel.or.jp/",
+    "churchListUrlList": [
+      "http://www.immanuel.or.jp/link.html"
+    ],
+    "socialUrlList": [
+      "https://www.facebook.com/immanuel.jp/"
+    ],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 17,
+    "lastVerifiedAt": "2026-07-13T16:28:39.437Z"
+  },
+  {
+    "id": "tlea",
+    "denominationId": "TLEA",
+    "denominationName": "The Light of Eternal Agape",
+    "denominationWebsiteUrl": "https://tlea.tokyoantioch.com/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 33,
+    "lastVerifiedAt": "2026-07-13T16:28:39.901Z"
+  },
+  {
+    "id": "hej",
+    "denominationId": "HEJ",
+    "denominationName": "聖イエス会",
+    "denominationWebsiteUrl": "https://seiiesukai.org/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 34,
+    "lastVerifiedAt": "2026-07-13T16:28:39.447Z"
+  },
+  {
+    "id": "kccj",
+    "denominationId": "KCCJ",
+    "denominationName": "在日大韓基督教会",
+    "denominationWebsiteUrl": "https://kccj.jp/",
+    "churchListUrlList": [
+      "https://kccj.jp/church_list.php"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 35,
+    "lastVerifiedAt": "2026-07-13T16:28:39.205Z"
+  },
+  {
+    "id": "jbbf",
+    "denominationId": "JBBF",
+    "denominationName": "日本バプテスト・バイブル・フェローシップ",
+    "denominationWebsiteUrl": "http://jbbf.or.jp/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 36,
+    "lastVerifiedAt": "2026-07-13T16:28:40.430Z"
+  },
+  {
+    "id": "fgja",
+    "denominationId": "FGJA",
+    "denominationName": "日本フルゴスペル教団",
+    "denominationWebsiteUrl": "https://www.fgtc.jp/fullgospeltokyo/sanctuary-church/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 37,
+    "lastVerifiedAt": "2026-07-13T16:28:40.192Z"
+  },
+  {
+    "id": "xlsx_4351a1b72e63",
+    "denominationId": "XLSX_4351A1B72E63",
+    "denominationName": "キリストの教会（クリスチャン・チャーチ系",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 38,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "jcba",
+    "denominationId": "JCBA",
+    "denominationName": "保守バプテスト同盟",
+    "denominationWebsiteUrl": "https://doumei.holy.jp/",
+    "churchListUrlList": [
+      "https://doumei.holy.jp/churches/"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 39,
+    "lastVerifiedAt": "2026-07-13T16:28:42.632Z"
+  },
+  {
+    "id": "cotn_jp",
+    "denominationId": "COTN_JP",
+    "denominationName": "日本ナザレン教団",
+    "denominationWebsiteUrl": "http://www.nazarene.or.jp/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 40,
+    "lastVerifiedAt": "2026-07-13T16:28:40.353Z"
+  },
+  {
+    "id": "jbu",
+    "denominationId": "JBU",
+    "denominationName": "日本バプテスト同盟",
+    "denominationWebsiteUrl": "http://www.jbu.or.jp/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 41,
+    "lastVerifiedAt": "2026-07-13T16:28:40.893Z"
+  },
+  {
+    "id": "pcj",
+    "denominationId": "PCJ",
+    "denominationName": "日本長老教会",
+    "denominationWebsiteUrl": "https://chorokyokai.jp/",
+    "churchListUrlList": [
+      "https://chorokyokai.jp/churches/"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 42,
+    "lastVerifiedAt": "2026-07-13T16:28:41.706Z"
+  },
+  {
+    "id": "tpkf",
+    "denominationId": "TPKF",
+    "denominationName": "単立ペンテコステ教会フェローシップ",
+    "denominationWebsiteUrl": "https://tpkf.org/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 43,
+    "lastVerifiedAt": "2026-07-13T16:28:40.639Z"
+  },
+  {
+    "id": "efc_jp",
+    "denominationId": "EFC_JP",
+    "denominationName": "日本福音自由教会協議会",
+    "denominationWebsiteUrl": "https://efcj.org/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 45,
+    "lastVerifiedAt": "2026-07-13T16:28:40.636Z"
+  },
+  {
+    "id": "bcc",
+    "denominationId": "BCC",
+    "denominationName": "基督兄弟団",
+    "denominationWebsiteUrl": "https://kyodaidan.org/",
+    "churchListUrlList": [
+      "https://kyodaidan.org/church/"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 46,
+    "lastVerifiedAt": "2026-07-13T16:45:10.784Z"
+  },
+  {
+    "id": "bgc_jp",
+    "denominationId": "BGC_JP",
+    "denominationName": "日本バプテスト教会連合",
+    "denominationWebsiteUrl": "https://rengo.ne.jp/",
+    "churchListUrlList": [
+      "https://rengo.ne.jp/chruch-list/"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 47,
+    "lastVerifiedAt": "2026-07-13T16:28:41.884Z"
+  },
+  {
+    "id": "orthodox_jp",
+    "denominationId": "ORTHODOX_JP",
+    "denominationName": "日本ハリストス正教会教団",
+    "denominationWebsiteUrl": "https://www.orthodoxjapan.jp/",
+    "churchListUrlList": [
+      "https://www.orthodoxjapan.jp/area-tokyo.html",
+      "https://www.orthodoxjapan.jp/seizou.html"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 49,
+    "lastVerifiedAt": "2026-07-13T16:28:40.980Z",
+    "jurisdictionList": [
+      {
+        "id": "865093f1dc73",
+        "name": "東京大主教々区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://www.orthodoxjapan.jp/area-tokyo.html",
+        "churchListUrlList": [
+          "https://www.orthodoxjapan.jp/area-tokyo.html"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "1fe179a7d410",
+        "name": "東日本主教々区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://www.orthodoxjapan.jp/area-higashi.html",
+        "churchListUrlList": [
+          "https://www.orthodoxjapan.jp/area-higashi.html"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      },
+      {
+        "id": "6ce51e84b421",
+        "name": "西日本主教々区",
+        "kind": "DIOCESE",
+        "parentJurisdictionId": null,
+        "jurisdictionWebsiteUrl": "https://www.orthodoxjapan.jp/area-nishi.html",
+        "churchListUrlList": [
+          "https://www.orthodoxjapan.jp/area-nishi.html"
+        ],
+        "entrySelector": "",
+        "nameSelector": "",
+        "addressSelector": "",
+        "urlSelector": ""
+      }
+    ]
+  },
+  {
+    "id": "gec",
+    "denominationId": "GEC",
+    "denominationName": "福音伝道教団",
+    "denominationWebsiteUrl": "https://fukuindendou.org/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 51,
+    "lastVerifiedAt": "2026-07-13T16:28:41.170Z"
+  },
+  {
+    "id": "sa_jp",
+    "denominationId": "SA_JP",
+    "denominationName": "救世軍",
+    "denominationWebsiteUrl": "https://www.salvationarmy.or.jp/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 52,
+    "lastVerifiedAt": "2026-07-13T16:28:42.361Z"
+  },
+  {
+    "id": "jec",
+    "denominationId": "JEC",
+    "denominationName": "日本福音教会",
+    "denominationWebsiteUrl": "https://www.jec-net.org/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 53,
+    "lastVerifiedAt": "2026-07-13T16:28:42.947Z"
+  },
+  {
+    "id": "xlsx_beaf2936f9d6",
+    "denominationId": "XLSX_BEAF2936F9D6",
+    "denominationName": "キリストの教会（チャーチオブクラィスト系",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 54,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "upc_jp",
+    "denominationId": "UPC_JP",
+    "denominationName": "日本ユナイテッド・ペンテコステ教団",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 56,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "jma",
+    "denominationId": "JMA",
+    "denominationName": "日本宣教連合会",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 57,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "wjelc",
+    "denominationId": "WJELC",
+    "denominationName": "西日本福音ルーテル教会",
+    "denominationWebsiteUrl": "https://www.wjelc.or.jp/",
+    "churchListUrlList": [
+      "https://www.wjelc.or.jp/about/churchlist/"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 58,
+    "lastVerifiedAt": "2026-07-13T16:28:43.215Z"
+  },
+  {
+    "id": "xlsx_71c98e08d182",
+    "denominationId": "XLSX_71C98E08D182",
+    "denominationName": "東洋ローア・キリスト伝道教会",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 59,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "jac",
+    "denominationId": "JAC",
+    "denominationName": "日本アライアンス教団",
+    "denominationWebsiteUrl": "http://jac-hij.sakura.ne.jp/",
+    "churchListUrlList": [
+      "http://jac-hij.sakura.ne.jp/profile.html"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 60,
+    "lastVerifiedAt": "2026-07-13T16:28:42.384Z"
+  },
+  {
+    "id": "whcj",
+    "denominationId": "WHCJ",
+    "denominationName": "ウェスレアン・ホーリネス教団",
+    "denominationWebsiteUrl": "https://whchurch.jimdo.com/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 61,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_dec43ef23b86",
+    "denominationId": "XLSX_DEC43EF23B86",
+    "denominationName": "無教会主義集会",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 62,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "jfgc",
+    "denominationId": "JFGC",
+    "denominationName": "日本フォースクエア福音教団",
+    "denominationWebsiteUrl": "https://www.japan-foursquare.jp/",
+    "churchListUrlList": [
+      "https://www.japan-foursquare.jp/cont2/main.html"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 63,
+    "lastVerifiedAt": "2026-07-13T16:28:43.206Z"
+  },
+  {
+    "id": "obc",
+    "denominationId": "OBC",
+    "denominationName": "沖縄バプテスト連盟",
+    "denominationWebsiteUrl": "http://okinawabaptist.com/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 64,
+    "lastVerifiedAt": "2026-07-13T16:28:43.140Z"
+  },
+  {
+    "id": "seikyodan",
+    "denominationId": "SEIKYODAN",
+    "denominationName": "基督聖協団",
+    "denominationWebsiteUrl": "http://www.seikyodan.com/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 65,
+    "lastVerifiedAt": "2026-07-13T16:28:43.480Z"
+  },
+  {
+    "id": "jlc",
+    "denominationId": "JLC",
+    "denominationName": "日本ルーテル教団",
+    "denominationWebsiteUrl": "http://www.jlc.or.jp/",
+    "churchListUrlList": [],
+    "socialUrlList": [
+      "https://www.facebook.com/JapanLutheranChurch/"
+    ],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 66,
+    "lastVerifiedAt": "2026-07-13T16:28:43.836Z"
+  },
+  {
+    "id": "wmc",
+    "denominationId": "WMC",
+    "denominationName": "ワールドミッション教団",
+    "denominationWebsiteUrl": "https://worldmission.or.jp/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 67,
+    "lastVerifiedAt": "2026-07-13T16:28:44.942Z"
+  },
+  {
+    "id": "jfec",
+    "denominationId": "JFEC",
+    "denominationName": "同盟福音基督教会",
+    "denominationWebsiteUrl": "http://www.doumeifukuin.net/",
+    "churchListUrlList": [
+      "http://www.doumeifukuin.net/",
+      "http://www.doumeifukuin.net/shyozokukyoukai/",
+      "http://www.doumeifukuin.net/aihopechurch/"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 68,
+    "lastVerifiedAt": "2026-07-13T16:28:45.412Z"
+  },
+  {
+    "id": "jmbc",
+    "denominationId": "JMBC",
+    "denominationName": "日本メノナイトブレザレン教団",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 69,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "jlbc",
+    "denominationId": "JLBC",
+    "denominationName": "日本ルーテル同胞教団",
+    "denominationWebsiteUrl": "https://mafumikudo.wixsite.com/lbcj",
+    "churchListUrlList": [
+      "https://mafumikudo.wixsite.com/lbcj"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 70,
+    "lastVerifiedAt": "2026-07-13T16:28:43.856Z"
+  },
+  {
+    "id": "xlsx_f0ad5c26dfdf",
+    "denominationId": "XLSX_F0AD5C26DFDF",
+    "denominationName": "日本リバイバル連盟",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 71,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "kelc",
+    "denominationId": "KELC",
+    "denominationName": "近畿福音ルーテル教会",
+    "denominationWebsiteUrl": "http://www.kelc.net/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 72,
+    "lastVerifiedAt": "2026-07-13T16:28:44.690Z"
+  },
+  {
+    "id": "fmc_jp",
+    "denominationId": "FMC_JP",
+    "denominationName": "日本フリーメソジスト教団",
+    "denominationWebsiteUrl": "http://fmcjp.org/",
+    "churchListUrlList": [
+      "https://fmcjp.org/?page_id=61"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 73,
+    "lastVerifiedAt": "2026-07-13T16:28:44.756Z"
+  },
+  {
+    "id": "nfk",
+    "denominationId": "NFK",
+    "denominationName": "日本福音教団",
+    "denominationWebsiteUrl": "https://nihonfukuin.imagodei.jp/",
+    "churchListUrlList": [
+      "https://nihonfukuin.imagodei.jp/%e6%89%80%e5%b1%9e%e6%95%99%e4%bc%9a/"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 74,
+    "lastVerifiedAt": "2026-07-13T16:28:44.924Z"
+  },
+  {
+    "id": "xlsx_d28e72a71d3c",
+    "denominationId": "XLSX_D28E72A71D3C",
+    "denominationName": "聖書キリスト教会",
+    "denominationWebsiteUrl": "https://seishokirisuto.com/",
+    "churchListUrlList": [],
+    "socialUrlList": [
+      "https://www.facebook.com/seishokirisuto/"
+    ],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 75,
+    "lastVerifiedAt": "2026-07-13T16:28:47.675Z"
+  },
+  {
+    "id": "xlsx_8e92cc576638",
+    "denominationId": "XLSX_8E92CC576638",
+    "denominationName": "ハレルヤコミュニティチャーチ",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 76,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "ntm",
+    "denominationId": "NTM",
+    "denominationName": "日本ネクスト・タウンズ・ミッション ",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 77,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "nskk",
+    "denominationId": "NSKK",
+    "denominationName": "日本聖契キリスト教団",
+    "denominationWebsiteUrl": "https://nskk.gr.jp/",
+    "churchListUrlList": [
+      "https://nskk.gr.jp/church/"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 78,
+    "lastVerifiedAt": "2026-07-13T16:43:39.480Z"
+  },
+  {
+    "id": "advent",
+    "denominationId": "ADVENT",
+    "denominationName": "日本アドベント・キリスト教団",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 81,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_e6b8aa1c0d52",
+    "denominationId": "XLSX_E6B8AA1C0D52",
+    "denominationName": "グレース宣教会",
+    "denominationWebsiteUrl": "https://gmi.or.jp/",
+    "churchListUrlList": [
+      "https://gmi.or.jp/chapels/"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 82,
+    "lastVerifiedAt": "2026-07-13T16:45:10.784Z"
+  },
+  {
+    "id": "fukuin_dendo",
+    "denominationId": "FUKUIN_DENDO",
+    "denominationName": "日本伝道福音教団",
+    "denominationWebsiteUrl": "https://church.ne.jp/niigatabible_ch/main/denpuku.html",
+    "churchListUrlList": [
+      "https://church.ne.jp/niigatabible_ch/",
+      "https://church.ne.jp/niigatabible_ch/main/denpuku.html"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 85,
+    "lastVerifiedAt": "2026-07-13T16:28:45.494Z"
+  },
+  {
+    "id": "jpc",
+    "denominationId": "JPC",
+    "denominationName": "日本ペンテコステ教団",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 86,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "jeb",
+    "denominationId": "JEB",
+    "denominationName": "日本伝道隊",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 87,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "jecu",
+    "denominationId": "JECU",
+    "denominationName": "日本福音教会連合",
+    "denominationWebsiteUrl": "https://church.ne.jp/jecu/",
+    "churchListUrlList": [
+      "https://church.ne.jp/jecu/link.htm"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 88,
+    "lastVerifiedAt": "2026-07-13T16:43:39.480Z"
+  },
+  {
+    "id": "ichibaku",
+    "denominationId": "ICHIBAKU",
+    "denominationName": "活けるキリスト一麦の群",
+    "denominationWebsiteUrl": "http://www.ichibaku.org/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 93,
+    "lastVerifiedAt": "2026-07-13T16:28:46.142Z"
+  },
+  {
+    "id": "seiyaku",
+    "denominationId": "SEIYAKU",
+    "denominationName": "日本聖約キリスト教団",
+    "denominationWebsiteUrl": "http://www.seiyaku.jp/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 94,
+    "lastVerifiedAt": "2026-07-13T16:28:46.650Z"
+  },
+  {
+    "id": "yuai",
+    "denominationId": "YUAI",
+    "denominationName": "友愛グループ教会連合",
+    "denominationWebsiteUrl": "https://www.yuaichristianchurch.org/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 96,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "obc_jp",
+    "denominationId": "OBC_JP",
+    "denominationName": "日本オープンバイブル教団",
+    "denominationWebsiteUrl": "https://open-bible.jimdofree.com/",
+    "churchListUrlList": [
+      "https://open-bible.jimdofree.com/"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 99,
+    "lastVerifiedAt": "2026-07-13T16:28:47.247Z"
+  },
+  {
+    "id": "jba",
+    "denominationId": "JBA",
+    "denominationName": "日本バプテスト連合",
+    "denominationWebsiteUrl": "https://www.jbaptist.org/",
+    "churchListUrlList": [
+      "https://www.jbaptist.org/blank-2"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 100,
+    "lastVerifiedAt": "2026-07-13T16:28:48.898Z"
+  },
+  {
+    "id": "xlsx_eb798427f502",
+    "denominationId": "XLSX_EB798427F502",
+    "denominationName": "日本メノナイト・キリスト教会協議会",
+    "denominationWebsiteUrl": "http://www.mennonite.jp/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 101,
+    "lastVerifiedAt": "2026-07-13T16:28:47.568Z"
+  },
+  {
+    "id": "xlsx_63ae906088cd",
+    "denominationId": "XLSX_63AE906088CD",
+    "denominationName": "キリスト伝道隊",
+    "denominationWebsiteUrl": "https://dendoutai.org/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 102,
+    "lastVerifiedAt": "2026-07-13T16:28:50.417Z"
+  },
+  {
+    "id": "xlsx_1ddc0311e89d",
+    "denominationId": "XLSX_1DDC0311E89D",
+    "denominationName": "チャーチ・オブ・ゴッド",
+    "denominationWebsiteUrl": "https://www.cogjapan.com/",
+    "churchListUrlList": [
+      "https://www.cogjapan.com/2515223646259452025012539125111249112473124881252212540.html"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 104,
+    "lastVerifiedAt": "2026-07-13T16:43:39.480Z"
+  },
+  {
+    "id": "xlsx_9321cb4c0350",
+    "denominationId": "XLSX_9321CB4C0350",
+    "denominationName": "世界福音伝道会",
+    "denominationWebsiteUrl": "https://www.sfdk.org/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 105,
+    "lastVerifiedAt": "2026-07-13T16:28:48.082Z"
+  },
+  {
+    "id": "xlsx_ba946c239dbb",
+    "denominationId": "XLSX_BA946C239DBB",
+    "denominationName": "日本バプテスト宣教団",
+    "denominationWebsiteUrl": "https://jbm.or.jp/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 106,
+    "lastVerifiedAt": "2026-07-13T16:45:10.784Z"
+  },
+  {
+    "id": "xlsx_ee14f32cd273",
+    "denominationId": "XLSX_EE14F32CD273",
+    "denominationName": "日本フェローシップ・ディコンリー伝道会",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 107,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_1ea291cee6e2",
+    "denominationId": "XLSX_1EA291CEE6E2",
+    "denominationName": "日本メノナイト・キリスト教会会議",
+    "denominationWebsiteUrl": "https://mennonite.jpn.org/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 109,
+    "lastVerifiedAt": "2026-07-13T16:28:48.151Z"
+  },
+  {
+    "id": "xlsx_3d8857781562",
+    "denominationId": "XLSX_3D8857781562",
+    "denominationName": "札幌キリスト召団",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 110,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_2cc6deec710a",
+    "denominationId": "XLSX_2CC6DEEC710A",
+    "denominationName": "カルバリーチャペルグループ",
+    "denominationWebsiteUrl": "https://www.yamatocalvarychapel.com/service/branch_01.php",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 111,
+    "lastVerifiedAt": "2026-07-13T16:28:48.341Z"
+  },
+  {
+    "id": "xlsx_4d9409428c0e",
+    "denominationId": "XLSX_4D9409428C0E",
+    "denominationName": "日本福音宣教会",
+    "denominationWebsiteUrl": "http://senkyokai.com/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 113,
+    "lastVerifiedAt": "2026-07-13T16:28:48.559Z"
+  },
+  {
+    "id": "xlsx_1ef0b120eb4b",
+    "denominationId": "XLSX_1EF0B120EB4B",
+    "denominationName": "神の家族キリスト教会",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 114,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_bea51a6ef98c",
+    "denominationId": "XLSX_BEA51A6EF98C",
+    "denominationName": "福音交友会",
+    "denominationWebsiteUrl": "http://fkk-web.net/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 115,
+    "lastVerifiedAt": "2026-07-13T16:28:48.479Z"
+  },
+  {
+    "id": "xlsx_db37274d5efe",
+    "denominationId": "XLSX_DB37274D5EFE",
+    "denominationName": "萬国福音教団",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 116,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_8b3ffe59db9e",
+    "denominationId": "XLSX_8B3FFE59DB9E",
+    "denominationName": "イエス・キリスト福音の群",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 117,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_c295ca6955ba",
+    "denominationId": "XLSX_C295CA6955BA",
+    "denominationName": "インドネシア福音教会",
+    "denominationWebsiteUrl": "https://www.giii-japan.org/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 118,
+    "lastVerifiedAt": "2026-07-13T16:28:48.753Z"
+  },
+  {
+    "id": "xlsx_a3d05694dba6",
+    "denominationId": "XLSX_A3D05694DBA6",
+    "denominationName": "カルバリーチャペルミニストリー JAPAN",
+    "denominationWebsiteUrl": "http://www.calvaryjapan.com/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 119,
+    "lastVerifiedAt": "2026-07-13T16:28:49.442Z"
+  },
+  {
+    "id": "xlsx_ff7a146a1be6",
+    "denominationId": "XLSX_FF7A146A1BE6",
+    "denominationName": "カンバーランド長老キリスト教会日本中会",
+    "denominationWebsiteUrl": "https://www.cumberland.jp/",
+    "churchListUrlList": [
+      "https://www.cumberland.jp/introduction/"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 120,
+    "lastVerifiedAt": "2026-07-13T16:28:50.487Z"
+  },
+  {
+    "id": "xlsx_11d4b56ceeba",
+    "denominationId": "XLSX_11D4B56CEEBA",
+    "denominationName": "ブレッシング・フェローシップ・グループ",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 121,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_6177372d6810",
+    "denominationId": "XLSX_6177372D6810",
+    "denominationName": "大韓イエス教長老会",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 122,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_2fb1b342a35b",
+    "denominationId": "XLSX_2FB1B342A35B",
+    "denominationName": "栄光の福音キリスト教団",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 123,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_f60319f0776d",
+    "denominationId": "XLSX_F60319F0776D",
+    "denominationName": "チャーチオブクライストニュージーランド日本",
+    "denominationWebsiteUrl": "https://www.ccnz.jp/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 124,
+    "lastVerifiedAt": "2026-07-13T16:28:49.137Z"
+  },
+  {
+    "id": "xlsx_feb604a8f53f",
+    "denominationId": "XLSX_FEB604A8F53F",
+    "denominationName": "ニューホープ・インターナショナル・アジア・ジャパン",
+    "denominationWebsiteUrl": "https://newhope.jp/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 125,
+    "lastVerifiedAt": "2026-07-13T16:28:49.191Z"
+  },
+  {
+    "id": "xlsx_90e593f1346c",
+    "denominationId": "XLSX_90E593F1346C",
+    "denominationName": "日本神の教会連盟",
+    "denominationWebsiteUrl": "http://xn--u9j463geip7pa94cc38by5dpv1d.com/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 126,
+    "lastVerifiedAt": "2026-07-13T16:28:49.458Z"
+  },
+  {
+    "id": "xlsx_5355391f89a4",
+    "denominationId": "XLSX_5355391F89A4",
+    "denominationName": "OMFインターナショナル（国際福音宣教会）",
+    "denominationWebsiteUrl": "https://omf.org/jp/",
+    "churchListUrlList": [
+      "https://omf.org/jp/resources/church-leaders"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 128,
+    "lastVerifiedAt": "2026-07-13T16:28:50.150Z"
+  },
+  {
+    "id": "xlsx_721d0bfd4cc8",
+    "denominationId": "XLSX_721D0BFD4CC8",
+    "denominationName": "日本チャーチオブゴッド教団",
+    "denominationWebsiteUrl": "https://www.japanchurchofgod.org/",
+    "churchListUrlList": [
+      "https://www.japanchurchofgod.org/family"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 129,
+    "lastVerifiedAt": "2026-07-13T16:28:49.731Z"
+  },
+  {
+    "id": "xlsx_6a651d97024c",
+    "denominationId": "XLSX_6A651D97024C",
+    "denominationName": "日本福音ペンテコステ教団",
+    "denominationWebsiteUrl": "https://jgpc.jimdofree.com/",
+    "churchListUrlList": [
+      "https://jgpc.jimdofree.com/%E6%95%99%E4%BC%9A%E4%B8%80%E8%A6%A7/"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 130,
+    "lastVerifiedAt": "2026-07-13T16:28:50.352Z"
+  },
+  {
+    "id": "xlsx_f5981f2cf029",
+    "denominationId": "XLSX_F5981F2CF029",
+    "denominationName": "福音バプテスト宣教団",
+    "denominationWebsiteUrl": "http://jfwb.net/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 131,
+    "lastVerifiedAt": "2026-07-13T16:28:51.585Z"
+  },
+  {
+    "id": "xlsx_d84cfd1f2bba",
+    "denominationId": "XLSX_D84CFD1F2BBA",
+    "denominationName": "聖書教会連盟",
+    "denominationWebsiteUrl": "http://www.kyoukai.com/rennmei/index.html",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 132,
+    "lastVerifiedAt": "2026-07-13T16:28:50.453Z"
+  },
+  {
+    "id": "xlsx_3fda285a9665",
+    "denominationId": "XLSX_3FDA285A9665",
+    "denominationName": "ト－タル・クリスチャン・チャ－チグループ",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 133,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_8523c06cddf6",
+    "denominationId": "XLSX_8523C06CDDF6",
+    "denominationName": "日本アライアンス・ミッション",
+    "denominationWebsiteUrl": "https://japanalliancemission.org/",
+    "churchListUrlList": [
+      "https://japanalliancemission.org/info/alliance-church-network/"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 134,
+    "lastVerifiedAt": "2026-07-13T16:28:51.357Z"
+  },
+  {
+    "id": "xlsx_1b16b781a295",
+    "denominationId": "XLSX_1B16B781A295",
+    "denominationName": "東京フリー・メソジスト教団",
+    "denominationWebsiteUrl": "https://tokyofree.net/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 135,
+    "lastVerifiedAt": "2026-07-13T16:28:51.421Z"
+  },
+  {
+    "id": "xlsx_5119df175df7",
+    "denominationId": "XLSX_5119DF175DF7",
+    "denominationName": "聖書友の会",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 136,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_1d8abc2de297",
+    "denominationId": "XLSX_1D8ABC2DE297",
+    "denominationName": "アライズ5",
+    "denominationWebsiteUrl": "https://www.hugedomains.com/domain_profile.cfm?d=arise5.com",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 137,
+    "lastVerifiedAt": "2026-07-13T16:28:52.158Z"
+  },
+  {
+    "id": "xlsx_9169e40b4959",
+    "denominationId": "XLSX_9169E40B4959",
+    "denominationName": "ニューライフ・ミニストリーズ",
+    "denominationWebsiteUrl": "https://www.newlifeministries.jp/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 138,
+    "lastVerifiedAt": "2026-07-13T16:28:51.133Z"
+  },
+  {
+    "id": "xlsx_844629460c39",
+    "denominationId": "XLSX_844629460C39",
+    "denominationName": "ルーテル福音キリスト教会",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 139,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_7bb40e57e76b",
+    "denominationId": "XLSX_7BB40E57E76B",
+    "denominationName": "勝利教会グループ",
+    "denominationWebsiteUrl": "http://www5a.biglobe.ne.jp/~vct/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 140,
+    "lastVerifiedAt": "2026-07-13T16:28:50.751Z"
+  },
+  {
+    "id": "xlsx_fe1793d78d3e",
+    "denominationId": "XLSX_FE1793D78D3E",
+    "denominationName": "基督心宗教団",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 141,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_1dea8e7df7ec",
+    "denominationId": "XLSX_1DEA8E7DF7EC",
+    "denominationName": "基督教カナン教団",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 142,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_e7e83e768771",
+    "denominationId": "XLSX_E7E83E768771",
+    "denominationName": "日本聖泉基督教会連合",
+    "denominationWebsiteUrl": "https://seisen-rengou.blogspot.com/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 143,
+    "lastVerifiedAt": "2026-07-13T16:28:52.128Z"
+  },
+  {
+    "id": "xlsx_8bb687c6219e",
+    "denominationId": "XLSX_8BB687C6219E",
+    "denominationName": "エブリネイションチャーチズジャパン",
+    "denominationWebsiteUrl": "https://everynation.jp/",
+    "churchListUrlList": [
+      "https://everynation.jp/directory/"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 144,
+    "lastVerifiedAt": "2026-07-13T16:28:57.601Z"
+  },
+  {
+    "id": "xlsx_ca8acd3c790a",
+    "denominationId": "XLSX_CA8ACD3C790A",
+    "denominationName": "キリスト教日本バプテスト会(連盟)",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 145,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_292583ff8978",
+    "denominationId": "XLSX_292583FF8978",
+    "denominationName": "復活之キリスト教団",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 146,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_18816f940131",
+    "denominationId": "XLSX_18816F940131",
+    "denominationName": "日本オリベットアッセンブリー教団",
+    "denominationWebsiteUrl": "https://olivetassembly.or.jp/about-us/organization.html",
+    "churchListUrlList": [
+      "https://olivetassembly.or.jp/churches.html"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 147,
+    "lastVerifiedAt": "2026-07-13T16:43:39.480Z"
+  },
+  {
+    "id": "xlsx_c2b6e3644d67",
+    "denominationId": "XLSX_C2B6E3644D67",
+    "denominationName": "イエス福音教団",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 148,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_5896cfa22330",
+    "denominationId": "XLSX_5896CFA22330",
+    "denominationName": "ｸﾘｽﾁｬﾝ・ﾗｲﾌ・ﾁｬｰﾁｽﾞ・ｲﾝﾀｰﾅｼｮﾅﾙ",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 149,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_c6d37e8056ed",
+    "denominationId": "XLSX_C6D37E8056ED",
+    "denominationName": "シオン・クリスチャン・フェロシップ",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 151,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_6924cfbed8aa",
+    "denominationId": "XLSX_6924CFBED8AA",
+    "denominationName": "日本キリストの教会",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 152,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_0e0ac535c8df",
+    "denominationId": "XLSX_0E0AC535C8DF",
+    "denominationName": "日本キリスト兄弟団",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 153,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_84b3a8f19118",
+    "denominationId": "XLSX_84B3A8F19118",
+    "denominationName": "日本キリスト合同教会",
+    "denominationWebsiteUrl": "http://web.archive.org/web/20180317203733/http:/www.godo.or.jp/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 154,
+    "lastVerifiedAt": "2026-07-13T16:28:53.555Z"
+  },
+  {
+    "id": "xlsx_2ecc6d4ab227",
+    "denominationId": "XLSX_2ECC6D4AB227",
+    "denominationName": "真イエス教会",
+    "denominationWebsiteUrl": "https://tjc.org/jp/",
+    "churchListUrlList": [
+      "https://tjc.org/zh/find-a-church/",
+      "https://tjc.org/zh/get-in-touch/"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 155,
+    "lastVerifiedAt": "2026-07-13T16:28:52.139Z"
+  },
+  {
+    "id": "xlsx_0f16b6b5691c",
+    "denominationId": "XLSX_0F16B6B5691C",
+    "denominationName": "日本華僑基督教団",
+    "denominationWebsiteUrl": "https://www.occj.net/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 156,
+    "lastVerifiedAt": "2026-07-13T16:28:54.317Z"
+  },
+  {
+    "id": "xlsx_f88d24ba9ca6",
+    "denominationId": "XLSX_F88D24BA9CA6",
+    "denominationName": "イエス教日本世界宣教会",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 157,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_e61da6da7815",
+    "denominationId": "XLSX_E61DA6DA7815",
+    "denominationName": "シオン・キリスト教団",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 158,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_4426359ab1ac",
+    "denominationId": "XLSX_4426359AB1AC",
+    "denominationName": "国際福音キリスト教会",
+    "denominationWebsiteUrl": "http://agapechapel.net/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 159,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_5c2d4ac4e6c3",
+    "denominationId": "XLSX_5C2D4AC4E6C3",
+    "denominationName": "日本キリスト改革長老教会",
+    "denominationWebsiteUrl": "http://www.rpjapan.org/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 160,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_eef39a83ce96",
+    "denominationId": "XLSX_EEF39A83CE96",
+    "denominationName": "日本バイブル・プロテスタント基督教会",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 161,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_e616cbb5a18d",
+    "denominationId": "XLSX_E616CBB5A18D",
+    "denominationName": "日本福音宣教団",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 162,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_e0a6cc3f86eb",
+    "denominationId": "XLSX_E0A6CC3F86EB",
+    "denominationName": "日本自由メソヂスト教団",
+    "denominationWebsiteUrl": "http://blog.livedoor.jp/methodist_free/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 163,
+    "lastVerifiedAt": "2026-07-13T16:28:53.444Z"
+  },
+  {
+    "id": "xlsx_f19b6f1644a2",
+    "denominationId": "XLSX_F19B6F1644A2",
+    "denominationName": "キリスト伝道団　",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 164,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_afde972c6c12",
+    "denominationId": "XLSX_AFDE972C6C12",
+    "denominationName": "キリスト友会日本年会",
+    "denominationWebsiteUrl": "http://www.kirisutoyuukai.org/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 165,
+    "lastVerifiedAt": "2026-07-13T16:28:53.081Z"
+  },
+  {
+    "id": "xlsx_958d0b351e84",
+    "denominationId": "XLSX_958D0B351E84",
+    "denominationName": "キリスト同信会",
+    "denominationWebsiteUrl": "https://nakano-psc.org/about/other_area/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 166,
+    "lastVerifiedAt": "2026-07-13T16:28:54.505Z"
+  },
+  {
+    "id": "xlsx_ce46a4a351d1",
+    "denominationId": "XLSX_CE46A4A351D1",
+    "denominationName": "シオン宣教団",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 167,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_f045736c8a00",
+    "denominationId": "XLSX_F045736C8A00",
+    "denominationName": "ベタニヤ・クリスチャン・アッセンブリーズ",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 168,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_cbe40805f5f2",
+    "denominationId": "XLSX_CBE40805F5F2",
+    "denominationName": "ミッション東北",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 169,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_89b89f77d9fb",
+    "denominationId": "XLSX_89B89F77D9FB",
+    "denominationName": "九州キリスト福音フェローシップ",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 170,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_7998d313189e",
+    "denominationId": "XLSX_7998D313189E",
+    "denominationName": "新生キリスト教会連合",
+    "denominationWebsiteUrl": "https://mccjapa8.wixsite.com/mccjapan/--c1k3t",
+    "churchListUrlList": [
+      "https://mccjapa8.wixsite.com/mccjapan/churchinfo"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 171,
+    "lastVerifiedAt": "2026-07-13T16:28:55.638Z"
+  },
+  {
+    "id": "xlsx_17a6c6c826c3",
+    "denominationId": "XLSX_17A6C6C826C3",
+    "denominationName": "日本ヴィンヤード・クリスチャン・フェロシップ",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 172,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_8804ef621256",
+    "denominationId": "XLSX_8804EF621256",
+    "denominationName": "日本宣教会",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 173,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_0d532e2005b3",
+    "denominationId": "XLSX_0D532E2005B3",
+    "denominationName": "日本自由福音教団",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 174,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_13299774b479",
+    "denominationId": "XLSX_13299774B479",
+    "denominationName": "東洋宣教団",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 175,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_1ce33e34700c",
+    "denominationId": "XLSX_1CE33E34700C",
+    "denominationName": "美濃ミッション",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 176,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_3a801ebede90",
+    "denominationId": "XLSX_3A801EBEDE90",
+    "denominationName": "インターナショナル・フルゴスペル・フェローシップ",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 177,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_6d96285ebb53",
+    "denominationId": "XLSX_6D96285EBB53",
+    "denominationName": "ｴﾊﾞﾝｼﾞｪﾘｶﾙ･ｺﾝｸﾞﾘｹﾞｰｼｮﾅﾙ･ﾁｬｰﾁ",
+    "denominationWebsiteUrl": "http://churchkyodo.sunnyday.jp/%e5%bd%93%e6%95%99%e4%bc%9a%e3%81%ab%e3%81%a4%e3%81%84%e3%81%a6/",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 178,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_bfa7feb22cb5",
+    "denominationId": "XLSX_BFA7FEB22CB5",
+    "denominationName": "キリスト信徒の集会",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 179,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_06ac1b7dbd49",
+    "denominationId": "XLSX_06AC1B7DBD49",
+    "denominationName": "キリスト教ガリラヤ福音教団",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 180,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_3d7df0c98a2d",
+    "denominationId": "XLSX_3D7DF0C98A2D",
+    "denominationName": "日本聖公会東京教区　",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 182,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_a125ddd08c3c",
+    "denominationId": "XLSX_A125DDD08C3C",
+    "denominationName": "キリスト教国際福音教団",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 183,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_cd5426a9421a",
+    "denominationId": "XLSX_CD5426A9421A",
+    "denominationName": "クリスター日本宣教団体",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 184,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_dcbdd0636d26",
+    "denominationId": "XLSX_DCBDD0636D26",
+    "denominationName": "シオンの群",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 185,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_3e8f489a41cf",
+    "denominationId": "XLSX_3E8F489A41CF",
+    "denominationName": "センド国際宣教団",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 186,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_d63906a6e148",
+    "denominationId": "XLSX_D63906A6E148",
+    "denominationName": "保守バプテスト日本宣教団",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 187,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_3cb0d9712a01",
+    "denominationId": "XLSX_3CB0D9712A01",
+    "denominationName": "国際基督教団",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 188,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_1d64f4cb6767",
+    "denominationId": "XLSX_1D64F4CB6767",
+    "denominationName": "日本ベテスダ教団",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 189,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_807dd8e42ab3",
+    "denominationId": "XLSX_807DD8E42AB3",
+    "denominationName": "日本べテルミッション",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 191,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_a9cf9ed2fe17",
+    "denominationId": "XLSX_A9CF9ED2FE17",
+    "denominationName": "東京地区メノナイト教会連合",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 193,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_05ee80c87704",
+    "denominationId": "XLSX_05EE80C87704",
+    "denominationName": "東洋宣教団きよめキリスト教会",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 194,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_a0114277d55e",
+    "denominationId": "XLSX_A0114277D55E",
+    "denominationName": "東洋福音教団",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 196,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_e5f97c9f58cd",
+    "denominationId": "XLSX_E5F97C9F58CD",
+    "denominationName": "聖書研究会",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 198,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_a62900a57458",
+    "denominationId": "XLSX_A62900A57458",
+    "denominationName": "関西福音交友会",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 199,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_3bb530af6c0b",
+    "denominationId": "XLSX_3BB530AF6C0B",
+    "denominationName": "高松コミュニティ・チャーチ（TCCh）",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 200,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_419457cd203e",
+    "denominationId": "XLSX_419457CD203E",
+    "denominationName": "カルバリー　バプテスト",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 201,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_1761f2ad5674",
+    "denominationId": "XLSX_1761F2AD5674",
+    "denominationName": "サンビ教団",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 202,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_4c7e0c0cc240",
+    "denominationId": "XLSX_4C7E0C0CC240",
+    "denominationName": "ジーザス・クライスト・ミニストリーズ",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 203,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_5a967b84695b",
+    "denominationId": "XLSX_5A967B84695B",
+    "denominationName": "ジャパン・ベサニー・ミッション",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 204,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_474ebf9142be",
+    "denominationId": "XLSX_474EBF9142BE",
+    "denominationName": "スウェーデン同盟キリスト教団",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 205,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_f4af1afe226e",
+    "denominationId": "XLSX_F4AF1AFE226E",
+    "denominationName": "デフ聖書バプテスト教会",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 206,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_b42a3359eeb8",
+    "denominationId": "XLSX_B42A3359EEB8",
+    "denominationName": "全日本バプテスト・ミド・ミッション",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 210,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_54e7f69f30d8",
+    "denominationId": "XLSX_54E7F69F30D8",
+    "denominationName": "基督伝道隊",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 213,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_0823a1c9e8c1",
+    "denominationId": "XLSX_0823A1C9E8C1",
+    "denominationName": "希望の教会",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 214,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_c8ace915cf1a",
+    "denominationId": "XLSX_C8ACE915CF1A",
+    "denominationName": "日本基督会",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 215,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_3aa37d2fe37d",
+    "denominationId": "XLSX_3AA37D2FE37D",
+    "denominationName": "東京ホライズンチャペル",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 216,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_76e20d9095d1",
+    "denominationId": "XLSX_76E20D9095D1",
+    "denominationName": "活水基督教団",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 217,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_c4158babcb9e",
+    "denominationId": "XLSX_C4158BABCB9E",
+    "denominationName": "福音バプテスト連合 ",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 218,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_46cca3b8cc05",
+    "denominationId": "XLSX_46CCA3B8CC05",
+    "denominationName": "聖流の群（旧：キリスト福音宣教会）",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 219,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_b0f67bb89696",
+    "denominationId": "XLSX_B0F67BB89696",
+    "denominationName": "インターナショナル・チャペル・ ﾐﾆｽﾄﾘｰｽﾞ",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 220,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_103813112184",
+    "denominationId": "XLSX_103813112184",
+    "denominationName": "クリスチャンズ・イン・アクション宣教団",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 221,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_e7bc111f3436",
+    "denominationId": "XLSX_E7BC111F3436",
+    "denominationName": "バルナバ福音宣教会",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 222,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_18a9344e85e0",
+    "denominationId": "XLSX_18A9344E85E0",
+    "denominationName": "ユース･ウィズ･ア･ミッション",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 223,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_aeb91c317f1e",
+    "denominationId": "XLSX_AEB91C317F1E",
+    "denominationName": "日本使徒キリスト教会",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 226,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_00b215a90ef6",
+    "denominationId": "XLSX_00B215A90EF6",
+    "denominationName": "日本新使徒教会",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 229,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_02aa52956dc4",
+    "denominationId": "XLSX_02AA52956DC4",
+    "denominationName": "日本福音基督教団",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 230,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_99044433ea4a",
+    "denominationId": "XLSX_99044433EA4A",
+    "denominationName": "正統長老教会日本ミッション",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 231,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_edaf8c8a844f",
+    "denominationId": "XLSX_EDAF8C8A844F",
+    "denominationName": "藤原キリスト世界伝道団",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 232,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_60adaa925b2e",
+    "denominationId": "XLSX_60ADAA925B2E",
+    "denominationName": "カルバリキリスト教団",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 235,
+    "lastVerifiedAt": ""
+  },
+  {
+    "id": "xlsx_4ae62f1bb60e",
+    "denominationId": "XLSX_4AE62F1BB60E",
+    "denominationName": "在日スエーデン東洋福音伝道団",
+    "denominationWebsiteUrl": "",
+    "churchListUrlList": [],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 237,
+    "lastVerifiedAt": ""
+  }
+]

@@ -1,0 +1,56 @@
+# Gradle and Kotlin generated files
+.gradle/
+.kotlin/
+**/build/
+local.properties
+
+# IntelliJ IDEA and operating-system metadata
+.idea/
+*.iml
+.DS_Store
+
+# Android and Kotlin/Native generated files
+.externalNativeBuild/
+.cxx/
+.konan/
+captures/
+
+# Xcode user-specific and derived files
+DerivedData/
+**/xcuserdata/
+*.xcuserstate
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcodeproj/project.xcworkspace/
+!*.xcworkspace/contents.xcworkspacedata
+**/xcshareddata/WorkspaceSettings.xcsettings
+
+# JavaScript dependencies
+node_modules/
+
+# Crossmap generated and machine-local data
+# These contain crawled HTML, normalized catalogs, cleanup decisions,
+# geonames, Lucene indexes, downloadable snapshots, and experiment output.
+resources/indexes
+!resources/indexes/README.md
+
+resources/indexes/churches
+!resources/indexes/churches/README.md
+
+resources/crawl
+!resources/crawl/README.md
+
+resources/raw
+!resources/raw/README.md
+
+/experiments/
+/output/
+/cache/
+/downloads/
+/.crossmap/
+
+# Runtime diagnostics
+*.log
+hs_err_pid*
+replay_pid*
