@@ -387,4 +387,13 @@ class PostCrawlCleanup(
         model = model,
         determinedAt = determinedAt,
     )
+
+    fun findOutChurchEnglishName(c: ChurchRecord): String{
+        return TODO("implement with 2 steps 1: deteministic programatic analysis from downloaded church website domain, url, webpage html or social account names, then if no results, use llm to split the name into parts, for example 東京バプテスト教会 into 東京:geoname, バプテスト:traditionName, 教会:wordWhichMeansCongregation, then translate by for each part, then concat Tokyo Baptist Church, in edge case, none-denomination church (単立) can ommit the english denomination name, if there is name collision, put city/address name ahead of the church name")
+    }
+
+    fun findSplitAndTranslateChurchNameToEnglishbyLlmz(c: ChurchRecord): String{
+        return TODO("implement with above requirement")
+    }
+
 }

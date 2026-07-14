@@ -68,6 +68,7 @@ data class ChurchRecord(
     val id: String,
     val googleCid: String? = null,
     val name: String,
+    val englishName: String? = null,
     val denominationId: String? = null,
     val category: String? = null,
     val address: String,

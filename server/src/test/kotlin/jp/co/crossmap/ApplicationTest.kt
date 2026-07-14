@@ -5,6 +5,7 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.testApplication
 import java.nio.file.Files
+import java.nio.file.Path
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -35,6 +36,43 @@ class ApplicationTest {
         val response = client.get("/api/v1/health")
         assertEquals(HttpStatusCode.OK, response.status)
         assertTrue(response.bodyAsText().contains("not_ready"))
+    }
+
+    @Test
+    fun servesCompleteBrowserSearchPagesAndClientScript() {
+        val projectRoot = Path.of(requireNotNull(System.getProperty("crossmap.project.root")))
+        val resourcesRoot = Files.createTempDirectory("crossmap-server-static")
+        try {
+            testApplication {
+                application {
+                    module(
+                        searchEngine = null,
+                        resourcesRoot = resourcesRoot,
+                        webRoot = projectRoot.resolve("webclient"),
+                    )
+                }
+
+                val index = client.get("/")
+                assertEquals(HttpStatusCode.OK, index.status)
+                assertTrue(index.bodyAsText().contains("id=\"search-form\""))
+
+                val results = client.get("/result.html")
+                assertEquals(HttpStatusCode.OK, results.status)
+                assertTrue(results.bodyAsText().contains("id=\"results\""))
+                assertTrue(results.bodyAsText().contains("src=\"/app.js\""))
+
+                val church = client.get("/church.html")
+                assertEquals(HttpStatusCode.OK, church.status)
+                assertTrue(church.bodyAsText().contains("id=\"church\""))
+
+                val script = client.get("/app.js")
+                assertEquals(HttpStatusCode.OK, script.status)
+                assertTrue(script.bodyAsText().contains("/api/v1/churches/search"))
+                assertTrue(script.bodyAsText().contains("/api/v1/churches/"))
+            }
+        } finally {
+            resourcesRoot.toFile().deleteRecursively()
+        }
     }
 
     @Test

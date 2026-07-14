@@ -10,6 +10,14 @@ application {
     mainClass = "jp.co.crossmap.ApplicationKt"
 }
 
+tasks.named<JavaExec>("run") {
+    workingDir = rootProject.projectDir
+}
+
+tasks.test {
+    systemProperty("crossmap.project.root", rootProject.projectDir.absolutePath)
+}
+
 dependencies {
     api(projects.core)
     implementation(libs.logback)

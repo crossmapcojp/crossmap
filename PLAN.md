@@ -77,7 +77,7 @@
 - [x] Serve the vanilla HTML/JavaScript client from Ktor.
 - [x] Implement query, loading, error, empty, result, distance, snippet, link, and pagination UI states.
 - [x] Implement the vanilla-JavaScript `index.html` -> JSON-backed `result.html` -> JSON-backed `church.html` navigation flow.
-- [x] Add Ktor API tests and a browser smoke test covering index -> search JSON -> result page -> church detail JSON/page.
+- [x] Add Ktor API tests and a Lightpanda browser smoke test against `./gradlew :server:run`, covering index -> search JSON -> rendered result page -> church detail JSON/page.
 
 ## 7. Android and iOS app
 
