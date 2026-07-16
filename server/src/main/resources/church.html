@@ -13,12 +13,31 @@
 <body>
   <main>
     <a href="/">← 検索に戻る</a>
+    <label class="language-picker">表示言語
+      <select id="language" aria-label="教会名の表示言語">
+        <option value="ja">日本語</option>
+        <option value="en">English</option>
+        <option value="ko">한국어</option>
+        <option value="pt">Português</option>
+        <option value="id">Bahasa Indonesia</option>
+      </select>
+    </label>
     <article class="church-detail">
       <p class="eyebrow">CHURCH</p>
-      <h1>${japaneseName?html}</h1>
+      <h1 id="church-name">${japaneseName?html}</h1>
       <p lang="en" class="english-name">${englishName?html}</p>
+      <div id="localized-name-options" hidden>
+        <#list localizedNames as localized>
+          <span data-language="${localized.languageCode?html}">${localized.name?html}</span>
+        </#list>
+      </div>
       <#if denominationEnglishName?has_content>
-        <p><strong>教派</strong><br><span lang="en">${denominationEnglishName?html}</span></p>
+        <p><strong>教派</strong><br><span id="denomination-name" lang="en">${denominationEnglishName?html}</span></p>
+        <div id="localized-denomination-options" hidden>
+          <#list localizedDenominationNames as localized>
+            <span data-language="${localized.languageCode?html}">${localized.name?html}</span>
+          </#list>
+        </div>
       </#if>
       <p><strong>住所</strong><br>${address?html}</p>
       <p><strong>ウェブサイト</strong><br><a href="${websiteUrl?html}" rel="noopener">${websiteUrl?html}</a></p>
@@ -32,5 +51,39 @@
       </#if>
     </article>
   </main>
+  <script>
+    const supported = ["ja", "en", "ko", "pt", "id"];
+    const browserLanguage = (navigator.language || "en").toLowerCase().split("-")[0];
+    let language = localStorage.getItem("crossmap.language");
+    if (!supported.includes(language)) language = supported.includes(browserLanguage) ? browserLanguage : "en";
+    const picker = document.querySelector("#language");
+    const names = [...document.querySelectorAll("#localized-name-options [data-language]")];
+    const denominations = [...document.querySelectorAll("#localized-denomination-options [data-language]")];
+    const renderName = () => {
+      const selected = names.find(node => node.dataset.language.toLowerCase().split("-")[0] === language)
+        || names.find(node => node.dataset.language.toLowerCase().split("-")[0] === "ja")
+        || names[0];
+      if (selected) {
+        const heading = document.querySelector("#church-name");
+        heading.textContent = selected.textContent;
+        heading.lang = language;
+      }
+      const selectedDenomination = denominations.find(node => node.dataset.language.toLowerCase().split("-")[0] === language)
+        || denominations.find(node => node.dataset.language.toLowerCase().split("-")[0] === "en")
+        || denominations[0];
+      const denomination = document.querySelector("#denomination-name");
+      if (denomination && selectedDenomination) {
+        denomination.textContent = selectedDenomination.textContent;
+        denomination.lang = language;
+      }
+      picker.value = language;
+    };
+    picker.addEventListener("change", () => {
+      language = picker.value;
+      localStorage.setItem("crossmap.language", language);
+      renderName();
+    });
+    renderName();
+  </script>
 </body>
 </html>

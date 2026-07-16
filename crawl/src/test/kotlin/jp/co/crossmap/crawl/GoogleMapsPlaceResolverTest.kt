@@ -1,6 +1,7 @@
 package jp.co.crossmap.crawl
 
 import java.nio.file.Files
+import java.nio.file.Path
 import jp.co.crossmap.GeoPoint
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -38,15 +39,89 @@ class GoogleMapsPlaceResolverTest {
         assertEquals(GeoPoint(34.847057, 136.9014922), candidate.location)
         assertEquals("https://gracechapel.example.jp/", candidate.websiteUrl)
         assertEquals("キリスト教会", candidate.category)
+        assertEquals(null, candidate.denominationHint)
+    }
+
+    @Test
+    fun preservesRicherSeedAliasesWhenGoogleTitleOnlyContainsLatinName() {
+        val seed = GoogleSavedPlaceSeed(
+            id = "google:8998728770320543438",
+            googleCid = "8998728770320543438",
+            title = "Just Church（ジャスト・チャーチ）",
+            japaneseName = "ジャスト・チャーチ",
+            latinName = "Just Church",
+            googleMapsUrl = "https://www.google.com/maps?cid=8998728770320543438",
+            sourceLists = listOf("教会"),
+        )
+
+        val candidate = GoogleMapsPlaceParser().parse(
+            seed,
+            html("Just Church", "千葉県我孫子市布佐", 35.0, 140.0),
+            now = "2026-07-16T00:00:00Z",
+        )
+
+        assertEquals("ジャスト・チャーチ", candidate.name)
+        assertEquals("Just Church", candidate.latinName)
+    }
+
+    @Test
+    fun resolverParserOwnsMultilingualLocalizationFromRawGoogleTitle() {
+        val resources = generateSequence(Path.of("").toAbsolutePath().normalize()) { it.parent }
+            .first { Files.isRegularFile(it.resolve("settings.gradle.kts")) }
+            .resolve("resources")
+        val dictionaries = ChurchNameEnglishDictionary.load(resources)
+        val localizer = MultilingualChurchNameLocalizer(
+            dictionaries = dictionaries,
+            congregationTerms = CongregationTermDictionary.load(resources),
+            denominations = emptyList(),
+            geonames = mapOf("浜松" to "Hamamatsu", "安城" to "Anjo"),
+        )
+        val title = "ADVM Assembleia de Deus Visão Missionaria Hamamatsu"
+        val seed = GoogleSavedPlaceSeed(
+            id = "google:raw-portuguese",
+            googleCid = "raw-portuguese",
+            title = title,
+            googleMapsUrl = "https://www.google.com/maps?cid=raw-portuguese",
+            sourceLists = listOf("教会"),
+        )
+
+        val candidate = GoogleMapsPlaceParser(localizer).parse(
+            seed,
+            html(title, "静岡県浜松市", 34.71, 137.73),
+            now = "2026-07-16T00:00:00Z",
+        )
+
+            assertEquals("浜松ADVMアッセンブレイア・デ・デウスヴィザォン・ミッショナリア", candidate.name)
+        assertEquals(title, candidate.localizedNames.single { it.languageCode == "pt" }.name)
+        assertTrue(candidate.nameComponents.isNotEmpty())
+        assertEquals(ChurchNamePattern.LATIN_NAME_COMPOSED_TO_JAPANESE, candidate.namePattern)
+
+        val portugueseTitle = "ASSEMBLEIA DE DEUS BELÉM ANJO-SHI"
+        val localizedPageCandidate = GoogleMapsPlaceParser(localizer).parse(
+            GoogleSavedPlaceSeed(
+                id = "google:localized-page",
+                googleCid = "localized-page",
+                title = portugueseTitle,
+                titleLanguages = listOf("pt"),
+                googleMapsUrl = "https://www.google.com/maps?cid=localized-page",
+                sourceLists = listOf("教会"),
+            ),
+            html("アッセンブレイアデデウスべレムANJO-SHI", "愛知県安城市", 34.95, 137.08),
+            now = "2026-07-16T00:00:00Z",
+        )
+
+            assertEquals("安城アッセンブレイア・デ・デウスベレン", localizedPageCandidate.name)
+        assertEquals(portugueseTitle, localizedPageCandidate.localizedNames.single { it.languageCode == "pt" }.name)
+        assertTrue(localizedPageCandidate.nameComponents.all { it.sourceLanguage == "pt" })
     }
 
     @Test
     fun resolvesCachedPagesFiltersNonChurchCatholicPlacesAndWritesAuditReport() {
         val root = Files.createTempDirectory("crossmap-google-place-resolver")
         try {
-            val raw = Files.createDirectories(root.resolve("raw/google-saved-places"))
+            val raw = Files.createDirectories(root.resolve("cache/google-saved-places"))
             val seeds = listOf(
-                seed("2000906460470208781", "カトリック厚木教会", "カトリック教会"),
+                seed("2000906460470208781", "カトリック厚木教会", "カトリック教会").copy(titleLanguages = listOf("ja")),
                 seed("5433858323697585828", "盛岡ドミニカン修道院", "カトリック教会"),
             )
             Files.writeString(raw.resolve("seeds.json"), json.encodeToString(seeds))
@@ -58,9 +133,12 @@ class GoogleMapsPlaceResolverTest {
             val report = GoogleMapsPlaceResolver(
                 pageSource = GoogleMapsPageSource { seed -> GoogleMapsPage(pages.getValue(seed.id), cacheHit = true) },
                 maxConcurrency = 2,
-            ).resolve(root)
+            ).resolve(root, root.resolve("cache"))
             val candidates = json.decodeFromString<List<GooglePlaceChurchCandidate>>(
                 Files.readString(raw.resolve("google-place-candidates.json")),
+            )
+            val enrichedSeeds = json.decodeFromString<List<GoogleSavedPlaceSeed>>(
+                Files.readString(raw.resolve("seeds.json")),
             )
 
             assertEquals(2, report.seeds)
@@ -69,6 +147,10 @@ class GoogleMapsPlaceResolverTest {
             assertEquals(1, report.catholicNonChurchesFiltered)
             assertTrue(report.errors.isEmpty())
             assertEquals("CATHOLIC_JP", candidates.single().denominationHint)
+            assertEquals("カトリック厚木教会", enrichedSeeds.first().japaneseName)
+            assertEquals(listOf("ja"), enrichedSeeds.first().titleLanguages)
+            assertTrue(enrichedSeeds.first().localizedNames.any { it.languageCode == "ja" })
+            assertEquals(null, enrichedSeeds.last().japaneseName, "Filtered non-church seeds remain raw for audit")
             assertTrue(Files.isRegularFile(raw.resolve("google-place-resolution-report.json")))
         } finally {
             root.toFile().deleteRecursively()

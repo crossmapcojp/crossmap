@@ -19,8 +19,8 @@
     },
     {
         "id": "CATHOLIC_JP",
-        "name": "カトリック中央協議会",
-        "aliases": [],
+        "name": "カトリック",
+        "aliases": ["カトリック教会", "カトリック中央協議会"],
         "officialWebsite": "https://www.cbcj.catholic.jp/",
         "proposed": false
     },
@@ -43,7 +43,7 @@
     {
         "id": "HPBC",
         "name": "Hawaii Pacific Baptist Convention",
-        "aliases": ["HPBC", "ハワイ・パシフィック・バプテスト・コンベンション"],
+        "aliases": ["HPBC", "ハワイ・パシフィック・バプテスト・コンベンション", "ハワイ・パシフィック・バプテスト連盟"],
         "officialWebsite": "https://www.hpbaptist.net/",
         "churchListUrlList": ["https://www.hpbaptist.net/location/asia/"],
         "proposed": false
@@ -591,9 +591,12 @@
         "proposed": false
     },
     {
-        "id": "XLSX_8E92CC576638",
+        "id": "HCC",
         "name": "ハレルヤコミュニティチャーチ",
-        "aliases": [],
+        "aliases": [
+            "HCC",
+            "ハレルヤコミュニティーチャーチ"
+        ],
         "officialWebsite": "",
         "proposed": false
     },

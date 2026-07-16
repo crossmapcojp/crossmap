@@ -3,11 +3,23 @@ package jp.co.crossmap.crawl
 import java.math.BigInteger
 import java.nio.file.Files
 import java.nio.file.Path
+import jp.co.crossmap.LocalizedName
 import kotlin.io.path.extension
 import kotlin.io.path.nameWithoutExtension
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+
+object GoogleSavedPlacesLists {
+    const val CHURCH = "教会"
+    const val CATHOLIC_CHURCH = "カトリック教会"
+    const val CATHOLIC_DENOMINATION_ID = "CATHOLIC_JP"
+
+    val DEFAULT: Set<String> = setOf(CHURCH, CATHOLIC_CHURCH)
+
+    fun deterministicDenominationId(sourceLists: Collection<String>): String? =
+        CATHOLIC_DENOMINATION_ID.takeIf { CATHOLIC_CHURCH in sourceLists }
+}
 
 /** Raw, stable seed data read from a Google Takeout Saved Places list. */
 @Serializable
@@ -15,6 +27,12 @@ data class GoogleSavedPlaceSeed(
     val id: String,
     val googleCid: String,
     val title: String,
+    val titleLanguages: List<String> = emptyList(),
+    val japaneseName: String? = null,
+    val latinName: String? = null,
+    val localizedNames: List<LocalizedName> = emptyList(),
+    val nameComponents: List<MultilingualNameComponent> = emptyList(),
+    val namePattern: ChurchNamePattern = ChurchNamePattern.SINGLE_NAME,
     val googleMapsUrl: String,
     val sourceLists: List<String>,
     val note: String? = null,
@@ -35,6 +53,8 @@ data class GoogleSavedPlacesSeedReport(
     val rowsRead: Int,
     val seedsWritten: Int,
     val duplicatesMerged: Int,
+    val namePatternCounts: Map<String, Int> = emptyMap(),
+    val languageCounts: Map<String, Int> = emptyMap(),
     val errors: List<GoogleSavedPlacesSeedError>,
 )
 
@@ -42,6 +62,9 @@ data class GoogleSavedPlacesSeedReport(
  * Reads Google Takeout Saved Places CSV files without depending on the old gmap project.
  * The output deliberately remains raw: later Google-place resolution supplies coordinates,
  * address, website and other fields required by a canonical ChurchRecord.
+ *
+ * @see jp.co.crossmap.crawl.ReadGoogleSavedPlaces for the CLI command that supplies
+ * `inputDirectory` via the `--input` option (e.g. `--input Takeout/Saved`).
  */
 class GoogleSavedPlacesSeedReader(
     private val json: Json = Json { prettyPrint = true; encodeDefaults = true },
@@ -91,6 +114,7 @@ class GoogleSavedPlacesSeedReader(
                         id = "google:$cid",
                         googleCid = cid,
                         title = title,
+                        titleLanguages = ChurchTitleLanguageDetector.detect(title),
                         googleMapsUrl = url,
                         sourceLists = listOf(sourceList),
                         note = columns.optionalValueAt(noteIndex),
@@ -102,6 +126,7 @@ class GoogleSavedPlacesSeedReader(
                     } else {
                         duplicates++
                         seeds[cid] = existing.copy(
+                            titleLanguages = (existing.titleLanguages + candidate.titleLanguages).distinct().sorted(),
                             sourceLists = (existing.sourceLists + sourceList).distinct().sorted(),
                             note = existing.note ?: candidate.note,
                             comment = existing.comment ?: candidate.comment,
@@ -121,11 +146,19 @@ class GoogleSavedPlacesSeedReader(
         Files.createDirectories(output.parent)
         val ordered = seeds.values.sortedWith(compareBy(GoogleSavedPlaceSeed::title, GoogleSavedPlaceSeed::googleCid))
         Files.writeString(output, json.encodeToString(ordered))
-        return GoogleSavedPlacesSeedReport(files.size, rowsRead, ordered.size, duplicates, errors)
+        return GoogleSavedPlacesSeedReport(
+            filesRead = files.size,
+            rowsRead = rowsRead,
+            seedsWritten = ordered.size,
+            duplicatesMerged = duplicates,
+            namePatternCounts = emptyMap(),
+            languageCounts = ordered.flatMap { it.titleLanguages.distinct() }.groupingBy { it }.eachCount().toSortedMap(),
+            errors = errors,
+        )
     }
 
     companion object {
-        val GMAP_DEFAULT_LISTS: Set<String> = setOf("教会", "カトリック教会")
+        val GMAP_DEFAULT_LISTS: Set<String> = GoogleSavedPlacesLists.DEFAULT
 
         fun readExcludedUrls(files: List<Path>): Set<String> = files
             .filter(Files::isRegularFile)

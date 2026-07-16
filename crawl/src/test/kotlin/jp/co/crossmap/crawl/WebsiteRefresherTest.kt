@@ -32,20 +32,20 @@ class WebsiteRefresherTest {
         try {
             val website = "http://127.0.0.1:${server.address.port}/"
             Files.createDirectories(root.resolve("catalog"))
-            Files.createDirectories(root.resolve("crawl"))
+            Files.createDirectories(root.resolve("cache/church-web-pages"))
             Files.writeString(
                 root.resolve("catalog/churches.json"),
                 json.encodeToString(listOf(ChurchRecord("google:906297735827744432", "906297735827744432", "岡山バプテスト教会", "Okayama Baptist Church", address = "〒700-0825 岡山県岡山市北区田町１丁目７−２８", location = GeoPoint(34.6619806, 133.9231824), websiteUrl = website))),
             )
-            Files.writeString(root.resolve("crawl/manifest.json"), "[]")
+            Files.writeString(root.resolve("cache/church-web-pages/manifest.json"), "[]")
 
-            val first = WebsiteRefresher(maxConcurrency = 1, hostDelayMillis = 0).refresh(root)
+            val first = WebsiteRefresher(maxConcurrency = 1, hostDelayMillis = 0).refresh(root, cacheRoot = root.resolve("cache"))
             assertEquals(2, first.fetched)
             val church = json.decodeFromString<List<ChurchRecord>>(Files.readString(root.resolve("catalog/churches.json"))).single()
             assertEquals(setOf("岡山バプテスト教会", "教会案内"), church.pages.map { it.title }.toSet())
             assertTrue(church.pages.any { it.text.contains("バプテスト") })
 
-            val second = WebsiteRefresher(maxConcurrency = 1, hostDelayMillis = 0).refresh(root)
+            val second = WebsiteRefresher(maxConcurrency = 1, hostDelayMillis = 0).refresh(root, cacheRoot = root.resolve("cache"))
             assertEquals(2, second.unchanged)
             assertEquals(0, second.errors)
         } finally {
@@ -69,7 +69,7 @@ class WebsiteRefresherTest {
         val root = Files.createTempDirectory("crossmap-retry")
         try {
             Files.createDirectories(root.resolve("catalog"))
-            Files.createDirectories(root.resolve("crawl"))
+            Files.createDirectories(root.resolve("cache/church-web-pages"))
             Files.writeString(
                 root.resolve("catalog/churches.json"),
                 json.encodeToString(
@@ -85,9 +85,9 @@ class WebsiteRefresherTest {
                     )
                 ),
             )
-            Files.writeString(root.resolve("crawl/manifest.json"), "[]")
+            Files.writeString(root.resolve("cache/church-web-pages/manifest.json"), "[]")
 
-            val report = WebsiteRefresher(maxConcurrency = 1, hostDelayMillis = 0).refresh(root)
+            val report = WebsiteRefresher(maxConcurrency = 1, hostDelayMillis = 0).refresh(root, cacheRoot = root.resolve("cache"))
             assertEquals(1, report.fetched)
             assertEquals(3, attempts.get())
         } finally {
@@ -108,22 +108,22 @@ class WebsiteRefresherTest {
             val html = "<html><head><title>聖アンデレ教会</title></head><body>礼拝スケジュール 子供と祝うユーカリスト</body></html>".toByteArray()
             val hash = html.sha256()
             Files.createDirectories(root.resolve("catalog"))
-            Files.createDirectories(root.resolve("crawl/pages"))
-            Files.write(root.resolve("crawl/pages/$hash.html"), html)
-            Files.writeString(root.resolve("crawl/url-cache-map.json"), json.encodeToString(mapOf(website.sha1() to hash)))
+            Files.createDirectories(root.resolve("cache/church-web-pages/pages"))
+            Files.write(root.resolve("cache/church-web-pages/pages/$hash.html"), html)
+            Files.writeString(root.resolve("cache/church-web-pages/url-cache-map.json"), json.encodeToString(mapOf(website.sha1() to hash)))
             Files.writeString(
                 root.resolve("catalog/churches.json"),
                 json.encodeToString(listOf(ChurchRecord("google:2225537460932230335", name = "日本聖公会東京聖アンデレ教会", englishName = "Tokyo St Andrew's Church", address = "〒105-0011 東京都港区芝公園３丁目６−１８", location = GeoPoint(35.6601808, 139.743601), websiteUrl = website))),
             )
-            Files.writeString(root.resolve("crawl/manifest.json"), "[]")
+            Files.writeString(root.resolve("cache/church-web-pages/manifest.json"), "[]")
 
-            val report = WebsiteRefresher(maxConcurrency = 1, hostDelayMillis = 0).refresh(root)
+            val report = WebsiteRefresher(maxConcurrency = 1, hostDelayMillis = 0).refresh(root, cacheRoot = root.resolve("cache"))
 
             assertEquals(1, report.fetched)
             assertEquals(0, requests.get())
             val church = json.decodeFromString<List<ChurchRecord>>(Files.readString(root.resolve("catalog/churches.json"))).single()
             assertTrue(church.pages.single().text.contains("ユーカリスト"))
-            val manifest = json.decodeFromString<List<CrawlManifestEntry>>(Files.readString(root.resolve("crawl/manifest.json")))
+            val manifest = json.decodeFromString<List<CrawlManifestEntry>>(Files.readString(root.resolve("cache/church-web-pages/manifest.json")))
             assertEquals("IMPORTED_CACHE", manifest.single().acquisition)
         } finally {
             server.stop(0)

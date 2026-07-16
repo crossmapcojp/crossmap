@@ -19,9 +19,11 @@ class DataCleanupTest {
     @Test
     fun appliesProgrammaticThenLlmThenHumanPrecedenceAndKeepsUncertainForReview() = runBlocking {
         val root = Files.createTempDirectory("crossmap-cleanup")
+        val cache = root.resolve("cache")
         try {
             Files.createDirectories(root.resolve("catalog"))
             Files.createDirectories(root.resolve("cleanup"))
+            Files.createDirectories(cache.resolve("cleanup"))
             val churches = listOf(
                 church("google:2225537460932230335", "日本聖公会東京聖アンデレ教会"),
                 church("google:10291805004018342477", "フルゴスペル八王子教会"),
@@ -31,7 +33,7 @@ class DataCleanupTest {
             )
             Files.writeString(root.resolve("catalog/churches.json"), json.encodeToString(churches))
             Files.writeString(
-                root.resolve("cleanup/denomination-candidates.json"),
+                cache.resolve("cleanup/denomination-candidates.json"),
                 json.encodeToString(
                     listOf(
                         DenominationCandidate("ANGLICAN_JP", "日本聖公会東京聖アンデレ教会", source = "日本聖公会公式教会一覧"),
@@ -51,7 +53,7 @@ class DataCleanupTest {
                 else EntityMatchDecision("JBC", 0.72, reasoning = "教会名の類似性が弱い")
             }
 
-            val report = PostCrawlCleanup(matcher, confidenceThreshold = 0.80).run(root)
+            val report = PostCrawlCleanup(matcher, confidenceThreshold = 0.80).run(root, cacheRoot = cache)
             val updated = json.decodeFromString<List<ChurchRecord>>(Files.readString(root.resolve("catalog/churches.json"))).associateBy { it.id }
 
             assertEquals(1, report.programmaticAccepted)
@@ -65,7 +67,7 @@ class DataCleanupTest {
             assertEquals(DeterminationSource.LLM, updated.getValue("google:10291805004018342477").determinations.single().source)
             assertEquals(NOT_DETERMINED, updated.getValue("google:10009540859480007974").denominationId)
             assertEquals(DeterminationSource.HUMAN, updated.getValue("google:12083726217471771398").determinations.single().source)
-            assertTrue(Files.readString(root.resolve("cleanup/decisions.json")).contains("教会名の類似性が弱い"))
+            assertTrue(Files.readString(cache.resolve("cleanup/decisions.json")).contains("教会名の類似性が弱い"))
         } finally {
             root.toFile().deleteRecursively()
         }

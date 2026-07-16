@@ -44,14 +44,18 @@ resources/crawl
 resources/raw
 !resources/raw/README.md
 
-resources/cleanup/english-name-llm-cache.json
-
 /experiments/
 /output/
-/cache/
 /downloads/
 /.crossmap/
 /webclient/church/
+
+# Typed processing caches: payloads are ignored, directory contracts are committed.
+/cache/*
+!/cache/README.md
+!/cache/*/
+/cache/*/*
+!/cache/*/README.md
 
 # Runtime diagnostics
 *.log

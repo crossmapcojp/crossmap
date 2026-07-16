@@ -71,16 +71,16 @@ class HttpDirectoryPageLoader(
 }
 
 class CachedDirectoryPageLoader(
-    private val resourcesRoot: Path,
+    private val cacheDirectory: Path,
     private val fallback: DirectoryPageLoader = HttpDirectoryPageLoader(),
     private val json: Json = Json { ignoreUnknownKeys = true },
 ) : DirectoryPageLoader {
     override fun load(url: String): LoadedDirectoryPage {
-        val mapFile = resourcesRoot.resolve("crawl/url-cache-map.json")
+        val mapFile = cacheDirectory.resolve("url-cache-map.json")
         if (Files.isRegularFile(mapFile)) {
             val cacheMap = json.decodeFromString<Map<String, String>>(Files.readString(mapFile))
             val hash = cacheMap[url.sha1()]
-            val page = hash?.let { resourcesRoot.resolve("crawl/pages/$it.html") }
+            val page = hash?.let { cacheDirectory.resolve("pages/$it.html") }
             if (page != null && Files.isRegularFile(page)) return LoadedDirectoryPage(url, Files.readString(page))
         }
         return fallback.load(url)
@@ -93,11 +93,15 @@ class OfficialDirectoryCrawler(
     private val loader: DirectoryPageLoader? = null,
     private val json: Json = Json { ignoreUnknownKeys = true; prettyPrint = true; encodeDefaults = true },
 ) {
-    fun crawl(resourcesRoot: Path): DirectoryCrawlReport {
+    fun crawl(
+        resourcesRoot: Path,
+        cacheRoot: Path = CrossmapPaths.defaultCacheRoot(resourcesRoot),
+    ): DirectoryCrawlReport {
+        val paths = CrossmapPaths(resourcesRoot, cacheRoot)
         val sourceFile = resourcesRoot.resolve("sources/denominations.json")
         require(Files.isRegularFile(sourceFile)) { "Missing standalone denomination source catalog: $sourceFile" }
         val sources = json.decodeFromString<List<DenominationDirectorySource>>(Files.readString(sourceFile))
-        val pageLoader = loader ?: CachedDirectoryPageLoader(resourcesRoot, json = json)
+        val pageLoader = loader ?: CachedDirectoryPageLoader(paths.churchWebPages, json = json)
         val evidence = mutableListOf<EvidenceRecord>()
         var pages = 0
         var errors = 0
@@ -178,8 +182,8 @@ class OfficialDirectoryCrawler(
             }
         }
         val sortedEvidence = evidence.distinctBy { it.id }.sortedBy { it.id }
-        EvidenceStore(resourcesRoot, json).writeEvidence("evidence/denomination-directory.json", sortedEvidence)
-        val candidateFile = resourcesRoot.resolve("cleanup/denomination-candidates.json")
+        EvidenceStore(cacheRoot, json).writeEvidence("cleanup/denomination-directory-evidence.json", sortedEvidence)
+        val candidateFile = paths.cleanup.resolve("denomination-candidates.json")
         val existing = if (Files.isRegularFile(candidateFile)) {
             json.decodeFromString<List<DenominationCandidate>>(Files.readString(candidateFile))
         } else emptyList()

@@ -18,6 +18,11 @@ class StaticSiteGeneratorTest {
     }
 
     @Test
+    fun denominationAlreadyPresentInEnglishChurchNameIsNotDuplicatedInUrl() {
+        assertEquals("jelc-glory-church", StaticSiteGenerator().pageSlug("jelc", "JELC Glory Church"))
+    }
+
+    @Test
     fun independentChristianAssemblyKeepsAssemblyAndOmitsDenomination() {
         assertEquals("kyodo-christian-assembly", StaticSiteGenerator().pageSlug(null, "Kyodo Christian Assembly"))
     }
@@ -46,8 +51,11 @@ class StaticSiteGeneratorTest {
                 generated.canonicalUrl,
             )
             val html = Files.readString(generated.path)
-            assertTrue(html.contains("<h1>東京ソフィア長老教会</h1>"))
+            assertTrue(html.contains("<h1 id=\"church-name\">東京ソフィア長老教会</h1>"))
             assertTrue(html.contains("Tokyo Sophia International Presbyterian Church"))
+            assertTrue(html.contains("id=\"language\""))
+            assertTrue(html.contains("data-language=\"ja\""))
+            assertTrue(html.contains("data-language=\"en\""))
             assertTrue(html.contains("Olivet Assembly Japan"))
             assertTrue(html.contains("rel=\"canonical\" href=\"${generated.canonicalUrl}\""))
             assertTrue(html.contains("東京都新宿区西早稲田"))
@@ -146,6 +154,70 @@ class StaticSiteGeneratorTest {
                 ),
                 generated.map { it.fileName }.toSet(),
             )
+        } finally {
+            output.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun collisionLocationsAreDerivedFromRealJapaneseAddresses() {
+        val first = tokyoSophia()
+        val second = tokyoSophia().copy(
+            id = "official:yokohama-sophia",
+            name = "横浜ソフィア長老教会",
+            address = "神奈川県横浜市中区山下町",
+        )
+        val denominations = mapOf("XLSX_18816F940131" to "Olivet Assembly Japan")
+
+        val locations = ChurchPageCollisionResolver.resolve(
+            listOf(first, second),
+            denominations,
+            mapOf("東京都" to "Tokyo", "横浜市" to "Yokohama"),
+        )
+
+        assertEquals("Tokyo", locations[first.id])
+        assertEquals("Yokohama", locations[second.id])
+    }
+
+    @Test
+    fun collisionPrefixDoesNotCreateCollisionWithExistingBaseSlug() {
+        val tokyoLife = tokyoSophia().copy(
+            id = "real:tokyo-life-existing",
+            englishName = "Tokyo Life Church",
+            denominationId = "INDEPENDENT_CHURCH",
+        )
+        val firstLife = tokyoLife.copy(
+            id = "real:life-tokyo",
+            englishName = "Life Church",
+            address = "東京都新宿区",
+        )
+        val secondLife = firstLife.copy(
+            id = "real:life-osaka",
+            address = "大阪府大阪市",
+        )
+
+        val locations = ChurchPageCollisionResolver.resolve(
+            listOf(tokyoLife, firstLife, secondLife),
+            emptyMap(),
+            mapOf("東京都" to "Tokyo", "新宿区" to "Shinjuku", "大阪市" to "Osaka"),
+        )
+
+        assertEquals("Shinjuku", locations[firstLife.id])
+        assertEquals("Osaka", locations[secondLife.id])
+    }
+
+    @Test
+    fun regenerationRemovesObsoleteGeneratedHtmlFiles() {
+        val output = Files.createTempDirectory("crossmap-static-site-stale")
+        Files.writeString(output.resolve("obsolete-church.html"), "stale")
+        try {
+            StaticSiteGenerator().generate(
+                churches = listOf(tokyoSophia()),
+                denominationEnglishNames = mapOf("XLSX_18816F940131" to "Olivet Assembly Japan"),
+                outputDirectory = output,
+            )
+
+            assertEquals(false, Files.exists(output.resolve("obsolete-church.html")))
         } finally {
             output.toFile().deleteRecursively()
         }

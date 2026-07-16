@@ -1,0 +1,201 @@
+{
+    "filesRead": 2,
+    "rowsRead": 10170,
+    "seedsWritten": 10140,
+    "duplicatesMerged": 4,
+    "namePatternCounts": {
+        "JAPANESE_ABBREVIATION_WITH_FULL_NAME_PARENTHETICAL": 4,
+        "JAPANESE_ABBREVIATION_WITH_FULL_NAME_WHITESPACE": 9,
+        "JAPANESE_NAME_WITH_BRANCH_PARENTHETICAL": 10,
+        "JAPANESE_NAME_WITH_CHURCH_DESCRIPTOR": 5,
+        "JAPANESE_NAME_WITH_JAPANESE_ALIAS": 97,
+        "JAPANESE_NAME_WITH_KOREAN_PARENTHETICAL": 4,
+        "JAPANESE_NAME_WITH_LATIN_ABBREVIATION": 3,
+        "JAPANESE_NAME_WITH_LATIN_PARENTHETICAL": 12,
+        "JAPANESE_NAME_WITH_LATIN_PIPE_ALIAS": 2,
+        "JAPANESE_NAME_WITH_LATIN_WHITESPACE_ALIAS": 39,
+        "KOREAN_NAME_WITH_JAPANESE_PARENTHETICAL": 1,
+        "LATIN_ABBREVIATION_WITH_FULL_NAME": 2,
+        "LATIN_NAME_WITH_ABBREVIATION": 10,
+        "LATIN_NAME_WITH_JAPANESE_PARENTHETICAL": 12,
+        "LATIN_NAME_WITH_JAPANESE_WHITESPACE_ALIAS": 64,
+        "LATIN_PIPE_ALIASES": 1,
+        "MULTILINGUAL_SLASH_ALIASES": 13,
+        "SINGLE_NAME": 9852
+    },
+    "languageCounts": {
+        "de": 1,
+        "en": 563,
+        "es": 1,
+        "et": 1,
+        "ga": 4,
+        "id": 4,
+        "it": 2,
+        "ja": 10140,
+        "ko": 670,
+        "mt": 1,
+        "pt": 63,
+        "ro": 1,
+        "sl": 1,
+        "sw": 5,
+        "zh": 6
+    },
+    "errors": [
+        {
+            "sourceFile": "教会.csv",
+            "rowNumber": 469,
+            "title": null,
+            "message": "Saved place title is blank"
+        },
+        {
+            "sourceFile": "教会.csv",
+            "rowNumber": 470,
+            "title": null,
+            "message": "Saved place title is blank"
+        },
+        {
+            "sourceFile": "教会.csv",
+            "rowNumber": 471,
+            "title": null,
+            "message": "Saved place title is blank"
+        },
+        {
+            "sourceFile": "教会.csv",
+            "rowNumber": 472,
+            "title": null,
+            "message": "Saved place title is blank"
+        },
+        {
+            "sourceFile": "教会.csv",
+            "rowNumber": 474,
+            "title": null,
+            "message": "Saved place title is blank"
+        },
+        {
+            "sourceFile": "教会.csv",
+            "rowNumber": 478,
+            "title": null,
+            "message": "Saved place title is blank"
+        },
+        {
+            "sourceFile": "教会.csv",
+            "rowNumber": 483,
+            "title": null,
+            "message": "Saved place title is blank"
+        },
+        {
+            "sourceFile": "教会.csv",
+            "rowNumber": 484,
+            "title": null,
+            "message": "Saved place title is blank"
+        },
+        {
+            "sourceFile": "教会.csv",
+            "rowNumber": 485,
+            "title": null,
+            "message": "Saved place title is blank"
+        },
+        {
+            "sourceFile": "教会.csv",
+            "rowNumber": 486,
+            "title": null,
+            "message": "Saved place title is blank"
+        },
+        {
+            "sourceFile": "教会.csv",
+            "rowNumber": 487,
+            "title": null,
+            "message": "Saved place title is blank"
+        },
+        {
+            "sourceFile": "教会.csv",
+            "rowNumber": 488,
+            "title": null,
+            "message": "Saved place title is blank"
+        },
+        {
+            "sourceFile": "教会.csv",
+            "rowNumber": 511,
+            "title": null,
+            "message": "Saved place title is blank"
+        },
+        {
+            "sourceFile": "教会.csv",
+            "rowNumber": 538,
+            "title": null,
+            "message": "Saved place title is blank"
+        },
+        {
+            "sourceFile": "教会.csv",
+            "rowNumber": 576,
+            "title": null,
+            "message": "Saved place title is blank"
+        },
+        {
+            "sourceFile": "教会.csv",
+            "rowNumber": 579,
+            "title": null,
+            "message": "Saved place title is blank"
+        },
+        {
+            "sourceFile": "教会.csv",
+            "rowNumber": 580,
+            "title": null,
+            "message": "Saved place title is blank"
+        },
+        {
+            "sourceFile": "教会.csv",
+            "rowNumber": 581,
+            "title": null,
+            "message": "Saved place title is blank"
+        },
+        {
+            "sourceFile": "教会.csv",
+            "rowNumber": 582,
+            "title": null,
+            "message": "Saved place title is blank"
+        },
+        {
+            "sourceFile": "教会.csv",
+            "rowNumber": 583,
+            "title": null,
+            "message": "Saved place title is blank"
+        },
+        {
+            "sourceFile": "教会.csv",
+            "rowNumber": 584,
+            "title": null,
+            "message": "Saved place title is blank"
+        },
+        {
+            "sourceFile": "教会.csv",
+            "rowNumber": 585,
+            "title": null,
+            "message": "Saved place title is blank"
+        },
+        {
+            "sourceFile": "教会.csv",
+            "rowNumber": 586,
+            "title": null,
+            "message": "Saved place title is blank"
+        },
+        {
+            "sourceFile": "教会.csv",
+            "rowNumber": 587,
+            "title": null,
+            "message": "Saved place title is blank"
+        },
+        {
+            "sourceFile": "教会.csv",
+            "rowNumber": 588,
+            "title": null,
+            "message": "Saved place title is blank"
+        },
+        {
+            "sourceFile": "教会.csv",
+            "rowNumber": 6178,
+            "title": "指定した地点",
+            "message": "URL does not contain a Google CID: https://www.google.com/maps/search/35.6684267,139.6944287"
+        }
+    ]
+}

@@ -20,7 +20,7 @@ class GoogleSavedPlacesCleanupWorkflowTest {
     fun promotesResolvedCandidatesOnlyAfterExistingCleanupAndMandatoryEnglishNames() = runBlocking {
         val root = Files.createTempDirectory("crossmap-google-cleanup-workflow")
         try {
-            Files.createDirectories(root.resolve("raw/google-saved-places"))
+            Files.createDirectories(root.resolve("cache/google-saved-places"))
             Files.createDirectories(root.resolve("catalog"))
             val candidates = listOf(
                 candidate(
@@ -28,16 +28,18 @@ class GoogleSavedPlacesCleanupWorkflowTest {
                     name = "（宗教法人） 同盟福音グレースチャペル武豊",
                     address = "〒470-2303 愛知県知多郡武豊町１丁目４７番地",
                     denomination = null,
+                    latinName = "Grace",
                 ),
                 candidate(
                     cid = "2000906460470208781",
                     name = "カトリック厚木教会",
                     address = "〒243-0014 神奈川県厚木市旭町２丁目７−１１",
-                    denomination = "CATHOLIC_JP",
+                    denomination = null,
+                    sourceList = "カトリック教会",
                 ),
             )
             Files.writeString(
-                root.resolve("raw/google-saved-places/google-place-candidates.json"),
+                root.resolve("cache/google-saved-places/google-place-candidates.json"),
                 json.encodeToString(candidates),
             )
             val existing = listOf(
@@ -82,6 +84,7 @@ class GoogleSavedPlacesCleanupWorkflowTest {
                 enableLlm = false,
                 refreshWebsites = false,
                 crawlDirectories = false,
+                cacheRoot = root.resolve("cache"),
             )
             val promoted = json.decodeFromString<List<ChurchRecord>>(
                 Files.readString(root.resolve("catalog/churches.json")),
@@ -100,23 +103,39 @@ class GoogleSavedPlacesCleanupWorkflowTest {
                 promoted.getValue(candidates[0].id).determinations.single { it.field == "englishName" }.source,
             )
             assertEquals("CATHOLIC_JP", promoted.getValue(candidates[1].id).denominationId)
-            assertTrue(Files.isRegularFile(root.resolve("cleanup/google-saved-places-pending.json")))
+            assertEquals(
+                DeterminationSource.PROGRAMMATIC,
+                promoted.getValue(candidates[1].id).determinations.single { it.field == "denominationId" }.source,
+            )
+            assertEquals(
+                listOf("Google Saved Places list: カトリック教会"),
+                promoted.getValue(candidates[1].id).determinations.single { it.field == "denominationId" }.evidence,
+            )
+            assertTrue(Files.isRegularFile(root.resolve("cache/cleanup/google-saved-places-pending.json")))
         } finally {
             root.toFile().deleteRecursively()
         }
     }
 
-    private fun candidate(cid: String, name: String, address: String, denomination: String?) =
+    private fun candidate(
+        cid: String,
+        name: String,
+        address: String,
+        denomination: String?,
+        latinName: String? = null,
+        sourceList: String = if (denomination == "CATHOLIC_JP") "カトリック教会" else "教会",
+    ) =
         GooglePlaceChurchCandidate(
             id = "google:$cid",
             googleCid = cid,
             name = name,
+            latinName = latinName,
             address = address,
             location = GeoPoint(35.0, 136.0),
             websiteUrl = "https://www.google.com/maps?cid=$cid",
             category = "キリスト教会",
             denominationHint = denomination,
-            sourceLists = listOf(if (denomination == "CATHOLIC_JP") "カトリック教会" else "教会"),
+            sourceLists = listOf(sourceList),
             resolvedAt = "2026-07-14T08:00:00Z",
         )
 

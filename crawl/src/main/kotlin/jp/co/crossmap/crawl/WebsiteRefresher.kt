@@ -40,10 +40,12 @@ class WebsiteRefresher(
     fun refresh(
         resourcesRoot: Path,
         catalogFile: Path = resourcesRoot.resolve("catalog/churches.json"),
+        cacheRoot: Path = CrossmapPaths.defaultCacheRoot(resourcesRoot),
     ): RefreshReport {
         require(maxConcurrency in 1..32) { "maxConcurrency must be between 1 and 32" }
-        val manifestFile = resourcesRoot.resolve("crawl/manifest.json")
-        val urlCacheFile = resourcesRoot.resolve("crawl/url-cache-map.json")
+        val webCache = CrossmapPaths(resourcesRoot, cacheRoot).churchWebPages
+        val manifestFile = webCache.resolve("manifest.json")
+        val urlCacheFile = webCache.resolve("url-cache-map.json")
         urlCache = if (Files.isRegularFile(urlCacheFile)) json.decodeFromString(Files.readString(urlCacheFile)) else emptyMap()
         val churches = json.decodeFromString<List<ChurchRecord>>(Files.readString(catalogFile))
         val oldManifest = if (Files.isRegularFile(manifestFile)) {
@@ -52,7 +54,7 @@ class WebsiteRefresher(
         val manifestByUrl = oldManifest.associateBy { it.churchId to it.requestedUrl }
         val executor = Executors.newFixedThreadPool(maxConcurrency)
         val results = try {
-            executor.invokeAll(churches.map { church -> Callable { refreshChurch(church, resourcesRoot, manifestByUrl) } })
+            executor.invokeAll(churches.map { church -> Callable { refreshChurch(church, webCache, manifestByUrl) } })
                 .map { it.get() }
         } finally {
             executor.shutdown()
@@ -78,7 +80,7 @@ class WebsiteRefresher(
 
     private fun refreshChurch(
         church: ChurchRecord,
-        resourcesRoot: Path,
+        webCache: Path,
         previous: Map<Pair<String, String>, CrawlManifestEntry>,
     ): ChurchRefresh {
         val home = church.websiteUrl.takeIf { it.startsWith("http://") || it.startsWith("https://") }
@@ -97,7 +99,7 @@ class WebsiteRefresher(
             val url = queue.removeFirst()
             if (!visited.add(url)) continue
             if (url.sha1() !in urlCache && !allowed(url)) continue
-            val result = fetch(church.id, url, previous[church.id to url], resourcesRoot)
+            val result = fetch(church.id, url, previous[church.id to url], webCache)
             entries += result.entry
             result.page?.let { page ->
                 pages += page
@@ -115,8 +117,8 @@ class WebsiteRefresher(
 
     private data class FetchResult(val entry: CrawlManifestEntry, val page: CrawledPage?, val html: String?)
 
-    private fun fetch(churchId: String, url: String, previous: CrawlManifestEntry?, resourcesRoot: Path): FetchResult {
-        if (previous == null) cached(churchId, url, resourcesRoot)?.let { return it }
+    private fun fetch(churchId: String, url: String, previous: CrawlManifestEntry?, webCache: Path): FetchResult {
+        if (previous == null) cached(churchId, url, webCache)?.let { return it }
         return runCatching {
             throttle(URI(url).host.orEmpty())
             val builder = HttpRequest.newBuilder(URI(url)).timeout(Duration.ofSeconds(30))
@@ -133,8 +135,8 @@ class WebsiteRefresher(
             require(contentType.contains("html", ignoreCase = true) || contentType.isBlank()) { "Unsupported content type $contentType" }
             val bytes = response.body()
             val hash = bytes.sha256()
-            val relative = Path.of("crawl/pages", "$hash.html")
-            val cache = resourcesRoot.resolve(relative)
+            val relative = Path.of("pages", "$hash.html")
+            val cache = webCache.resolve(relative)
             Files.createDirectories(cache.parent)
             if (!Files.exists(cache)) Files.write(cache, bytes)
             val html = bytes.toString(Charsets.UTF_8)
@@ -175,10 +177,10 @@ class WebsiteRefresher(
         }
     }
 
-    private fun cached(churchId: String, url: String, resourcesRoot: Path): FetchResult? {
+    private fun cached(churchId: String, url: String, webCache: Path): FetchResult? {
         val hash = urlCache[url.sha1()] ?: return null
-        val relative = Path.of("crawl/pages", "$hash.html")
-        val file = resourcesRoot.resolve(relative)
+        val relative = Path.of("pages", "$hash.html")
+        val file = webCache.resolve(relative)
         if (!Files.isRegularFile(file)) return null
         val bytes = Files.readAllBytes(file)
         val html = bytes.toString(Charsets.UTF_8)

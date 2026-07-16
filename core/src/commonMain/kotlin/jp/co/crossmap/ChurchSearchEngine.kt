@@ -2,7 +2,7 @@ package jp.co.crossmap
 
 import kotlinx.serialization.json.Json
 import okio.Path
-import org.gnit.lucenekmp.analysis.ja.JapaneseAnalyzer
+import org.gnit.lucenekmp.analysis.tokenattributes.CharTermAttribute
 import org.gnit.lucenekmp.document.LatLonPoint
 import org.gnit.lucenekmp.index.StandardDirectoryReader
 import org.gnit.lucenekmp.index.Term
@@ -10,6 +10,7 @@ import org.gnit.lucenekmp.queryparser.classic.MultiFieldQueryParser
 import org.gnit.lucenekmp.queryparser.classic.QueryParser
 import org.gnit.lucenekmp.search.BooleanClause
 import org.gnit.lucenekmp.search.BooleanQuery
+import org.gnit.lucenekmp.search.BoostQuery
 import org.gnit.lucenekmp.search.IndexSearcher
 import org.gnit.lucenekmp.search.MatchAllDocsQuery
 import org.gnit.lucenekmp.search.Query
@@ -20,10 +21,13 @@ class ChurchSearchEngine(
     private val indexPath: Path,
     private val geonames: List<GeoName>,
     private val indexVersion: String = "development",
+    private val churchPageUrls: Map<String, String> = emptyMap(),
+    private val languageCode: String = "ja",
 ) {
     private val resolver = GeoNameResolver(geonames)
     private val json = Json { ignoreUnknownKeys = true }
-    private val analyzer = JapaneseAnalyzer()
+    private val normalizedLanguage = languageCode.substringBefore('-').lowercase()
+    private val analyzer = ChurchIndex.analyzer(normalizedLanguage)
 
     fun church(churchId: String): ChurchDetailResponse? {
         val directory = FSDirectory.open(indexPath)
@@ -39,6 +43,9 @@ class ChurchSearchEngine(
                     churchId = record.id,
                     name = record.name,
                     englishName = record.englishName,
+                    localizedNames = record.localizedNames,
+                    localizedDenominationNames = record.localizedDenominationNames,
+                    titleLanguages = record.titleLanguages,
                     denominationId = record.denominationId,
                     category = record.category,
                     address = record.address,
@@ -77,7 +84,7 @@ class ChurchSearchEngine(
         return try {
             StandardDirectoryReader.open(directory, null, null).use { reader ->
             val searcher = IndexSearcher(reader)
-            val query = buildQuery(resolved)
+            val query = buildQuery(resolved, request.titleLanguages)
             val topDocs = searcher.search(query, request.offset + request.limit)
             val storedFields = searcher.storedFields()
             val hits = topDocs.scoreDocs.drop(request.offset).map { scoreDoc ->
@@ -90,6 +97,9 @@ class ChurchSearchEngine(
                     churchId = record.id,
                     name = record.name,
                     englishName = record.englishName,
+                    localizedNames = record.localizedNames,
+                    localizedDenominationNames = record.localizedDenominationNames,
+                    titleLanguages = record.titleLanguages,
                     denominationId = record.denominationId,
                     category = record.category,
                     address = record.address,
@@ -99,6 +109,7 @@ class ChurchSearchEngine(
                     distanceKm = distance,
                     matchedPages = matchingPages(record.pages, resolved.textQuery),
                     socialProfiles = record.socialProfiles,
+                    detailUrl = churchPageUrls[record.id],
                 )
             }
             ChurchSearchResponse(
@@ -117,33 +128,31 @@ class ChurchSearchEngine(
         }
     }
 
-    private fun buildQuery(resolved: ResolvedGeoQuery): Query {
+    private fun buildQuery(resolved: ResolvedGeoQuery, titleLanguages: List<String>): Query {
         val searchableText = removeGenericChurchWordsWhenQualified(resolved.textQuery)
         val textQuery = if (searchableText.isBlank()) {
             MatchAllDocsQuery()
         } else {
-            MultiFieldQueryParser(
-                arrayOf(
-                    ChurchIndex.FIELD_NAME,
-                    ChurchIndex.FIELD_CATEGORY,
-                    ChurchIndex.FIELD_DENOMINATION,
-                    ChurchIndex.FIELD_ADDRESS,
-                    ChurchIndex.FIELD_CONTENT,
-                    ChurchIndex.FIELD_SOCIAL,
-                ),
+            val fields = linkedMapOf(
+                ChurchIndex.FIELD_NAME to 8f,
+                ChurchIndex.localizedNameField(normalizedLanguage) to 8f,
+                ChurchIndex.FIELD_GEONAME to 6f,
+                ChurchIndex.FIELD_DENOMINATION to 5f,
+            )
+            if (normalizedLanguage == "ja") {
+                fields[ChurchIndex.FIELD_CATEGORY] = 5f
+                fields[ChurchIndex.FIELD_ADDRESS] = 3f
+                fields[ChurchIndex.FIELD_CONTENT] = 1f
+                fields[ChurchIndex.FIELD_SOCIAL] = 1f
+            }
+            runCatching { MultiFieldQueryParser(
+                fields.keys.toTypedArray(),
                 analyzer,
-                mapOf(
-                    ChurchIndex.FIELD_NAME to 8f,
-                    ChurchIndex.FIELD_CATEGORY to 5f,
-                    ChurchIndex.FIELD_DENOMINATION to 5f,
-                    ChurchIndex.FIELD_ADDRESS to 3f,
-                    ChurchIndex.FIELD_CONTENT to 1f,
-                    ChurchIndex.FIELD_SOCIAL to 1f,
-                ),
-            ).apply { setDefaultOperator(QueryParser.Operator.AND) }.parse(escapeLuceneSyntax(searchableText))
-                ?: MatchAllDocsQuery()
+                fields,
+            ).apply { setDefaultOperator(QueryParser.Operator.AND) }.parse(escapeLuceneSyntax(searchableText)) }
+                .getOrNull() ?: analyzedMultiFieldQuery(searchableText, fields)
         }
-        if (resolved.locations.isEmpty()) return textQuery
+        if (resolved.locations.isEmpty()) return withTitleLanguageFilter(textQuery, titleLanguages)
 
         val geoUnion = BooleanQuery.Builder().apply {
             resolved.locations.flatMap(::geoAreas).forEach { location ->
@@ -158,12 +167,62 @@ class ChurchSearchEngine(
                 )
             }
         }.build()
-        return BooleanQuery.Builder().apply {
+        val geoQuery = BooleanQuery.Builder().apply {
             add(textQuery, BooleanClause.Occur.MUST)
             add(geoUnion, BooleanClause.Occur.FILTER)
-            resolved.locations.map { it.matchedText }.filter { it.isNotBlank() }.distinct().forEach { placeName ->
-                QueryParser(ChurchIndex.FIELD_ADDRESS, analyzer).parse(escapeLuceneSyntax(placeName))?.let {
-                    add(it, BooleanClause.Occur.SHOULD)
+            val addressLocations = resolved.locations.filter {
+                normalizedLanguage == "ja" && it.type != GeoNameType.DEVICE
+            }
+            val addressUnion = BooleanQuery.Builder().apply {
+                addressLocations.map { it.name }.filter { it.isNotBlank() }.distinct().forEach { placeName ->
+                    QueryParser(ChurchIndex.FIELD_ADDRESS, analyzer).parse(escapeLuceneSyntax(placeName))?.let {
+                        add(it, BooleanClause.Occur.SHOULD)
+                    }
+                }
+            }.build()
+            if (addressLocations.isNotEmpty()) add(addressUnion, BooleanClause.Occur.FILTER)
+            val nameFields = arrayOf(ChurchIndex.FIELD_NAME, ChurchIndex.localizedNameField(normalizedLanguage))
+            addressLocations.map { it.matchedText }.filter { it.isNotBlank() }.distinct().forEach { placeName ->
+                MultiFieldQueryParser(nameFields, analyzer).parse(escapeLuceneSyntax(placeName))?.let {
+                    add(BoostQuery(it, 6f), BooleanClause.Occur.SHOULD)
+                }
+            }
+        }.build()
+        return withTitleLanguageFilter(geoQuery, titleLanguages)
+    }
+
+    private fun withTitleLanguageFilter(query: Query, titleLanguages: List<String>): Query {
+        val normalized = titleLanguages.map { it.substringBefore('-').lowercase() }.filter(String::isNotBlank).distinct()
+        if (normalized.isEmpty()) return query
+        val languages = BooleanQuery.Builder().apply {
+            normalized.forEach { language ->
+                add(TermQuery(Term(ChurchIndex.FIELD_TITLE_LANGUAGE, language)), BooleanClause.Occur.SHOULD)
+            }
+        }.build()
+        return BooleanQuery.Builder().apply {
+            add(query, BooleanClause.Occur.MUST)
+            add(languages, BooleanClause.Occur.FILTER)
+        }.build()
+    }
+
+    private fun analyzedMultiFieldQuery(text: String, fields: Map<String, Float>): Query {
+        return BooleanQuery.Builder().apply {
+            fields.forEach { (field, boost) ->
+                val terms = buildList {
+                    analyzer.tokenStream(field, text).use { stream ->
+                        val term = stream.addAttribute(CharTermAttribute::class)
+                        stream.reset()
+                        while (stream.incrementToken()) add(term.toString())
+                        stream.end()
+                    }
+                }.distinct()
+                if (terms.isNotEmpty()) {
+                    val withinField = BooleanQuery.Builder().apply {
+                        terms.forEach { token ->
+                            add(TermQuery(Term(field, token)), BooleanClause.Occur.MUST)
+                        }
+                    }.build()
+                    add(BoostQuery(withinField, boost), BooleanClause.Occur.SHOULD)
                 }
             }
         }.build()
@@ -195,6 +254,7 @@ class ChurchSearchEngine(
     }
 
     private fun matchingPages(pages: List<CrawledPage>, query: String): List<MatchedPage> {
+        if (normalizedLanguage != "ja") return emptyList()
         if (query.isBlank()) return pages.take(1).map { MatchedPage(it.url, it.title, snippet(it.text, "")) }
         val terms = query.split(Regex("\\s+")).filter { it.isNotBlank() }
         return pages.asSequence().filter { page ->

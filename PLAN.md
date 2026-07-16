@@ -11,13 +11,17 @@
 ## 2. Canonical resources and crawler
 
 - [x] Create the canonical `resources/raw`, `resources/crawl`, `resources/catalog`, `resources/geonames`, and versioned index layout.
-- [ ] Reimplement the gmap Saved Places workflow—CSV seeds, exclusions, CID cache/fetch, Google Maps parsing, normalization, website extraction, and reporting—inside standalone Crossmap stages.
+- [x] Reimplement the gmap Saved Places workflow—CSV seeds, exclusions, CID cache/fetch, Google Maps parsing, normalization, website extraction, and reporting—inside standalone Crossmap stages.
 - [x] Seed the standalone Crossmap catalog from the clean historical corpus; no runtime/build dependency on the gmap repository remains.
 - [x] Add a standalone RFC 4180 Google Takeout Saved Places reader for the real Japanese `タイトル,メモ,URL,コメント` format, stable CID extraction, cross-list deduplication, error reporting, and raw seed JSON.
+- [x] Keep Google Takeout CSV rows as the raw source, then enrich `seeds.json` during Google Maps resolution with language-tagged components, deterministic Japanese and JA/EN/KO/PT/ID localized names, and transliteration only for unresolved proper-name parts.
+- [x] Load language-pair dictionaries by the generic `<source>-<target>-<category>-dictionary.csv` convention, support reverse lookup, keep JA-EN/KO/PT/ES/ID concept keys complete and duplicate-free, and model multilingual congregation terms independently of language pairs.
+- [x] Replace Optimaize short-name detection with the vendored Cybozu/Shuyo detector and short-text profiles; classify Japanese/Hangul scripts deterministically and retain canonical `ja`/`en` localized-name entries.
+- [x] Treat `カトリック教会.csv` membership as authoritative programmatic `CATHOLIC_JP` denomination evidence throughout parsing and promotion, including reuse of older candidate caches, while preserving human overrides.
 - [x] Resolve raw Saved Places seeds through copied CID HTML cache first, plain HTTP second, and lightweight Lightpanda rendering last; parse name, coordinates, address, website, and category into raw church candidates with an audit report.
-- [ ] Apply exclusion lists and Catholic-list non-church filtering from gmap (done), then complete candidate-name normalization and entity-level deduplication before promotion.
-- [ ] Feed resolved candidates into the existing Crossmap deterministic → official-directory/page evidence → LLM → human-override cleanup workflow; do not create a parallel cleanup implementation.
-- [ ] Produce timestamped source/crawl/cleanup completeness reports and promote only complete records into the canonical catalog.
+- [x] Apply exclusion lists and Catholic-list non-church filtering from gmap, normalize candidate names during resolution, and perform entity-level deduplication before promotion.
+- [x] Feed resolved candidates into the existing Crossmap deterministic → official-directory/page evidence → LLM → human-override cleanup workflow; do not create a parallel cleanup implementation.
+- [x] Produce timestamped source/crawl/cleanup completeness reports and promote only complete records into the canonical catalog.
 - [x] Replace denomination-specific control flow with a generic evidence -> candidate -> resolution -> review -> publication pipeline.
 - [x] Model church, denomination directory, website, social profile, and sermon inputs as typed evidence records with durable provenance.
 - [x] Add a data-driven denomination catalog and directory-source configurations so coverage is not limited to the old hand-coded subset.
@@ -33,6 +37,13 @@
 
 ## 3. Japanese geonames
 
+- [x] Use the official headerless GeoNames `JP.txt` dump plus language-tagged `alternatenames/JP.zip`; download and extract either cache when absent and join records by `geonameid`.
+- [x] Download and validate JMA's multilingual `city.json`, merge full and suffix-free municipality aliases with GeoNames, and log before/after missing-translation coverage for EN/KO/PT/ID.
+- [x] Build cached Japanese-to-English/Korean/Portuguese/Indonesian lexicons, while treating committed `resources/geonames/japan.json` names as detection-only.
+- [x] Use longest-match tries so the 100,000+ GeoNames aliases can participate efficiently in church-title and Japanese-address analysis.
+- [x] Generate `church-ja-all.json`, per-church title/address usage with the original Google Place title for detection review, and duplicate-free JA-to-EN/KO/PT/ID title-first/address-only missing-review CSV queues while preserving reviewed translations across reruns.
+- [x] Clean Japanese geonames before decomposition, address matching, translation review, and indexing: exclude reviewed church-name collisions, katakana-only aliases, and numeric/kanji `丁目` address blocks while retaining mixed-script places such as `ユーカリが丘`.
+- [x] Record source Google Maps title languages separately from Crossmap-generated localized names so available/spoken-language filtering has explicit provenance.
 - [x] Add a generated catalog covering all 47 prefectures and current Japanese municipalities/wards with official codes.
 - [x] Generate canonical aliases, center coordinates, and a per-place covering radius.
 - [x] Implement common query normalization, longest-name-first extraction, prefecture disambiguation, duplicate-city unions, and location-token removal.
@@ -50,15 +61,36 @@
 - [x] Resolve social accounts in precedence order: direct cached-page hyperlink, exact/either-name-contains match, then bounded LLM fallback; leave low or ambiguous scores unmatched.
 - [x] Publish accepted social profiles and field provenance into the standalone church catalog while retaining an auditable `social-decisions.json`.
 - [x] Resolve each church `englishName` first from official webpage, URL/domain, or linked social evidence, then fall back to Koog + Ollama translation with auditable name-part roles.
+- [x] Translate mixed church-name structures deterministically in source order, including composite geonames, multiple adjacent concepts, `geoname + concepts`, and `concepts + geoname` patterns before any LLM fallback.
+- [x] Recompose Portuguese, Spanish, and Indonesian names for natural Japanese display: move a terminal geoname to the front when Romance church/concept structure is present, and move leading `Igreja`/`Iglesia`/`Gereja` to trailing `教会`.
+- [x] Write a timestamped LLM-composed-name detail log containing each Japanese church name and ordered child parts with type, translation, evidence, and translation method.
+- [x] Route data-cleanup statistics, church-name translation statistics, and LLM-composed-name details through crawl-module Logback configuration to timestamped files and the console.
+- [x] Give every crawl command a structured Logback quality-control report with inputs, settings, domain metrics, outputs, duration, and failure details, and enumerate every filename in the crawl README command table.
 - [x] Add an `english-names` crawl command that atomically updates the catalog and refuses a partial result so every publishable church has an English-name URL component.
 - [x] Install the `cyberagent/CAT-Translate-7b` Q4_K_M GGUF as `cat-translate:7b-q4_k_m`, configure a 4096-token context, and verify it runs fully on GPU.
-- [ ] Check disk capacity with `df` before any Ollama inference or model pull, then evaluate installed Japanese-capable models on labeled fixtures.
+- [x] Check disk capacity with `df` before any Ollama inference or model pull, then evaluate installed Japanese-capable models on labeled fixtures.
+
+## 3b. Multilingual denomination and tradition names
+
+- [x] Model concrete denominations separately from reusable church traditions, and record each denomination's tradition plus per-language name provenance.
+- [x] Treat name decomposition and target-language word order as a translation/review technique; store the reviewed natural final name rather than a runtime composition program.
+- [ ] Search each Japanese denomination's official site for its published English name before translating it.
+- [ ] For globally organized denominations, require official names from their global or national bodies in every supported language; do not coin replacements.
+- [ ] For names without official translations, check established internet usage, then translate semantic parts into a naturally ordered final name.
+- [x] Complete and generate `denomination-ja/en/ko/pt/id-names.json`, with a 185 x 5 test proving exact ID coverage and nonblank names in every supported language.
+- [ ] Record official-site, established-usage, or translated provenance for every denomination-language name.
+- [ ] Feed denomination name parts and tradition name parts into multilingual church-name localization without conflating the organization with its tradition.
 
 ## 4. Shared Lucene index and search
 
 - [x] Dogfood the built `lc` command against Crossmap fixtures to compare field extraction, boosts, and result ranking; improve lucene-cli generically if the experiment exposes a missing capability.
 - [x] Define serializable church, crawl, geoname, request, response, hit, page, error, and index-manifest models.
 - [x] Build one Lucene document per church with boosted name/category/address/content fields and geo point/doc-values fields.
+- [x] Build separate Japanese, English, Korean, Portuguese, and Indonesian indexes in one downloadable snapshot, using JapaneseAnalyzer, KoreanAnalyzer, EnglishAnalyzer, PortugueseAnalyzer, and IndonesianAnalyzer respectively for indexing and query parsing.
+- [x] Detect query language independently of display language and route server, browser, app, and default CLI searches to the matching language index/analyzer.
+- [x] Keep Japanese address/page content in the Japanese index; add NFKC-, case-, and whitespace-deduplicated title/address geoname terms to all five language indexes.
+- [x] Enrich every indexed church with all five reviewed denomination names and index the language-matching denomination name in each analyzer-specific index.
+- [x] Prove translated church names, denomination names, and title/address geonames through core and Ktor searches in all five supported languages without requiring a client-supplied query language.
 - [x] Keep social profile metadata independently indexable so future social content can be added without changing church/result JSON contracts.
 - [x] Keep crawled content type and optional sermon metadata independently indexable for a future sermon-result document model.
 - [x] Implement shared text-plus-geo search, exact totals, stable ordering, pagination, distance, matching page detection, and snippets.
@@ -81,9 +113,13 @@
 - [x] Implement `/api/v1/churches/search`, `/api/v1/indexes/churches/latest`, immutable archive download, and `/api/v1/health`.
 - [x] Implement `/api/v1/churches/{id}` and a church detail page showing name, denomination, address, website, and typed social links.
 - [x] Validate and open the configured index at server startup and return structured JSON errors.
+- [x] Make `:server:run` rebuild the development snapshot, validate latest-index schema and canonical-catalog SHA-256, and cover `布佐キリスト教会` results/detail with a real Lightpanda E2E test.
 - [x] Serve the vanilla HTML/JavaScript client from Ktor.
 - [x] Implement query, loading, error, empty, result, distance, snippet, link, and pagination UI states.
 - [x] Implement the vanilla-JavaScript `index.html` -> JSON-backed `result.html` -> JSON-backed `church.html` navigation flow.
+- [x] Add a persistent Japanese/English/Korean/Portuguese/Indonesian church-name selector to browser search results, API detail, and generated static detail pages.
+- [x] Render the denomination in the selected display language on JSON-backed and generated static church detail pages, with denomination ID only as a fallback.
+- [x] Return each generated English-name static detail URL in search JSON and use it for result links; omit stale page mappings without disabling the JSON search API, then regenerate pages through the Gradle run/E2E workflow.
 - [x] Generate static FreeMarker church detail pages at English denomination/name slugs using root-relative page and canonical links.
 - [x] Fail static publication when an English church name, known denomination English name, or collision-disambiguating English location is missing.
 - [x] Serve generated `/church/{english-slug}.html` pages and provide the `generateChurchPages` Gradle task.
@@ -97,6 +133,8 @@
 - [x] Run all mobile searches locally through the shared lucene-kmp engine.
 - [x] Implement platform link opening and all download/search/result/detail/error UI states.
 - [x] Implement optional Android/iOS location permission and pass device coordinates as the no-geoname search fallback.
+- [x] Add a preferred-language selector to the shared Compose app and render the selected `localizedNames` entry with safe English/Japanese fallback.
+- [x] Render the selected language's denomination name with the translated church name in Compose church details, with denomination ID only as a fallback.
 - [ ] Verify Android build/tests and an Android emulator search flow with the Android CLI.
 - [ ] Verify iOS framework/tests and the shared golden-query fixture.
 
@@ -106,4 +144,5 @@
 - [x] Build a full church index snapshot from the standalone canonical corpus.
 - [ ] Run the same golden query set through core, CLI, Ktor, Android, and iOS paths.
 - [x] Cover Japanese name, denomination, address, website body, prefecture, city, ambiguous city, location-only, pagination, and no-result scenarios.
+- [x] Run a real Lightpanda browser flow for all five localized church names and denomination searches, and verify all five denomination labels on the generated church detail page.
 - [x] Document build, crawl, snapshot, CLI, server, web, Android, and iOS usage in the README.

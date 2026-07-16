@@ -19,8 +19,11 @@ class EvidencePipelineTest {
                 )
             )
 
-            assertEquals(listOf("discover", "normalize", "resolve"), runner.run(root).completedStages)
-            runner.run(root)
+            assertEquals(
+                listOf("discover", "normalize", "resolve"),
+                runner.run(root, cacheRoot = root.resolve("cache")).completedStages,
+            )
+            runner.run(root, cacheRoot = root.resolve("cache"))
             assertEquals(listOf("discover", "normalize", "resolve"), calls)
         } finally {
             root.toFile().deleteRecursively()

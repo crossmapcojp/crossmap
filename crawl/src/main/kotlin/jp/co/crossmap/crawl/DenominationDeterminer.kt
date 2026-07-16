@@ -26,6 +26,15 @@ data class Denomination(
     }
 }
 
+private val latinDenominationAbbreviation = Regex("""[A-Z][A-Z0-9]{1,12}""")
+
+/** Latin denomination identifiers and aliases that may occur verbatim in Google place titles. */
+internal fun Iterable<Denomination>.knownLatinAbbreviations(): Set<String> = flatMap { denomination ->
+    (listOf(denomination.id) + denomination.aliases)
+        .map(String::uppercase)
+        .filter(latinDenominationAbbreviation::matches)
+}.toSet()
+
 @Serializable
 data class DenominationGuessResult(
     val denomination: Denomination,

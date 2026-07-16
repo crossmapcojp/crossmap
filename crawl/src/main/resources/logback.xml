@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <property name="LOG_DIR" value="${crossmap.log.dir:-logs}"/>
+    <property name="RUN_TIMESTAMP" value="${crossmap.log.timestamp:-unknown-time}"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="REPORT_FILE" class="ch.qos.logback.classic.sift.SiftingAppender">
+        <discriminator class="ch.qos.logback.classic.sift.MDCBasedDiscriminator">
+            <key>crossmapReport</key>
+            <defaultValue>crawl</defaultValue>
+        </discriminator>
+        <sift>
+            <appender name="FILE-${crossmapReport}" class="ch.qos.logback.core.FileAppender">
+                <file>${LOG_DIR}/${RUN_TIMESTAMP}-${crossmapReport}.log</file>
+                <append>true</append>
+                <encoder>
+                    <pattern>%msg%n</pattern>
+                </encoder>
+            </appender>
+        </sift>
+    </appender>
+
+    <logger name="jp.co.crossmap.crawl.report" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="REPORT_FILE"/>
+    </logger>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>

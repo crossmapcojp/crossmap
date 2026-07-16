@@ -48,17 +48,19 @@ class GoogleSavedPlacesCleanupWorkflow(
         refreshWebsites: Boolean = true,
         crawlDirectories: Boolean = true,
         promote: Boolean = true,
+        cacheRoot: Path = CrossmapPaths.defaultCacheRoot(resourcesRoot),
     ): GoogleSavedPlacesPromotionReport {
-        val prepared = preparePendingCatalog(resourcesRoot)
-        val staging = pendingCatalog(resourcesRoot)
-        val website = if (refreshWebsites) websiteRefresher.refresh(resourcesRoot, staging) else null
-        val directory = if (crawlDirectories) directoryCrawler.crawl(resourcesRoot) else null
+        val prepared = preparePendingCatalog(resourcesRoot, cacheRoot)
+        val staging = pendingCatalog(resourcesRoot, cacheRoot)
+        val website = if (refreshWebsites) websiteRefresher.refresh(resourcesRoot, staging, cacheRoot) else null
+        val directory = if (crawlDirectories) directoryCrawler.crawl(resourcesRoot, cacheRoot) else null
         val cleanup = postCrawlCleanup.run(
             resourcesRoot = resourcesRoot,
             limit = llmLimit,
             applyChanges = true,
             enableLlm = enableLlm,
             catalogFile = staging,
+            cacheRoot = cacheRoot,
         )
         val completed = json.decodeFromString<List<ChurchRecord>>(Files.readString(staging))
         require(completed.all { it.englishName.isNotBlank() }) { "Pending catalog contains blank English names" }
@@ -95,8 +97,11 @@ class GoogleSavedPlacesCleanupWorkflow(
         val englishNamesLlm: Int,
     )
 
-    suspend fun preparePendingCatalog(resourcesRoot: Path): PreparationReport {
-        val candidatesFile = resourcesRoot.resolve("raw/google-saved-places/google-place-candidates.json")
+    suspend fun preparePendingCatalog(
+        resourcesRoot: Path,
+        cacheRoot: Path = CrossmapPaths.defaultCacheRoot(resourcesRoot),
+    ): PreparationReport {
+        val candidatesFile = CrossmapPaths(resourcesRoot, cacheRoot).googleSavedPlaces.resolve("google-place-candidates.json")
         require(Files.isRegularFile(candidatesFile)) { "Google place candidates do not exist: $candidatesFile" }
         val rawCandidates = json.decodeFromString<List<GooglePlaceChurchCandidate>>(Files.readString(candidatesFile))
         val catalog = resourcesRoot.resolve("catalog/churches.json")
@@ -115,9 +120,11 @@ class GoogleSavedPlacesCleanupWorkflow(
         val groups = normalized.groupBy { exactEntityKey(it.name, it.address) }
         val merged = groups.values.map { duplicates ->
             val preferred = duplicates.minBy(GooglePlaceChurchCandidate::googleCid)
+            val sourceLists = duplicates.flatMap(GooglePlaceChurchCandidate::sourceLists).distinct().sorted()
             preferred.copy(
-                sourceLists = duplicates.flatMap(GooglePlaceChurchCandidate::sourceLists).distinct().sorted(),
-                denominationHint = duplicates.firstNotNullOfOrNull(GooglePlaceChurchCandidate::denominationHint),
+                sourceLists = sourceLists,
+                denominationHint = GoogleSavedPlacesLists.deterministicDenominationId(sourceLists)
+                    ?: duplicates.firstNotNullOfOrNull(GooglePlaceChurchCandidate::denominationHint),
                 websiteUrl = duplicates.map(GooglePlaceChurchCandidate::websiteUrl)
                     .firstOrNull { !it.contains("google.com/maps") }
                     ?: preferred.websiteUrl,
@@ -125,14 +132,24 @@ class GoogleSavedPlacesCleanupWorkflow(
         }
         val namingInputs = merged.map { candidate ->
             val previous = existingByCid[candidate.googleCid]
-            val denomination = previous?.denominationId
+            val humanDenomination = previous?.determinations
+                ?.lastOrNull { it.field == "denominationId" && it.source == DeterminationSource.HUMAN }
+                ?.value
+            val denomination = humanDenomination
+                ?: GoogleSavedPlacesLists.deterministicDenominationId(candidate.sourceLists)
+                ?: previous?.denominationId
                 ?.takeUnless { it == NOT_DETERMINED }
                 ?: candidate.denominationHint
                 ?: NOT_DETERMINED
             ChurchEnglishNameInput(
                 id = candidate.id,
                 name = candidate.name,
-                existingEnglishName = previous?.englishName,
+                existingEnglishName = candidate.localizedNames
+                    .firstOrNull { it.languageCode.substringBefore('-').equals("en", ignoreCase = true) }
+                    ?.name
+                    ?.takeIf(ChurchEnglishNameResolver::isUsableEnglishChurchName)
+                    ?: previous?.englishName?.takeIf(::isReusablePublishedLatinName)
+                    ?: candidate.latinName?.takeIf(ChurchEnglishNameResolver::isUsableEnglishChurchName),
                 denominationId = denomination,
                 address = candidate.address,
                 location = candidate.location,
@@ -144,21 +161,27 @@ class GoogleSavedPlacesCleanupWorkflow(
         val englishResolutions = englishNameResolver.resolveInputs(namingInputs)
         val fromGoogle = merged.map { candidate ->
             val previous = existingByCid[candidate.googleCid]
-            val denomination = previous?.denominationId
+            val humanDenomination = previous?.determinations
+                ?.lastOrNull { it.field == "denominationId" && it.source == DeterminationSource.HUMAN }
+                ?.value
+            val listDenomination = GoogleSavedPlacesLists.deterministicDenominationId(candidate.sourceLists)
+            val denomination = humanDenomination
+                ?: listDenomination
+                ?: previous?.denominationId
                 ?.takeUnless { it == NOT_DETERMINED }
                 ?: candidate.denominationHint
                 ?: NOT_DETERMINED
             val english = requireNotNull(englishResolutions[candidate.id])
             val determinedAt = now()
             val determinations = previous?.determinations.orEmpty().toMutableList()
-            if (previous?.denominationId.isNullOrBlank() && candidate.denominationHint != null) {
+            if (humanDenomination == null && listDenomination != null) {
                 determinations.removeAll { it.field == "denominationId" }
                 determinations += FieldDetermination(
                     field = "denominationId",
-                    value = candidate.denominationHint,
+                    value = listDenomination,
                     source = DeterminationSource.PROGRAMMATIC,
                     confidence = 1.0,
-                    evidence = listOf("Google Saved Places list: カトリック教会"),
+                    evidence = listOf("Google Saved Places list: ${GoogleSavedPlacesLists.CATHOLIC_CHURCH}"),
                     determinedAt = determinedAt,
                 )
             }
@@ -179,6 +202,8 @@ class GoogleSavedPlacesCleanupWorkflow(
                 googleCid = candidate.googleCid,
                 name = candidate.name,
                 englishName = english.englishName,
+                localizedNames = candidate.localizedNames,
+                titleLanguages = candidate.titleLanguages,
                 denominationId = denomination,
                 category = candidate.category ?: previous?.category,
                 address = candidate.address,
@@ -195,7 +220,7 @@ class GoogleSavedPlacesCleanupWorkflow(
         val englishLlm = pending.count { church ->
             church.determinations.lastOrNull { it.field == "englishName" }?.source == DeterminationSource.LLM
         }
-        atomicWrite(pendingCatalog(resourcesRoot), json.encodeToString(pending))
+        atomicWrite(pendingCatalog(resourcesRoot, cacheRoot), json.encodeToString(pending))
         return PreparationReport(
             rawCandidates = rawCandidates.size,
             exactDuplicatesMerged = rawCandidates.size - merged.size,
@@ -207,8 +232,8 @@ class GoogleSavedPlacesCleanupWorkflow(
         )
     }
 
-    private fun pendingCatalog(resourcesRoot: Path): Path =
-        resourcesRoot.resolve("cleanup/google-saved-places-pending.json")
+    private fun pendingCatalog(resourcesRoot: Path, cacheRoot: Path): Path =
+        CrossmapPaths(resourcesRoot, cacheRoot).cleanup.resolve("google-saved-places-pending.json")
 
     private fun normalizeChurchName(value: String): String = value
         .replace("（宗教法人）", "")
@@ -230,4 +255,11 @@ class GoogleSavedPlacesCleanupWorkflow(
             Files.move(temporary, destination, StandardCopyOption.REPLACE_EXISTING)
         }
     }
+}
+
+private fun isReusablePublishedLatinName(value: String): Boolean {
+    val normalized = value.trim()
+    return normalized.count(Char::isLetter) >= 3 &&
+        normalized.all { it.code < 128 || it == '’' } &&
+        normalized.lowercase() !in setOf("church", "chapel", "mission", "assembly")
 }

@@ -20,6 +20,21 @@ class ChurchSearchEngineTest {
                     googleCid = "2225537460932230335",
                     name = "日本聖公会東京聖アンデレ教会",
                     englishName = "Tokyo St Andrew's Church",
+                    localizedNames = listOf(
+                        LocalizedName("ja", "日本聖公会東京聖アンデレ教会"),
+                        LocalizedName("en", "Tokyo Saint Andrew Church"),
+                        LocalizedName("ko", "도쿄 세인트 앤드류 교회"),
+                        LocalizedName("pt", "Igreja de Santo André de Tóquio"),
+                        LocalizedName("id", "Gereja Santo Andreas Tokyo"),
+                    ),
+                    localizedDenominationNames = listOf(
+                        LocalizedName("ja", "日本聖公会"),
+                        LocalizedName("en", "Anglican Church in Japan"),
+                        LocalizedName("ko", "일본성공회"),
+                        LocalizedName("pt", "Igreja Anglicana no Japão"),
+                        LocalizedName("id", "Gereja Anglikan di Jepang"),
+                    ),
+                    titleLanguages = listOf("ja", "en"),
                     denominationId = "ANGLICAN_JP",
                     address = "〒105-0011 東京都港区芝公園３丁目６−１８",
                     location = GeoPoint(35.6601808, 139.743601),
@@ -37,6 +52,22 @@ class ChurchSearchEngineTest {
                     location = GeoPoint(43.0854662, 141.3545852),
                     websiteUrl = "http://www.sapporo-michael.org/",
                 ),
+                ChurchRecord(
+                    id = "google:6646597370070891755",
+                    name = "東京バプテスト教会",
+                    englishName = "Tokyo Baptist Church",
+                    address = "〒150-0035 東京都渋谷区鉢山町９−２",
+                    location = GeoPoint(35.6506, 139.6967),
+                    websiteUrl = "https://tokyobaptist.org/",
+                ),
+                ChurchRecord(
+                    id = "google:13422733672291385493",
+                    name = "小禄バプテスト教会",
+                    englishName = "Oroku Baptist Church",
+                    address = "〒901-0145 沖縄県那覇市高良２丁目４−１６",
+                    location = GeoPoint(26.1858563, 127.6646236),
+                    websiteUrl = "https://orokubap.localinfo.jp/",
+                ),
             )
             val index = root.resolve("index")
             ChurchIndex.build(index.toString().toPath(), churches)
@@ -46,22 +77,87 @@ class ChurchSearchEngineTest {
                 GeoName("01", "北海道", emptyList(), GeoNameType.PREFECTURE, "01", GeoPoint(43.1, 141.3), 500.0),
             )
             val engine = ChurchSearchEngine(index.toString().toPath(), geonames, "fixture-v1")
+            fun localizedEngine(language: String): ChurchSearchEngine {
+                val localizedIndex = root.resolve("index-$language")
+                val translatedGeoNames = mapOf(
+                    "google:2225537460932230335" to when (language) {
+                        "ja" -> listOf("港区")
+                        "en" -> listOf("Minato City")
+                        "ko" -> listOf("미나토구")
+                        "pt" -> listOf("Distrito de Minato")
+                        "id" -> listOf("Distrik Minato")
+                        else -> emptyList()
+                    },
+                )
+                ChurchIndex.build(localizedIndex.toString().toPath(), churches, language, translatedGeoNames)
+                return ChurchSearchEngine(
+                    localizedIndex.toString().toPath(),
+                    geonames,
+                    "fixture-v1",
+                    languageCode = language,
+                )
+            }
 
             val name = engine.search(ChurchSearchRequest("東京 教会"))
-            assertEquals(1, name.total)
+            assertEquals(2, name.total)
             assertEquals("教会", name.textQuery)
-            assertEquals("google:2225537460932230335", name.hits.single().churchId)
+            assertTrue(name.hits.any { it.churchId == "google:2225537460932230335" })
 
             val body = engine.search(ChurchSearchRequest("ボーイスカウト"))
             assertEquals("google:2225537460932230335", body.hits.single().churchId)
             assertTrue(body.hits.single().matchedPages.single().snippet.contains("ボーイスカウト"))
 
+            val koreanAlias = localizedEngine("ko").search(ChurchSearchRequest("도쿄 세인트 앤드류 교회"))
+            assertEquals("google:2225537460932230335", koreanAlias.hits.single().churchId)
+            assertTrue(koreanAlias.hits.single().localizedNames.any { it.languageCode == "ko" })
+            val koreanDenomination = localizedEngine("ko").search(ChurchSearchRequest("일본성공회"))
+            assertEquals("google:2225537460932230335", koreanDenomination.hits.single().churchId)
+            val koreanAddressGeoName = localizedEngine("ko").search(ChurchSearchRequest("미나토구"))
+            assertEquals("google:2225537460932230335", koreanAddressGeoName.hits.single().churchId)
+
+            val englishInflection = localizedEngine("en").search(ChurchSearchRequest("Tokyo churches"))
+            assertTrue(englishInflection.hits.any { it.churchId == "google:2225537460932230335" })
+            assertEquals(
+                "google:2225537460932230335",
+                localizedEngine("en").search(ChurchSearchRequest("Anglican Church in Japan")).hits.single().churchId,
+            )
+            assertEquals(
+                "google:2225537460932230335",
+                localizedEngine("en").search(ChurchSearchRequest("Minato City")).hits.single().churchId,
+            )
+            val sourceLanguageFiltered = localizedEngine("en").search(
+                ChurchSearchRequest("Tokyo churches", titleLanguages = listOf("en"))
+            )
+            assertEquals(listOf("google:2225537460932230335"), sourceLanguageFiltered.hits.map { it.churchId })
+
+            val portugueseInflection = localizedEngine("pt").search(ChurchSearchRequest("igrejas santo andré"))
+            assertEquals("google:2225537460932230335", portugueseInflection.hits.single().churchId)
+            assertEquals(
+                "google:2225537460932230335",
+                localizedEngine("pt").search(ChurchSearchRequest("Igreja Anglicana no Japão")).hits.single().churchId,
+            )
+
+            val indonesianName = localizedEngine("id").search(ChurchSearchRequest("Gereja Andreas Tokyo"))
+            assertEquals("google:2225537460932230335", indonesianName.hits.single().churchId)
+            assertEquals(
+                "google:2225537460932230335",
+                localizedEngine("id").search(ChurchSearchRequest("Gereja Anglikan di Jepang")).hits.single().churchId,
+            )
+
+            val qualifiedJapaneseName = engine.search(ChurchSearchRequest("東京バプテスト教会"))
+            assertEquals("google:6646597370070891755", qualifiedJapaneseName.hits.single().churchId)
+
             val nearby = engine.search(ChurchSearchRequest("教会", userLocation = GeoPoint(35.6601808, 139.743601)))
-            assertEquals(listOf("google:2225537460932230335"), nearby.hits.map { it.churchId })
+            assertEquals(
+                setOf("google:2225537460932230335", "google:6646597370070891755"),
+                nearby.hits.map { it.churchId }.toSet(),
+            )
             assertEquals(GeoNameType.DEVICE, nearby.resolvedLocations.single().type)
 
             val detail = assertNotNull(engine.church("google:2225537460932230335"))
             assertEquals(SocialPlatform.YOUTUBE, detail.socialProfiles.single().platform)
+            assertEquals("도쿄 세인트 앤드류 교회", detail.localizedNames.single { it.languageCode == "ko" }.name)
+            assertEquals("일본성공회", detail.localizedDenominationNames.single { it.languageCode == "ko" }.name)
 
             val encoded = Json.encodeToString(name)
             assertTrue(encoded.contains("fixture-v1"))
@@ -80,6 +176,21 @@ class ChurchSearchEngineTest {
         )
         val resolved = resolver.resolve("府中 教会")
         assertEquals(setOf("13206", "34208"), resolved.locations.map { it.code }.toSet())
+    }
+
+    @Test
+    fun prefectureAliasWinsOverAmbiguousSingleCharacterMunicipalityAlias() {
+        val resolver = GeoNameResolver(
+            listOf(
+                GeoName("13", "東京都", type = GeoNameType.PREFECTURE, prefectureCode = "13", center = GeoPoint(35.68, 139.69), coveringRadiusKm = 100.0),
+                GeoName("473031", "東村", listOf("東"), GeoNameType.MUNICIPALITY, "47", GeoPoint(26.63, 128.16), 50.0),
+            )
+        )
+
+        val resolved = resolver.resolve("東京バプテスト教会")
+
+        assertEquals("バプテスト教会", resolved.textQuery)
+        assertEquals(listOf("13"), resolved.locations.map { it.code })
     }
 
     @Test

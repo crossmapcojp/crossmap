@@ -36,6 +36,7 @@ kotlin {
             implementation(libs.lucene.kmp.queryparser)
             implementation(libs.lucene.kmp.analysis.common)
             implementation(libs.lucene.kmp.analysis.kuromoji)
+            implementation(libs.lucene.kmp.analysis.nori)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

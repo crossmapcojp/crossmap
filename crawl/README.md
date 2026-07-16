@@ -6,19 +6,19 @@ The `crawl` module turns raw church-source data and downloaded web evidence into
 
 There are two inputs to understand:
 
-1. **Current bootstrap data:** `resources/catalog/churches.json` was created once from the clean data under the old gmap `output` directory. The cached HTML was also copied into `resources/crawl/pages`. Crossmap does not need the gmap project at runtime.
-2. **Permanent repeatable starting point:** the personal Google Takeout Saved Places CSV directory (containing files such as `教会.csv` and `カトリック教会.csv`) is passed to `read-google-saved-places`. Crossmap reads the real Japanese `タイトル,メモ,URL,コメント` schema, extracts stable Google CIDs, merges duplicates across lists, and writes `resources/raw/google-saved-places/seeds.json` plus an error/report file.
+1. **Current bootstrap data:** `resources/catalog/churches.json` was created once from the clean data under the old gmap `output` directory. The copied HTML now lives in `cache/church-web-pages`. Crossmap does not need the gmap project at runtime.
+2. **Permanent repeatable starting point:** the personal Google Takeout Saved Places CSV directory (containing files such as `教会.csv` and `カトリック教会.csv`) is passed to `read-google-saved-places`. Crossmap reads the real Japanese `タイトル,メモ,URL,コメント` schema, extracts stable Google CIDs, merges duplicates across lists, and writes seeds and audit output under `cache/google-saved-places`.
 
 The CSV reader, CID-page resolver, and promotion workflow are standalone Crossmap stages. Resolution prefers the copied gmap CID HTML cache, uses plain HTTP and then Lightpanda only for missing pages, extracts the same Google place fields as gmap, and writes raw candidates plus an audit report. Promotion normalizes/deduplicates candidates, reuses prior evidence, resolves every mandatory English name, runs the existing website/directory/denomination cleanup, and atomically replaces the canonical catalog only after all gates pass. Crossmap never imports or calls gmap code.
 
 ```mermaid
 flowchart LR
     A[Google Takeout<br/>Saved Places CSV directory] --> B[GoogleSavedPlacesSeedReader]
-    B --> C[raw/google-saved-places/seeds.json]
+    B --> C[cache/google-saved-places/seeds.json<br/>raw source fields only]
     G[gmap clean output<br/>one-time bootstrap only] --> F[Current catalog]
     H[gmap CID HTML cache<br/>copy once] --> D[Google Maps seed resolution]
     C --> D
-    D -- name, lat/lng, address,<br/>website, category --> E[Raw church candidates]
+    D -- localized names + typed name parts,<br/>lat/lng, address, website, category --> E[Resolved church candidates]
     E --> I[GoogleSavedPlacesCleanupWorkflow]
     F --> I
     I --> J[resources/catalog/churches.json]
@@ -29,31 +29,32 @@ flowchart LR
 ```mermaid
 flowchart TD
     subgraph SOURCE[Google Saved Places source workflow]
-        A[Takeout/Saved/*.csv] --> B[Read Japanese CSV + exclusions]
-        B --> C[Extract CID + merge duplicate lists]
+        A[Takeout/Saved/*.csv] --> B["Read Japanese CSV + exclusions<br/>(GoogleSavedPlacesSeedReader)"]
+        B --> C["Extract CID + merge duplicate lists<br/>(GoogleSavedPlacesSeedReader)"]
         C --> D{CID HTML cached?}
-        D -->|yes| E[Read copied cache]
-        D -->|no| F[HTTP fetch; Lightpanda fallback]
+        D -->|yes| E["Read copied cache<br/>(GoogleMapsPlaceResolver)"]
+        D -->|no| F["HTTP fetch; Lightpanda fallback<br/>(GoogleMapsPlaceResolver)"]
         F --> E
-        E --> G[Parse Google name, coordinates,<br/>address, website, category]
-        G --> H[Normalize + deduplicate raw candidates]
+        E --> G["Parse Google title and place fields<br/>(GoogleMapsPlaceResolver)"]
+        G --> G2["Detect each name-part language;<br/>translate with reviewed dictionaries + GeoNames<br/>(MultilingualChurchNameLocalizer)"]
+        G2 --> H["Normalize + deduplicate resolved candidates<br/>(GoogleSavedPlacesCleanupWorkflow)"]
     end
     subgraph CLEANUP[One integrated Crossmap cleanup workflow]
-        H --> I[WebsiteRefresher]
+        H --> I["WebsiteRefresher<br/>(WebsiteRefresher)"]
         I --> J[Website/about-page evidence cache]
-        J --> K[Official denomination/district/parish lists]
-        K --> L[Programmatic denomination and entity rules]
-        L -->|uncertain| M[Koog + Ollama fallback]
+        J --> K["Official denomination/district/parish lists<br/>(OfficialDirectoryCrawler)"]
+        K --> L["Programmatic denomination and entity rules<br/>(DataCleanup)"]
+        L -->|uncertain| M["Koog + Ollama fallback<br/>(DenominationDeterminer)"]
         L -->|confident| N[Provenance decision]
         M --> N
         N --> O[Human overrides win]
-        O --> P[Social linking extension point]
-        P --> Q[Mandatory English-name workflow]
-        Q --> R[Complete canonical ChurchRecord catalog]
+        O --> P["Social linking extension point<br/>(SocialAccountLinker)"]
+        P --> Q["Mandatory English-name workflow<br/>(ChurchEnglishNameResolver)"]
+        Q --> R["Complete canonical ChurchRecord catalog<br/>(ChurchRecordDraft)"]
     end
     subgraph PUBLICATION[Search and publication]
-        R --> S[GeoCatalogBuilder]
-        R --> T[SnapshotBuilder]
+        R --> S["GeoCatalogBuilder<br/>(GeoCatalogBuilder)"]
+        R --> T["SnapshotBuilder<br/>(SnapshotBuilder)"]
         S --> T
         T --> U[Versioned Lucene index + manifest + ZIP]
         R --> V[StaticSiteGenerator]
@@ -62,7 +63,7 @@ flowchart TD
     end
 ```
 
-All accepted derived fields carry provenance through `FieldDetermination`: programmatic, LLM, or human. Human overrides always win. Social data and sermon evidence have typed places in the evidence model even though their full crawlers are later work.
+All accepted derived fields carry provenance through [`FieldDetermination`](../core/src/commonMain/kotlin/jp/co/crossmap/Models.kt): programmatic, LLM, or human. Human overrides always win. Social data and sermon evidence have typed places in the evidence model even though their full crawlers are later work.
 
 ## English-name workflow
 
@@ -92,13 +93,14 @@ flowchart TD
     N --> M
     Z --> O[Atomic catalog update]
     M --> O
-    O --> P[logs/*-data-cleanup-stat.log]
+    O --> P[Cleanup statistics log]
+    O --> Q[LLM-composed name detail log]
 ```
 
 Current deterministic rules implement `ChurchNameEnglishTranslationRule`:
 
 - `GeonameTraditionChurchNameRule`: `東京バプテスト教会` -> `Tokyo Baptist Church`; the denomination prefix is added later to the URL (`hpbc-tokyo-baptist-church.html`).
-- `DenominationAliasGeonameChurchNameRule`: checks every denomination name and alias from `resources/catalog/denominations.json`; `日本基督教団赤羽教会` -> `Akabane Church`, then the URL gets `uccj-`.
+- `StructuredChurchNameRule` and `DenominationAliasGeonameChurchNameRule` check every denomination name and alias from `resources/catalog/denominations.json`; recognized short IDs are retained, for example `日本基督教団赤羽教会` -> `UCCJ Akabane Church` and `日本福音ルーテル栄光教会` -> `JELC Glory Church`.
 - `GeonameChristianAssemblyNameRule`: `経堂キリスト集会` -> `Kyodo Christian Assembly`. Independent assemblies omit denomination and retain “Assembly,” respecting their own terminology.
 - `RomanizedJapaneseChurchNameRule`: for records without an official/custom URL hint, uses lucene-kmp Kuromoji readings to deterministically romanize Japanese proper names and preserves `Church`, `Chapel`, `Cathedral`, `Mission`, or `Assembly` terminology. Custom church URLs stay on the LLM path because their Latin tokens may be authoritative.
 
@@ -106,115 +108,149 @@ URL text is never accepted as a complete name by a deterministic rule. Explicit 
 
 ## Command entry points
 
-All commands run through `./gradlew :crawl:run --args='COMMAND ...'`.
+All commands run through `./gradlew :crawl:run --args='COMMAND ...'`. For
+`read-google-saved-places`, set the Takeout directory once in root `local.properties`:
 
-| Command | Purpose | Main inputs | Main outputs |
-|---|---|---|---|
-| `read-google-saved-places` | Read and deduplicate the personal Google Takeout Saved Places dump without gmap. | `--input Takeout/Saved`, all Saved-list CSV files | `raw/google-saved-places/seeds.json`, `seed-read-report.json` |
-| `resolve-google-saved-places` | Resolve seeds through copied CID cache, HTTP, then Lightpanda; reproduce gmap place extraction and Catholic filtering. | seeds, `raw/google-maps-pages` | `google-place-candidates.json`, `google-place-resolution-report.json` |
-| `promote-google-saved-places` | Normalize/deduplicate candidates and feed them through the shared website, official-directory, denomination, English-name, and override workflow. | candidates, existing evidence/catalog, cleanup configuration | complete canonical catalog plus cleanup reports |
-| `refresh` | Download or reuse church webpages concurrently. | catalog, prior crawl manifest/cache | `crawl/pages`, `crawl/manifest.json`, URL cache map, updated page evidence |
-| `crawl-denomination-directories` | Crawl configured denomination, diocese, district, parish, and branch lists. | `sources/denominations.json`, cached/HTTP pages | `cleanup/denomination-candidates.json` |
-| `cleanup-llm` | Resolve denomination fields with programmatic rules, optional Ollama fallback, and human overrides. | catalog, denomination catalog, candidates, rules, overrides | updated catalog, `cleanup/decisions.json` |
-| `override-denomination` | Record a reviewed denomination correction. | command arguments, prior overrides | `cleanup/human-overrides.json` |
-| `link-social` | Link social candidates to churches with direct links, exact/contains matching, then LLM fallback. | catalog, social candidates, cached pages | updated social profiles, `cleanup/social-decisions.json` |
-| `english-names` | Populate every English name and atomically rewrite the catalog. | church/denomination catalogs, cached pages, Ollama | complete catalog, timestamped cleanup statistics |
-| `denomination-english-names` | Build the denomination-ID-to-English-name map used in static URLs. | denomination catalog, Ollama for unresolved names | `catalog/denomination-english-names.json` |
-| `build-geonames` | Build prefecture/city/ward search geonames. | catalog plus the supplied municipality source | `geonames/japan.json` |
-| `build-snapshot` | Build and package the versioned Lucene church-search index. | complete catalog and geonames | `indexes/churches/VERSION` and latest metadata |
+```properties
+crossmap.googleSavedPlaces=/absolute/path/to/Takeout/saved
+```
+
+Then either entry point works:
+
+```shell
+./gradlew :crawl:run --args='read-google-saved-places'
+./gradlew :crawl:readGoogleSavedPlaces
+```
+
+Use `--input /another/Takeout/saved` to override `local.properties` for one direct CLI run.
+
+| Command | Class file | Purpose | Main inputs | Main outputs | Logs |
+|---|---|---|---|---|---|
+| `read-google-saved-places` | [`GoogleSavedPlacesSeedReader.kt`](src/main/kotlin/jp/co/crossmap/crawl/GoogleSavedPlacesSeedReader.kt) | Read/deduplicate the personal Google Takeout dump and record languages evidenced by each original title. | Optional `--input`; otherwise `crossmap.googleSavedPlaces` in `local.properties` or `CROSSMAP_GOOGLE_SAVED_PLACES`; all Saved-list CSV files | `cache/google-saved-places/seeds.json`, `seed-read-report.json` | `logs/YYYY-MM-DD-HH-mm-read-google-saved-places.log` |
+| `resolve-google-saved-places` | [`GoogleMapsPlaceResolver.kt`](src/main/kotlin/jp/co/crossmap/crawl/GoogleMapsPlaceResolver.kt) | Resolve seeds through copied CID cache, HTTP, then Lightpanda; reproduce gmap place extraction and Catholic filtering. | seeds, `raw/google-maps-pages` | `google-place-candidates.json`, `google-place-resolution-report.json` | `logs/YYYY-MM-DD-HH-mm-resolve-google-saved-places.log` |
+| `promote-google-saved-places` | [`GoogleSavedPlacesCleanupWorkflow.kt`](src/main/kotlin/jp/co/crossmap/crawl/GoogleSavedPlacesCleanupWorkflow.kt) | Normalize/deduplicate candidates and feed them through the shared website, official-directory, denomination, English-name, and override workflow. | candidates, existing evidence/catalog, cleanup configuration | complete canonical catalog plus cleanup reports | `logs/YYYY-MM-DD-HH-mm-promote-google-saved-places.log`, `logs/YYYY-MM-DD-HH-mm-data-cleanup-stat.log` |
+| `refresh` | [`WebsiteRefresher.kt`](src/main/kotlin/jp/co/crossmap/crawl/WebsiteRefresher.kt) | Download or reuse church webpages concurrently. | catalog, prior crawl manifest/cache | `crawl/pages`, `crawl/manifest.json`, URL cache map, updated page evidence | `logs/YYYY-MM-DD-HH-mm-refresh.log` |
+| `crawl-denomination-directories` | [`OfficialDirectoryCrawler.kt`](src/main/kotlin/jp/co/crossmap/crawl/OfficialDirectoryCrawler.kt) | Crawl configured denomination, diocese, district, parish, and branch lists. | `sources/denominations.json`, cached/HTTP pages | `cleanup/denomination-candidates.json` | `logs/YYYY-MM-DD-HH-mm-crawl-denomination-directories.log` |
+| `cleanup-llm` | [`DataCleanup.kt`](src/main/kotlin/jp/co/crossmap/crawl/DataCleanup.kt) | Resolve denomination fields with programmatic rules, optional Ollama fallback, and human overrides. | catalog, denomination catalog, candidates, rules, overrides | updated catalog, `cleanup/decisions.json` | `logs/YYYY-MM-DD-HH-mm-cleanup-llm.log` |
+| `override-denomination` | [`DataCleanup.kt`](src/main/kotlin/jp/co/crossmap/crawl/DataCleanup.kt) | Record a reviewed denomination correction. | command arguments, prior overrides | `cleanup/human-overrides.json` | `logs/YYYY-MM-DD-HH-mm-override-denomination.log` |
+| `link-social` | [`SocialLinkPipeline.kt`](src/main/kotlin/jp/co/crossmap/crawl/SocialLinkPipeline.kt) | Link social candidates to churches with direct links, exact/contains matching, then LLM fallback. | catalog, social candidates, cached pages | updated social profiles, `cleanup/social-decisions.json` | `logs/YYYY-MM-DD-HH-mm-link-social.log` |
+| `english-names` | [`ChurchEnglishNameResolver.kt`](src/main/kotlin/jp/co/crossmap/crawl/ChurchEnglishNameResolver.kt) | Populate every English name and atomically rewrite the catalog. | church/denomination catalogs, cached pages, Ollama | complete catalog, timestamped statistics and per-name LLM detail log | `logs/YYYY-MM-DD-HH-mm-english-names.log`, `logs/YYYY-MM-DD-HH-mm-data-cleanup-stat.log`, `logs/YYYY-MM-DD-HH-mm-church-name-translation.log`, `logs/YYYY-MM-DD-HH-mm-llm-composed-name-detail.log` |
+| `analyze-english-names` | [`ChurchEnglishNameResolver.kt`](src/main/kotlin/jp/co/crossmap/crawl/ChurchEnglishNameResolver.kt) | Analyze deterministic name coverage without invoking an LLM or changing the catalog. | church/denomination catalogs, dictionaries, geonames | translation coverage statistics | `logs/YYYY-MM-DD-HH-mm-analyze-english-names.log`, `logs/YYYY-MM-DD-HH-mm-church-name-translation.log` |
+| `denomination-english-names` | [`KoogJapaneseTextTranslator.kt`](src/main/kotlin/jp/co/crossmap/crawl/KoogJapaneseTextTranslator.kt) | Build the denomination-ID-to-English-name map used in static URLs. | denomination catalog, Ollama for unresolved names | `catalog/denomination-en-names.json` | `logs/YYYY-MM-DD-HH-mm-denomination-english-names.log` |
+| `build-geonames` | [`GeoCatalogBuilder.kt`](src/main/kotlin/jp/co/crossmap/crawl/GeoCatalogBuilder.kt) | Build prefecture/city/ward search geonames. | catalog plus the supplied municipality source | `geonames/japan.json` | `logs/YYYY-MM-DD-HH-mm-build-geonames.log` |
+| `prepare-geoname-cache` | [`GeoName.kt`](src/main/kotlin/jp/co/crossmap/crawl/GeoName.kt) | Reuse or download official GeoNames `JP.zip`/`alternatenames/JP.zip` plus JMA `city.json`; remove reviewed church-name collisions, katakana-only aliases, and `丁目` blocks; then merge language-tagged municipality aliases. | cached GeoNames files or official downloads, `resources/geonames/jma-city.json`, `geoname-duplicated-church-name.csv` | cleaned GeoNames-only and merged multilingual lexicons under `cache/geoname/japan` | `logs/YYYY-MM-DD-HH-mm-prepare-geoname-cache.log` with per-rule cleanup counts |
+| `church-geonames` | [`ChurchGeoNameTranslationCatalog.kt`](src/main/kotlin/jp/co/crossmap/crawl/ChurchGeoNameTranslationCatalog.kt) | Collect cleaned longest-match title/address geonames, merge GeoNames, JMA, and reviewed translations, and maintain separate title-first and address-only review queues. A geoname used in both is listed only in the title queue. | candidates, cleaned multilingual lexicon, reviewed exclusion/translation CSV values | `resources/geonames/church-ja-all.json`, `church-usage.json`, eight `church-ja-{en,ko,pt,id}-{title,address}-missing.csv` files | `logs/YYYY-MM-DD-HH-mm-church-geonames.log`, `logs/YYYY-MM-DD-HH-mm-geoname-translation-coverage.log` |
+| `build-snapshot` | [`SnapshotBuilder.kt`](src/main/kotlin/jp/co/crossmap/crawl/SnapshotBuilder.kt) | Build/package separate JA/EN/KO/PT/ID Lucene indexes; Japanese includes address/pages and every index receives deduplicated translated geoname terms. | complete catalog, geonames, translation catalog and usage | `cache/search-indexes/churches/VERSION/index/{ja,en,ko,pt,id}` and latest metadata | `logs/YYYY-MM-DD-HH-mm-build-snapshot.log` |
+
+Every command log uses the same review-oriented key/value envelope: `command`, `status`, `started_at`, `finished_at`, and `duration_seconds`; normalized `input.*`, `setting.*`, `metric.*`, and `output.*` entries follow. Commands add domain metrics such as rows and duplicates, cache hits and HTTP fetches, unresolved denominations before/after, deterministic/LLM/human acceptance counts, translation coverage, or index document count and SHA-256. A failed command still writes its collected context plus `error.type` and a single-line `error.message`, then rethrows the failure. All entries are written to the command-specific file and printed identically on the console by Logback.
 
 Gradle orchestration:
 
 - `./gradlew :crawl:dataCleanup` is the production English-name cleanup task. It runs `df -h /media/joel/llms` immediately before Ollama work.
+- `./gradlew :crawl:prepareChurchGeoNames` refreshes both official GeoNames caches and the reviewable title/address translation catalog. `:crawl:buildSearchSnapshot` depends on it.
 - `./gradlew :server:generateChurchPages` depends on `:crawl:dataCleanup` and denomination-English-name generation before rendering static pages.
-- Each cleanup invocation leaves a unique `logs/YYYY-MM-DD-HH-mm-data-cleanup-stat.log` with deterministic and LLM counts, unresolved count, errors, LLM timeouts, duration, and throughput.
+- Cleanup reports are emitted through [`src/main/resources/logback.xml`](src/main/resources/logback.xml). A report-specific Logback sifting appender writes `logs/YYYY-MM-DD-HH-mm-{report}.log`, while the console appender prints the identical content; reports emitted by one run share the timestamp established by its first report.
+- `logs/YYYY-MM-DD-HH-mm-data-cleanup-stat.log` contains deterministic and LLM counts, unresolved count, errors, LLM timeouts, duration, and throughput.
+- Each successful cleanup also leaves `logs/YYYY-MM-DD-HH-mm-llm-composed-name-detail.log`, with one Japanese-name parent entry and ordered typed child parts showing Japanese text, English text, evidence, and whether the source was denomination data, GeoNames data, a reviewed dictionary, another deterministic method, or LLM.
 
 ## Classes by source file
 
-### `Main.kt`
+### [`Main.kt`](src/main/kotlin/jp/co/crossmap/crawl/Main.kt)
 
 - `Crawl` is the Clikt root command.
-- `ReadGoogleSavedPlaces`, `Refresh`, `CrawlDenominationDirectories`, `CleanupLlm`, `OverrideDenomination`, `LinkSocial`, `PopulateEnglishNames`, `PopulateDenominationEnglishNames`, `BuildGeonames`, and `BuildSnapshot` adapt command-line options to the pipeline classes described below.
+- The 14 command classes adapt command-line options to the pipeline classes described below and inherit the common quality-control lifecycle from `CrawlCommand`.
 - `DenominationNameInput` is the small serialization shape needed when translating denomination names.
-- `writeDataCleanupStat` writes the mandatory per-run cleanup report, including failed runs.
+- `writeDataCleanupStat` emits the specialized English-name cleanup statistics through Logback, including failed runs.
 
-### `GoogleSavedPlacesSeedReader.kt`
+### [`CrawlReportLogging.kt`](src/main/kotlin/jp/co/crossmap/crawl/CrawlReportLogging.kt) and [`logback.xml`](src/main/resources/logback.xml)
+
+- `CrawlCommand` wraps each command execution and always finishes a `CrawlCommandAudit`, including when the command throws.
+- `CrawlCommandAudit` renders consistent inputs, settings, metrics, outputs, timestamps, duration, and error fields; individual commands supply their domain-specific quality indicators.
+- `CrawlReportLogging` configures the run timestamp and log directory, then uses the Logback sifting appender to route each `CrawlReport` to its command-specific file and the console.
+
+### [`GoogleSavedPlacesSeedReader.kt`](src/main/kotlin/jp/co/crossmap/crawl/GoogleSavedPlacesSeedReader.kt)
 
 - `GoogleSavedPlacesSeedReader` implements the standalone first stage of the former gmap workflow: RFC 4180 CSV parsing, Japanese/English header aliases, CID extraction from Takeout or canonical Maps URLs, cross-list deduplication, and durable raw JSON.
 - `GoogleSavedPlaceSeed` intentionally contains only fields present in the dump. It is not a partially valid `ChurchRecord`; Google-page resolution must supply the remaining place evidence first.
 - `GoogleSavedPlacesSeedReport` and `GoogleSavedPlacesSeedError` preserve row counts, duplicates, and malformed-row diagnostics without stopping valid rows.
 
-### `GoogleMapsPlaceResolver.kt`
+### [`GoogleMapsPlaceResolver.kt`](src/main/kotlin/jp/co/crossmap/crawl/GoogleMapsPlaceResolver.kt)
 
 - `CachedGoogleMapsPageSource` reproduces gmap's cache-first acquisition, including its verified CID redirect edge case; missing pages try normal HTTP and then a Lightpanda-rendered page.
-- `GoogleMapsPlaceParser` extracts Google place name, coordinates, address, website, and category into `GooglePlaceChurchCandidate` without pretending the raw result is already canonical.
-- `GoogleMapsPlaceResolver` resolves with bounded concurrency, applies gmap's Catholic-list non-church filter, and atomically writes candidates and `GoogleMapsResolutionReport` diagnostics.
+- `GoogleMapsPlaceParser` extracts the Google place title, coordinates, address, website, and category, then invokes the one authoritative multilingual name workflow before constructing `GooglePlaceChurchCandidate`.
+- `GoogleMapsPlaceResolver` resolves with bounded concurrency, applies gmap's Catholic-list non-church filter, and atomically writes candidates plus name-pattern/language counts in `GoogleMapsResolutionReport`.
+- `MultilingualChurchNameLocalizer` performs all title-name work together: decomposition, per-part source language and role detection, deterministic phrase translation, and ordered `localizedNames` composition. It preserves the original-language title and emits exactly one nonblank JA/EN/KO/PT/ID name per language; recognized structural parts are translated and unresolved proper-name parts are retained or romanized instead of blocking the whole target name. For Portuguese, Spanish, and Indonesian structures, Japanese composition moves a terminal geoname to the front and converts a leading `Igreja`/`Iglesia`/`Gereja` into trailing `教会`; acronym-plus-geoname names retain their source order when no Romance church/concept structure is present.
+- `ChurchNameDecomposer` obtains Latin denomination abbreviations from `resources/catalog/denominations.json`; mixed titles such as `JELC大阪教会` and branch names such as `HCCライブチャーチ津山` retain their abbreviations and structure.
+- `LatinChurchNameJapaneseComposer` uses longest reviewed phrase first across GeoNames, every `resources/dictionary/<source>-ja-*.csv`, and `congregation-terms.json`; ICU is limited to unmatched proper-name components.
+- `ChurchNameEnglishDictionary` discovers language-pair dictionary files generically, validates duplicates, and exposes explicit or safely reversed lookup maps. `CongregationTermDictionary` supplies church/chapel/assembly/mission vocabulary across Japanese, English, Korean, Portuguese, Indonesian, and extension languages.
+- Language detection uses the vendored `com.cybozu.labs.langdetect` source and upstream 47-language short-text profiles under `src/main/resources/language-profiles`, with deterministic Hangul/Japanese script checks before statistical detection.
 
-### `GoogleSavedPlacesCleanupWorkflow.kt`
+### [`GoogleSavedPlacesCleanupWorkflow.kt`](src/main/kotlin/jp/co/crossmap/crawl/GoogleSavedPlacesCleanupWorkflow.kt)
 
 - `GoogleSavedPlacesCleanupWorkflow` is the single promotion bridge from raw Google candidates into the normal Crossmap cleanup workflow; it does not duplicate denomination/LLM logic.
+- Saved-list provenance is deterministic evidence: membership in `カトリック教会.csv` assigns `CATHOLIC_JP` at Google Maps parsing and is re-evaluated during promotion so older cached candidates cannot lose the classification. The ordinary `教会.csv` list does not imply a denomination, and a human denomination determination remains authoritative.
 - It exact-deduplicates normalized name/address candidates, retains non-Google records, reuses evidence by CID, stages work under `resources/cleanup`, and promotes atomically only after mandatory fields are complete.
 - `GoogleSavedPlacesPromotionReport` and `PreparationReport` expose candidate, evidence, website, denomination, English-name, and promotion completeness counts.
 
-### `LightPanda.kt`
+### [`LightPanda.kt`](src/main/kotlin/jp/co/crossmap/crawl/LightPanda.kt)
 
 - `LightPanda` is the lightweight JavaScript-rendering fallback. It invokes `lightpanda fetch --dump html URL`, validates HTTP(S) input, drains bounded stdout/stderr concurrently, enforces a timeout, terminates hung processes, and returns rendered HTML.
 - Set `LIGHTPANDA_BINARY` when the executable is not on `PATH`. `TestLightPanda.kt` covers the command contract and errors; set `CROSSMAP_LIGHTPANDA_INTEGRATION=1` to exercise the installed binary.
 
-### `CrawlManifest.kt` and `Hashing.kt`
+### [`CrawlManifest.kt`](src/main/kotlin/jp/co/crossmap/crawl/CrawlManifest.kt) and [`Hashing.kt`](src/main/kotlin/jp/co/crossmap/crawl/Hashing.kt)
 
 - `CrawlManifestEntry` records source URL, HTTP status, hash/cache path, acquisition mode, timestamps, and errors for reproducible cached crawling.
 - `sha256` supplies stable content-addressed cache and snapshot hashes.
 
-### `WebsiteRefresher.kt`
+### [`WebsiteRefresher.kt`](src/main/kotlin/jp/co/crossmap/crawl/WebsiteRefresher.kt)
 
 - `WebsiteRefresher` reads church website URLs, reuses copied/previous cache entries, fetches changed content with bounded concurrency, extracts page text, and atomically updates the manifest/catalog.
 - `RefreshReport`, `ChurchRefresh`, and `FetchResult` carry aggregate and per-fetch outcomes.
 
-### `OfficialDirectoryCrawler.kt`
+### [`OfficialDirectoryCrawler.kt`](src/main/kotlin/jp/co/crossmap/crawl/OfficialDirectoryCrawler.kt)
 
 - `DenominationDirectorySource` and `DenominationJurisdictionSource` describe generic CSS-selector-driven official lists, including nested diocese/district/parish/branch pages.
 - `DirectoryPageLoader` abstracts page loading; `HttpDirectoryPageLoader` fetches pages and `CachedDirectoryPageLoader` prefers the Crossmap cache.
 - `OfficialDirectoryCrawler` walks configured sources and emits normalized denomination candidates rather than hard-coding each denomination in Kotlin.
 - `JurisdictionKind`, `LoadedDirectoryPage`, `DirectoryEntry`, `DirectoryTarget`, and `DirectoryCrawlReport` represent directory hierarchy, work items, and results.
 
-### `DataCleanup.kt`
+### [`DataCleanup.kt`](src/main/kotlin/jp/co/crossmap/crawl/DataCleanup.kt)
 
 - `PostCrawlCleanup` orchestrates denomination cleanup and atomic catalog/audit writes.
 - `ProgrammaticDenominationMatcher` applies ordered deterministic candidates/rules.
 - `EntityMatcher` is the cleanup fallback contract; `KoogOllamaEntityMatcher` implements it with local Ollama and exposes its model through `ModelIdentified`.
 - `DenominationCandidate`, `DenominationRule`, `HumanOverride`, `EntityMatchInput`, `EntityMatchDecision`, `ProgrammaticDecision`, `CleanupAuditEntry`, and `CleanupReport` are durable inputs/outputs and audit records.
 
-### `DenominationDeterminer.kt`
+### [`DenominationDeterminer.kt`](src/main/kotlin/jp/co/crossmap/crawl/DenominationDeterminer.kt)
 
 - `Denomination` is the expandable canonical definition: ID, Japanese name, every known alias, official site, and proposed status.
 - `ProgrammaticDenominationDeterminer` checks exact names/aliases in church names and selected crawled pages.
 - `DenominationGuesser` is the fallback contract; `KoogDenominationGuesser` asks Ollama for a scored guess over bounded webpage text.
 - `DenominationGuessResult` and private `WireResult` separate domain output from model wire JSON.
 
-### `LlmEntitySimilarity.kt`
+### [`LlmEntitySimilarity.kt`](src/main/kotlin/jp/co/crossmap/crawl/LlmEntitySimilarity.kt)
 
 - `JapaneseEntityNormalizer` normalizes Japanese names and addresses for cheap overlap/exact checks.
 - `LlmEntitySimilarityMatcher` scores ambiguous name/address/entity pairs; `KoogLlmEntitySimilarityMatcher` is the local model implementation.
 - `SimilarityField`, `EntitySimilarityInput`, and `SimilarityDecision` make the comparison type and evidence explicit.
 
-### `SocialAccountLinker.kt` and `SocialLinkPipeline.kt`
+### [`SocialAccountLinker.kt`](src/main/kotlin/jp/co/crossmap/crawl/SocialAccountLinker.kt) and [`SocialLinkPipeline.kt`](src/main/kotlin/jp/co/crossmap/crawl/SocialLinkPipeline.kt)
 
 - `SocialAccountLinker` enforces precedence: direct webpage URL, exact/either-name-contains, then LLM score; ambiguous/low results stay unmatched.
 - `SocialLinkPipeline` loads candidates/cache evidence, runs the linker, records provenance, and atomically updates the catalog/audit file.
 - `SocialAccountCandidate`, `SocialLinkDecision`, and `SocialLinkReport` are the candidate, per-decision, and aggregate forms.
 
-### `ChurchNameEnglishTranslationRule.kt`
+### [`ChurchNameEnglishTranslationRule.kt`](src/main/kotlin/jp/co/crossmap/crawl/ChurchNameEnglishTranslationRule.kt)
 
 - `ChurchNameEnglishTranslationRule` is the extension point for cheap deterministic Japanese-name patterns.
 - `GeonameTraditionChurchNameRule`, `DenominationAliasGeonameChurchNameRule`, `GeonameChristianAssemblyNameRule`, and `RomanizedJapaneseChurchNameRule` implement the current ordered rules.
 - `ChurchNameEnglishTranslationRules` owns rule ordering and shared geoname/tradition dictionaries. New patterns should be separate classes with real-data tests.
 
-### `JapaneseNameRomanizer.kt`
+### [`JapaneseNameRomanizer.kt`](src/main/kotlin/jp/co/crossmap/crawl/JapaneseNameRomanizer.kt)
 
 - `JapaneseNameRomanizer` uses lucene-kmp Kuromoji's reading-form filter in romaji mode, so nationwide Japanese place/proper names can be translated deterministically without a hand-maintained 1,700-city switch statement.
 
-### `ChurchEnglishNameResolver.kt`
+### [`ChurchEnglishNameResolver.kt`](src/main/kotlin/jp/co/crossmap/crawl/ChurchEnglishNameResolver.kt)
 
 - `ChurchEnglishNameResolver` applies the precedence diagram above and returns provenance-aware `ResolvedChurchEnglishName` values.
 - `ChurchEnglishNameInput` is the pre-publication naming shape, so unfinished crawl data never needs a fake or blank `ChurchRecord.englishName`.
@@ -222,30 +258,36 @@ Gradle orchestration:
 - `ChurchEnglishNameTranslator` is the expensive fallback contract; `KoogChurchEnglishNameTranslator` combines CAT translation with selective URL reconstruction.
 - `ChurchNamePartRole`, `TranslatedChurchNamePart`, `ChurchEnglishNameGuess`, `ProgrammaticEnglishName`, and `ResolvedChurchEnglishName` record split parts, confidence, evidence, model, and result source.
 
-### `ChurchRecordDraft.kt` and `CachingChurchEnglishNameTranslator.kt`
+### [`LlmComposedNameDetailLog.kt`](src/main/kotlin/jp/co/crossmap/crawl/LlmComposedNameDetailLog.kt)
+
+- `buildLlmComposedNameDetails` joins LLM resolutions back to analyzer output before publication flattens provenance, classifies each child part's translation method, and retains denomination aliases as explicit children.
+- `writeLlmComposedNameDetailLog` writes a unique timestamped, human-readable audit file without overwriting another cleanup run from the same minute.
+
+### [`ChurchRecordDraft.kt`](src/main/kotlin/jp/co/crossmap/crawl/ChurchRecordDraft.kt) and [`CachingChurchEnglishNameTranslator.kt`](src/main/kotlin/jp/co/crossmap/crawl/CachingChurchEnglishNameTranslator.kt)
 
 - `ChurchRecordDraft` decodes unfinished/legacy crawl data and can become a canonical `ChurchRecord` only with a validated `ResolvedChurchEnglishName`.
-- `CachingChurchEnglishNameTranslator` atomically checkpoints every completed model batch in `resources/cleanup/english-name-llm-cache.json`; interrupted runs reuse matching church/model results and expose cache, batch, error, and timeout statistics.
+- `CachingChurchEnglishNameTranslator` atomically checkpoints every completed model batch under `cache/church-name-translation`; interrupted runs reuse matching church/model results and expose cache, batch, error, and timeout statistics.
 
-### `KoogJapaneseTextTranslator.kt`, `KoogChurchNameReconstructor.kt`, and Ollama agents
+### [`KoogJapaneseTextTranslator.kt`](src/main/kotlin/jp/co/crossmap/crawl/KoogJapaneseTextTranslator.kt), [`KoogChurchNameReconstructor.kt`](src/main/kotlin/jp/co/crossmap/crawl/KoogChurchNameReconstructor.kt), and Ollama agents
 
 - `KoogJapaneseTextTranslator` batches CAT-Translate-7b requests and falls back to an individual request if a numbered batch line is missing.
 - `KoogChurchNameReconstructor` extracts only explicit URL spelling patterns and asks `qwen3:1.7b` to reconcile them with CAT output.
 - `KoogOllamaTextAgent` is the direct single-prompt executor used by translation models; it avoids an agent loop.
 - `KoogOllamaJsonAgent` is the bounded JSON agent used by classification/matching tasks.
 
-### `EvidencePipeline.kt`
+### [`EvidencePipeline.kt`](src/main/kotlin/jp/co/crossmap/crawl/EvidencePipeline.kt)
 
 - `EvidenceStore` writes immutable evidence, candidates, and resolutions under the resource root.
 - `EvidencePipelineRunner` runs named resumable stages and persists `PipelineState` after each stage.
 - `PipelineStage`, `NamedPipelineStage`, and `PipelineContext` define stage execution.
 - `EvidenceKind`, `EvidenceEntityType`, `EvidenceRecord`, `CandidateRelationship`, `EntityCandidateLink`, `ResolutionStatus`, and `EntityResolution` are generic enough for churches, denominations, social profiles, and future sermons.
 
-### `GeoCatalogBuilder.kt`
+### [`GeoCatalogBuilder.kt`](src/main/kotlin/jp/co/crossmap/crawl/GeoCatalogBuilder.kt)
 
+- `GeoName` downloads and safely extracts official GeoNames `JP.zip` and `alternatenames/JP.zip`, downloads and validates JMA `city.json`, and merges Japanese municipality aliases across EN/KO/PT/ID. `resources/geonames/japan.json` remains detection-only because it contains no English names.
 - `GeoCatalogBuilder` combines all 47 prefectures with municipality/ward source data, church coordinates, aliases, centers, and covering radii into the search geoname catalog.
 
-### `SnapshotBuilder.kt`
+### [`SnapshotBuilder.kt`](src/main/kotlin/jp/co/crossmap/crawl/SnapshotBuilder.kt)
 
 - `SnapshotBuilder` builds the church Lucene index, copies the exact geoname catalog used by the index, writes a manifest, ZIPs the immutable snapshot, computes SHA-256, and atomically updates latest metadata for CLI/server/mobile consumers.
 

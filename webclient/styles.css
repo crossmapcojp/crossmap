@@ -11,3 +11,14 @@ button { padding: 12px 20px; border: 0; border-radius: 8px; color: white; backgr
 a { color: #174d34; }
 .snippet { color: #536057; line-height: 1.6; }
 #pagination { display: flex; gap: 8px; margin-top: 24px; }
+.language-picker {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin: .75rem 0;
+}
+
+.language-picker select {
+  font: inherit;
+  padding: .35rem .5rem;
+}

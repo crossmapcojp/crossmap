@@ -1,0 +1,205 @@
+package jp.co.crossmap.crawl
+
+import java.nio.file.Files
+import java.nio.file.Path
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
+
+class MultilingualChurchNameLocalizerTest {
+    private val resourcesRoot = generateSequence(Path.of("").toAbsolutePath().normalize()) { it.parent }
+        .first { Files.isRegularFile(it.resolve("settings.gradle.kts")) }
+        .resolve("resources")
+    private val dictionaries = ChurchNameEnglishDictionary.load(resourcesRoot)
+    private val congregationTerms = CongregationTermDictionary.load(resourcesRoot)
+
+    @Test
+    fun composesUccjAkabaneIntoEnglishAndKoreanProgrammatically() {
+        val localizer = localizer(
+            geonames = mapOf("赤羽" to "Akabane"),
+            denominations = listOf(Denomination("UCCJ", "日本基督教団", listOf("日本キリスト教団"))),
+        )
+
+        val result = localizer.localize("日本基督教団赤羽教会")
+
+        assertEquals("日本基督教団赤羽教会", result.japaneseName)
+        assertEquals("UCCJ Akabane Church", result.localizedNames.single { it.languageCode == "en" }.name)
+        assertEquals("일본기독교단 아카바네 교회", result.localizedNames.single { it.languageCode == "ko" }.name)
+        assertEquals(setOf("ja", "en", "ko", "pt", "id"), result.localizedNames.map { it.languageCode }.toSet())
+        assertTrue(result.components.all { it.sourceLanguage == "ja" })
+        assertEquals(
+            listOf(
+                MultilingualNameComponentRole.DENOMINATION,
+                MultilingualNameComponentRole.GEONAME,
+                MultilingualNameComponentRole.CONGREGATION,
+            ),
+            result.components.map(MultilingualNameComponent::role),
+        )
+    }
+
+    @Test
+    fun reviewedConceptAndGeonameDictionariesOutrankBroadGeoNamesAliases() {
+        val result = localizer(
+            geonames = mapOf("大宮" to "Omiya-ku", "共立" to "Kyoritsu Station"),
+            denominations = listOf(Denomination("UCCJ", "日本基督教団", listOf("日本キリスト教団"))),
+        ).localize("日本基督教団大宮共立教会")
+
+        assertEquals("UCCJ Omiya Kyoritsu Church", result.localizedNames.single { it.languageCode == "en" }.name)
+        assertEquals("일본기독교단 오미야 교리쓰 교회", result.localizedNames.single { it.languageCode == "ko" }.name)
+        assertEquals(
+            listOf(
+                MultilingualNameComponentRole.DENOMINATION,
+                MultilingualNameComponentRole.GEONAME,
+                MultilingualNameComponentRole.CONCEPT,
+                MultilingualNameComponentRole.CONGREGATION,
+            ),
+            result.components.map(MultilingualNameComponent::role),
+        )
+    }
+
+    @Test
+    fun improvesRealPortugueseGoogleTitlesWithReviewedPhrasesGeonamesAndAcronyms() {
+        val localizer = localizer(
+            geonames = mapOf(
+                "大泉" to "Oizumi",
+                "浜松" to "Hamamatsu",
+                "安城" to "Anjo",
+            ),
+        )
+        val examples = mapOf(
+            "A.D.C.D. Assembléia de Deus Central do Dourado - Projeto Vinho Novo" to
+                "ADCDアッセンブレイア・デ・デウスセントラルドドウラードプロジェトヴィーニョ・ノーヴォ",
+            "ADOMJ Oizumi" to "ADOMJ大泉",
+            "ADVM Assembleia de Deus Visão Missionaria Hamamatsu" to
+                "浜松ADVMアッセンブレイア・デ・デウスヴィザォン・ミッショナリア",
+            "ASSEMBLEIA DE DEUS BELÉM ANJO-SHI" to
+                "安城アッセンブレイア・デ・デウスベレン",
+        )
+
+        examples.forEach { (title, japanese) ->
+            val result = localizer.localize(title)
+            assertEquals(japanese, result.japaneseName, title)
+            assertTrue(result.localizedNames.any { it.languageCode == "pt" && it.name == title }, title)
+        }
+
+        val composed = localizer.localize(
+            "A.D.C.D. Assembléia de Deus Central do Dourado - Projeto Vinho Novo",
+        )
+        assertEquals(
+            "ADCD Assemblies of God Central Do Dourado Project Vinho Novo",
+            composed.localizedNames.single { it.languageCode == "en" }.name,
+        )
+        assertEquals(setOf("ja", "en", "ko", "pt", "id"), composed.localizedNames.map { it.languageCode }.toSet())
+
+        val missionary = localizer.localize("ADVM Assembleia de Deus Visão Missionaria Hamamatsu")
+        assertEquals(
+            listOf("ADVM", "Assembleia de Deus", "Visão Missionaria", "Hamamatsu"),
+            missionary.components.map { it.source },
+        )
+        assertTrue(missionary.components.all { it.sourceLanguage == "pt" })
+    }
+
+    @Test
+    fun recognizesRealPortugueseMisspellingWithoutFallingBackToWordByWordTransliteration() {
+        val result = localizer(emptyMap()).localize("Assembreia de Deus Ministerio da restauracao")
+
+        assertEquals(
+            "アッセンブレイア・デ・デウス回復ミニストリー",
+            result.japaneseName,
+        )
+        assertTrue(result.localizedNames.any { it.languageCode == "pt" })
+        assertEquals(
+            "Assemblies of God Restoration Ministry",
+            result.localizedNames.single { it.languageCode == "en" }.name,
+        )
+    }
+
+    @Test
+    fun preservesRealLatinChurchNamePrefixWhenJapaneseSuffixOnlyMeansChurch() {
+        val result = localizer(emptyMap()).localize("NEW GRACE 教会")
+
+        assertEquals("ニューグレイス教会", result.japaneseName)
+        assertEquals("New Grace Church", result.latinName)
+        assertEquals("New Grace Church", result.localizedNames.single { it.languageCode == "en" }.name)
+        assertEquals(ChurchNamePattern.LATIN_NAME_WITH_JAPANESE_CONGREGATION_SUFFIX, result.pattern)
+    }
+
+    @Test
+    fun composesJmaMunicipalityTranslationsIntoAllSupportedChurchNames() {
+        val result = localizer(
+            geonames = mapOf("前橋" to "Maebashi"),
+            multilingualGeonames = mapOf(
+                "前橋" to mapOf("en" to "Maebashi", "ko" to "마에바시", "pt" to "Maebashi", "id" to "Maebashi"),
+            ),
+        ).localize("前橋教会")
+
+        assertEquals("Maebashi Church", result.localizedNames.single { it.languageCode == "en" }.name)
+        assertEquals("마에바시 교회", result.localizedNames.single { it.languageCode == "ko" }.name)
+        assertEquals("Igreja Maebashi", result.localizedNames.single { it.languageCode == "pt" }.name)
+        assertEquals("Gereja Maebashi", result.localizedNames.single { it.languageCode == "id" }.name)
+    }
+
+    @Test
+    fun usesEvidencedPortugueseForShortTitlePartsInsteadOfStatisticalFalsePositive() {
+        val result = localizer(
+            geonames = mapOf("四日市" to "Yokkaichi"),
+        ).localize("Avivamento Japão Yokkaichi", listOf("pt"))
+
+        assertEquals("四日市日本リバイバル", result.japaneseName)
+        assertEquals("Japan Revival Yokkaichi", result.localizedNames.single { it.languageCode == "en" }.name)
+        assertTrue(result.components.all { it.sourceLanguage == "pt" })
+    }
+
+    @Test
+    fun reviewedWholePhrasesReplaceRepeatedPoorPortugueseTransliterationPatterns() {
+        val universal = localizer(emptyMap()).localize("Igreja Universal do Reino de Deus", listOf("pt"))
+        val revival = localizer(
+            geonames = mapOf("越前" to "Echizen"),
+        ).localize("Igreja Evangélica Avivamento Japão - Echizen-shi", listOf("pt"))
+
+        assertEquals("ユニバーサル神の王国教会", universal.japaneseName)
+        assertEquals(
+            "Universal Church of the Kingdom of God",
+            universal.localizedNames.single { it.languageCode == "en" }.name,
+        )
+        assertEquals("越前福音派日本リバイバル教会", revival.japaneseName)
+        assertEquals(
+            "Church Evangelical Japan Revival Echizen",
+            revival.localizedNames.single { it.languageCode == "en" }.name,
+        )
+    }
+
+    @Test
+    fun reviewedEnglishAndSpanishPhrasesAvoidIcuWholeWordArtifacts() {
+        val localizer = localizer(
+            geonames = mapOf("浜松" to "Hamamatsu", "山梨" to "Yamanashi"),
+        )
+
+        val snowball = localizer.localize("Bola de Neve Church, Hamamatsu-Shi", listOf("en", "pt"))
+        val christComes = localizer.localize("Iglesia Cristo Viene Yamanashi", listOf("es"))
+        val movement = localizer.localize("Movimiento Misionero Mundial", listOf("es"))
+
+        assertEquals("浜松ボラ・デ・ネーヴェ教会", snowball.japaneseName)
+        assertTrue(snowball.components.all { it.sourceLanguage == "pt" })
+        assertEquals("山梨再臨キリスト教会", christComes.japaneseName)
+        assertEquals(
+            christComes.localizedNames.size,
+            christComes.localizedNames.map { it.languageCode }.distinct().size,
+        )
+        assertEquals("Church Christ Is Coming Yamanashi", christComes.localizedNames.single { it.languageCode == "en" }.name)
+        assertEquals("世界宣教運動", movement.japaneseName)
+        assertEquals("Worldwide Missionary Movement", movement.localizedNames.single { it.languageCode == "en" }.name)
+    }
+
+    private fun localizer(
+        geonames: Map<String, String>,
+        denominations: List<Denomination> = emptyList(),
+        multilingualGeonames: Map<String, Map<String, String>> = emptyMap(),
+    ) = MultilingualChurchNameLocalizer(
+        dictionaries = dictionaries,
+        congregationTerms = congregationTerms,
+        denominations = denominations,
+        geonames = geonames,
+        multilingualGeonames = multilingualGeonames,
+    )
+}

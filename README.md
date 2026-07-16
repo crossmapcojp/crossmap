@@ -19,6 +19,8 @@ Crossmap does not require the former gmap project at build time or runtime. Exis
 
 All crawled church-page text is searchable. A query is parsed longest-name-first against all 47 prefectures and the generated municipality/ward catalog. Recognized place names are removed from the text query and converted to Lucene geo filters. Duplicate municipality names are handled as a union, and prefectures expand to their municipality areas.
 
+Localized church names share one downloadable snapshot containing five indexes: `JapaneseAnalyzer` for Japanese, analysis-nori `KoreanAnalyzer` for Korean, and the analysis-common `EnglishAnalyzer`, `PortugueseAnalyzer`, and `IndonesianAnalyzer` for their respective languages. Query-language detection is independent of the UI display language and routes each query to its matching index/analyzer; an explicit CLI `--language` can still override automatic detection.
+
 If no geoname is present, the browser or app may request device location and retry with a default 25 km radius. A geoname in the query always takes precedence over device location.
 
 Search responses and church details use Kotlin-serializable JSON models. Church detail includes name, denomination, address, website, and typed Facebook, X, Instagram, and YouTube profiles. Crawled content already distinguishes ordinary pages from sermons so a future sermon index can use a separate result model without changing church search.
@@ -33,7 +35,7 @@ Search responses and church details use Kotlin-serializable JSON models. Church 
 - `resources/geonames/japan.json`: generated prefecture and municipality/ward aliases and geo areas.
 - `resources/evidence`: typed directory and social-account evidence.
 - `resources/cleanup`: deterministic rules, candidates, human overrides, and auditable decisions.
-- `resources/indexes/<version>`: Lucene index, archive, and checksum manifest.
+- `cache/search-indexes/churches/<version>`: generated Lucene index, archive, and checksum manifest; only the cache README is committed.
 
 ## Crawl and cleanup
 
@@ -109,18 +111,21 @@ The production cleanup entry point is `./gradlew :crawl:dataCleanup`. Every invo
 ## Build an index snapshot
 
 ```sh
-./gradlew :crawl:run --args='build-snapshot --resources resources --version local-dev'
+./gradlew :crawl:prepareChurchGeoNames
+./gradlew :crawl:buildSearchSnapshot -PcrossmapIndexVersion=local-dev
 ```
 
-Each snapshot records schema and index versions, lucene-kmp version, document count, archive size, and SHA-256. Mobile clients download to a `.part` file, verify it, stage extraction, validate the manifest, and atomically switch the active version while retaining the previous working snapshot.
+The geoname task joins official `JP.txt` and language-tagged `alternatenames/JP.txt` data, then maintains separate `*-title-missing.csv` and `*-address-missing.csv` human-review queues under `resources/geonames`; title names take priority when a name has both uses. Each snapshot contains `index/{ja,en,ko,pt,id}`. Japanese indexes names, address, crawled pages, and geonames; the other indexes contain localized names plus only the title/address geonames that have translations in that index language. The manifest records the five languages, schema/index versions, lucene-kmp version, document count, archive size, archive SHA-256, and canonical-catalog SHA-256. Mobile clients download to a `.part` file, verify it, stage extraction, validate the manifest, and atomically switch the active version while retaining the previous working snapshot.
 
 ## CLI
 
 ```sh
 ./gradlew :cli:installDist
-./cli/build/install/cm/bin/cm search '教会 東京'
-./cli/build/install/cm/bin/cm search 'バプテスト' --latitude 35.6812 --longitude 139.7671 --radius-km 25
-./cli/build/install/cm/bin/cm church google:123
+./cli/build/install/cm/bin/cm church search '教会 東京'
+./cli/build/install/cm/bin/cm church search --language ko '오사카'
+./cli/build/install/cm/bin/cm church search --language pt 'Osaka'
+./cli/build/install/cm/bin/cm church search 'バプテスト' --latitude 35.6812 --longitude 139.7671 --radius-km 25
+./cli/build/install/cm/bin/cm church index info
 ```
 
 The CLI automatically locates the latest local Crossmap snapshot unless an explicit index path is supplied.
@@ -128,16 +133,26 @@ The CLI automatically locates the latest local Crossmap snapshot unless an expli
 ## Server and web client
 
 ```sh
-CROSSMAP_INDEX_DIR=resources/indexes/churches/local-dev/index ./gradlew :server:run
+./gradlew :server:run
 ```
 
-Open the server root in a browser. The user flow is `index.html` -> `/api/v1/churches/search` JSON -> `result.html` -> `/api/v1/churches/{id}` JSON -> `church.html`. All browser logic is vanilla JavaScript. Browser geolocation is requested only after the first search confirms that the query contains no geoname.
+`:server:run` first rebuilds and publishes the `development` search snapshot from the current canonical catalog. At startup the server accepts `latest.json` only when its schema is current, its index directory exists, and its source-catalog SHA-256 matches `resources/catalog/churches.json`; it never silently serves a stale index.
+
+Open the server root in a browser. The user flow is `index.html` -> `/api/v1/churches/search` JSON -> `result.html` -> the generated `/church/{english-name}.html` detail page. Each search hit carries its canonical `detailUrl`; result links do not expose Google Place IDs. The server accepts the generated page manifest only when its catalog SHA-256 matches the current catalog and it covers every indexed church. All browser logic is vanilla JavaScript. Browser geolocation is requested only after the first search confirms that the query contains no geoname.
+
+Run the real browser regression with:
+
+```shell
+./gradlew :server:lightpandaE2eTest
+```
+
+It rebuilds the latest snapshot and generated pages, starts Netty, renders the `布佐キリスト教会` result page in Lightpanda, verifies that the old `/church.html?id=...` link is absent, and follows the English-name static church-detail link.
 
 Static detail pages use `/church/{denomination-English}-{church-English}.html`. Supply a JSON object mapping denomination IDs to English names, for example `{"JBC":"Japan Baptist Convention"}`, then generate development or production pages:
 
 ```sh
 ./gradlew :server:generateChurchPages \
-  -PdenominationEnglishNames=resources/catalog/denomination-english-names.json
+  -PdenominationEnglishNames=resources/catalog/denomination-en-names.json
 ```
 
 The default output is `webclient/church` (generated and gitignored). Generated page and canonical links are root-relative `/church/...` paths, so the same files work on localhost and production. Generation fails if a church English name, a known denomination English name, or a collision-disambiguating English location is absent.

@@ -6,6 +6,65 @@ interface ChurchNameEnglishTranslationRule {
     fun translate(church: ChurchEnglishNameInput): ProgrammaticEnglishName?
 }
 
+class StructuredChurchNameRule(
+    denominations: List<Denomination>,
+    geonames: Map<String, String> = ChurchNameEnglishLexicon.geonames,
+    concepts: Map<String, String> = emptyMap(),
+) : ChurchNameEnglishTranslationRule {
+    private val analyzer = ChurchNameComponentAnalyzer(denominations, geonames, concepts = concepts)
+    private val denominationAbbreviations = denominations.flatMap { denomination ->
+        (listOf(denomination.name) + denomination.aliases).map { alias -> alias to denomination.id }
+    }.associate { it }.mapValues { (_, id) ->
+        id.takeIf { it.matches(Regex("""[A-Z][A-Z0-9]{1,9}""")) }
+    }
+
+    override fun translate(church: ChurchEnglishNameInput): ProgrammaticEnglishName? {
+        val analysis = analyzer.analyze(church) ?: return null
+        val localEnglishName = analysis.compose() ?: return null
+        val denominationPrefix = analysis.denominationAlias?.let(denominationAbbreviations::get)
+        val englishName = listOfNotNull(denominationPrefix, localEnglishName).joinToString(" ")
+        return ProgrammaticEnglishName(
+            englishName,
+            0.99f,
+            "Deterministic structured denomination/name-part/congregation translation",
+        )
+    }
+}
+
+class GenericChurchNameFromAddressRule(
+    denominations: List<Denomination>,
+    private val geonames: Map<String, String>,
+) : ChurchNameEnglishTranslationRule {
+    private val denominationIds = denominations.associateBy(Denomination::id).keys
+
+    override fun translate(church: ChurchEnglishNameInput): ProgrammaticEnglishName? {
+        val congregation = when (church.name.replace(" ", "")) {
+            "教会", "キリスト教会" -> "Church"
+            "チャペル" -> "Chapel"
+            "キリスト集会" -> "Christian Assembly"
+            else -> return null
+        }
+        val geoname = geonames.entries
+            .asSequence()
+            .filter { (japanese, english) ->
+                japanese.length >= 2 && english.isNotBlank() && church.address.contains(japanese)
+            }
+            .maxWithOrNull(
+                compareBy<Map.Entry<String, String>> { church.address.lastIndexOf(it.key) }
+                    .thenBy { it.key.length },
+            )
+            ?.value
+            ?: return null
+        val denomination = church.denominationId
+            ?.takeIf { it in denominationIds && it.matches(Regex("""[A-Z][A-Z0-9]{1,9}""")) }
+        return ProgrammaticEnglishName(
+            englishName = listOfNotNull(denomination, geoname, congregation).joinToString(" "),
+            confidence = 0.96f,
+            evidence = "Generic church title completed from denomination and most-specific address geoname",
+        )
+    }
+}
+
 class GeonameChristianAssemblyNameRule(
     private val geonames: Map<String, String>,
     private val romanize: (String) -> String? = JapaneseNameRomanizer::romanize,
@@ -55,19 +114,39 @@ class DenominationAliasGeonameChurchNameRule(
     }.distinctBy { it.first }.sortedByDescending { it.first.length }
 
     override fun translate(church: ChurchEnglishNameInput): ProgrammaticEnglishName? {
-        val (alias, denominationId) = aliases.firstOrNull { church.name.startsWith(it.first) } ?: return null
+        val eligibleAliases = church.denominationId
+            ?.takeUnless { it == NOT_DETERMINED }
+            ?.let { knownId -> aliases.filter { (_, denominationId) -> denominationId == knownId } }
+            ?: aliases
+        val (alias, denominationId) = eligibleAliases.firstOrNull { church.name.startsWith(it.first) } ?: return null
         if (!church.denominationId.isNullOrBlank() && church.denominationId != NOT_DETERMINED &&
             church.denominationId != denominationId
         ) return null
-        val remainder = church.name.removePrefix(alias).removeSuffix("教会")
+        val remainder = church.name.removePrefix(alias).removeSuffix("教会").trim()
         val geonameEnglish = geonames[remainder]
             ?: remainder.takeIf(church.address::contains)?.let(romanize)
+            ?: translateKnownGeonameAndKanaProperName(remainder)
+            ?: remainder.takeIf(::isKanaProperName)?.let(romanize)
             ?: return null
         return ProgrammaticEnglishName(
             "$geonameEnglish Church",
             1f,
-            "Denomination name/alias + geoname + church rule ($alias)",
+            "Denomination name/alias + romanized proper-name stem + church rule ($alias)",
         )
+    }
+
+    private fun isKanaProperName(value: String): Boolean =
+        value.any { it in '\u3040'..'\u30ff' } && value.all {
+            it.isWhitespace() || it == '・' || it == 'ー' || it == '-' || it in '\u3040'..'\u30ff'
+        }
+
+    private fun translateKnownGeonameAndKanaProperName(value: String): String? {
+        val (japanese, english) = geonames.entries.sortedByDescending { it.key.length }
+            .firstOrNull { value.startsWith(it.key) && value.length > it.key.length }
+            ?: return null
+        val properName = value.removePrefix(japanese).trim()
+        if (!isKanaProperName(properName)) return null
+        return "$english ${romanize(properName) ?: return null}"
     }
 }
 
@@ -84,6 +163,7 @@ class RomanizedJapaneseChurchNameRule(
         "大聖堂" to "Cathedral",
         "チャペル" to "Chapel",
         "礼拝堂" to "Chapel",
+        "会堂" to "Chapel",
         "伝道所" to "Mission",
         "ミッション" to "Mission",
         "チャーチ" to "Church",
@@ -121,35 +201,30 @@ class RomanizedJapaneseChurchNameRule(
 }
 
 object ChurchNameEnglishTranslationRules {
-    private val geonames = linkedMapOf(
-        "東京" to "Tokyo", "川崎" to "Kawasaki", "赤羽" to "Akabane", "大阪" to "Osaka",
-        "姫路" to "Himeji", "横浜" to "Yokohama", "京都" to "Kyoto", "神戸" to "Kobe",
-        "名古屋" to "Nagoya", "札幌" to "Sapporo", "福岡" to "Fukuoka", "仙台" to "Sendai",
-        "千葉" to "Chiba", "広島" to "Hiroshima", "岡山" to "Okayama", "奈良" to "Nara",
-        "経堂" to "Kyodo",
-    )
-    private val traditions = mapOf(
-        "バプテスト" to "Baptist",
-        "ホーリネス" to "Holiness",
-        "ルーテル" to "Lutheran",
-        "長老" to "Presbyterian",
-        "福音" to "Gospel",
-        "聖公会" to "Anglican",
-        "カトリック" to "Catholic",
-    )
+    private val geonames = ChurchNameEnglishLexicon.geonames
+    private val traditions = ChurchNameEnglishLexicon.traditions
     private val builtInDenominations = listOf(
         Denomination("UCCJ", "日本基督教団", listOf("日本キリスト教団")),
         Denomination("JELC", "日本福音ルーテル教会", listOf("日本福音ルーテル")),
         Denomination("JHC", "日本ホーリネス教団"),
+        Denomination("ANGLICAN_JP", "日本聖公会", listOf("NSKK")),
         Denomination("HPBC", "Hawaii Pacific Baptist Convention", listOf("HPBC")),
     )
 
-    fun create(denominations: List<Denomination> = emptyList()): List<ChurchNameEnglishTranslationRule> {
+    fun create(
+        denominations: List<Denomination> = emptyList(),
+        additionalGeonames: Map<String, String> = emptyMap(),
+        additionalConcepts: Map<String, String> = emptyMap(),
+    ): List<ChurchNameEnglishTranslationRule> {
         val completeDenominations = (denominations + builtInDenominations).distinctBy(Denomination::id)
+        val completeGeonames = geonames + additionalGeonames
+        val completeConcepts = additionalConcepts
         return listOf(
-            GeonameChristianAssemblyNameRule(geonames),
-            DenominationAliasGeonameChurchNameRule(completeDenominations, geonames),
-            GeonameTraditionChurchNameRule(geonames, traditions),
+            GenericChurchNameFromAddressRule(completeDenominations, completeGeonames),
+            StructuredChurchNameRule(completeDenominations, completeGeonames, completeConcepts),
+            GeonameChristianAssemblyNameRule(completeGeonames),
+            DenominationAliasGeonameChurchNameRule(completeDenominations, completeGeonames),
+            GeonameTraditionChurchNameRule(completeGeonames, traditions),
             RomanizedJapaneseChurchNameRule(completeDenominations),
         )
     }

@@ -1,5 +1,30 @@
 const $ = (selector) => document.querySelector(selector);
 const escapeHtml = (value = "") => value.replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"})[c]);
+const supportedLanguages = ["ja", "en", "ko", "pt", "id"];
+const browserLanguage = (navigator.language || "en").toLowerCase().split("-")[0];
+let selectedLanguage = localStorage.getItem("crossmap.language");
+if (!supportedLanguages.includes(selectedLanguage)) selectedLanguage = supportedLanguages.includes(browserLanguage) ? browserLanguage : "en";
+const languagePicker = $("#language");
+if (languagePicker) {
+  languagePicker.value = selectedLanguage;
+  languagePicker.addEventListener("change", () => {
+    selectedLanguage = languagePicker.value;
+    localStorage.setItem("crossmap.language", selectedLanguage);
+    location.reload();
+  });
+}
+
+function displayName(value) {
+  const localized = (value.localizedNames || []).find(name => name.languageCode.toLowerCase().split("-")[0] === selectedLanguage);
+  if (localized?.name) return localized.name;
+  if (selectedLanguage === "en" && value.englishName) return value.englishName;
+  return value.name || value.japaneseName || value.englishName || "";
+}
+
+function displayDenomination(value) {
+  const localized = (value.localizedDenominationNames || []).find(name => name.languageCode.toLowerCase().split("-")[0] === selectedLanguage);
+  return localized?.name || value.denominationId || "";
+}
 
 async function fetchJson(url) {
   const response = await fetch(url, {headers: {Accept: "application/json"}});
@@ -31,7 +56,7 @@ if (results) {
     results.replaceChildren();
     try {
       const locationParameters = deviceLocation ? `&lat=${deviceLocation.latitude}&lon=${deviceLocation.longitude}` : "";
-      let data = await fetchJson(`/api/v1/churches/search?q=${encodeURIComponent(query)}&offset=${offset}&limit=${limit}${locationParameters}`);
+      let data = await fetchJson(`/api/v1/churches/search?q=${encodeURIComponent(query)}&lang=${encodeURIComponent(selectedLanguage)}&offset=${offset}&limit=${limit}${locationParameters}`);
       if (!deviceLocation && data.resolvedLocations.length === 0 && navigator.geolocation) {
         deviceLocation = await new Promise(resolve => navigator.geolocation.getCurrentPosition(
           position => resolve({latitude: position.coords.latitude, longitude: position.coords.longitude}),
@@ -40,13 +65,13 @@ if (results) {
         ));
         if (deviceLocation) {
           const locationQuery = `&lat=${deviceLocation.latitude}&lon=${deviceLocation.longitude}`;
-          data = await fetchJson(`/api/v1/churches/search?q=${encodeURIComponent(query)}&offset=${offset}&limit=${limit}${locationQuery}`);
+          data = await fetchJson(`/api/v1/churches/search?q=${encodeURIComponent(query)}&lang=${encodeURIComponent(selectedLanguage)}&offset=${offset}&limit=${limit}${locationQuery}`);
         }
       }
       $("#status").textContent = data.total ? `${data.total}件の教会` : "該当する教会はありません。";
       results.innerHTML = data.hits.map(hit => `<article class="result">
-        <h2><a href="/church.html?id=${encodeURIComponent(hit.churchId)}">${escapeHtml(hit.name)}</a></h2>
-        <p>${escapeHtml(hit.englishName)}</p>
+        <h2><a href="${escapeHtml(hit.detailUrl || `/church.html?id=${encodeURIComponent(hit.churchId)}`)}" lang="${escapeHtml(selectedLanguage)}">${escapeHtml(displayName(hit))}</a></h2>
+        ${selectedLanguage === "en" ? "" : `<p lang="en">${escapeHtml(hit.englishName)}</p>`}
         <p>${escapeHtml(hit.address)}${hit.distanceKm == null ? "" : ` · ${hit.distanceKm.toFixed(1)} km`}</p>
         ${hit.matchedPages?.[0]?.snippet ? `<p class="snippet">${escapeHtml(hit.matchedPages[0].snippet)}</p>` : ""}
       </article>`).join("");
@@ -62,12 +87,14 @@ const detail = $("#church");
 if (detail) {
   const id = new URLSearchParams(location.search).get("id");
   if (!id) $("#status").textContent = "教会IDがありません。";
-  else fetchJson(`/api/v1/churches/${encodeURIComponent(id)}`).then(church => {
-    document.title = `${church.name} · Crossmap`;
+  else fetchJson(`/api/v1/churches/${encodeURIComponent(id)}?lang=${encodeURIComponent(selectedLanguage)}`).then(church => {
+    const churchName = displayName(church);
+    const denominationName = displayDenomination(church);
+    document.title = `${churchName} · Crossmap`;
     $("#status").textContent = "";
-    detail.innerHTML = `<p class="eyebrow">CHURCH</p><h1>${escapeHtml(church.name)}</h1>
-      <p>${escapeHtml(church.englishName)}</p>
-      ${church.denominationId ? `<p><strong>教派</strong><br>${escapeHtml(church.denominationId)}</p>` : ""}
+    detail.innerHTML = `<p class="eyebrow">CHURCH</p><h1 lang="${escapeHtml(selectedLanguage)}">${escapeHtml(churchName)}</h1>
+      ${selectedLanguage === "en" ? "" : `<p lang="en">${escapeHtml(church.englishName)}</p>`}
+      ${denominationName ? `<p><strong>教派</strong><br><span lang="${escapeHtml(selectedLanguage)}">${escapeHtml(denominationName)}</span></p>` : ""}
       <p><strong>住所</strong><br>${escapeHtml(church.address)}</p>
       <p><strong>ウェブサイト</strong><br><a href="${escapeHtml(church.websiteUrl)}" rel="noopener">${escapeHtml(church.websiteUrl)}</a></p>
       ${church.socialProfiles?.length ? `<h2>ソーシャル</h2><ul>${church.socialProfiles.map(p => `<li><a href="${escapeHtml(p.url)}" rel="noopener">${escapeHtml(p.platform)}${p.handle ? ` · ${escapeHtml(p.handle)}` : ""}</a></li>`).join("")}</ul>` : ""}`;

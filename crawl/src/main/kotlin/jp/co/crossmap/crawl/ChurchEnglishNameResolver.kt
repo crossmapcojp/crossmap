@@ -14,6 +14,7 @@ enum class ChurchNamePartRole {
     GEONAME,
     TRADITION,
     CONGREGATION,
+    CONCEPTUAL_NAME,
     PROPER_NAME,
     OTHER,
 }
@@ -46,6 +47,7 @@ data class ResolvedChurchEnglishName(
     val confidence: Float,
     val evidence: List<String>,
     val model: String? = null,
+    val parts: List<TranslatedChurchNamePart> = emptyList(),
 )
 
 /** Naming input used before a candidate is valid enough to become a canonical [ChurchRecord]. */
@@ -108,6 +110,7 @@ class ChurchEnglishNameResolver(
             confidence = guess.confidence.coerceIn(0f, 1f),
             evidence = listOf(guess.reasoning).filter(String::isNotBlank),
             model = guess.model,
+            parts = guess.parts,
         )
     }
 
@@ -139,6 +142,7 @@ class ChurchEnglishNameResolver(
                         confidence = guess.confidence.coerceIn(0f, 1f),
                         evidence = listOf(guess.reasoning).filter(String::isNotBlank),
                         model = guess.model,
+                        parts = guess.parts,
                     )
                 }.getOrElse { error ->
                     throw IllegalArgumentException("${church.id} (${church.name}): ${error.message}", error)
@@ -165,13 +169,25 @@ class ChurchEnglishNameResolver(
             return ProgrammaticEnglishName(it, 0.99f, "Latin-script church name")
         }
 
-        translationRules.firstNotNullOfOrNull { it.translate(church) }?.let { return it }
-
         val pageEvidence = church.pages.asSequence().flatMap { page ->
             sequenceOf(page.title, page.text)
         }
         findEnglishChurchName(pageEvidence)?.let {
             return ProgrammaticEnglishName(it, 0.99f, "Crawled church webpage")
+        }
+        findLatinChurchTitle(church.pages.asSequence().map(CrawledPage::title))?.let {
+            return ProgrammaticEnglishName(it, 0.99f, "Crawled church webpage Latin title")
+        }
+        if (church.name in GENERIC_JAPANESE_CHURCH_NAMES) {
+            church.pages.asSequence().map(CrawledPage::title).mapNotNull(::findJapaneseChurchName).forEach { pageName ->
+                translationRules.firstNotNullOfOrNull { it.translate(church.copy(name = pageName)) }?.let {
+                    return ProgrammaticEnglishName(
+                        it.englishName,
+                        minOf(it.confidence, 0.99f),
+                        "Crawled church webpage Japanese title; ${it.evidence}",
+                    )
+                }
+            }
         }
 
         val socialEvidence = church.socialProfiles.asSequence().flatMap { profile ->
@@ -181,6 +197,8 @@ class ChurchEnglishNameResolver(
             return ProgrammaticEnglishName(it, 0.98f, "Linked social account")
         }
 
+        translationRules.firstNotNullOfOrNull { it.translate(church) }?.let { return it }
+
         return null
     }
 
@@ -189,8 +207,23 @@ class ChurchEnglishNameResolver(
         .filter(::isUsableEnglishChurchName)
         .minWithOrNull(compareBy<String> { it.split(' ').size }.thenBy { it.length })
 
+    private fun findJapaneseChurchName(value: String): String? = JAPANESE_CHURCH_NAME.findAll(value)
+        .map(MatchResult::value)
+        .filterNot(GENERIC_JAPANESE_CHURCH_NAMES::contains)
+        .minByOrNull(String::length)
+
+    private fun findLatinChurchTitle(values: Sequence<String>): String? = values.flatMap { title ->
+        title.split(Regex("""\s+[-–—|]\s+""")).asSequence()
+    }.map(String::trim).filter { candidate ->
+        !JAPANESE_SCRIPT.containsMatchIn(candidate) &&
+            LATIN_CONGREGATION_WORD.containsMatchIn(candidate) &&
+            !URL_LIKE.containsMatchIn(candidate)
+    }.minByOrNull(String::length)?.normalizeEnglishName()
+
     private fun sanitizeLatinScriptName(value: String): String? {
-        if (JAPANESE_SCRIPT.containsMatchIn(value) || value.none(Char::isLetter)) return null
+        if (JAPANESE_SCRIPT.containsMatchIn(value) || value.none(Char::isLetter) || URL_LIKE.containsMatchIn(value)) {
+            return null
+        }
         val ascii = Normalizer.normalize(value, Normalizer.Form.NFKD)
             .replace(Regex("""\p{M}+"""), "")
             .replace(Regex("""['’]"""), "")
@@ -210,22 +243,32 @@ class ChurchEnglishNameResolver(
     companion object {
         private val CONGREGATION_WORDS = setOf(
             "Church", "Chapel", "Cathedral", "Fellowship", "Congregation", "Parish", "Mission", "Assembly",
+            "Center", "House", "Hall", "Ministry", "Ecclesia", "School", "Academy", "Seminary", "Institute",
         )
         private val ENGLISH_CHURCH_NAME = Regex(
             """(?<![A-Za-z])(?:[A-Z][A-Za-z0-9'’.-]*|St\.)(?:\s+(?:[A-Z][A-Za-z0-9'’.-]*|of|the|in|at|and|International)){0,10}\s+(?:Church|Chapel|Cathedral|Fellowship|Congregation|Parish|Mission|Assembly)\b""",
         )
         private val JAPANESE_SCRIPT = Regex("""[\u3040-\u30ff\u3400-\u9fff]""")
+        private val JAPANESE_CHURCH_NAME = Regex(
+            """[\u3040-\u30ff\u3400-\u9fff・ー]{2,}(?:教会|聖堂|チャペル)""",
+        )
+        private val LATIN_CONGREGATION_WORD = Regex(
+            """\b(?:Church|Chapel|Cathedral|Fellowship|Mission|Assembly|Iglesia|Igreja)\b""",
+            RegexOption.IGNORE_CASE,
+        )
+        private val URL_LIKE = Regex("""(?:https?://|www\.|\.(?:com|org|net|jp)(?:/|$))""", RegexOption.IGNORE_CASE)
+        private val GENERIC_JAPANESE_CHURCH_NAMES = setOf("教会", "キリスト教会", "チャペル", "聖堂")
 
         private fun String.normalizeEnglishName(): String = trim()
             .replace(Regex("""\s+"""), " ")
             .trim(' ', '-', '|', ':', '·')
 
-        private fun isUsableEnglishChurchName(value: String): Boolean {
+internal fun isUsableEnglishChurchName(value: String): Boolean {
             val normalized = value.normalizeEnglishName()
-            return normalized.any(Char::isLetter) &&
+            return normalized.count(Char::isLetter) >= 3 &&
                 normalized.all { it.code < 128 || it == '’' } &&
-                CONGREGATION_WORDS.any { word -> Regex("""\b${Regex.escape(word)}\b""").containsMatchIn(normalized) } &&
-                normalized.split(' ').size >= 2
+                !URL_LIKE.containsMatchIn(normalized) &&
+                normalized.lowercase() !in setOf("church", "chapel", "mission", "assembly")
         }
     }
 }

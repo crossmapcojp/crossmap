@@ -85,9 +85,13 @@ class EvidencePipelineRunner(
     private val stages: List<NamedPipelineStage>,
     private val json: Json = Json { ignoreUnknownKeys = true; prettyPrint = true; encodeDefaults = true },
 ) {
-    suspend fun run(resourcesRoot: Path, resume: Boolean = true): PipelineState {
-        val store = EvidenceStore(resourcesRoot, json)
-        val stateFile = resourcesRoot.resolve("pipeline/state.json")
+    suspend fun run(
+        resourcesRoot: Path,
+        resume: Boolean = true,
+        cacheRoot: Path = CrossmapPaths.defaultCacheRoot(resourcesRoot),
+    ): PipelineState {
+        val store = EvidenceStore(cacheRoot, json)
+        val stateFile = cacheRoot.resolve("pipeline/state.json")
         var state = if (resume && Files.isRegularFile(stateFile)) {
             json.decodeFromString<PipelineState>(Files.readString(stateFile))
         } else PipelineState()

@@ -1,0 +1,288 @@
+package jp.co.crossmap.crawl
+
+import jp.co.crossmap.LocalizedName
+import kotlinx.serialization.Serializable
+
+@Serializable
+enum class MultilingualNameComponentRole { DENOMINATION, GEONAME, CONCEPT, CONGREGATION, CHURCH_NAME, OTHER }
+
+@Serializable
+data class MultilingualNameComponent(
+    val source: String,
+    val role: MultilingualNameComponentRole,
+    val translations: Map<String, String>,
+    val sourceLanguage: String = "ja",
+)
+
+data class LocalizedChurchNameResult(
+    val japaneseName: String,
+    val latinName: String?,
+    val localizedNames: List<LocalizedName>,
+    val pattern: ChurchNamePattern,
+    val components: List<MultilingualNameComponent>,
+)
+
+/** One deterministic title-to-localized-names workflow shared by Google Maps resolution. */
+class MultilingualChurchNameLocalizer(
+    private val dictionaries: ChurchNameEnglishDictionaries,
+    private val congregationTerms: CongregationTermDictionary,
+    denominations: List<Denomination>,
+    geonames: Map<String, String>,
+    multilingualGeonames: Map<String, Map<String, String>> = emptyMap(),
+    branchGeonames: Set<String> = emptySet(),
+) {
+    private val supportedLanguages = listOf("ja", "en", "ko", "pt", "id")
+    private val supportedTargets = listOf("en", "ko", "pt", "id")
+    private val latinToJapaneseTerms = buildMap {
+        listOf("en", "ko", "pt", "id", "es", "fr", "de", "it", "tl").forEach { sourceLanguage ->
+            ChurchNameDictionaryCategory.entries.forEach { category ->
+                putAll(dictionaries.multilingual.entries(sourceLanguage, "ja", category))
+            }
+            putAll(congregationTerms.translations(sourceLanguage, "ja"))
+        }
+        geonames.forEach { (japanese, latin) ->
+            put("$latin-shi", japanese.removeSuffix("市"))
+        }
+        dictionaries.multilingual.entries("en", "ja", ChurchNameDictionaryCategory.GEONAME)
+            .forEach { (latin, japanese) -> put("$latin-shi", japanese.removeSuffix("市")) }
+    }
+    private val latinToJapanese = LatinChurchNameJapaneseComposer(
+        concepts = dictionaries.concepts,
+        geonames = geonames,
+        additionalTerms = latinToJapaneseTerms,
+    )
+    private val decomposer = ChurchNameDecomposer(
+        latinToJapanese = latinToJapanese::translate,
+        branchGeonames = branchGeonames,
+        knownLatinAbbreviations = denominations.knownLatinAbbreviations(),
+    )
+    private val japaneseTerms: List<MultilingualNameComponent> = buildJapaneseTerms(
+        dictionaries,
+        congregationTerms,
+        denominations,
+        geonames,
+        multilingualGeonames,
+    )
+
+    fun localize(title: String, evidencedLanguages: Collection<String> = emptyList()): LocalizedChurchNameResult {
+        val decomposed = decomposer.decompose(title)
+        val initialJapaneseName = requireNotNull(decomposed.japaneseName) { "No Japanese name composed for $title" }
+        val japaneseComponents = analyzeJapanese(initialJapaneseName)
+        val sourceLatinLanguage = decomposed.latinName?.let { latinName ->
+            val evidenced = evidencedLanguages.map { it.substringBefore('-').lowercase() }.filter { it != "ja" }
+            val detected = CybozuChurchNameLanguageIdentifier.detect(latinName)?.substringBefore('-')?.lowercase()
+            evidenced.firstOrNull { it != "en" }
+                ?: evidenced.firstOrNull { it == detected }
+                ?: evidenced.firstOrNull()
+                ?: decomposed.localizedNames.firstOrNull { it.name == latinName }?.languageCode?.substringBefore('-')?.lowercase()
+                ?: detected
+        }
+        val sourceComponents = decomposed.latinName
+            ?.takeIf { latinName -> latinName.none(::isJapaneseCharacter) }
+            ?.let { analyzeLatin(it, sourceLatinLanguage ?: "en", initialJapaneseName) }
+            ?.takeIf(List<MultilingualNameComponent>::isNotEmpty)
+        val components = sourceComponents ?: japaneseComponents
+        val japaneseName = sourceComponents
+            ?.let { composeJapanese(it, sourceLatinLanguage ?: "en") }
+            ?.takeIf(String::isNotBlank)
+            ?: initialJapaneseName
+        val generated = supportedTargets.mapNotNull { language ->
+            compose(components, language)?.let { LocalizedName(language, it) }
+        }
+        val latinName = generated.firstOrNull { it.languageCode == "en" }?.name
+            ?: decomposed.latinName?.takeIf { sourceLatinLanguage == "en" }
+        val originalLanguages = decomposed.localizedNames.map { it.languageCode.substringBefore('-').lowercase() }.toSet()
+        val localizedNames = (
+            listOf(LocalizedName("ja", japaneseName)) +
+                decomposed.localizedNames +
+                generated.filter { it.languageCode !in originalLanguages }
+            )
+            .filter { it.name.isNotBlank() }
+            .distinctBy { it.languageCode.substringBefore('-').lowercase() }
+        return LocalizedChurchNameResult(
+            japaneseName = japaneseName,
+            latinName = latinName,
+            localizedNames = localizedNames,
+            pattern = decomposed.pattern,
+            components = components,
+        )
+    }
+
+    private fun analyzeLatin(
+        value: String,
+        sourceLanguage: String,
+        expectedJapanese: String,
+    ): List<MultilingualNameComponent> {
+        val parts = latinToJapanese.translateParts(value, sourceLanguage)
+        if (parts.joinToString("") { it.japanese } != expectedJapanese.replace(Regex("""\s+"""), "")) {
+            return emptyList()
+        }
+        return parts.map { part ->
+            val japaneseParts = analyzeJapanese(part.japanese)
+            val translations = buildMap {
+                put("ja", part.japanese)
+                supportedTargets.forEach { target ->
+                    compose(japaneseParts, target)?.let { put(target, it) }
+                }
+                put(sourceLanguage, part.source)
+            }
+            MultilingualNameComponent(
+                source = part.source,
+                role = japaneseParts.singleOrNull()?.role ?: MultilingualNameComponentRole.OTHER,
+                translations = translations,
+                sourceLanguage = sourceLanguage,
+            )
+        }
+    }
+
+    private fun composeJapanese(
+        components: List<MultilingualNameComponent>,
+        sourceLanguage: String,
+    ): String {
+        if (sourceLanguage !in setOf("pt", "es", "id")) {
+            return components.joinToString("") { it.translations["ja"] ?: it.source }
+        }
+        val churchPrefix = components.firstOrNull()?.takeIf { component ->
+            component.source.lowercase().trim('.', ',', '-', ' ') in setOf("igreja", "iglesia", "gereja") &&
+                component.role == MultilingualNameComponentRole.CONGREGATION
+        }
+        val body = if (churchPrefix == null) components else components.drop(1)
+        val hasRomanceChurchStructure = churchPrefix != null || body.any { component ->
+            component.sourceLanguage in setOf("pt", "es", "id") &&
+                component.role in setOf(
+                    MultilingualNameComponentRole.CONGREGATION,
+                    MultilingualNameComponentRole.CONCEPT,
+                    MultilingualNameComponentRole.CHURCH_NAME,
+                )
+        }
+        val terminalGeoname = body.lastOrNull()?.takeIf {
+            hasRomanceChurchStructure && it.role == MultilingualNameComponentRole.GEONAME
+        }
+        val ordered = buildList {
+            terminalGeoname?.let(::add)
+            addAll(if (terminalGeoname == null) body else body.dropLast(1))
+            churchPrefix?.let(::add)
+        }
+        return ordered.joinToString("") { it.translations["ja"] ?: it.source }
+    }
+
+    private fun analyzeJapanese(value: String): List<MultilingualNameComponent> {
+        val components = mutableListOf<MultilingualNameComponent>()
+        val unknown = StringBuilder()
+        fun flushUnknown() {
+            val source = unknown.toString().trim(' ', '・', '-', 'ー')
+            unknown.clear()
+            if (source.isBlank()) return
+            val english = when {
+                source.all { it.code < 128 } -> source
+                else -> JapaneseNameRomanizer.romanize(source)
+            }
+            val translations = when {
+                source.all { it.code < 128 } -> supportedTargets.associateWith { source }
+                else -> english?.let { mapOf("en" to it) }.orEmpty()
+            }
+            components += MultilingualNameComponent(
+                source = source,
+                role = MultilingualNameComponentRole.OTHER,
+                translations = translations + ("ja" to source),
+            )
+        }
+
+        var index = 0
+        while (index < value.length) {
+            val term = japaneseTerms.firstOrNull { value.startsWith(it.source, index) }
+            if (term == null) {
+                unknown.append(value[index++])
+            } else {
+                flushUnknown()
+                components += term
+                index += term.source.length
+            }
+        }
+        flushUnknown()
+        return components
+    }
+
+    private fun compose(components: List<MultilingualNameComponent>, targetLanguage: String): String? {
+        val orderedComponents = if (
+            targetLanguage in setOf("pt", "id") &&
+            components.lastOrNull()?.role == MultilingualNameComponentRole.CONGREGATION
+        ) {
+            listOf(components.last()) + components.dropLast(1)
+        } else {
+            components
+        }
+        val translated = orderedComponents.map { component ->
+            component.translations[targetLanguage]
+                ?: component.translations["en"]
+                ?: component.translations[component.sourceLanguage]
+                ?: component.source
+        }
+        return translated.filter(String::isNotBlank).joinToString(" ").takeIf(String::isNotBlank)
+    }
+
+    private fun buildJapaneseTerms(
+        dictionaries: ChurchNameEnglishDictionaries,
+        congregationTerms: CongregationTermDictionary,
+        denominations: List<Denomination>,
+        geonames: Map<String, String>,
+        multilingualGeonames: Map<String, Map<String, String>>,
+    ): List<MultilingualNameComponent> {
+        data class MutableTerm(
+            var role: MultilingualNameComponentRole,
+            val translations: MutableMap<String, String> = linkedMapOf(),
+        )
+        val terms = linkedMapOf<String, MutableTerm>()
+        fun rolePriority(role: MultilingualNameComponentRole): Int = when (role) {
+            MultilingualNameComponentRole.DENOMINATION -> 0
+            MultilingualNameComponentRole.CHURCH_NAME -> 1
+            MultilingualNameComponentRole.CONGREGATION -> 2
+            MultilingualNameComponentRole.CONCEPT -> 3
+            MultilingualNameComponentRole.GEONAME -> 4
+            MultilingualNameComponentRole.OTHER -> 5
+        }
+        fun add(source: String, role: MultilingualNameComponentRole, targetLanguage: String, target: String) {
+            if (source.isBlank() || target.isBlank()) return
+            val term = terms.getOrPut(source) { MutableTerm(role) }
+            if (rolePriority(role) < rolePriority(term.role)) term.role = role
+            term.translations[targetLanguage] = target
+        }
+
+        denominations.forEach { denomination ->
+            (listOf(denomination.name) + denomination.aliases).filter(String::isNotBlank).forEach { alias ->
+                add(alias, MultilingualNameComponentRole.DENOMINATION, "en", denomination.id)
+            }
+        }
+        geonames.forEach { (japanese, english) ->
+            add(japanese, MultilingualNameComponentRole.GEONAME, "en", english)
+        }
+        multilingualGeonames.forEach { (japanese, translations) ->
+            translations.forEach { (language, translated) ->
+                if (language in supportedTargets) {
+                    add(japanese, MultilingualNameComponentRole.GEONAME, language, translated)
+                }
+            }
+        }
+        supportedTargets.forEach { targetLanguage ->
+            ChurchNameDictionaryCategory.entries.forEach { category ->
+                val role = when (category) {
+                    ChurchNameDictionaryCategory.CHURCHNAME -> MultilingualNameComponentRole.CHURCH_NAME
+                    ChurchNameDictionaryCategory.CONCEPT -> MultilingualNameComponentRole.CONCEPT
+                    ChurchNameDictionaryCategory.GEONAME -> MultilingualNameComponentRole.GEONAME
+                }
+                dictionaries.multilingual.entries("ja", targetLanguage, category).forEach { (source, target) ->
+                    add(source, role, targetLanguage, target)
+                }
+            }
+            congregationTerms.translations("ja", targetLanguage).forEach { (source, target) ->
+                add(source, MultilingualNameComponentRole.CONGREGATION, targetLanguage, target)
+            }
+        }
+        return terms.map { (source, term) ->
+            MultilingualNameComponent(source, term.role, term.translations.toMap() + ("ja" to source))
+        }.sortedByDescending { it.source.length }
+    }
+
+    private fun isJapaneseCharacter(value: Char): Boolean =
+        value in '\u3040'..'\u30ff' || value in '\u3400'..'\u9fff'
+}

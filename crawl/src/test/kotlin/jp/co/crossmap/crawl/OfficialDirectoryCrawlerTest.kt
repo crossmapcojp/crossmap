@@ -16,7 +16,7 @@ class OfficialDirectoryCrawlerTest {
         val root = Files.createTempDirectory("crossmap-directory")
         try {
             Files.createDirectories(root.resolve("sources"))
-            Files.createDirectories(root.resolve("cleanup"))
+            Files.createDirectories(root.resolve("cache/cleanup"))
             Files.writeString(
                 root.resolve("sources/denominations.json"),
                 json.encodeToString(
@@ -35,18 +35,18 @@ class OfficialDirectoryCrawlerTest {
                     )
                 ),
             )
-            Files.writeString(root.resolve("cleanup/denomination-candidates.json"), "[]")
+            Files.writeString(root.resolve("cache/cleanup/denomination-candidates.json"), "[]")
             val html = """
                 <section class='church'><a class='name' href='/church/hiragishi'>日本バプテスト連盟 平岸バプテスト教会</a><span class='address'>〒062-0934 北海道札幌市豊平区平岸４条２丁目１−１９</span></section>
                 <section class='church'><a class='name' href='/church/okayama'>岡山バプテスト教会</a><span class='address'>〒700-0825 岡山県岡山市北区田町１丁目７−２８</span></section>
             """.trimIndent()
 
-            val report = OfficialDirectoryCrawler(DirectoryPageLoader { LoadedDirectoryPage(it, html) }).crawl(root)
+            val report = OfficialDirectoryCrawler(DirectoryPageLoader { LoadedDirectoryPage(it, html) }).crawl(root, root.resolve("cache"))
 
             assertEquals(2, report.candidates)
-            val candidates = json.decodeFromString<List<DenominationCandidate>>(Files.readString(root.resolve("cleanup/denomination-candidates.json")))
+            val candidates = json.decodeFromString<List<DenominationCandidate>>(Files.readString(root.resolve("cache/cleanup/denomination-candidates.json")))
             assertEquals("〒062-0934 北海道札幌市豊平区平岸４条２丁目１−１９", candidates.first { it.churchName == "日本バプテスト連盟 平岸バプテスト教会" }.address)
-            val evidence = json.decodeFromString<List<EvidenceRecord>>(Files.readString(root.resolve("evidence/denomination-directory.json")))
+            val evidence = json.decodeFromString<List<EvidenceRecord>>(Files.readString(root.resolve("cache/cleanup/denomination-directory-evidence.json")))
             assertEquals(EvidenceKind.DENOMINATION_DIRECTORY, evidence.single { it.name == "岡山バプテスト教会" }.kind)
         } finally {
             root.toFile().deleteRecursively()
@@ -59,12 +59,12 @@ class OfficialDirectoryCrawlerTest {
         try {
             val url = "https://www.bapren.jp/church/"
             val contentHash = "cached-page"
-            Files.createDirectories(root.resolve("crawl/pages"))
-            Files.writeString(root.resolve("crawl/pages/$contentHash.html"), "<p>cached</p>")
-            Files.writeString(root.resolve("crawl/url-cache-map.json"), json.encodeToString(mapOf(url.sha1() to contentHash)))
+            Files.createDirectories(root.resolve("church-web-pages/pages"))
+            Files.writeString(root.resolve("church-web-pages/pages/$contentHash.html"), "<p>cached</p>")
+            Files.writeString(root.resolve("church-web-pages/url-cache-map.json"), json.encodeToString(mapOf(url.sha1() to contentHash)))
             var fallbackCalls = 0
 
-            val page = CachedDirectoryPageLoader(root, DirectoryPageLoader {
+            val page = CachedDirectoryPageLoader(root.resolve("church-web-pages"), DirectoryPageLoader {
                 fallbackCalls++
                 error("HTTP fallback must not run")
             }).load(url)
@@ -81,7 +81,7 @@ class OfficialDirectoryCrawlerTest {
         val root = Files.createTempDirectory("crossmap-jurisdiction")
         try {
             Files.createDirectories(root.resolve("sources"))
-            Files.createDirectories(root.resolve("cleanup"))
+            Files.createDirectories(root.resolve("cache/cleanup"))
             val source = DenominationDirectorySource(
                 id = "uccj",
                 denominationId = "UCCJ",
@@ -99,14 +99,14 @@ class OfficialDirectoryCrawlerTest {
                 ),
             )
             Files.writeString(root.resolve("sources/denominations.json"), json.encodeToString(listOf(source)))
-            Files.writeString(root.resolve("cleanup/denomination-candidates.json"), "[]")
+            Files.writeString(root.resolve("cache/cleanup/denomination-candidates.json"), "[]")
 
             val report = OfficialDirectoryCrawler(DirectoryPageLoader {
                 LoadedDirectoryPage(it, "<div class='church'><span class='name'>日本基督教団 東京教会</span></div>")
-            }).crawl(root)
+            }).crawl(root, root.resolve("cache"))
 
             assertEquals(1, report.candidates)
-            val evidence = json.decodeFromString<List<EvidenceRecord>>(Files.readString(root.resolve("evidence/denomination-directory.json"))).single()
+            val evidence = json.decodeFromString<List<EvidenceRecord>>(Files.readString(root.resolve("cache/cleanup/denomination-directory-evidence.json"))).single()
             assertEquals("tokyo-diocese", evidence.attributes["jurisdictionId"])
             assertEquals("東京教区", evidence.attributes["jurisdictionName"])
         } finally {
@@ -119,7 +119,7 @@ class OfficialDirectoryCrawlerTest {
         val root = Files.createTempDirectory("crossmap-generic-directory")
         try {
             Files.createDirectories(root.resolve("sources"))
-            Files.createDirectories(root.resolve("cleanup"))
+            Files.createDirectories(root.resolve("cache/cleanup"))
             Files.writeString(
                 root.resolve("sources/denominations.json"),
                 json.encodeToString(
@@ -134,13 +134,13 @@ class OfficialDirectoryCrawlerTest {
                     )
                 ),
             )
-            Files.writeString(root.resolve("cleanup/denomination-candidates.json"), "[]")
+            Files.writeString(root.resolve("cache/cleanup/denomination-candidates.json"), "[]")
             val html = "<nav><a href='/churches'>所属教会</a></nav><main><a href='/tokyo'>東京ライトハウスチャーチ</a><a href='/other'>お問い合わせ</a></main>"
 
-            val report = OfficialDirectoryCrawler(DirectoryPageLoader { LoadedDirectoryPage(it, html) }).crawl(root)
+            val report = OfficialDirectoryCrawler(DirectoryPageLoader { LoadedDirectoryPage(it, html) }).crawl(root, root.resolve("cache"))
 
             assertEquals(1, report.candidates)
-            val candidate = json.decodeFromString<List<DenominationCandidate>>(Files.readString(root.resolve("cleanup/denomination-candidates.json"))).single()
+            val candidate = json.decodeFromString<List<DenominationCandidate>>(Files.readString(root.resolve("cache/cleanup/denomination-candidates.json"))).single()
             assertEquals("東京ライトハウスチャーチ", candidate.churchName)
         } finally {
             root.toFile().deleteRecursively()

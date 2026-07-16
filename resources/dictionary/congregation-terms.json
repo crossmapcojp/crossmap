@@ -1,0 +1,59 @@
+[
+  {
+    "id": "church",
+    "names": {
+      "ja": ["教会", "チャーチ"],
+      "en": ["Church", "Churches"],
+      "ko": ["교회"],
+      "pt": ["Igreja"],
+      "id": ["Gereja"],
+      "es": ["Iglesia"],
+      "fr": ["Église"],
+      "de": ["Kirche"],
+      "it": ["Chiesa"],
+      "tl": ["Simbahan"],
+      "zh-tw": ["教會"]
+    }
+  },
+  {
+    "id": "chapel",
+    "names": {
+      "ja": ["チャペル", "礼拝堂"],
+      "en": ["Chapel"],
+      "ko": ["예배당"],
+      "pt": ["Capela"],
+      "id": ["Kapel"],
+      "es": ["Capilla"]
+    }
+  },
+  {
+    "id": "assembly",
+    "names": {
+      "ja": ["集会", "アッセンブリー"],
+      "en": ["Assembly"],
+      "ko": ["집회"],
+      "pt": ["Assembleia", "Assembléia"],
+      "id": ["Persekutuan"]
+    }
+  },
+  {
+    "id": "mission",
+    "names": {
+      "ja": ["ミッション", "宣教"],
+      "en": ["Mission"],
+      "ko": ["선교"],
+      "pt": ["Missão"],
+      "id": ["Misi"]
+    }
+  },
+  {
+    "id": "assemblies-of-god",
+    "names": {
+      "ja": ["アッセンブレイア・デ・デウス"],
+      "en": ["Assemblies of God"],
+      "ko": ["하나님의 성회"],
+      "pt": ["Assembleia de Deus", "Assembléia de Deus", "Assembreia de Deus"],
+      "id": ["Sidang Jemaat Allah"]
+    }
+  }
+]

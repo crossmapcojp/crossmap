@@ -36,7 +36,13 @@ class SocialLinkPipeline(
         require(shortlistSize > 0)
     }
 
-    suspend fun run(resourcesRoot: Path, limit: Int = Int.MAX_VALUE, applyChanges: Boolean = false): SocialLinkReport {
+    suspend fun run(
+        resourcesRoot: Path,
+        limit: Int = Int.MAX_VALUE,
+        applyChanges: Boolean = false,
+        cacheRoot: Path = CrossmapPaths.defaultCacheRoot(resourcesRoot),
+    ): SocialLinkReport {
+        val paths = CrossmapPaths(resourcesRoot, cacheRoot)
         require(limit > 0)
         val churchesFile = resourcesRoot.resolve("catalog/churches.json")
         val accountsFile = resourcesRoot.resolve("evidence/social-accounts.json")
@@ -46,10 +52,10 @@ class SocialLinkPipeline(
         val churches = json.decodeFromString<List<ChurchRecord>>(Files.readString(churchesFile))
         val accounts = json.decodeFromString<List<SocialAccountCandidate>>(Files.readString(accountsFile)).take(limit)
         if (accounts.isEmpty()) {
-            atomicWrite(resourcesRoot.resolve("cleanup/social-decisions.json"), json.encodeToString(emptyList<SocialLinkDecision>()))
+            atomicWrite(paths.cleanup.resolve("social-decisions.json"), json.encodeToString(emptyList<SocialLinkDecision>()))
             return SocialLinkReport(0, 0, 0, 0, 0, emptyList())
         }
-        val links = extractCrawledPageLinks(resourcesRoot)
+        val links = extractCrawledPageLinks(paths.churchWebPages)
         val linker = SocialAccountLinker(llm, llmThreshold)
         val decisions = mutableListOf<SocialLinkDecision>()
 
@@ -122,7 +128,7 @@ class SocialLinkPipeline(
             }
             atomicWrite(churchesFile, json.encodeToString(updated))
         }
-        atomicWrite(resourcesRoot.resolve("cleanup/social-decisions.json"), json.encodeToString(decisions))
+        atomicWrite(paths.cleanup.resolve("social-decisions.json"), json.encodeToString(decisions))
 
         return SocialLinkReport(
             accountsProcessed = accounts.size,
@@ -134,13 +140,13 @@ class SocialLinkPipeline(
         )
     }
 
-    private fun extractCrawledPageLinks(resourcesRoot: Path): Map<String, Map<String, List<String>>> {
-        val manifestFile = resourcesRoot.resolve("crawl/manifest.json")
+    private fun extractCrawledPageLinks(cacheDirectory: Path): Map<String, Map<String, List<String>>> {
+        val manifestFile = cacheDirectory.resolve("manifest.json")
         if (!Files.isRegularFile(manifestFile)) return emptyMap()
         return json.decodeFromString<List<CrawlManifestEntry>>(Files.readString(manifestFile))
             .mapNotNull { entry ->
-                val cache = resourcesRoot.resolve(entry.cachePath).normalize()
-                if (!cache.startsWith(resourcesRoot.normalize()) || !Files.isRegularFile(cache)) null
+                val cache = cacheDirectory.resolve(entry.cachePath).normalize()
+                if (!cache.startsWith(cacheDirectory.normalize()) || !Files.isRegularFile(cache)) null
                 else runCatching {
                     entry to Jsoup.parse(Files.readString(cache), entry.finalUrl).select("a[href]").map { it.absUrl("href").ifBlank { it.attr("href") } }
                 }.getOrNull()

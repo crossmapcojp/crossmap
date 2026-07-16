@@ -47,7 +47,9 @@ class SnapshotManager(
                 fileSystem.sink(destination).buffer().use { output -> output.writeAll(input) }
             }
         }
-        require(fileSystem.metadataOrNull(staging / "index")?.isDirectory == true) { "Snapshot contains no index" }
+        require(fileSystem.metadataOrNull(staging / "index" / "ja")?.isDirectory == true) {
+            "Snapshot contains no Japanese index"
+        }
         require(fileSystem.metadataOrNull(staging / "geonames.json")?.isRegularFile == true) { "Snapshot contains no geonames" }
         val destination = snapshots / manifest.indexVersion
         deleteRecursively(destination)
@@ -59,18 +61,24 @@ class SnapshotManager(
         return manifest
     }
 
-    fun activeEngine(): ChurchSearchEngine? {
+    fun activeEngine(languageCode: String = "ja"): ChurchSearchEngine? {
         if (fileSystem.metadataOrNull(activePointer)?.isRegularFile != true) return null
         val version = fileSystem.read(activePointer) { readUtf8() }.trim()
         val directory = snapshots / version
-        if (fileSystem.metadataOrNull(directory / "index")?.isDirectory != true) return null
+        val language = languageCode.substringBefore('-').lowercase().takeIf { it in SUPPORTED_LANGUAGES } ?: "ja"
+        val index = directory / "index" / language
+        if (fileSystem.metadataOrNull(index)?.isDirectory != true) return null
         val geonames = json.decodeFromString<List<GeoName>>(fileSystem.read(directory / "geonames.json") { readUtf8() })
-        return ChurchSearchEngine(directory / "index", geonames, version)
+        return ChurchSearchEngine(index, geonames, version, languageCode = language)
     }
 
     private fun deleteRecursively(path: Path) {
         if (fileSystem.metadataOrNull(path) == null) return
         fileSystem.listRecursively(path).toList().asReversed().forEach(fileSystem::delete)
         fileSystem.delete(path)
+    }
+
+    private companion object {
+        val SUPPORTED_LANGUAGES = setOf("ja", "en", "ko", "pt", "id")
     }
 }

@@ -236,14 +236,16 @@ class PostCrawlCleanup(
         applyChanges: Boolean = true,
         enableLlm: Boolean = true,
         catalogFile: Path = resourcesRoot.resolve("catalog/churches.json"),
+        cacheRoot: Path = CrossmapPaths.defaultCacheRoot(resourcesRoot),
     ): CleanupReport {
-        val cleanupDir = resourcesRoot.resolve("cleanup")
+        val paths = CrossmapPaths(resourcesRoot, cacheRoot)
+        val cleanupDir = paths.cleanup
         Files.createDirectories(cleanupDir)
         val churches = json.decodeFromString<List<ChurchRecord>>(Files.readString(catalogFile))
         val candidates = readList<DenominationCandidate>(cleanupDir.resolve("denomination-candidates.json"))
-        val rules = readList<DenominationRule>(cleanupDir.resolve("denomination-rules.json"))
-        val overrides = readList<HumanOverride>(cleanupDir.resolve("human-overrides.json"))
-        ensureReviewFiles(cleanupDir)
+        val rules = readList<DenominationRule>(paths.denominationRules)
+        val overrides = readList<HumanOverride>(paths.humanOverrides)
+        ensureReviewFiles(cleanupDir, paths.humanOverrides)
         val allowed = (churches.mapNotNull { it.denominationId } + candidates.map { it.denominationId } + rules.map { it.denominationId })
             .filter { it != NOT_DETERMINED }.distinct().sorted()
         val now = Instant.now().toString()
@@ -284,7 +286,7 @@ class PostCrawlCleanup(
                     val guess = runCatching { activeWebpageGuesser.determineDenominationByLlm(page.text) }
                         .onFailure { errors++ }
                         .getOrNull() ?: continue
-                    if (bestPageGuess == null || guess.score > bestPageGuess!!.second.score) bestPageGuess = page.url to guess
+                    if (bestPageGuess == null || guess.score > bestPageGuess.second.score) bestPageGuess = page.url to guess
                     if (!guess.denomination.proposed && guess.denomination.id != NOT_DETERMINED && guess.score >= confidenceThreshold) break
                 }
                 bestPageGuess?.let { (pageUrl, guess) ->
@@ -347,11 +349,11 @@ class PostCrawlCleanup(
     private inline fun <reified T> readList(path: Path): List<T> =
         if (Files.isRegularFile(path)) json.decodeFromString(Files.readString(path)) else emptyList()
 
-    private fun ensureReviewFiles(directory: Path) {
-        listOf("denomination-candidates.json", "human-overrides.json").forEach {
-            val file = directory.resolve(it)
-            if (!Files.exists(file)) Files.writeString(file, "[]\n")
-        }
+    private fun ensureReviewFiles(cacheDirectory: Path, humanOverrides: Path) {
+        val candidates = cacheDirectory.resolve("denomination-candidates.json")
+        if (!Files.exists(candidates)) Files.writeString(candidates, "[]\n")
+        Files.createDirectories(humanOverrides.parent)
+        if (!Files.exists(humanOverrides)) Files.writeString(humanOverrides, "[]\n")
     }
 
     private fun atomicWrite(path: Path, content: String) {

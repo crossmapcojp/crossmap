@@ -16,9 +16,9 @@ class GeoNameResolver(private val geonames: List<GeoName>) {
     fun resolve(query: String, radiusOverrideKm: Double? = null): ResolvedGeoQuery {
         val normalized = normalizeQuery(query)
         val candidates = geonames.flatMap { geoname ->
-            (listOf(geoname.name) + geoname.aliases)
+            (listOf(geoname.name, administrativeAlias(geoname.name)) + geoname.aliases)
                 .distinct()
-                .filter { it.isNotBlank() && normalized.contains(normalizeQuery(it)) }
+                .filter { it.length >= MIN_GEONAME_MATCH_LENGTH && normalized.contains(normalizeQuery(it)) }
                 .map { Candidate(normalizeQuery(it), geoname) }
         }.sortedByDescending { it.matchedText.length }
 
@@ -62,6 +62,18 @@ class GeoNameResolver(private val geonames: List<GeoName>) {
     }
 
     companion object {
+        private const val MIN_GEONAME_MATCH_LENGTH = 2
+
+        private fun administrativeAlias(name: String): String = name
+            .removeSuffix("都")
+            .removeSuffix("道")
+            .removeSuffix("府")
+            .removeSuffix("県")
+            .removeSuffix("市")
+            .removeSuffix("区")
+            .removeSuffix("町")
+            .removeSuffix("村")
+
         fun normalizeQuery(value: String): String = buildString(value.length) {
             value.trim().forEach { char ->
                 append(

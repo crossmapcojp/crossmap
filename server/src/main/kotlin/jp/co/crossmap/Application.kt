@@ -21,6 +21,7 @@ import io.ktor.server.routing.routing
 import io.ktor.serialization.kotlinx.json.json
 import java.nio.file.Files
 import java.nio.file.Path
+import java.security.MessageDigest
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import okio.Path.Companion.toPath
@@ -32,15 +33,29 @@ fun main() {
         Netty,
         port = System.getenv("PORT")?.toIntOrNull() ?: 8080,
         host = "0.0.0.0",
-        module = Application::module,
+        module = {
+            module(
+                searchEngine = loadSearchEngine("ja"),
+                searchEngines = loadSearchEngines(),
+            )
+        },
     ).start(wait = true)
 }
 
 fun Application.module(
-    searchEngine: ChurchSearchEngine? = loadSearchEngine(),
+    searchEngine: ChurchSearchEngine? = loadSearchEngine("ja"),
+    searchEngines: Map<String, ChurchSearchEngine> = emptyMap(),
     resourcesRoot: Path = Path.of(System.getenv("CROSSMAP_RESOURCES") ?: "resources"),
+    cacheRoot: Path = Path.of(
+        System.getenv("CROSSMAP_CACHE") ?: resourcesRoot.toAbsolutePath().normalize().parent.resolve("cache").toString(),
+    ),
     webRoot: Path = Path.of(System.getenv("CROSSMAP_WEB_DIR") ?: "webclient"),
 ) {
+    val availableSearchEngines = buildMap {
+        searchEngine?.let { put("ja", it) }
+        putAll(searchEngines)
+    }
+    val churchIndexes = cacheRoot.resolve("search-indexes/churches")
     install(ContentNegotiation) { json(wireJson) }
     install(CORS) { anyHost() }
     install(StatusPages) {
@@ -54,14 +69,19 @@ fun Application.module(
     }
     routing {
         get("/api/v1/health") {
-            call.respond(mapOf("status" to if (searchEngine == null) "not_ready" else "ok"))
+            call.respond(mapOf("status" to if (availableSearchEngines.isEmpty()) "not_ready" else "ok"))
         }
         get("/api/v1/churches/search") {
-            val engine = searchEngine ?: return@get call.respond(
+            val displayLanguage = call.request.queryParameters["lang"]?.substringBefore('-')?.lowercase() ?: "ja"
+            val query = call.request.queryParameters["q"].orEmpty()
+            val queryLanguage = QueryLanguageDetector.detect(query, displayLanguage)
+            val engine = availableSearchEngines[queryLanguage]
+                ?: availableSearchEngines[displayLanguage]
+                ?: availableSearchEngines["ja"]
+                ?: return@get call.respond(
                 HttpStatusCode.ServiceUnavailable,
                 ApiError("index_unavailable", "Church index is not configured"),
             )
-            val query = call.request.queryParameters["q"].orEmpty()
             val offset = call.request.queryParameters["offset"]?.toIntOrNull() ?: 0
             val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 20
             val radius = call.request.queryParameters["radiusKm"]?.toDoubleOrNull()
@@ -69,10 +89,11 @@ fun Application.module(
             val longitude = call.request.queryParameters["lon"]?.toDoubleOrNull()
             require((latitude == null) == (longitude == null)) { "lat and lon must be provided together" }
             val userLocation = if (latitude != null && longitude != null) GeoPoint(latitude, longitude) else null
-            call.respond(engine.search(ChurchSearchRequest(query, offset, limit, radius, userLocation)))
+            val titleLanguages = call.request.queryParameters.getAll("titleLanguage").orEmpty()
+            call.respond(engine.search(ChurchSearchRequest(query, offset, limit, radius, userLocation, titleLanguages)))
         }
         get("/api/v1/churches/{id}") {
-            val engine = searchEngine ?: return@get call.respond(
+            val engine = availableSearchEngines["ja"] ?: availableSearchEngines.values.firstOrNull() ?: return@get call.respond(
                 HttpStatusCode.ServiceUnavailable,
                 ApiError("index_unavailable", "Church index is not configured"),
             )
@@ -84,7 +105,7 @@ fun Application.module(
             call.respond(church)
         }
         get("/api/v1/indexes/churches/latest") {
-            val latest = resourcesRoot.resolve("indexes/churches/latest.json").toFile()
+            val latest = churchIndexes.resolve("latest.json").toFile()
             if (!latest.isFile) return@get call.respond(
                 HttpStatusCode.NotFound,
                 ApiError("snapshot_not_found", "No church snapshot has been published"),
@@ -94,7 +115,7 @@ fun Application.module(
         get("/downloads/churches/{file}") {
             val name = call.parameters["file"].orEmpty()
             require(name.matches(Regex("churches-[A-Za-z0-9._-]+\\.zip"))) { "invalid archive name" }
-            val archive = resourcesRoot.resolve("indexes/churches/$name").toFile()
+            val archive = churchIndexes.resolve(name).toFile()
             if (!archive.isFile) return@get call.respond(HttpStatusCode.NotFound, ApiError("snapshot_not_found", name))
             call.respondFile(archive)
         }
@@ -116,23 +137,81 @@ private suspend fun io.ktor.server.application.ApplicationCall.respondWebFile(pa
     respondText(Files.readString(path), type)
 }
 
-private fun loadSearchEngine(): ChurchSearchEngine? = runCatching {
+private fun loadSearchEngines(): Map<String, ChurchSearchEngine> =
+    listOf("ja", "en", "ko", "pt", "id").mapNotNull { language ->
+        loadSearchEngine(language)?.let { language to it }
+    }.toMap()
+
+private fun loadSearchEngine(languageCode: String): ChurchSearchEngine? = runCatching {
     val resourcesRoot = Path.of(System.getenv("CROSSMAP_RESOURCES") ?: "resources")
-    val index = resolveServerIndex(resourcesRoot, System.getenv("CROSSMAP_INDEX_DIR")) ?: return null
+    val cacheRoot = Path.of(
+        System.getenv("CROSSMAP_CACHE") ?: resourcesRoot.toAbsolutePath().normalize().parent.resolve("cache").toString(),
+    )
+    val webRoot = Path.of(System.getenv("CROSSMAP_WEB_DIR") ?: "webclient")
+    val japaneseIndex = resolveServerIndex(resourcesRoot, System.getenv("CROSSMAP_INDEX_DIR"), cacheRoot) ?: return null
+    val index = if (languageCode == "ja") japaneseIndex else japaneseIndex.parent.resolve(languageCode)
     val geonamesFile = Path.of(System.getenv("CROSSMAP_GEONAMES") ?: resourcesRoot.resolve("geonames/japan.json").toString())
     if (!Files.isDirectory(index) || !Files.isRegularFile(geonamesFile)) return null
     val geonames = wireJson.decodeFromString<List<GeoName>>(Files.readString(geonamesFile))
-    val manifestFile = index.parent.resolve("manifest.json")
-    val version = if (Files.isRegularFile(manifestFile)) {
-        wireJson.decodeFromString<IndexManifest>(Files.readString(manifestFile)).indexVersion
-    } else "development"
-    ChurchSearchEngine(index.toString().toPath(), geonames, version)
+    val manifestFile = index.parent.parent.resolve("manifest.json")
+    if (!Files.isRegularFile(manifestFile)) return null
+    val indexManifest = wireJson.decodeFromString<IndexManifest>(Files.readString(manifestFile))
+    // Static detail pages are an optional presentation artifact. A stale/missing page manifest
+    // must not make the JSON search API unavailable; the web client can use church.html as fallback.
+    val churchPageUrls = loadChurchPageUrls(resourcesRoot, webRoot).orEmpty()
+    ChurchSearchEngine(
+        index.toString().toPath(),
+        geonames,
+        indexManifest.indexVersion,
+        churchPageUrls,
+        languageCode,
+    )
 }.getOrNull()
 
-internal fun resolveServerIndex(resourcesRoot: Path, configured: String?): Path? {
+internal fun loadChurchPageUrls(resourcesRoot: Path, webRoot: Path): Map<String, String>? {
+    val manifestFile = webRoot.resolve("church/manifest.json")
+    if (!Files.isRegularFile(manifestFile)) return null
+    val manifest = runCatching {
+        wireJson.decodeFromString<ChurchPageManifest>(Files.readString(manifestFile))
+    }.getOrNull() ?: return null
+    val catalog = resourcesRoot.resolve("catalog/churches.json")
+    if (!Files.isRegularFile(catalog) || manifest.sourceSha256 != catalog.sha256()) return null
+    if (manifest.pages.isEmpty() || manifest.pages.values.any { page ->
+            !page.matches(Regex("""/church/[a-z0-9]+(?:-[a-z0-9]+)*\.html"""))
+        }
+    ) return null
+    return manifest.pages
+}
+
+internal fun resolveServerIndex(
+    resourcesRoot: Path,
+    configured: String?,
+    cacheRoot: Path = Path.of(
+        System.getenv("CROSSMAP_CACHE") ?: resourcesRoot.toAbsolutePath().normalize().parent.resolve("cache").toString(),
+    ),
+): Path? {
     if (!configured.isNullOrBlank()) return Path.of(configured)
-    val latestFile = resourcesRoot.resolve("indexes/churches/latest.json")
+    val indexes = cacheRoot.resolve("search-indexes/churches")
+    val latestFile = indexes.resolve("latest.json")
     if (!Files.isRegularFile(latestFile)) return null
     val manifest = runCatching { wireJson.decodeFromString<IndexManifest>(Files.readString(latestFile)) }.getOrNull() ?: return null
-    return resourcesRoot.resolve("indexes/churches/${manifest.indexVersion}/index")
+    if (manifest.schemaVersion != ChurchIndex.SCHEMA_VERSION) return null
+    val catalog = resourcesRoot.resolve("catalog/churches.json")
+    if (!Files.isRegularFile(catalog) || manifest.sourceSha256.isBlank() ||
+        manifest.sourceSha256 != catalog.sha256()
+    ) return null
+    return indexes.resolve("${manifest.indexVersion}/index/ja").takeIf(Files::isDirectory)
+}
+
+private fun Path.sha256(): String {
+    val digest = MessageDigest.getInstance("SHA-256")
+    Files.newInputStream(this).use { input ->
+        val buffer = ByteArray(64 * 1024)
+        while (true) {
+            val read = input.read(buffer)
+            if (read < 0) break
+            digest.update(buffer, 0, read)
+        }
+    }
+    return digest.digest().joinToString("") { "%02x".format(it) }
 }

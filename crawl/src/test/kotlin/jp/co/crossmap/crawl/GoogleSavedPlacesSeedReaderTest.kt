@@ -79,6 +79,33 @@ class GoogleSavedPlacesSeedReaderTest {
     }
 
     @Test
+    fun keepsSavedPlaceNamesRawForTheResolverOwnedLocalizationWorkflow() {
+        val root = Files.createTempDirectory("crossmap-saved-name-parts")
+        try {
+            val header = "タイトル,メモ,URL,コメント\n"
+            Files.writeString(
+                root.resolve("教会.csv"),
+                header + "Just Church（ジャスト・チャーチ）,,https://www.google.com/maps?cid=5433858323697585828,\n",
+            )
+            val output = root.resolve("seeds.json")
+
+            val report = GoogleSavedPlacesSeedReader().readDirectory(root, output)
+            val seed = json.decodeFromString<List<GoogleSavedPlaceSeed>>(Files.readString(output)).single()
+
+            assertEquals("Just Church（ジャスト・チャーチ）", seed.title)
+            assertEquals(null, seed.japaneseName)
+            assertEquals(null, seed.latinName)
+            assertTrue(seed.localizedNames.isEmpty())
+            assertEquals(listOf("en", "ja"), seed.titleLanguages)
+            assertEquals(ChurchNamePattern.SINGLE_NAME, seed.namePattern)
+            assertTrue(report.namePatternCounts.isEmpty())
+            assertEquals(mapOf("en" to 1, "ja" to 1), report.languageCounts)
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun defaultGmapListScopeAndExclusionsCanBeAppliedWithoutHardCodedPaths() {
         val root = Files.createTempDirectory("crossmap-google-saved-scope")
         try {

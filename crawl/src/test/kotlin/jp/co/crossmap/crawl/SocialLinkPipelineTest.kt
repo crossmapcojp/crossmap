@@ -19,9 +19,10 @@ class SocialLinkPipelineTest {
     @Test
     fun cachedWebsiteHyperlinkPublishesProgrammaticSocialProfileWithoutLlm() = runBlocking {
         val root = Files.createTempDirectory("crossmap-social-link")
+        val cache = root.resolve("cache")
         Files.createDirectories(root.resolve("catalog"))
         Files.createDirectories(root.resolve("evidence"))
-        Files.createDirectories(root.resolve("crawl/pages"))
+        Files.createDirectories(cache.resolve("church-web-pages/pages"))
         val church = ChurchRecord(
             id = "google:906297735827744432",
             name = "岡山バプテスト教会",
@@ -38,16 +39,16 @@ class SocialLinkPipelineTest {
         )
         Files.writeString(root.resolve("catalog/churches.json"), json.encodeToString(listOf(church)))
         Files.writeString(root.resolve("evidence/social-accounts.json"), json.encodeToString(listOf(account)))
-        Files.writeString(root.resolve("crawl/pages/page.html"), "<html><a href='https://www.youtube.com/channel/UCCBpKmS8N-lP4FRdOWy1MRQ/'>YouTube</a></html>")
+        Files.writeString(cache.resolve("church-web-pages/pages/page.html"), "<html><a href='https://www.youtube.com/channel/UCCBpKmS8N-lP4FRdOWy1MRQ/'>YouTube</a></html>")
         Files.writeString(
-            root.resolve("crawl/manifest.json"),
+            cache.resolve("church-web-pages/manifest.json"),
             json.encodeToString(
                 listOf(
                     CrawlManifestEntry(
                         churchId = church.id,
                         requestedUrl = church.websiteUrl,
                         finalUrl = church.websiteUrl,
-                        cachePath = "crawl/pages/page.html",
+                        cachePath = "pages/page.html",
                         fetchedAt = "2026-01-01T00:00:00Z",
                         status = 200,
                         contentHash = "page",
@@ -57,14 +58,14 @@ class SocialLinkPipelineTest {
         )
         var llmCalls = 0
 
-        val report = SocialLinkPipeline(fakeLlm { llmCalls++; 0f }).run(root, applyChanges = true)
+        val report = SocialLinkPipeline(fakeLlm { llmCalls++; 0f }).run(root, applyChanges = true, cacheRoot = cache)
 
         assertEquals(1, report.directLinksAccepted)
         assertEquals(0, llmCalls)
         val updated = json.decodeFromString<List<ChurchRecord>>(Files.readString(root.resolve("catalog/churches.json"))).single()
         assertEquals(account.url, updated.socialProfiles.single().url)
         assertEquals(DeterminationSource.PROGRAMMATIC, updated.determinations.single().source)
-        assertTrue(Files.isRegularFile(root.resolve("cleanup/social-decisions.json")))
+        assertTrue(Files.isRegularFile(cache.resolve("cleanup/social-decisions.json")))
     }
 
     private fun fakeLlm(score: suspend () -> Float) = object : LlmEntitySimilarityMatcher {

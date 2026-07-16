@@ -34,6 +34,7 @@ class StaticSiteGenerator(
         denominationEnglishNames: Map<String, String>,
         outputDirectory: Path,
         collisionLocationEnglishNames: Map<String, String> = emptyMap(),
+        denominationNamesByLanguage: Map<String, Map<String, String>> = emptyMap(),
     ): List<GeneratedChurchPage> {
         val missingEnglishNames = churches.filter { it.englishName.isNullOrBlank() }
         require(missingEnglishNames.isEmpty()) {
@@ -77,19 +78,38 @@ class StaticSiteGenerator(
 
         Files.createDirectories(outputDirectory)
         val template = freemarker.getTemplate(templateName)
-        return churches.sortedBy { it.id }.map { church ->
+        val generated = churches.sortedBy { it.id }.map { church ->
             val fileName = "${requireNotNull(finalSlugs[church])}.html"
             val pageUrl = "/church/$fileName"
             val canonicalUrl = pageUrl
             val model = mapOf(
                 "japaneseName" to church.name,
                 "englishName" to church.englishName,
+                "localizedNames" to (
+                    church.localizedNames + listOf(
+                        LocalizedName("ja", church.name),
+                        LocalizedName("en", church.englishName),
+                    )
+                ).distinctBy { it.languageCode.substringBefore('-').lowercase() }
+                    .map { mapOf("languageCode" to it.languageCode, "name" to it.name) },
                 "denominationEnglishName" to (
                     church.denominationId
                         ?.takeUnless(::isIndependentDenomination)
                         ?.let(denominationEnglishNames::get)
                         ?: ""
                     ),
+                "localizedDenominationNames" to church.denominationId
+                    ?.takeUnless(::isIndependentDenomination)
+                    ?.let { denominationId ->
+                        val fromCatalogs = denominationNamesByLanguage.mapNotNull { (languageCode, names) ->
+                            names[denominationId]?.takeIf(String::isNotBlank)?.let {
+                                LocalizedName(languageCode, it)
+                            }
+                        }
+                        (church.localizedDenominationNames + fromCatalogs)
+                            .distinctBy { it.languageCode.substringBefore('-').lowercase() }
+                            .map { mapOf("languageCode" to it.languageCode, "name" to it.name) }
+                    }.orEmpty(),
                 "address" to church.address,
                 "websiteUrl" to church.websiteUrl,
                 "socialProfiles" to church.socialProfiles.map {
@@ -110,13 +130,25 @@ class StaticSiteGenerator(
             writeAtomically(destination, html)
             GeneratedChurchPage(church.id, fileName, destination, pageUrl, canonicalUrl)
         }
+        val generatedFiles = generated.map(GeneratedChurchPage::fileName).toSet()
+        Files.list(outputDirectory).use { paths ->
+            paths.filter { path -> path.fileName.toString().endsWith(".html") && path.fileName.toString() !in generatedFiles }
+                .forEach(Files::delete)
+        }
+        return generated
     }
 
-    internal fun pageSlug(denominationEnglishName: String?, churchEnglishName: String): String =
-        listOfNotNull(denominationEnglishName?.takeIf(String::isNotBlank), churchEnglishName)
-            .joinToString("-")
-            .toUrlSlug()
-            .also { require(it.isNotBlank()) { "English names did not produce a URL slug" } }
+    internal fun pageSlug(denominationEnglishName: String?, churchEnglishName: String): String {
+        val denominationSlug = denominationEnglishName?.takeIf(String::isNotBlank)?.toUrlSlug()
+        val churchSlug = churchEnglishName.toUrlSlug()
+        return if (denominationSlug != null &&
+            (churchSlug == denominationSlug || churchSlug.startsWith("$denominationSlug-"))
+        ) {
+            churchSlug
+        } else {
+            listOfNotNull(denominationSlug, churchSlug).joinToString("-")
+        }.also { require(it.isNotBlank()) { "English names did not produce a URL slug" } }
+    }
 
     private fun String.toUrlSlug(): String = Normalizer.normalize(this, Normalizer.Form.NFKD)
         .replace(Regex("""\p{M}+"""), "")

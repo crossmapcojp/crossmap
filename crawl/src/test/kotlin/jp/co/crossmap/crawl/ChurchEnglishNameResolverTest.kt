@@ -1,5 +1,7 @@
 package jp.co.crossmap.crawl
 
+import java.nio.file.Files
+import java.nio.file.Path
 import jp.co.crossmap.CrawledPage
 import jp.co.crossmap.DeterminationSource
 import jp.co.crossmap.GeoPoint
@@ -7,11 +9,37 @@ import jp.co.crossmap.SocialPlatform
 import jp.co.crossmap.SocialProfile
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 
 class ChurchEnglishNameResolverTest {
+    @Test
+    fun acceptsOfficialLatinBrandNamesButRejectsGenericCongregationWords() {
+        assertTrue(ChurchEnglishNameResolver.isUsableEnglishChurchName("enCounter"))
+        assertTrue(ChurchEnglishNameResolver.isUsableEnglishChurchName("ADOMJ Oizumi"))
+        assertFalse(ChurchEnglishNameResolver.isUsableEnglishChurchName("Church"))
+    }
+
+    @Test
+    fun completesGenericGoogleTitleFromDenominationAndMostSpecificAddressGeoname() {
+        val rule = GenericChurchNameFromAddressRule(
+            denominations = listOf(Denomination("JAG", "日本アッセンブリーズ・オブ・ゴッド教団")),
+            geonames = mapOf("静岡" to "Shizuoka", "袋井" to "Fukuroi"),
+        )
+        val church = ChurchEnglishNameInput(
+            id = "google:5358878719376239645",
+            name = "教会",
+            denominationId = "JAG",
+            address = "〒437-1121 静岡県袋井市諸井９４１−１",
+            location = GeoPoint(34.7255175, 137.9221988),
+            websiteUrl = "https://www.google.com/maps/contrib/112345582264093332624?hl=ja",
+        )
+
+        assertEquals("JAG Fukuroi Church", rule.translate(church)?.englishName)
+    }
+
     @Test
     fun deterministicRulesRomanizeRealGeonamesBeyondTheCuratedOverrides() = runBlocking {
         val resolver = ChurchEnglishNameResolver(
@@ -69,7 +97,7 @@ class ChurchEnglishNameResolverTest {
                 address = "東京都北区赤羽",
                 location = GeoPoint(35.78, 139.72),
                 websiteUrl = "https://uccj.org/",
-            ) to "Akabane Church",
+            ) to "UCCJ Akabane Church",
             ChurchEnglishNameInput(
                 id = "rule:jelc-osaka",
                 name = "日本福音ルーテル大阪教会",
@@ -77,7 +105,7 @@ class ChurchEnglishNameResolverTest {
                 address = "大阪府大阪市",
                 location = GeoPoint(34.69, 135.50),
                 websiteUrl = "https://jelc.or.jp/",
-            ) to "Osaka Church",
+            ) to "JELC Osaka Church",
         )
         val resolver = ChurchEnglishNameResolver { error("LLM must not run for deterministic translation rules") }
 
@@ -103,8 +131,90 @@ class ChurchEnglishNameResolverTest {
                 location = GeoPoint(35.78, 139.72),
                 websiteUrl = "https://uccj.org/",
             )
-            assertEquals("Akabane Church", resolver.findOutChurchEnglishName(church), alias)
+            assertEquals("UCCJ Akabane Church", resolver.findOutChurchEnglishName(church), alias)
         }
+    }
+
+    @Test
+    fun denominationPrefixRuleRomanizesMultiplePlaceAndDistrictTokens() = runBlocking {
+        val uccj = Denomination("UCCJ", "日本基督教団", listOf("日本キリスト教団"))
+        val resolver = ChurchEnglishNameResolver(
+            translator = { error("Known composite place reading must not invoke LLM") },
+            translationRules = ChurchNameEnglishTranslationRules.create(listOf(uccj)),
+        )
+        val church = ChurchEnglishNameInput(
+            id = "google:10003468413261460406",
+            name = "日本基督教団 神戸雲内教会",
+            denominationId = "UCCJ",
+            address = "〒657-0051 兵庫県神戸市灘区八幡町１丁目６−９",
+            location = GeoPoint(34.719125, 135.237793),
+            websiteUrl = "http://blog.goo.ne.jp/kumochi/",
+        )
+
+        assertEquals("UCCJ Kobe Kumouchi Church", resolver.findOutChurchEnglishName(church))
+        assertEquals("UCCJ Kobe Kumouchi Church", resolver.determineProgrammatically(church)?.englishName)
+    }
+
+    @Test
+    fun denominationPrefixRuleRomanizesConceptualProperNames() = runBlocking {
+        val uccj = Denomination("UCCJ", "日本基督教団", listOf("日本キリスト教団"))
+        val resolver = ChurchEnglishNameResolver(
+            translator = { error("LLM must not run for an exact denomination prefix") },
+            translationRules = ChurchNameEnglishTranslationRules.create(listOf(uccj)),
+        )
+        val church = ChurchEnglishNameInput(
+            id = "real:uccj-megumi",
+            name = "日本基督教団 静岡めぐみ教会",
+            denominationId = "UCCJ",
+            address = "静岡県静岡市",
+            location = GeoPoint(34.975, 138.383),
+            websiteUrl = "https://uccj.org/",
+        )
+
+        assertEquals("UCCJ Shizuoka Megumi Church", resolver.findOutChurchEnglishName(church))
+    }
+
+    @Test
+    fun structuredRuleTransliteratesBiblicalConceptNameInsteadOfSemanticallyTranslatingIt() = runBlocking {
+        val church = ChurchEnglishNameInput(
+            id = "google:10002614478709874444",
+            name = "大阪聖和教会",
+            denominationId = NOT_DETERMINED,
+            address = "大阪府大阪市",
+            location = GeoPoint(34.69, 135.50),
+            websiteUrl = "http://osakaseiwachurch.wix.com/kyoukaisyoukai",
+        )
+        val resolver = ChurchEnglishNameResolver { error("LLM must not run for a known conceptual proper name") }
+
+        assertEquals("Osaka Seiwa Church", resolver.findOutChurchEnglishName(church))
+        assertTrue(resolver.determineProgrammatically(church)?.evidence.orEmpty().contains("structured"))
+    }
+
+    @Test
+    fun componentAnalyzerSplitsKnownCityFromUnknownDistrictProperName() {
+        val analyzer = ChurchNameComponentAnalyzer(
+            listOf(Denomination("UCCJ", "日本基督教団", listOf("日本キリスト教団"))),
+        )
+        val church = ChurchEnglishNameInput(
+            id = "google:10003468413261460406",
+            name = "日本基督教団 神戸雲内教会",
+            denominationId = "UCCJ",
+            address = "〒657-0051 兵庫県神戸市灘区八幡町１丁目６−９",
+            location = GeoPoint(34.719125, 135.237793),
+            websiteUrl = "http://blog.goo.ne.jp/kumochi/",
+        )
+
+        val analysis = requireNotNull(analyzer.analyze(church))
+
+        assertEquals("日本基督教団", analysis.denominationAlias)
+        assertEquals(
+            listOf(
+                ChurchNameComponent("神戸", ChurchNamePartRole.GEONAME, "Kobe", "name lexicon"),
+                ChurchNameComponent("雲内", ChurchNamePartRole.GEONAME, "Kumouchi", "name lexicon"),
+            ),
+            analysis.components,
+        )
+        assertEquals("Church", analysis.congregationEnglish)
     }
 
     @Test
@@ -120,7 +230,10 @@ class ChurchEnglishNameResolverTest {
         val resolver = ChurchEnglishNameResolver { error("LLM must not run for Christian assembly rule") }
 
         assertEquals("Kyodo Christian Assembly", resolver.findOutChurchEnglishName(church))
-        assertEquals("Geoname + Christian assembly rule", resolver.determineProgrammatically(church)?.evidence)
+        assertEquals(
+            "Deterministic structured denomination/name-part/congregation translation",
+            resolver.determineProgrammatically(church)?.evidence,
+        )
     }
 
     @Test
@@ -142,6 +255,46 @@ class ChurchEnglishNameResolverTest {
     }
 
     @Test
+    fun genericGoogleNameUsesRealJapaneseChurchTitleFromCrawledPage() = runBlocking {
+        val church = ChurchEnglishNameInput(
+            id = "google:15972447304536824717",
+            name = "教会",
+            denominationId = "JCCJ",
+            address = "〒662-0865 兵庫県西宮市神垣町６−４１",
+            location = GeoPoint(34.748359, 135.339875),
+            websiteUrl = "https://nseiai.kyoukai.jp/",
+            pages = listOf(CrawledPage("https://nseiai.jccj.or.jp/", title = "西宮聖愛教会 日本イエス・キリスト教団")),
+        )
+        val resolver = ChurchEnglishNameResolver(
+            ChurchNameEnglishTranslationRules.create(additionalConcepts = mapOf("聖愛" to "Seiai")),
+            ChurchEnglishNameTranslator { error("Japanese page title must avoid LLM") },
+        )
+
+        assertEquals("Nishinomiya Seiai Church", resolver.findOutChurchEnglishName(church))
+    }
+
+    @Test
+    fun urlShapedGoogleNameUsesOfficialLatinChurchTitle() = runBlocking {
+        val church = ChurchEnglishNameInput(
+            id = "google:11195437511384004215",
+            name = "https://direcciones.idmji.org/es/",
+            denominationId = "INDEPENDENT_CHURCH",
+            address = "〒113-0034 東京都文京区",
+            location = GeoPoint(35.717, 139.759),
+            websiteUrl = "http://www.idmji.org/",
+            pages = listOf(
+                CrawledPage(
+                    "http://www.idmji.org/",
+                    title = "Iglesia de Dios Ministerial de Jesucristo Internacional - IDMJI",
+                ),
+            ),
+        )
+        val resolver = ChurchEnglishNameResolver { error("Official Latin title must avoid LLM") }
+
+        assertEquals("Iglesia de Dios Ministerial de Jesucristo Internacional", resolver.findOutChurchEnglishName(church))
+    }
+
+    @Test
     fun deterministicNameRuleRunsBeforeUrlEvidenceAndLlm() = runBlocking {
         val church = ChurchEnglishNameInput(
             id = "google:6646597370070891755",
@@ -154,7 +307,10 @@ class ChurchEnglishNameResolverTest {
         val resolver = ChurchEnglishNameResolver { error("LLM must not run after a deterministic rule") }
 
         assertEquals("Tokyo Baptist Church", resolver.findOutChurchEnglishName(church))
-        assertEquals("Geoname + tradition + church rule", resolver.determineProgrammatically(church)?.evidence)
+        assertEquals(
+            "Deterministic structured denomination/name-part/congregation translation",
+            resolver.determineProgrammatically(church)?.evidence,
+        )
     }
 
     @Test
@@ -167,13 +323,16 @@ class ChurchEnglishNameResolverTest {
             location = GeoPoint(34.4991617, 135.5613646),
             websiteUrl = "http://www.nskk.org/osaka/church/lucia/",
         )
-        val resolver = ChurchEnglishNameResolver { record ->
-            assertTrue(record.websiteUrl.endsWith("/lucia/"))
-            ChurchEnglishNameGuess("St. Lucia Church", confidence = 0.98f)
-        }
+        val root = generateSequence(Path.of("").toAbsolutePath().normalize()) { it.parent }
+            .first { Files.isRegularFile(it.resolve("settings.gradle.kts")) }
+        val dictionaries = ChurchNameEnglishDictionary.load(root.resolve("resources"))
+        val resolver = ChurchEnglishNameResolver(
+            translationRules = ChurchNameEnglishTranslationRules.create(additionalConcepts = dictionaries.concepts),
+            translator = ChurchEnglishNameTranslator { error("Known Lucia spelling must not invoke LLM") },
+        )
 
         assertEquals("St. Lucia Church", resolver.findOutChurchEnglishName(church))
-        assertEquals(null, resolver.determineProgrammatically(church))
+        assertEquals("St. Lucia Church", resolver.determineProgrammatically(church)?.englishName)
     }
 
     @Test
@@ -220,8 +379,10 @@ class ChurchEnglishNameResolverTest {
             location = GeoPoint(35.708, 139.709),
             websiteUrl = "https://olivetassembly.or.jp/our-regions.html",
         )
-        val resolver = ChurchEnglishNameResolver {
-            ChurchEnglishNameGuess(
+        val resolver = ChurchEnglishNameResolver(
+            translationRules = emptyList(),
+            translator = {
+                ChurchEnglishNameGuess(
                 englishName = "Tokyo Sophia International Presbyterian Church",
                 parts = listOf(
                     TranslatedChurchNamePart("東京", ChurchNamePartRole.GEONAME, "Tokyo"),
@@ -231,8 +392,9 @@ class ChurchEnglishNameResolverTest {
                 ),
                 confidence = 0.94f,
                 reasoning = "Translated name components",
-            )
-        }
+                )
+            },
+        )
 
         assertEquals("Tokyo Sophia International Presbyterian Church", resolver.findOutChurchEnglishName(church))
     }
@@ -247,9 +409,12 @@ class ChurchEnglishNameResolverTest {
             location = GeoPoint(35.6701735, 139.49467),
             websiteUrl = "https://hosannafucyu.wixsite.com/mysite",
         )
-        val resolver = ChurchEnglishNameResolver {
-            ChurchEnglishNameGuess("Fuchu Hosanna Gospel Church", confidence = 0.9f)
-        }
+        val resolver = ChurchEnglishNameResolver(
+            ChurchNameEnglishTranslationRules.create(
+                additionalConcepts = mapOf("ホサナ福音キリスト" to "Hosanna Gospel"),
+            ),
+            ChurchEnglishNameTranslator { error("Known branch-chapel structure must not invoke LLM") },
+        )
 
         assertEquals("Fuchu Hosanna Gospel Church", resolver.findOutChurchEnglishName(church))
     }
@@ -264,7 +429,7 @@ class ChurchEnglishNameResolverTest {
             runBlocking {
                 resolver.findOutChurchEnglishName(
                     okayamaBaptist().copy(
-                        name = "岡山希望教会",
+                        name = "名称未詳",
                         pages = emptyList(),
                         websiteUrl = "https://okayama-kibo.example/",
                     ),
@@ -291,14 +456,17 @@ class ChurchEnglishNameResolverTest {
             location = GeoPoint(35.708, 139.709),
             websiteUrl = "https://olivetassembly.or.jp/our-regions.html",
         )
-        val resolver = ChurchEnglishNameResolver {
-            ChurchEnglishNameGuess(
+        val resolver = ChurchEnglishNameResolver(
+            translationRules = emptyList(),
+            translator = {
+                ChurchEnglishNameGuess(
                 "Tokyo Sophia International Presbyterian Church",
                 confidence = 0.94f,
                 reasoning = "Split and translated Japanese name",
                 model = "fixture-japanese-model",
-            )
-        }
+                )
+            },
+        )
 
         val resolved = resolver.resolveInputs(listOf(deterministic, fallback))
 
@@ -319,7 +487,7 @@ class ChurchEnglishNameResolverTest {
                 resolver.resolveInputs(
                     listOf(
                         okayamaBaptist().copy(
-                            name = "岡山希望教会",
+                            name = "名称未詳",
                             pages = emptyList(),
                             websiteUrl = "https://okayama-kibo.example/",
                         ),

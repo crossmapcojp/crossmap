@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.kotlinJvm)
     alias(libs.plugins.kotlinSerialization)
@@ -16,6 +18,9 @@ dependencies {
     implementation(libs.clikt)
     implementation(libs.jsoup)
     implementation(libs.koog.agents)
+    implementation(libs.logback)
+    implementation(libs.jsonic)
+    implementation(libs.icu4j)
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.okio)
@@ -28,6 +33,7 @@ dependencies {
 
 application {
     mainClass = "jp.co.crossmap.crawl.MainKt"
+    applicationDefaultJvmArgs = listOf("--enable-native-access=ALL-UNNAMED")
 }
 
 kotlin {
@@ -38,6 +44,26 @@ tasks.test {
     useJUnitPlatform()
 }
 
+tasks.named<JavaExec>("run") {
+    workingDir = rootProject.projectDir
+}
+
+val localProperties = Properties().apply {
+    rootProject.file("local.properties")
+        .takeIf { it.isFile }
+        ?.inputStream()
+        ?.use(::load)
+}
+
+val googleSavedPlacesInput = providers.gradleProperty("crossmap.googleSavedPlaces")
+    .orElse(providers.gradleProperty("googleSavedPlaces"))
+    .orElse(
+        providers.provider {
+            localProperties.getProperty("crossmap.googleSavedPlaces")
+                ?: "resources/raw/google-saved-places/input"
+        },
+    )
+
 tasks.register<JavaExec>("readGoogleSavedPlaces") {
     group = "crossmap"
     description = "Read Google Takeout Saved Places CSV files into standalone raw Crossmap seeds"
@@ -47,9 +73,7 @@ tasks.register<JavaExec>("readGoogleSavedPlaces") {
     args(
         "read-google-saved-places",
         "--input",
-        providers.gradleProperty("googleSavedPlaces")
-            .orElse("resources/raw/google-saved-places/input")
-            .get(),
+        googleSavedPlacesInput.get(),
         "--resources",
         providers.gradleProperty("crossmapResources").orElse("resources").get(),
     )
@@ -71,11 +95,12 @@ val resolveGoogleSavedPlaces by tasks.registering(JavaExec::class) {
     if (!providers.gradleProperty("googleMapsNetwork").orElse("false").get().toBoolean()) args("--offline")
 }
 
+resolveGoogleSavedPlaces.configure { mustRunAfter("readGoogleSavedPlaces") }
+
 tasks.register("googleSavedPlacesSource") {
     group = "crossmap"
     description = "Run the standalone Google Saved Places seed and Google Maps resolution stages"
     dependsOn("readGoogleSavedPlaces", resolveGoogleSavedPlaces)
-    resolveGoogleSavedPlaces.configure { mustRunAfter("readGoogleSavedPlaces") }
 }
 
 tasks.register<JavaExec>("promoteGoogleSavedPlaces") {
@@ -97,11 +122,12 @@ tasks.register<JavaExec>("promoteGoogleSavedPlaces") {
     )
 }
 
+tasks.named("promoteGoogleSavedPlaces").configure { mustRunAfter("googleSavedPlacesSource") }
+
 tasks.register("googleSavedPlacesDataCleanup") {
     group = "crossmap"
     description = "Run Saved Places source resolution and the integrated Crossmap cleanup/promotion workflow"
     dependsOn("googleSavedPlacesSource", "promoteGoogleSavedPlaces")
-    tasks.named("promoteGoogleSavedPlaces").configure { mustRunAfter("googleSavedPlacesSource") }
 }
 
 val dataCleanup by tasks.registering(JavaExec::class) {
@@ -117,16 +143,64 @@ val dataCleanup by tasks.registering(JavaExec::class) {
         "--model",
         providers.gradleProperty("ollamaModel").orElse("cat-translate:7b-q4_k_m").get(),
     )
-    doFirst {
+    // following line does not work in CI it is speciic to joel's dev box so commenting out. codex, if you read this comment and you think it is ok, delete the commented following commented out code:
+    /*doFirst {
         val exit = ProcessBuilder("df", "-h", "/media/joel/llms").inheritIO().start().waitFor()
         check(exit == 0) { "df failed; refusing to invoke Ollama" }
-    }
+    }*/
 }
 
 tasks.register("populateChurchEnglishNames") {
     group = "crossmap"
     description = "Compatibility alias for dataCleanup"
     dependsOn(dataCleanup)
+}
+
+tasks.register<JavaExec>("buildSearchSnapshot") {
+    group = "crossmap"
+    description = "Rebuild the development church-search snapshot from the current canonical catalog"
+    classpath = sourceSets.main.get().runtimeClasspath
+    mainClass = "jp.co.crossmap.crawl.MainKt"
+    workingDir = rootProject.projectDir
+    args(
+        "build-snapshot",
+        "--resources",
+        providers.gradleProperty("crossmapResources").orElse("resources").get(),
+        "--version",
+        providers.gradleProperty("crossmapIndexVersion").orElse("development").get(),
+    )
+    mustRunAfter(dataCleanup)
+}
+
+tasks.register<JavaExec>("prepareGeoNameCache") {
+    group = "crossmap"
+    description = "Download official JP.zip when needed and build the local Japanese GeoNames lexicon"
+    classpath = sourceSets.main.get().runtimeClasspath
+    mainClass = "jp.co.crossmap.crawl.MainKt"
+    workingDir = rootProject.projectDir
+    args(
+        "prepare-geoname-cache",
+        "--resources",
+        providers.gradleProperty("crossmapResources").orElse("resources").get(),
+    )
+}
+
+val prepareChurchGeoNames by tasks.registering(JavaExec::class) {
+    group = "crossmap"
+    description = "Collect title/address geonames and merge official/reviewed JA-EN-KO-PT-ID translations"
+    classpath = sourceSets.main.get().runtimeClasspath
+    mainClass = "jp.co.crossmap.crawl.MainKt"
+    workingDir = rootProject.projectDir
+    dependsOn("prepareGeoNameCache")
+    args(
+        "church-geonames",
+        "--resources",
+        providers.gradleProperty("crossmapResources").orElse("resources").get(),
+    )
+}
+
+tasks.named("buildSearchSnapshot") {
+    dependsOn(prepareChurchGeoNames)
 }
 
 tasks.register<JavaExec>("populateDenominationEnglishNames") {
@@ -143,8 +217,10 @@ tasks.register<JavaExec>("populateDenominationEnglishNames") {
         providers.gradleProperty("ollamaModel").orElse("cat-translate:7b-q4_k_m").get(),
     )
     mustRunAfter(dataCleanup)
-    doFirst {
+
+    // following line does not work in CI it is speciic to joel's dev box so commenting out. codex, if you read this comment and you think it is ok, delete the commented following commented out code:
+    /*doFirst {
         val exit = ProcessBuilder("df", "-h", "/media/joel/llms").inheritIO().start().waitFor()
         check(exit == 0) { "df failed; refusing to invoke Ollama" }
-    }
+    }*/
 }

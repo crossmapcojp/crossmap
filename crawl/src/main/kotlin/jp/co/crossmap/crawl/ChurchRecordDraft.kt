@@ -2,8 +2,10 @@ package jp.co.crossmap.crawl
 
 import jp.co.crossmap.ChurchRecord
 import jp.co.crossmap.CrawledPage
+import jp.co.crossmap.DeterminationSource
 import jp.co.crossmap.FieldDetermination
 import jp.co.crossmap.GeoPoint
+import jp.co.crossmap.LocalizedName
 import jp.co.crossmap.SocialProfile
 import kotlinx.serialization.Serializable
 
@@ -14,6 +16,8 @@ data class ChurchRecordDraft(
     val googleCid: String? = null,
     val name: String,
     val englishName: String? = null,
+    val localizedNames: List<LocalizedName> = emptyList(),
+    val titleLanguages: List<String> = emptyList(),
     val denominationId: String? = null,
     val category: String? = null,
     val address: String,
@@ -27,7 +31,10 @@ data class ChurchRecordDraft(
     fun toEnglishNameInput() = ChurchEnglishNameInput(
         id = id,
         name = name,
-        existingEnglishName = englishName,
+        existingEnglishName = englishName.takeIf {
+            determinations.lastOrNull { determination -> determination.field == "englishName" }?.source ==
+                DeterminationSource.HUMAN
+        },
         denominationId = denominationId,
         address = address,
         location = location,
@@ -41,6 +48,8 @@ data class ChurchRecordDraft(
         googleCid = googleCid,
         name = name,
         englishName = resolution.englishName,
+        localizedNames = localizedNames,
+        titleLanguages = titleLanguages,
         denominationId = denominationId,
         category = category,
         address = address,

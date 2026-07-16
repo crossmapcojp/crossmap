@@ -64,11 +64,20 @@ data class FieldDetermination(
 )
 
 @Serializable
+data class LocalizedName(
+    val languageCode: String,
+    val name: String,
+)
+
+@Serializable
 data class ChurchRecord(
     val id: String,
     val googleCid: String? = null,
     val name: String,
     val englishName: String,
+    val localizedNames: List<LocalizedName> = emptyList(),
+    val localizedDenominationNames: List<LocalizedName> = emptyList(),
+    val titleLanguages: List<String> = emptyList(),
     val denominationId: String? = null,
     val category: String? = null,
     val address: String,
@@ -105,6 +114,7 @@ data class ChurchSearchRequest(
     val limit: Int = 20,
     val radiusKm: Double? = null,
     val userLocation: GeoPoint? = null,
+    val titleLanguages: List<String> = emptyList(),
 )
 
 @Serializable
@@ -129,6 +139,9 @@ data class ChurchSearchHit(
     val churchId: String,
     val name: String,
     val englishName: String,
+    val localizedNames: List<LocalizedName> = emptyList(),
+    val localizedDenominationNames: List<LocalizedName> = emptyList(),
+    val titleLanguages: List<String> = emptyList(),
     val denominationId: String? = null,
     val category: String? = null,
     val address: String,
@@ -138,6 +151,7 @@ data class ChurchSearchHit(
     val distanceKm: Double? = null,
     val matchedPages: List<MatchedPage> = emptyList(),
     val socialProfiles: List<SocialProfile> = emptyList(),
+    val detailUrl: String? = null,
 )
 
 @Serializable
@@ -160,6 +174,9 @@ data class ChurchDetailResponse(
     val churchId: String,
     val name: String,
     val englishName: String,
+    val localizedNames: List<LocalizedName> = emptyList(),
+    val localizedDenominationNames: List<LocalizedName> = emptyList(),
+    val titleLanguages: List<String> = emptyList(),
     val denominationId: String? = null,
     val category: String? = null,
     val address: String,
@@ -170,15 +187,24 @@ data class ChurchDetailResponse(
 
 @Serializable
 data class IndexManifest(
-    val schemaVersion: Int = 1,
+    val schemaVersion: Int = ChurchIndex.SCHEMA_VERSION,
     val indexVersion: String,
     val corpus: SearchCorpus = SearchCorpus.CHURCHES,
     val luceneVersion: String,
     val createdAt: String,
     val documentCount: Int,
+    val languages: List<String> = listOf("ja"),
+    val sourceSha256: String = "",
     val archiveFile: String? = null,
     val archiveSize: Long? = null,
     val sha256: String? = null,
+)
+
+@Serializable
+data class ChurchPageManifest(
+    val schemaVersion: Int = 1,
+    val sourceSha256: String,
+    val pages: Map<String, String>,
 )
 
 @Serializable

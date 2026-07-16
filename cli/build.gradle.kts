@@ -24,6 +24,10 @@ application {
     applicationName = "cm"
 }
 
+tasks.withType<JavaExec>().configureEach {
+    workingDir = rootProject.projectDir
+}
+
 kotlin {
     jvmToolchain(24)
 }

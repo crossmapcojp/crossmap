@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -14,6 +15,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,6 +40,27 @@ private sealed interface AppState {
     data class Error(val message: String) : AppState
 }
 
+private val displayLanguages = listOf("ja", "en", "ko", "pt", "id")
+
+internal fun preferredChurchName(
+    localizedNames: List<LocalizedName>,
+    languageCode: String,
+    fallbackName: String,
+    englishName: String,
+): String = localizedNames.firstOrNull {
+    it.languageCode.substringBefore('-').lowercase() == languageCode.substringBefore('-').lowercase()
+}?.name?.takeIf(String::isNotBlank)
+    ?: englishName.takeIf { languageCode == "en" && it.isNotBlank() }
+    ?: fallbackName
+
+internal fun preferredDenominationName(
+    localizedNames: List<LocalizedName>,
+    languageCode: String,
+    fallbackId: String?,
+): String? = localizedNames.firstOrNull {
+    it.languageCode.substringBefore('-').lowercase() == languageCode.substringBefore('-').lowercase()
+}?.name?.takeIf(String::isNotBlank) ?: fallbackId?.takeIf(String::isNotBlank)
+
 @Composable
 @Preview
 fun App(
@@ -49,7 +72,8 @@ fun App(
     val manager = remember(appDataPath, serverBaseUrl) {
         appDataPath?.let { SnapshotManager(it.toPath(), serverBaseUrl, HttpClient()) }
     }
-    var engine by remember(manager) { mutableStateOf(manager?.activeEngine()) }
+    var displayLanguage by remember { mutableStateOf("ja") }
+    var engine by remember(manager, displayLanguage) { mutableStateOf(manager?.activeEngine(displayLanguage)) }
     var state: AppState by remember(engine) { mutableStateOf(if (engine == null) AppState.NoIndex else AppState.Ready) }
     var query by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
@@ -61,6 +85,16 @@ fun App(
         ) {
             Text("Crossmap", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
             Text("教会を探す", style = MaterialTheme.typography.headlineLarge)
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                items(displayLanguages) { language ->
+                    TextButton(onClick = {
+                        displayLanguage = language
+                        engine = manager?.activeEngine(language)
+                    }) {
+                        Text(if (language == displayLanguage) "[$language]" else language)
+                    }
+                }
+            }
             if (engine == null) {
                 Text("検索データをダウンロードすると、端末上でオフライン検索できます。")
                 Button(
@@ -70,7 +104,7 @@ fun App(
                             state = AppState.Loading
                             state = runCatching {
                                 manager!!.update()
-                                engine = manager.activeEngine() ?: error("Downloaded index could not be opened")
+                                engine = manager.activeEngine(displayLanguage) ?: error("Downloaded index could not be opened")
                                 AppState.Ready
                             }.getOrElse { AppState.Error(it.message ?: "Download failed") }
                         }
@@ -91,13 +125,16 @@ fun App(
                             scope.launch {
                                 state = AppState.Loading
                                 state = runCatching {
+                                    val queryLanguage = QueryLanguageDetector.detect(query, displayLanguage)
+                                    val queryEngine = manager?.activeEngine(queryLanguage) ?: engine
+                                        ?: error("Search index is unavailable for $queryLanguage")
                                     var response = withContext(Dispatchers.Default) {
-                                        engine!!.search(ChurchSearchRequest(query))
+                                        queryEngine.search(ChurchSearchRequest(query))
                                     }
                                     if (response.resolvedLocations.isEmpty()) {
                                         locationProvider()?.let { location ->
                                             response = withContext(Dispatchers.Default) {
-                                                engine!!.search(ChurchSearchRequest(query, userLocation = location))
+                                                queryEngine.search(ChurchSearchRequest(query, userLocation = location))
                                             }
                                         }
                                     }
@@ -126,7 +163,18 @@ fun App(
                                 },
                             ) {
                                 Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                    Text(hit.name, style = MaterialTheme.typography.titleMedium)
+                                    Text(
+                                        preferredChurchName(
+                                            hit.localizedNames,
+                                            displayLanguage,
+                                            hit.name,
+                                            hit.englishName,
+                                        ),
+                                        style = MaterialTheme.typography.titleMedium,
+                                    )
+                                    if (displayLanguage != "en") {
+                                        Text(hit.englishName, style = MaterialTheme.typography.bodyMedium)
+                                    }
                                     Text(hit.address, style = MaterialTheme.typography.bodyMedium)
                                     hit.distanceKm?.let { Text("${((it * 10).toInt() / 10.0)} km") }
                                     hit.matchedPages.firstOrNull()?.snippet?.takeIf { it.isNotBlank() }?.let {
@@ -139,9 +187,23 @@ fun App(
                 }
                 is AppState.Detail -> {
                     Button(onClick = { state = AppState.Ready }) { Text("検索に戻る") }
-                    Text(current.church.name, style = MaterialTheme.typography.headlineMedium)
-                    Text(current.church.englishName, style = MaterialTheme.typography.titleMedium)
-                    current.church.denominationId?.let { Text("教派: $it") }
+                    Text(
+                        preferredChurchName(
+                            current.church.localizedNames,
+                            displayLanguage,
+                            current.church.name,
+                            current.church.englishName,
+                        ),
+                        style = MaterialTheme.typography.headlineMedium,
+                    )
+                    if (displayLanguage != "en") {
+                        Text(current.church.englishName, style = MaterialTheme.typography.titleMedium)
+                    }
+                    preferredDenominationName(
+                        current.church.localizedDenominationNames,
+                        displayLanguage,
+                        current.church.denominationId,
+                    )?.let { Text("教派: $it") }
                     Text(current.church.address)
                     if (current.church.websiteUrl.isNotBlank()) {
                         Button(onClick = { openUrl(current.church.websiteUrl) }) { Text("ウェブサイト") }
