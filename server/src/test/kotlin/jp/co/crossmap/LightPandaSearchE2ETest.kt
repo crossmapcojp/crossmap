@@ -105,6 +105,34 @@ class LightPandaSearchE2ETest {
                 }
             }
 
+            val izuDenominationUrl = "http://127.0.0.1:$port/ja/result.html?q=" +
+                URLEncoder.encode("日本基督教団", Charsets.UTF_8.name())
+            LightPandaCdpSession.open(
+                izuDenominationUrl,
+                GeoPoint(34.87544654121299, 138.92825706221615),
+            ).use { session ->
+                session.waitUntil {
+                    session.evaluate("document.querySelector('#result-heading')?.textContent || ''")
+                        ?.contains("伊豆市付近") == true &&
+                        session.evaluate("document.querySelectorAll('.result').length") != "0"
+                }
+                assertEquals(
+                    "伊豆市付近の「日本基督教団」の検索結果",
+                    session.evaluate("document.querySelector('#result-heading')?.textContent || ''"),
+                )
+                val visibleNames = Json.decodeFromString<List<String>>(
+                    assertNotNull(
+                        session.evaluate(
+                            "JSON.stringify([...document.querySelectorAll('.result a')].map(link => link.textContent))",
+                        )
+                    )
+                )
+                assertTrue(visibleNames.first().contains("修善寺"), visibleNames.toString())
+                listOf("三島", "伊豆長岡", "沼津", "伊豆高原", "宇佐美", "熱海").forEach { expected ->
+                    assertTrue(visibleNames.any { it.contains(expected) }, "$expected: $visibleNames")
+                }
+            }
+
             val browser = LightPanda(
                 timeout = Duration.ofSeconds(30),
                 renderWait = Duration.ofSeconds(15),

@@ -173,6 +173,12 @@ class LocalizedStaticSiteGenerator(
         "pageMessagesJson" to safeJson(
             mapOf(
                 "searchResultsTitle" to messages.text(language, MessageKey.SEARCH_RESULTS_TITLE, "{query}"),
+                "searchResultsNearbyTitle" to messages.text(
+                    language,
+                    MessageKey.SEARCH_RESULTS_NEARBY_TITLE,
+                    "{location}",
+                    "{query}",
+                ),
                 "searchResultsCount" to messages.text(language, MessageKey.SEARCH_RESULTS_COUNT, "{count}"),
                 "noResults" to messages.text(language, MessageKey.NO_RESULTS),
                 "loading" to messages.text(language, MessageKey.LOADING),

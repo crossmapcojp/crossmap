@@ -7,12 +7,28 @@ import jp.co.crossmap.GeoName
 import jp.co.crossmap.GeoNameResolver
 import jp.co.crossmap.GeoNameType
 import jp.co.crossmap.GeoPoint
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 class GeoCatalogBuilder(private val json: Json = Json { prettyPrint = true; encodeDefaults = true }) {
+    @Serializable
+    private data class LocalGovernmentOffice(
+        val code: String,
+        val name: String,
+        val type: GeoNameType,
+        val prefectureCode: String,
+        val officeName: String? = null,
+        val address: String? = null,
+        val center: GeoPoint,
+        val source: String = "UNKNOWN",
+        val sourceDate: String? = null,
+        val updatedAt: String? = null,
+    )
+
     private data class MunicipalitySource(
         val code: String,
         val name: String,
@@ -26,7 +42,13 @@ class GeoCatalogBuilder(private val json: Json = Json { prettyPrint = true; enco
         japaneseCitiesSource: Path,
         output: Path,
         multilingualLexicon: Map<String, Map<String, String>> = emptyMap(),
+        localGovernmentOffices: Path = output.resolveSibling("japanese-local-goverment-offices.json"),
     ): List<GeoName> {
+        val officeByCode = if (Files.isRegularFile(localGovernmentOffices)) {
+            json.decodeFromString<List<LocalGovernmentOffice>>(Files.readString(localGovernmentOffices)).associateBy { it.code }
+        } else {
+            emptyMap()
+        }
         val municipalities = enrichDesignatedCityWards(
             parseMunicipalities(Files.readString(japaneseCitiesSource)),
             churches,
@@ -38,7 +60,11 @@ class GeoCatalogBuilder(private val json: Json = Json { prettyPrint = true; enco
                 it.address.contains(name) && isIncludedInPrefectureSearch(code, it.address)
             }
             val translations = multilingualLexicon[name].orEmpty()
-            fromPoints(code, name, GeoNameType.PREFECTURE, code, emptyList(), matching.map { it.location }, japanCenter, translations)
+            val office = officeByCode[code]
+            fromPoints(
+                code, name, GeoNameType.PREFECTURE, code, emptyList(), matching.map { it.location }, japanCenter, translations,
+                centerOverride = office?.center,
+            )
         }
         val prefectureByCode = prefectureEntries.associateBy { it.code }
         val cityEntries = municipalities.map { municipality ->
@@ -53,6 +79,7 @@ class GeoCatalogBuilder(private val json: Json = Json { prettyPrint = true; enco
             val shortAlias = stripSuffix(name).takeIf { it != name && aliasCounts[it] == 1 }
             val aliases = (municipality.aliases + listOfNotNull(shortAlias)).distinct().filter { it != name }
             val translations = municipality.translations + multilingualLexicon[name].orEmpty()
+            val office = officeByCode[code]
             fromPoints(
                 code,
                 name,
@@ -63,6 +90,7 @@ class GeoCatalogBuilder(private val json: Json = Json { prettyPrint = true; enco
                 prefectureByCode[prefectureCode]?.center ?: japanCenter,
                 translations,
                 includeInPrefectureSearch(prefectureCode, name),
+                office?.center,
             )
         }
         val result = (prefectureEntries + cityEntries).sortedBy { it.code }
@@ -196,8 +224,9 @@ class GeoCatalogBuilder(private val json: Json = Json { prettyPrint = true; enco
         fallback: GeoPoint,
         translations: Map<String, String> = emptyMap(),
         includeInPrefectureSearch: Boolean = true,
+        centerOverride: GeoPoint? = null,
     ): GeoName {
-        val center = if (points.isEmpty()) fallback else GeoPoint(
+        val center = centerOverride ?: if (points.isEmpty()) fallback else GeoPoint(
             points.map { it.latitude }.average(),
             points.map { it.longitude }.average(),
         )

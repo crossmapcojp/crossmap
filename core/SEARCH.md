@@ -79,7 +79,7 @@ Tokyo Baptist Church: TBC@Misato
 Shibuya Baptist Church
 ```
 
-Normally the exact tier is not constrained by detected or device location, so a complete church name can be found outside the default device radius. An explicit administrative name such as `横浜町`, `Yokohama-cho`, or `Yokohamacho` is authoritative: its exact address-entity filter is also applied to tiers 1 and 2. This prevents Kuromoji from splitting `横浜町` into `横浜` + `町` and returning churches in Kanagawa's much larger Yokohama City.
+Normally the exact tier is not constrained by a named geoname embedded in a longer church query, so a complete church name remains authoritative. Device location always filters this tier. An explicit administrative name or geoname-only query also applies its exact address-entity filter to tiers 1 and 2. This prevents Kuromoji from splitting `横浜町` into `横浜` + `町` and returning churches in Kanagawa's much larger Yokohama City.
 
 ## Tier 2: all analyzed name tokens
 
@@ -103,7 +103,7 @@ The exact name belongs to tier 1, so `東京第一バプテスト教会` is cons
 
 Generic church terms alone and geoname-only queries do not activate this unfiltered tier. For example, `教会`, `Church`, `교회`, `Igreja`, `Gereja`, and an ambiguous `府中市` proceed to the general/geo tier. This preserves browser/app filtering for broad searches and ensures coordinates select only one same-named municipality.
 
-Like tier 1, tier 2 is normally not geo-filtered. Its purpose is to recognize a church name even if the name happens to include text that is also a geoname. Explicit administrative names are the exception and filter this tier too.
+Like tier 1, tier 2 is normally not filtered by a named geoname embedded in a longer church query. Its purpose is to recognize a complete church name even if that name happens to include geoname text. An explicit administrative name, a geoname-only query, and device-location fallback filter this tier too.
 
 ## Geoname resolution
 
@@ -114,6 +114,7 @@ Like tier 1, tier 2 is normally not geo-filtered. Its purpose is to recognize a 
 - Japanese administrative suffixes remain explicit when romanized, attached, hyphenated, or space-separated. Supported forms include `ken`, `to`, `do/dō`, `fu`, `shi`, `ku`, `cho/chō/chou`, `machi`, `mura`, `son`, and `gun`. For example, both `Yokohama-cho` and `Yokohamacho` select Aomori's `横浜町` and remove the complete suffixed form from the text remainder.
 - A unique prefecture, municipality, or ward selects that entity directly.
 - When multiple municipalities share a name, `detectIntendedGeonameFromUserLocation` selects the center nearest the browser/app coordinates. Without coordinates the resolver leaves the location ambiguous and the search remains text-only until the client can retry with location.
+- Country-wide names (`日本`, `Japan`, `일본`, `Japão`, and `Jepang`) are never resolved as geo filters. Crossmap already searches a Japan-only catalog, and this prevents denomination names such as `日本基督教団` and `日本バプテスト連盟` from being misread as locations.
 
 For this query:
 
@@ -126,8 +127,7 @@ the English resolver recognizes `Tokyo` as the English translation of `東京都
 - the matched query text, such as `Tokyo`;
 - the canonical Japanese name, such as `東京都`;
 - its type, such as `PREFECTURE`;
-- center coordinates;
-- a covering radius;
+- representative center coordinates, normally the prefectural or municipal government office;
 - the canonical code and prefecture code.
 
 The resolver also calculates a remainder such as `Baptist Church`. Tier 3 analyzes that remainder while the exact entity code preserves the removed geographic intent. The public search response's `textQuery` still contains the complete original query.
@@ -168,7 +168,7 @@ church     -> removed as a non-discriminating generic token
 
 Text matching is not sufficient. The church's normalized address must also contain the selected canonical address-entity code.
 
-An Osaka church fails the Tokyo geo stage even if its name contains `Baptist Church`, because it does not have the Tokyo geoname and its coordinates are outside the resolved Tokyo area.
+An Osaka church fails the Tokyo geo stage even if its name contains `Baptist Church`, because its normalized address does not contain Tokyo's canonical address code. Coordinates and circles are not involved.
 
 ## Exact normalized-address filtering
 
@@ -182,7 +182,9 @@ The exact and all-name tiers already reward a church whose name contains the pla
 
 When the query contains no recognized geoname, the browser or app may supply the user's coordinates.
 
-The engine then creates a synthetic `DEVICE` location with a default radius of 25 km unless the request specifies another radius. This is the only case that uses `LatLonPoint.newDistanceQuery`; named geonames never use radius filtering.
+The engine then creates a synthetic `DEVICE` location with a default radius of 50 km unless the request specifies another radius. This is the only case that uses `LatLonPoint.newDistanceQuery`; named geonames never use radius filtering. The distance query is applied to exact-name, all-name-token, general, and content-fallback tiers, so a high-boost nationwide match cannot bypass the device radius.
+
+Device-location results are collected with `LatLonDocValuesField.newDistanceSort`, making the nearest matching church first. Relevance still decides whether a document matches; distance orders the matching documents. The engine finds the closest municipality/ward government-office point only to label the response (for example `伊豆市`), not to define the radius or an administrative boundary.
 
 Broad generic name queries skip tier 2 so that a query such as `Church` or `教会` does not bypass the device-location filter.
 
@@ -196,10 +198,10 @@ The three tier queries are `SHOULD` branches of one Boolean query with at least 
 - exact totals come from Lucene;
 - offset and limit apply to the final merged order;
 - title-language filters apply inside every tier;
-- exact and all-token tier boosts dominate geo-tier scores;
-- field relevance scores still order churches inside the same tier.
+- named-geoname searches retain tier boosts and relevance ordering;
+- device-location fallback orders the filtered matches by distance rather than score.
 
-The reported distance is calculated from the resolved location center to the church. For multiple resolved locations, the smallest calculated distance is returned. The distance display does not currently represent distance to the edge of a prefecture or municipality area.
+For device fallback, the reported distance is calculated from the user's coordinates to the church. Named administrative searches may report distance from the representative government-office point, but this display value is never used as an inside/outside boundary.
 
 ## Complete Tokyo Baptist example
 
@@ -249,7 +251,7 @@ search-query-plan:
   input.language=en analyzer=EnglishAnalyzer
   analysis.tokens=[tokyo, baptist, church] operator=AND
   analysis.geonameRemainder=baptist church
-  analysis.locations=[tokyo -> 東京都(PREFECTURE, code=13, center=35.6895,139.6917, radiusKm=...)]
+  analysis.locations=[tokyo -> 東京都(PREFECTURE, code=13, representativeCenter=35.6897,139.6930)]
   tier.1.type=EXACT_NAME boost=1000000.0 field=name_exact term=tokyo baptist church geoFilter=false
   tier.2.type=ALL_NAME_TOKENS boost=1000.0 enabled=true tokens=[tokyo, baptist, church] fields=[name^8.0] geoFilter=false
   analysis.explicitAdministrativeName=false
@@ -290,7 +292,7 @@ These are useful areas to evaluate when improving search quality:
 5. **Geo ambiguity**: continue testing same-name municipalities and clients that deny coordinates. Explicit administrative names constrain every tier; bare place-like text preserves exact/all-token church-name lookup.
 6. **Translated address coverage**: non-Japanese indexes depend on translated geonames extracted from Japanese titles and addresses. Missing translations reduce recall.
 7. **Address translations**: exact entity codes are language-neutral, while translated address terms still affect text recall.
-8. **Device-location policy**: exact and distinctive all-token names intentionally bypass device radius, while generic queries do not. This policy should remain covered by UX tests.
+8. **Device-location policy**: every tier is constrained by the device radius and matching results are distance-sorted. Named administrative entities remain exact address-code filters, never radius filters.
 9. **Distance meaning**: prefecture distance is measured from its configured center, not from the nearest municipality center or boundary.
 10. **Snapshot refresh**: each immutable engine keeps a long-lived reader. A server snapshot swap must construct/warm the replacement before closing the old engine.
 11. **Evaluation corpus**: continue adding real queries, expected ranking tiers, no-result cases, multilingual names, ambiguous geonames, and pagination assertions.

@@ -4,6 +4,7 @@
     <string name="search_placeholder">교회명, 교단 또는 지역</string>
     <string name="search_button">검색</string>
     <string name="search_results_title">“%1$s” 검색 결과</string>
+    <string name="search_results_nearby_title">%1$s 근처의 “%2$s” 검색 결과</string>
     <string name="search_results_count">교회 %1$s곳</string>
     <string name="no_results">검색된 교회가 없습니다. 다른 이름이나 지역을 입력해 보세요.</string>
     <string name="loading">불러오는 중…</string>

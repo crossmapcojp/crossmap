@@ -85,7 +85,7 @@ internal class LightPandaCdpSession private constructor(
     }
 
     companion object {
-        fun open(url: String): LightPandaCdpSession {
+        fun open(url: String, geolocation: GeoPoint? = null): LightPandaCdpSession {
             val port = ServerSocket(0).use { it.localPort }
             val binary = System.getenv("LIGHTPANDA_BINARY")?.takeIf(String::isNotBlank) ?: "lightpanda"
             val process = ProcessBuilder(binary, "serve", "--host", "127.0.0.1", "--port", port.toString())
@@ -104,7 +104,7 @@ internal class LightPandaCdpSession private constructor(
                 return LightPandaCdpSession(process, socket, listener).also {
                     val targetId = it.command(
                         "Target.createTarget",
-                        buildJsonObject { put("url", url) },
+                        buildJsonObject { put("url", if (geolocation == null) url else "about:blank") },
                     )["result"]!!.jsonObject.getValue("targetId").let { value -> (value as JsonPrimitive).content }
                     it.sessionId = it.command(
                         "Target.attachToTarget",
@@ -115,6 +115,31 @@ internal class LightPandaCdpSession private constructor(
                     )["result"]!!.jsonObject.getValue("sessionId").let { value -> (value as JsonPrimitive).content }
                     it.command("Page.enable")
                     it.command("Runtime.enable")
+                    geolocation?.let { point ->
+                        it.command(
+                            "Page.addScriptToEvaluateOnNewDocument",
+                            buildJsonObject {
+                                put(
+                                    "source",
+                                    """
+                                    Object.defineProperty(navigator, "geolocation", {
+                                      configurable: true,
+                                      value: {
+                                        getCurrentPosition(success) {
+                                          success({coords: {
+                                            latitude: ${point.latitude},
+                                            longitude: ${point.longitude},
+                                            accuracy: 10
+                                          }});
+                                        }
+                                      }
+                                    });
+                                    """.trimIndent(),
+                                )
+                            },
+                        )
+                        it.command("Page.navigate", buildJsonObject { put("url", url) })
+                    }
                 }
             } catch (error: Throwable) {
                 process.destroyForcibly()

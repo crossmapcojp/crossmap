@@ -1,4 +1,13 @@
 const $ = selector => document.querySelector(selector);
+
+// 0.0.0.0 is a server bind address, not a browser-safe development origin. Chrome permits
+// geolocation on localhost, so preserve the complete URL while moving local users there.
+if (location.hostname === "0.0.0.0") {
+  const localhostUrl = new URL(location.href);
+  localhostUrl.hostname = "localhost";
+  location.replace(localhostUrl.href);
+}
+
 const escapeHtml = (value = "") => String(value).replace(/[&<>'"]/g, character => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;",
 })[character]);
@@ -116,14 +125,22 @@ if (results) {
       let data = await fetchJson(`/api/v1/churches/search?q=${encodeURIComponent(query)}&lang=${encodeURIComponent(uiLanguage)}&offset=${offset}&limit=${limit}${locationParameters}`);
       if (!deviceLocation && data.resolvedLocations.length === 0 && navigator.geolocation) {
         deviceLocation = await new Promise(resolve => navigator.geolocation.getCurrentPosition(
-          position => resolve({latitude: position.coords.latitude, longitude: position.coords.longitude}),
+          position => resolve({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy,
+          }),
           () => resolve(null),
-          {enableHighAccuracy: false, timeout: 5000, maximumAge: 300000},
+          {enableHighAccuracy: true, timeout: 10000, maximumAge: 0},
         ));
         if (deviceLocation) {
           data = await fetchJson(`/api/v1/churches/search?q=${encodeURIComponent(query)}&lang=${encodeURIComponent(uiLanguage)}&offset=${offset}&limit=${limit}&lat=${deviceLocation.latitude}&lon=${deviceLocation.longitude}`);
         }
       }
+      const nearbyLocation = data.resolvedLocations.find(location => location.type === "DEVICE");
+      heading.textContent = nearbyLocation
+        ? format(messages.searchResultsNearbyTitle, {location: nearbyLocation.name, query})
+        : format(messages.searchResultsTitle, {query});
       $("#status").textContent = data.total
         ? format(messages.searchResultsCount, {count: data.total})
         : messages.noResults;

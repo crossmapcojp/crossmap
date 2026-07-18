@@ -572,7 +572,7 @@ class ChurchSearchEngineTest {
             assertContains(englishPlan, "tier.1.type=EXACT_NAME boost=1000000.0 field=name_exact term=tokyo baptist church")
             assertContains(englishPlan, "tier.2.type=ALL_NAME_TOKENS boost=1000.0 enabled=true")
             assertContains(englishPlan, "analysis.geonameSelection=unique-prefecture")
-            assertContains(englishPlan, "tier.3.geoFilter=true filter=EXACT_ADDRESS_ENTITY field=address_geoname_code code=13")
+            assertContains(englishPlan, "tier.3.geoFilter=true filter=NAMED_ADDRESS_CODE field=address_geoname_code code=13 radiusFilter=false")
             assertContains(englishPlan, "merge=SHOULD(tier.1,tier.2,tier.3) minimumShouldMatch=1 deduplicate=true")
 
             val english = englishEngine.search(ChurchSearchRequest("Tokyo Baptist Church"))
@@ -592,7 +592,7 @@ class ChurchSearchEngineTest {
             assertContains(japanesePlan, "input.language=ja analyzer=JapaneseAnalyzer")
             assertContains(japanesePlan, "analysis.tokens=[東京, バプテスト, 教会] operator=AND")
             assertContains(japanesePlan, "analysis.locations=[東京 -> 東京都(PREFECTURE, code=13")
-            assertContains(japanesePlan, "tier.3.geoFilter=true filter=EXACT_ADDRESS_ENTITY field=address_geoname_code code=13")
+            assertContains(japanesePlan, "tier.3.geoFilter=true filter=NAMED_ADDRESS_CODE field=address_geoname_code code=13 radiusFilter=false")
 
             val japanese = japaneseEngine.search(ChurchSearchRequest("東京バプテスト教会"))
             assertEquals(
@@ -718,6 +718,85 @@ class ChurchSearchEngineTest {
             assertContains(plan, "analysis.explicitAdministrativeName=true")
             assertContains(plan, "tier.1.type=EXACT_NAME boost=1000000.0 field=name_exact term=横浜町 バプテスト geoFilter=true")
             assertContains(plan, "tier.2.type=ALL_NAME_TOKENS boost=1000.0 enabled=true")
+            engine.close()
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun denominationSearchNearIzuUsesDeviceRadiusAndOrdersNearbyChurchesByDistance() {
+        val root = Files.createTempDirectory("crossmap-izu-device-search")
+        try {
+            fun uccj(id: String, name: String, englishName: String, address: String, latitude: Double, longitude: Double) =
+                ChurchRecord(
+                    id = id,
+                    name = name,
+                    englishName = englishName,
+                    localizedDenominationNames = listOf(
+                        LocalizedName("ja", "日本基督教団"),
+                        LocalizedName("ja", "日本キリスト教団"),
+                    ),
+                    denominationId = "UCCJ",
+                    address = address,
+                    location = GeoPoint(latitude, longitude),
+                    websiteUrl = "https://example.invalid/$id",
+                )
+
+            val churches = listOf(
+                uccj("shuzenji", "日本キリスト教団修善寺教会", "UCCJ Shuzenji Church", "静岡県伊豆市柏久保", 34.9779135, 138.9509258),
+                uccj("inatori", "日本基督教団稲取教会", "UCCJ Inatori Church", "静岡県賀茂郡河津町見高", 34.7557916, 139.0175061),
+                uccj("izu-kogen", "日本キリスト教団伊豆高原教会", "UCCJ Izu Kogen Church", "静岡県伊東市八幡野", 34.8754874, 139.1118797),
+                uccj("izu-nagaoka", "日本キリスト教団伊豆長岡教会", "UCCJ Izu Nagaoka Church", "静岡県伊豆の国市長岡", 35.0324776, 138.9344271),
+                uccj("usami", "日本キリスト教団宇佐美教会", "UCCJ Usami Church", "静岡県伊東市宇佐美", 35.008616, 139.08603),
+                uccj("numazu", "日本キリスト教団沼津教会", "UCCJ Numazu Church", "静岡県沼津市末広町", 35.0969787, 138.8548702),
+                uccj("mishima", "日本キリスト教団 三島教会", "UCCJ Mishima Church", "静岡県三島市中田町", 35.1156951, 138.9180552),
+                uccj("atami", "熱海教会", "Atami Church", "静岡県熱海市上宿町", 35.0980624, 139.0688652),
+                uccj("kobe", "日本基督教団神戸イエス団教会", "UCCJ Kobe Jesus Dan Church", "兵庫県神戸市中央区", 34.697641, 135.203888),
+            )
+            val geonames = listOf(
+                GeoName(
+                    code = "222224",
+                    name = "伊豆市",
+                    aliases = listOf("伊豆"),
+                    type = GeoNameType.MUNICIPALITY,
+                    prefectureCode = "22",
+                    center = GeoPoint(34.976591, 138.946715),
+                    coveringRadiusKm = 30.0,
+                    translations = mapOf("en" to "Izu City"),
+                ),
+            )
+            val index = root.resolve("index")
+            ChurchIndex.build(index.toString().toPath(), churches, geonames = geonames)
+            val engine = ChurchSearchEngine(index.toString().toPath(), geonames, languageCode = "ja")
+
+            val result = engine.search(
+                ChurchSearchRequest(
+                    query = "日本基督教団",
+                    limit = 20,
+                    userLocation = GeoPoint(34.87544654121299, 138.92825706221615),
+                )
+            )
+
+            assertEquals("伊豆市", result.resolvedLocations.single().name)
+            assertEquals(GeoNameType.DEVICE, result.resolvedLocations.single().type)
+            assertEquals("shuzenji", result.hits.first().churchId)
+            assertEquals(
+                listOf("shuzenji", "inatori", "izu-kogen", "izu-nagaoka", "usami", "numazu", "mishima", "atami"),
+                result.hits.map(ChurchSearchHit::churchId),
+            )
+            assertTrue(result.hits.zipWithNext().all { (first, second) ->
+                requireNotNull(first.distanceKm) <= requireNotNull(second.distanceKm)
+            })
+            assertTrue(result.hits.none { it.churchId == "kobe" })
+            val devicePlan = engine.explainQuery(
+                ChurchSearchRequest("日本基督教団", userLocation = GeoPoint(34.875, 138.928))
+            )
+            assertContains(devicePlan, "filter=DEVICE_LAT_LON_DISTANCE field=location")
+            assertContains(devicePlan, "radiusKm=50.0")
+            val namedPlan = engine.explainQuery(ChurchSearchRequest("伊豆市"))
+            assertContains(namedPlan, "filter=NAMED_ADDRESS_CODE field=address_geoname_code code=222224 radiusFilter=false")
+            assertTrue(namedPlan.contains("DEVICE_LAT_LON_DISTANCE").not())
             engine.close()
         } finally {
             root.toFile().deleteRecursively()

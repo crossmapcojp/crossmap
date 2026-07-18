@@ -38,7 +38,9 @@ class GeoNameResolver(private val geonames: List<GeoName>) {
     ): ResolvedGeoQuery {
         val normalized = normalizeQuery(query)
         logger.trace { "geoname-resolve: input=$query, normalized=$normalized, language=$language" }
-        val candidates = geonames.flatMap { geoname ->
+        val candidates = geonames.asSequence()
+            .filterNot(::isNationwideGeoname)
+            .flatMap { geoname ->
             val canonicalName = normalizeQuery(geoname.name)
             val canonicalMatches = canonicalName.takeIf {
                 it.length >= MIN_GEONAME_MATCH_LENGTH && normalized.contains(it)
@@ -84,8 +86,10 @@ class GeoNameResolver(private val geonames: List<GeoName>) {
             } else {
                 emptyList()
             }
-            canonicalMatches + jaMatches + translationMatches
-        }.sortedByDescending { it.matchedText.length }
+                (canonicalMatches + jaMatches + translationMatches).asSequence()
+            }
+            .sortedByDescending { it.matchedText.length }
+            .toList()
         logger.trace { "geoname-resolve: ${candidates.size} candidate(s) matched: ${candidates.joinToString { "'${it.matchedText}' -> ${it.geoname.name}(${it.geoname.type})" }}" }
 
         val acceptedTexts = mutableListOf<String>()
@@ -139,6 +143,23 @@ class GeoNameResolver(private val geonames: List<GeoName>) {
         return resolved
     }
 
+    /** Returns the closest local-government area for a device-location result label. */
+    fun nearestAdministrativeArea(point: GeoPoint): GeoName? = geonames.asSequence()
+        .filter { it.type == GeoNameType.MUNICIPALITY || it.type == GeoNameType.WARD }
+        .minWithOrNull(compareBy<GeoName> { distanceKm(point, it.center) }.thenBy { it.code })
+
+    fun localizedName(geoname: GeoName, language: String): String =
+        if (language == Language.JAPANESE.code) geoname.name else geoname.translations[language]
+            ?: geoname.translations[Language.ENGLISH.code]
+            ?: geoname.name
+
+    private fun isNationwideGeoname(geoname: GeoName): Boolean =
+        sequenceOf(geoname.name)
+            .plus(geoname.aliases.asSequence())
+            .plus(geoname.translations.values.asSequence())
+            .map(::normalizeQuery)
+            .any(NATIONWIDE_GEONAME_ALIASES::contains)
+
     private fun Candidate.toResolvedLocation(radiusOverrideKm: Double?): ResolvedLocation = ResolvedLocation(
         matchedText = matchedText,
         code = geoname.code,
@@ -150,6 +171,12 @@ class GeoNameResolver(private val geonames: List<GeoName>) {
 
     companion object {
         private const val MIN_GEONAME_MATCH_LENGTH = 2
+
+        // A nationwide filter cannot narrow a Japan-only catalog and causes denomination names such
+        // as 日本基督教団 and 日本バプテスト連盟 to be misread as location queries.
+        private val NATIONWIDE_GEONAME_ALIASES = setOf(
+            "日本", "日本国", "japan", "일본", "japão", "japao", "jepang",
+        )
 
         private val PREFECTURE_SUFFIXES = mapOf(
             "en" to listOf(" prefecture", "-prefecture", " ken", "-ken", " fu", "-fu", " to", "-to", " do", "-do"),

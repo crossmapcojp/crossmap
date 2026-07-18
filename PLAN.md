@@ -46,9 +46,9 @@
 - [x] Clean Japanese geonames before decomposition, address matching, translation review, and indexing: exclude reviewed church-name collisions, katakana-only aliases, and numeric/kanji `丁目` address blocks while retaining mixed-script places such as `ユーカリが丘`.
 - [x] Record source Google Maps title languages separately from Crossmap-generated localized names so available/spoken-language filtering has explicit provenance.
 - [x] Add a generated catalog covering all 47 prefectures and current Japanese municipalities/wards with official codes.
-- [x] Generate canonical aliases, center coordinates, and a per-place covering radius.
+- [x] Generate canonical aliases and administrative representative points; prefer prefectural/municipal government-office coordinates without treating them as search boundaries.
 - [x] Implement common query normalization, longest-name-first extraction, prefecture disambiguation, duplicate-city unions, and location-token removal.
-- [x] Use optional browser/app geolocation with a 25 km default radius only when the query contains no recognized geoname.
+- [x] Use optional browser/app geolocation with a 50 km configurable default radius only when the query contains no recognized geoname.
 - [x] Add coverage tests for prefectures, municipalities, ambiguity, multiple locations, location-only queries, and radius overrides.
 
 ## 3a. Post-crawl entity cleanup
@@ -99,6 +99,9 @@
 - [x] Resolve a query to exactly one intended administrative geoname: explicit prefecture suffix wins; otherwise prefer the unique municipality/city interpretation; use a unique prefecture only when no city shares the term.
 - [x] Implement and test `detectIntendedGeonameFromUserLocation` by selecting the nearest ambiguous candidate to browser/app coordinates with deterministic fallback when coordinates are unavailable.
 - [x] Replace named-geoname distance-query unions with one exact address-entity filter; retain Lucene `LatLonPoint` radius filtering only for device-location fallback when no geoname is present.
+- [x] Apply the device-radius filter to every query tier, collect matching documents nearest-first with `LatLonDocValuesField`, and prove the real Izu/UCCJ ordering with unit and Lightpanda tests.
+- [x] Label device-assisted results with the nearest municipality (for example `伊豆市付近の「日本基督教団」の検索結果`) while keeping named administrative searches code-based.
+- [x] Never interpret Japan-wide names inside denomination names as geo filters; cover `日本基督教団` and `日本バプテスト連盟` with resolver tests.
 - [x] Pass browser/app user coordinates early enough to disambiguate named geonames, while preserving search when permission is denied.
 - [x] Update query-plan and timing logs to show the chosen candidate, ambiguity decision, and the single exact address filter.
 - [x] Rebuild the multilingual snapshot and verify `東京バプテスト教会` no longer creates 53 geo clauses and returns the exact church first with substantially lower `lucene.collect` time.

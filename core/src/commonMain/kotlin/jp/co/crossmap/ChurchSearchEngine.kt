@@ -4,6 +4,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.serialization.json.Json
 import okio.Path
 import org.gnit.lucenekmp.analysis.tokenattributes.CharTermAttribute
+import org.gnit.lucenekmp.document.LatLonDocValuesField
 import org.gnit.lucenekmp.document.LatLonPoint
 import org.gnit.lucenekmp.index.StandardDirectoryReader
 import org.gnit.lucenekmp.index.Term
@@ -14,6 +15,7 @@ import org.gnit.lucenekmp.search.BoostQuery
 import org.gnit.lucenekmp.search.IndexSearcher
 import org.gnit.lucenekmp.search.MatchAllDocsQuery
 import org.gnit.lucenekmp.search.Query
+import org.gnit.lucenekmp.search.Sort
 import org.gnit.lucenekmp.search.TermQuery
 import org.gnit.lucenekmp.store.FSDirectory
 import kotlin.math.roundToInt
@@ -141,7 +143,16 @@ class ChurchSearchEngine(
                             "  merged=$mergedQuery"
                     }
                 }
-                val fastDocs = measured("lucene.collect.fastTiers") { searcher.search(mergedQuery, requestedHits) }
+                val deviceLocation = resolved.locations.singleOrNull()?.takeIf { it.type == GeoNameType.DEVICE }
+                val deviceDistanceSort = deviceLocation?.let {
+                    Sort(LatLonDocValuesField.newDistanceSort(ChurchIndex.FIELD_LOCATION, it.center.latitude, it.center.longitude))
+                }
+                fun collect(query: Query) = if (deviceDistanceSort == null) {
+                    searcher.search(query, requestedHits)
+                } else {
+                    searcher.search(query, requestedHits, deviceDistanceSort, true)
+                }
+                val fastDocs = measured("lucene.collect.fastTiers") { collect(mergedQuery) }
                 val fastTotalHits = fastDocs.totalHits.value
                 val finalDocs = if (fastTotalHits < requestedHits.toLong()) {
                     val withContentFallback = measured("query.addContentFallback") {
@@ -151,7 +162,7 @@ class ChurchSearchEngine(
                             setMinimumNumberShouldMatch(1)
                         }.build()
                     }
-                    measured("lucene.collect.withContentFallback") { searcher.search(withContentFallback, requestedHits) }
+                    measured("lucene.collect.withContentFallback") { collect(withContentFallback) }
                 } else {
                     fastDocs
                 }
@@ -228,12 +239,13 @@ class ChurchSearchEngine(
             request.userLocation,
         )
         if (resolved.locations.isEmpty() && request.userLocation != null) {
+            val nearbyArea = resolver.nearestAdministrativeArea(request.userLocation)
             resolved = resolved.copy(
                 locations = listOf(
                     ResolvedLocation(
                         matchedText = "",
                         code = "device",
-                        name = "Current location",
+                        name = nearbyArea?.let { resolver.localizedName(it, normalizedLanguage) } ?: "Current location",
                         type = GeoNameType.DEVICE,
                         center = request.userLocation,
                         radiusKm = request.radiusKm ?: DEFAULT_DEVICE_RADIUS_KM,
@@ -392,17 +404,21 @@ class ChurchSearchEngine(
         val allTokenTierEnabled = allNameTokenTierEnabled(analysis, resolved)
         val locations = resolved.locations.joinToString(prefix = "[", postfix = "]") { location ->
             val matched = location.matchedText.takeIf(String::isNotBlank) ?: "device"
-            "$matched -> ${location.name}(${location.type}, code=${location.code}, " +
-                "center=${location.center.latitude},${location.center.longitude}, radiusKm=${location.radiusKm})"
+            val spatialDetails = if (location.type == GeoNameType.DEVICE) {
+                "center=${location.center.latitude},${location.center.longitude}, radiusKm=${location.radiusKm}"
+            } else {
+                "representativeCenter=${location.center.latitude},${location.center.longitude}"
+            }
+            "$matched -> ${location.name}(${location.type}, code=${location.code}, $spatialDetails)"
         }
         val candidates = resolved.candidates.joinToString(prefix = "[", postfix = "]") {
             "${it.name}(${it.type}, code=${it.code})"
         }
         val filter = resolved.locations.singleOrNull()?.let {
             if (it.type == GeoNameType.DEVICE) {
-                "LAT_LON_RADIUS center=${it.center.latitude},${it.center.longitude} radiusKm=${it.radiusKm}"
+                "DEVICE_LAT_LON_DISTANCE field=${ChurchIndex.FIELD_LOCATION} center=${it.center.latitude},${it.center.longitude} radiusKm=${it.radiusKm}"
             } else {
-                "EXACT_ADDRESS_ENTITY field=${ChurchIndex.FIELD_ADDRESS_GEONAME_CODE} code=${it.code}"
+                "NAMED_ADDRESS_CODE field=${ChurchIndex.FIELD_ADDRESS_GEONAME_CODE} code=${it.code} radiusFilter=false"
             }
         } ?: "none"
         val titleFilter = request.titleLanguages
@@ -421,10 +437,12 @@ class ChurchSearchEngine(
             appendLine("  analysis.geonameSelection=${resolved.selectionReason}")
             appendLine("  analysis.explicitAdministrativeName=${resolved.explicitAdministrativeName}")
             appendLine("  analysis.locations=$locations")
+            val topTierGeoFilter = resolved.explicitAdministrativeName || resolved.textQuery.isBlank() ||
+                resolved.locations.singleOrNull()?.type == GeoNameType.DEVICE
             appendLine("  tier.1.type=EXACT_NAME boost=$EXACT_NAME_STAGE_BOOST field=${ChurchIndex.FIELD_NAME_EXACT} " +
-                "term=${ChurchIndex.normalizeExactName(request.query)} geoFilter=${resolved.explicitAdministrativeName}")
+                "term=${ChurchIndex.normalizeExactName(request.query)} geoFilter=$topTierGeoFilter")
             appendLine("  tier.2.type=ALL_NAME_TOKENS boost=$ALL_NAME_TOKENS_STAGE_BOOST enabled=$allTokenTierEnabled " +
-                "tokens=$tokens fields=${formatFields(nameSearchFields())} geoFilter=${resolved.explicitAdministrativeName}" +
+                "tokens=$tokens fields=${formatFields(nameSearchFields())} geoFilter=$topTierGeoFilter" +
                 if (allTokenTierEnabled) "" else " reason=generic-or-geoname-only-query")
             val namedLocation = resolved.locations.isNotEmpty() && resolved.locations.none { it.type == GeoNameType.DEVICE }
             val tier3Tokens = when {
@@ -485,7 +503,21 @@ class ChurchSearchEngine(
 
     private fun withAuthoritativeGeonameFilter(query: Query, resolved: ResolvedGeoQuery): Query {
         val location = resolved.locations.singleOrNull()
-        if (!resolved.explicitAdministrativeName || location == null || location.type == GeoNameType.DEVICE) return query
+        if (location?.type == GeoNameType.DEVICE) {
+            return BooleanQuery.Builder().apply {
+                add(query, BooleanClause.Occur.MUST)
+                add(
+                    LatLonPoint.newDistanceQuery(
+                        ChurchIndex.FIELD_LOCATION,
+                        location.center.latitude,
+                        location.center.longitude,
+                        location.radiusKm * 1_000.0,
+                    ),
+                    BooleanClause.Occur.FILTER,
+                )
+            }.build()
+        }
+        if (location == null || (!resolved.explicitAdministrativeName && resolved.textQuery.isNotBlank())) return query
         return BooleanQuery.Builder().apply {
             add(query, BooleanClause.Occur.MUST)
             add(
@@ -551,7 +583,7 @@ class ChurchSearchEngine(
     }
 
     companion object {
-        const val DEFAULT_DEVICE_RADIUS_KM = 25.0
+        const val DEFAULT_DEVICE_RADIUS_KM = 50.0
         private const val EXACT_NAME_STAGE_BOOST = 1_000_000f
         private const val ALL_NAME_TOKENS_STAGE_BOOST = 1_000f
         private val LUCENE_QUERY_SPECIAL_CHARACTERS = setOf(

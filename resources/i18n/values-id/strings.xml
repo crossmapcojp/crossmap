@@ -4,6 +4,7 @@
     <string name="search_placeholder">Nama gereja, denominasi, atau lokasi</string>
     <string name="search_button">Cari</string>
     <string name="search_results_title">Hasil pencarian “%1$s”</string>
+    <string name="search_results_nearby_title">Hasil pencarian “%2$s” di sekitar %1$s</string>
     <string name="search_results_count">%1$s gereja</string>
     <string name="no_results">Tidak ada gereja yang ditemukan. Coba nama atau lokasi lain.</string>
     <string name="loading">Memuat…</string>

@@ -175,7 +175,7 @@ Blank and duplicate values are removed before fields are added.
 
 | Lucene field                | Type / stored            | Source                                                                  | Purpose                                                                                                       |
 |-----------------------------|--------------------------|-------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
-| `address_geoname_code`      | exact / no, multi-valued | Every available prefecture, municipality, and designated-city ward code | Tier 3 named-place filter. `GeoNameResolver` chooses exactly one entity, then `TermQuery` filters this field. |
+| `address_geoname_code`      | exact / no, multi-valued | Every available prefecture, municipality, and designated-city ward code | Named-place filter. `GeoNameResolver` chooses exactly one entity, then `TermQuery` filters this field; geoname-only and explicit-administration queries apply it to every tier. |
 | `address_prefecture`        | exact / yes              | `JapaneseAddress.prefecture`                                            | Inspection and future structured display/filtering.                                                           |
 | `address_prefecture_code`   | exact / yes              | `JapaneseAddress.prefectureCode`                                        | Inspection; same code is also added to `address_geoname_code`.                                                |
 | `address_county`            | exact / yes              | `JapaneseAddress.county`                                                | Inspection and future structured filtering.                                                                   |
@@ -203,7 +203,7 @@ All of these fields are present in all five indexes because geography and struct
 
 | Lucene field | Type / stored                               | Source                  | Purpose                                                                                                                                                                    |
 |--------------|---------------------------------------------|-------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `location`   | `LatLonPoint` + `LatLonDocValuesField` / no | `ChurchRecord.location` | Device-location radius filtering and distance calculation/sorting support. Named Japanese places do not use a large enclosing circle; they use exact administrative codes. |
+| `location`   | `LatLonPoint` + `LatLonDocValuesField` / no | `ChurchRecord.location` | Device-location radius filtering plus nearest-first `LatLonDocValuesField` sorting. Named Japanese places never use this field as an inside/outside boundary; they use exact administrative codes. |
 
 ## Query-to-field behavior
 
@@ -216,7 +216,9 @@ All of these fields are present in all five indexes because geography and struct
 
 Tiers 1–3 are one boosted Lucene `SHOULD` query with `minimumShouldMatch=1`, so Lucene collects and counts once. Exact matches therefore remain first while all-token and geographic matches fill the remainder. Results are de-duplicated naturally because every tier targets the same Lucene document.
 
-An explicit administrative name is authoritative and adds the same exact code filter to tiers 1 and 2. This includes Japanese suffixes and romanized forms such as `Yokohama-cho`, `Yokohamacho`, `Aomori-ken`, and `Yokohama-shi`. It prevents an analyzed `横浜町` query from falling through to churches in `横浜市`. Bare `横浜` remains non-authoritative and follows ordinary ambiguity/device-location rules.
+An explicit administrative name or geoname-only query adds the same exact code filter to tiers 1 and 2. This includes Japanese suffixes and romanized forms such as `Yokohama-cho`, `Yokohamacho`, `Aomori-ken`, and `Yokohama-shi`. It prevents an analyzed `横浜町` query from falling through to churches in `横浜市`. A bare geoname embedded in a longer church name keeps the global exact-name tier, while its address-code filter is applied in the geoname/remainder tier.
+
+Administrative representative points come from `resources/geonames/japanese-local-goverment-offices.json` and are copied into `japan.json`. They choose the nearest entity for ambiguous names and label device results such as `伊豆市付近`; their coordinates and any `GeoName.coveringRadiusKm` metadata do not define named-search boundaries.
 
 Query-language detection happens before `ChurchSearchEngine` selection. UI/display language does not select the analyzer. A Japanese browser searching `Tokyo Baptist Church` still opens the English index and uses `EnglishAnalyzer`.
 

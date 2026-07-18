@@ -4,6 +4,7 @@
     <string name="search_placeholder">Nome da igreja, denominação ou local</string>
     <string name="search_button">Buscar</string>
     <string name="search_results_title">Resultados para “%1$s”</string>
+    <string name="search_results_nearby_title">Resultados para “%2$s” perto de %1$s</string>
     <string name="search_results_count">%1$s igrejas</string>
     <string name="no_results">Nenhuma igreja foi encontrada. Tente outro nome ou local.</string>
     <string name="loading">Carregando…</string>

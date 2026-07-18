@@ -118,4 +118,50 @@ class GeoCatalogBuilderTest {
             root.toFile().deleteRecursively()
         }
     }
+
+    @Test
+    fun localGovernmentOfficeFileOverridesGeneratedRepresentativeCenterOnly() {
+        val root = Files.createTempDirectory("crossmap-government-office-center")
+        try {
+            val jmaSource = root.resolve("jma-city.json")
+            Files.writeString(jmaSource, """{"2222200":{"japanese":"伊豆市","english":"Izu City"}}""")
+            Files.writeString(
+                root.resolve("japanese-local-goverment-offices.json"),
+                """
+                [
+                  {
+                    "code": "22",
+                    "name": "静岡県",
+                    "type": "PREFECTURE",
+                    "prefectureCode": "22",
+                    "officeName": "静岡県庁",
+                    "address": "静岡市葵区追手町9-6",
+                    "center": {"latitude": 34.976944, "longitude": 138.383056},
+                    "source": "fixture"
+                  },
+                  {
+                    "code": "222224",
+                    "name": "伊豆市",
+                    "type": "MUNICIPALITY",
+                    "prefectureCode": "22",
+                    "officeName": "伊豆市役所",
+                    "address": "伊豆市小立野38-2",
+                    "center": {"latitude": 34.976591, "longitude": 138.946715},
+                    "source": "fixture"
+                  }
+                ]
+                """.trimIndent(),
+            )
+
+            val result = GeoCatalogBuilder().build(emptyList(), jmaSource, root.resolve("japan.json"))
+            val shizuoka = result.single { it.code == "22" }
+            val izu = result.single { it.code == "222224" }
+
+            assertEquals(GeoPoint(34.976944, 138.383056), shizuoka.center)
+            assertEquals(GeoPoint(34.976591, 138.946715), izu.center)
+            assertEquals(50.0, izu.coveringRadiusKm)
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
 }

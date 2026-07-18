@@ -142,6 +142,8 @@ The CLI automatically locates the latest local Crossmap snapshot unless an expli
 
 Open `/` to automatically select a supported browser language. If none of the five languages matches, the root asks for browser location and selects Japanese for Japan, Korean for Korea, Indonesian for Indonesia, or Portuguese for Brazil or Portugal; denied, unavailable, timed-out, and other locations fall back to English. With JavaScript disabled, the root remains a usable language chooser. `/ja/`, `/en/`, `/ko/`, `/pt/`, and `/id/` can also be opened directly. Each directory contains generated `index.html`, `result.html`, and stable-English-slug church pages. The UI language comes from that directory; query language is detected independently by the server, so an English query on `/ja/result.html` still uses the English analyzer while results remain Japanese. Each generated HTML document contains one UI language only. `app.js` contains behavior but no translated strings.
 
+Chrome asks the user to allow location access the first time Crossmap requests it. Use `http://localhost:8080`, not the wildcard bind address `http://0.0.0.0:8080`; the client redirects the latter to `localhost` because browser geolocation requires HTTPS or a trusted local-development origin. If permission is denied or location times out, search remains nationwide and no nearby-area heading is shown.
+
 Run the real browser regression with:
 
 ```shell

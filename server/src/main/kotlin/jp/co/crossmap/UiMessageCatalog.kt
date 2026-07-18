@@ -11,6 +11,7 @@ enum class MessageKey(val xmlName: String) {
     SEARCH_PLACEHOLDER("search_placeholder"),
     SEARCH_BUTTON("search_button"),
     SEARCH_RESULTS_TITLE("search_results_title"),
+    SEARCH_RESULTS_NEARBY_TITLE("search_results_nearby_title"),
     SEARCH_RESULTS_COUNT("search_results_count"),
     NO_RESULTS("no_results"),
     LOADING("loading"),

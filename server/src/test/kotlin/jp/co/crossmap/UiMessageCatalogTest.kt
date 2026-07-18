@@ -16,7 +16,11 @@ class UiMessageCatalogTest {
         val catalog = XmlMessageCatalog.load(projectRoot.resolve("resources/i18n"))
         Language.entries.forEach { language ->
             MessageKey.entries.forEach { key ->
-                val argumentCount = if (key in formattedKeys) 1 else 0
+                val argumentCount = when (key) {
+                    MessageKey.SEARCH_RESULTS_NEARBY_TITLE -> 2
+                    in formattedKeys -> 1
+                    else -> 0
+                }
                 val arguments = Array<Any>(argumentCount) { "東京バプテスト教会" }
                 catalog.text(language, key, *arguments)
             }
@@ -30,6 +34,12 @@ class UiMessageCatalogTest {
             Language.JAPANESE,
             MessageKey.SEARCH_RESULTS_TITLE,
             "東京バプテスト教会",
+        ))
+        assertEquals("伊豆市付近の「日本基督教団」の検索結果", catalog.text(
+            Language.JAPANESE,
+            MessageKey.SEARCH_RESULTS_NEARBY_TITLE,
+            "伊豆市",
+            "日本基督教団",
         ))
     }
 
