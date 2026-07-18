@@ -569,7 +569,8 @@ class ChurchSearchEngineTest {
             assertContains(englishPlan, "input.language=en analyzer=EnglishAnalyzer")
             assertContains(englishPlan, "analysis.tokens=[tokyo, baptist, church] operator=AND")
             assertContains(englishPlan, "analysis.locations=[tokyo -> 東京都(PREFECTURE, code=13")
-            assertContains(englishPlan, "tier.1.type=EXACT_NAME boost=1000000.0 field=name_exact term=tokyo baptist church")
+            assertContains(englishPlan, "tier.1.type=EXACT_NAME_OR_READING boost=1000000.0")
+            assertContains(englishPlan, "term=tokyo baptist church geoFilter=false")
             assertContains(englishPlan, "tier.2.type=ALL_NAME_TOKENS boost=1000.0 enabled=true")
             assertContains(englishPlan, "analysis.geonameSelection=unique-prefecture")
             assertContains(englishPlan, "tier.3.geoFilter=true filter=NAMED_ADDRESS_CODE field=address_geoname_code code=13 radiusFilter=false")
@@ -716,7 +717,8 @@ class ChurchSearchEngineTest {
             }
             val plan = engine.explainQuery(ChurchSearchRequest("横浜町 バプテスト"))
             assertContains(plan, "analysis.explicitAdministrativeName=true")
-            assertContains(plan, "tier.1.type=EXACT_NAME boost=1000000.0 field=name_exact term=横浜町 バプテスト geoFilter=true")
+            assertContains(plan, "tier.1.type=EXACT_NAME_OR_READING boost=1000000.0")
+            assertContains(plan, "term=横浜町バプテスト geoFilter=true")
             assertContains(plan, "tier.2.type=ALL_NAME_TOKENS boost=1000.0 enabled=true")
             engine.close()
         } finally {

@@ -7,6 +7,7 @@ import java.time.Instant
 import jp.co.crossmap.ChurchRecord
 import jp.co.crossmap.DeterminationSource
 import jp.co.crossmap.FieldDetermination
+import jp.co.crossmap.LocalizedName
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -105,6 +106,12 @@ class GoogleSavedPlacesCleanupWorkflow(
         val candidatesFile = CrossmapPaths(resourcesRoot, cacheRoot).googleSavedPlaces.resolve("google-place-candidates.json")
         require(Files.isRegularFile(candidatesFile)) { "Google place candidates do not exist: $candidatesFile" }
         val rawCandidates = json.decodeFromString<List<GooglePlaceChurchCandidate>>(Files.readString(candidatesFile))
+        val reviewedNameReadingsFile = resourcesRoot.resolve("catalog/church-name-readings.json")
+        val reviewedNameReadings = if (Files.isRegularFile(reviewedNameReadingsFile)) {
+            json.decodeFromString<Map<String, List<String>>>(Files.readString(reviewedNameReadingsFile))
+        } else {
+            emptyMap()
+        }
         val catalog = resourcesRoot.resolve("catalog/churches.json")
         val existing = if (Files.isRegularFile(catalog)) {
             json.decodeFromString<List<ChurchRecord>>(Files.readString(catalog))
@@ -115,7 +122,10 @@ class GoogleSavedPlacesCleanupWorkflow(
         val normalized = rawCandidates.map { candidate ->
             candidate.copy(
                 name = normalizeChurchName(candidate.name),
-                localizedNames = candidate.localizedNames.map { localizedName ->
+                localizedNames = (
+                    candidate.localizedNames + reviewedNameReadings[candidate.id].orEmpty()
+                        .map { LocalizedName("ja", it) }
+                    ).map { localizedName ->
                     localizedName.copy(name = normalizeChurchName(localizedName.name))
                 }.filter { it.name.isNotBlank() }.distinctBy { it.languageCode to it.name },
                 address = candidate.address.replace(Regex("""\s+"""), " ").trim(),

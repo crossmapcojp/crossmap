@@ -15012,9 +15012,11 @@
     },
     {
         "code": "141186",
-        "name": "横浜都筑区",
+        "name": "都筑区",
         "aliases": [
-            "横浜都筑"
+            "横浜都筑区",
+            "横浜市都筑区",
+            "都筑"
         ],
         "type": "WARD",
         "prefectureCode": "14",
@@ -15022,9 +15024,9 @@
             "latitude": 35.544937,
             "longitude": 139.57103
         },
-        "coveringRadiusKm": 50.0,
+        "coveringRadiusKm": 15.0,
         "translations": {
-            "en": "Tsuzuki Ward, Yokohama",
+            "en": "Tsuzuki Ku",
             "ko": "요코하마 쓰즈키구",
             "pt": "Yokohama, distrito de Tsuzuki",
             "id": "Distrik Kota Tsuzuki, Yokohama"
@@ -21779,9 +21781,10 @@
     },
     {
         "code": "231053",
-        "name": "名古屋中村区",
+        "name": "中村区",
         "aliases": [
-            "名古屋中"
+            "名古屋中村区",
+            "名古屋市中村区"
         ],
         "type": "WARD",
         "prefectureCode": "23",
@@ -21789,9 +21792,9 @@
             "latitude": 35.16874,
             "longitude": 136.872944
         },
-        "coveringRadiusKm": 50.0,
+        "coveringRadiusKm": 15.0,
         "translations": {
-            "en": "Nakamura Ward, Nagoya",
+            "en": "Nakamura",
             "ko": "나고야 나카무라 구",
             "pt": "Nagoya, distrito de Nakamura",
             "id": "Distrik Kota Nakamura, Nagoya"
@@ -24090,10 +24093,31 @@
         }
     },
     {
-        "code": "261017",
-        "name": "京都北区",
+        "code": "261009",
+        "name": "京都市",
         "aliases": [
-            "京都北"
+            "京都"
+        ],
+        "type": "MUNICIPALITY",
+        "prefectureCode": "26",
+        "center": {
+            "latitude": 35.00799070434784,
+            "longitude": 135.75538072391308
+        },
+        "coveringRadiusKm": 31.140592824733886,
+        "translations": {
+            "en": "Kyoto",
+            "id": "Kyoto",
+            "ko": "교토 시",
+            "pt": "Quioto"
+        }
+    },
+    {
+        "code": "261017",
+        "name": "北区",
+        "aliases": [
+            "京都北区",
+            "京都市北区"
         ],
         "type": "WARD",
         "prefectureCode": "26",
@@ -24101,19 +24125,21 @@
             "latitude": 35.04097,
             "longitude": 135.753991
         },
-        "coveringRadiusKm": 50.0,
+        "coveringRadiusKm": 15.0,
         "translations": {
-            "en": "Kita Ward, Kyoto",
-            "ko": "교토 기타 구",
+            "en": "Kita-ku",
+            "ko": "기타 구",
             "pt": "Kyoto, distrito de Kita",
             "id": "Distrik Kota Kita, Kyoto"
         }
     },
     {
         "code": "261025",
-        "name": "京都上京区",
+        "name": "上京区",
         "aliases": [
-            "京都上京"
+            "京都上京区",
+            "京都市上京区",
+            "上京"
         ],
         "type": "WARD",
         "prefectureCode": "26",
@@ -24121,9 +24147,9 @@
             "latitude": 35.02953,
             "longitude": 135.756697
         },
-        "coveringRadiusKm": 50.0,
+        "coveringRadiusKm": 15.0,
         "translations": {
-            "en": "Kamigyo Ward, Kyoto",
+            "en": "Kamigyo Ku",
             "ko": "교토 가미교 구",
             "pt": "Kyoto, distrito de Kamigyo",
             "id": "Distrik Kota Kamigyo, Kyoto"
@@ -24131,9 +24157,11 @@
     },
     {
         "code": "261033",
-        "name": "京都左京区",
+        "name": "左京区",
         "aliases": [
-            "京都左京"
+            "京都左京区",
+            "京都市左京区",
+            "左京"
         ],
         "type": "WARD",
         "prefectureCode": "26",
@@ -24141,9 +24169,9 @@
             "latitude": 35.04858,
             "longitude": 135.778575
         },
-        "coveringRadiusKm": 50.0,
+        "coveringRadiusKm": 15.0,
         "translations": {
-            "en": "Sakyo Ward, Kyoto",
+            "en": "Sakyo Ku",
             "ko": "교토 사쿄 구",
             "pt": "Kyoto, distrito de Sakyo",
             "id": "Distrik Kota Sakyo, Kyoto"
@@ -24151,9 +24179,11 @@
     },
     {
         "code": "261041",
-        "name": "京都中京区",
+        "name": "中京区",
         "aliases": [
-            "京都中京"
+            "京都中京区",
+            "京都市中京区",
+            "中京"
         ],
         "type": "WARD",
         "prefectureCode": "26",
@@ -24161,9 +24191,9 @@
             "latitude": 35.010404,
             "longitude": 135.751433
         },
-        "coveringRadiusKm": 50.0,
+        "coveringRadiusKm": 15.0,
         "translations": {
-            "en": "Nakagyo Ward, Kyoto",
+            "en": "Nakagyo Ku",
             "ko": "교토 나카교 구",
             "pt": "Kyoto, distrito de Nakagyo",
             "id": "Distrik Kota Nakagyo, Kyoto"
@@ -24171,9 +24201,11 @@
     },
     {
         "code": "261050",
-        "name": "京都東山区",
+        "name": "東山区",
         "aliases": [
-            "京都東山"
+            "京都東山区",
+            "京都市東山区",
+            "東山"
         ],
         "type": "WARD",
         "prefectureCode": "26",
@@ -24181,19 +24213,21 @@
             "latitude": 34.997082,
             "longitude": 135.776282
         },
-        "coveringRadiusKm": 50.0,
+        "coveringRadiusKm": 15.0,
         "translations": {
-            "en": "Higashiyama Ward, Kyoto",
-            "ko": "교토 히가시야마 구",
+            "en": "Higashiyama Ku",
+            "ko": "히가시야마 구",
             "pt": "Kyoto, distrito de Higashiyama",
             "id": "Distrik Kota Higashiyama, Kyoto"
         }
     },
     {
         "code": "261068",
-        "name": "京都下京区",
+        "name": "下京区",
         "aliases": [
-            "京都下京"
+            "京都下京区",
+            "京都市下京区",
+            "下京"
         ],
         "type": "WARD",
         "prefectureCode": "26",
@@ -24201,9 +24235,9 @@
             "latitude": 34.98756,
             "longitude": 135.755469
         },
-        "coveringRadiusKm": 50.0,
+        "coveringRadiusKm": 15.0,
         "translations": {
-            "en": "Shimogyo Ward, Kyoto",
+            "en": "Shimogyo Ku",
             "ko": "교토 시모교 구",
             "pt": "Kyoto, distrito de Shimogyo",
             "id": "Distrik Kota Shimogyo, Kyoto"
@@ -24211,9 +24245,10 @@
     },
     {
         "code": "261076",
-        "name": "京都南区",
+        "name": "南区",
         "aliases": [
-            "京都南"
+            "京都南区",
+            "京都市南区"
         ],
         "type": "WARD",
         "prefectureCode": "26",
@@ -24221,19 +24256,21 @@
             "latitude": 34.976756,
             "longitude": 135.746418
         },
-        "coveringRadiusKm": 50.0,
+        "coveringRadiusKm": 15.0,
         "translations": {
-            "en": "Minami Ward, Kyoto",
-            "ko": "교토 미나미구",
+            "en": "Minami-ku",
+            "ko": "미나미 구",
             "pt": "Kyoto, distrito de Minami",
             "id": "Distrik Kota Minami, Kyoto"
         }
     },
     {
         "code": "261084",
-        "name": "京都右京区",
+        "name": "右京区",
         "aliases": [
-            "京都右京"
+            "京都右京区",
+            "京都市右京区",
+            "右京"
         ],
         "type": "WARD",
         "prefectureCode": "26",
@@ -24241,9 +24278,9 @@
             "latitude": 35.010116,
             "longitude": 135.715996
         },
-        "coveringRadiusKm": 50.0,
+        "coveringRadiusKm": 29.728474697837942,
         "translations": {
-            "en": "Ukyo Ward, Kyoto",
+            "en": "Ukyo Ku",
             "ko": "교토 우쿄 구",
             "pt": "Kyoto, distrito de Ukyo",
             "id": "Distrik Kota Ukyo, Kyoto"
@@ -24251,9 +24288,11 @@
     },
     {
         "code": "261092",
-        "name": "京都伏見区",
+        "name": "伏見区",
         "aliases": [
-            "京都伏見"
+            "京都伏見区",
+            "京都市伏見区",
+            "伏見"
         ],
         "type": "WARD",
         "prefectureCode": "26",
@@ -24261,9 +24300,9 @@
             "latitude": 34.935546,
             "longitude": 135.761321
         },
-        "coveringRadiusKm": 50.0,
+        "coveringRadiusKm": 15.0,
         "translations": {
-            "en": "Fushimi Ward, Kyoto",
+            "en": "Fushimi-ku",
             "ko": "교토 후시미 구",
             "pt": "Kyoto, distrito de Fushimi",
             "id": "Distrik Kota Fushimi, Kyoto"
@@ -24271,9 +24310,11 @@
     },
     {
         "code": "261106",
-        "name": "京都山科区",
+        "name": "山科区",
         "aliases": [
-            "京都山科"
+            "京都山科区",
+            "京都市山科区",
+            "山科"
         ],
         "type": "WARD",
         "prefectureCode": "26",
@@ -24281,9 +24322,9 @@
             "latitude": 34.972297,
             "longitude": 135.813625
         },
-        "coveringRadiusKm": 50.0,
+        "coveringRadiusKm": 15.0,
         "translations": {
-            "en": "Yamashina Ward, Kyoto",
+            "en": "Yamashina Ku",
             "ko": "교토 야마시나 구",
             "pt": "Kyoto, distrito de Yamashina",
             "id": "Distrik Kota Yamashina, Kyoto"
@@ -24291,9 +24332,11 @@
     },
     {
         "code": "261114",
-        "name": "京都西京区",
+        "name": "西京区",
         "aliases": [
-            "京都西京"
+            "京都西京区",
+            "京都市西京区",
+            "西京"
         ],
         "type": "WARD",
         "prefectureCode": "26",
@@ -24301,9 +24344,9 @@
             "latitude": 34.985027,
             "longitude": 135.693108
         },
-        "coveringRadiusKm": 50.0,
+        "coveringRadiusKm": 15.0,
         "translations": {
-            "en": "Nishikyo Ward, Kyoto",
+            "en": "Nishi-kyo Ku",
             "ko": "교토 니시쿄 구",
             "pt": "Kyoto, distrito de Nishikyo",
             "id": "Distrik Kota Nishikyo, Kyoto"
@@ -24830,7 +24873,9 @@
     {
         "code": "271004",
         "name": "大阪市",
-        "aliases": [],
+        "aliases": [
+            "大阪"
+        ],
         "type": "MUNICIPALITY",
         "prefectureCode": "27",
         "center": {
@@ -24847,9 +24892,11 @@
     },
     {
         "code": "271020",
-        "name": "大阪都島区",
+        "name": "都島区",
         "aliases": [
-            "大阪都島"
+            "大阪都島区",
+            "大阪市都島区",
+            "都島"
         ],
         "type": "WARD",
         "prefectureCode": "27",
@@ -24857,9 +24904,9 @@
             "latitude": 34.701279,
             "longitude": 135.52809
         },
-        "coveringRadiusKm": 50.0,
+        "coveringRadiusKm": 15.0,
         "translations": {
-            "en": "Miyakojima Ward, Osaka",
+            "en": "Miyakojima-ku",
             "ko": "오사카 미야코지마 구",
             "pt": "Osaka, distrito de Miyakojima",
             "id": "Distrik Kota Miyakojima, Osaka"
@@ -24992,24 +25039,6 @@
             "ko": "오사카 덴노지 구",
             "pt": "Osaka, distrito de Tennoji",
             "id": "Distrik Kota Tennoji, Osaka"
-        }
-    },
-    {
-        "code": "271101",
-        "name": "大阪市",
-        "aliases": [],
-        "type": "MUNICIPALITY",
-        "prefectureCode": "27",
-        "center": {
-            "latitude": 34.668117755200015,
-            "longitude": 135.5267271336
-        },
-        "coveringRadiusKm": 21.78377990154926,
-        "translations": {
-            "en": "Osaka",
-            "id": "Osaka",
-            "ko": "오사카 시",
-            "pt": "Osaka"
         }
     },
     {

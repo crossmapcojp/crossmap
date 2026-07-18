@@ -117,7 +117,23 @@ class ChurchGeoNameTranslationCatalog(
             val translations = buildMap {
                 putAll(programmatic.getValue(japanese))
                 TARGET_LANGUAGES.forEach { language ->
-                    reviewed.getValue(language)[japanese]?.takeIf(String::isNotBlank)?.let { put(language, it) }
+                    val reviewedTranslation = reviewed.getValue(language)[japanese]?.takeIf(String::isNotBlank)
+                    if (language == "ko") {
+                        // A Korean value already present here came from GeoNames/JMA and is retained.
+                        // Only their missing entries use deterministic Japanese-pronunciation
+                        // transliteration from romaji; reviewed Hanja-style guesses are not reused.
+                        val wasMissingFromOfficialSources = japanese in reviewed.getValue("ko")
+                        if (get("ko") == null || wasMissingFromOfficialSources) {
+                            val transliterated = JapaneseRomajiToHangul.transliterate(get("en").orEmpty())
+                            if (transliterated != null) {
+                                put("ko", transliterated)
+                            } else if (reviewedTranslation != null) {
+                                put("ko", reviewedTranslation)
+                            }
+                        }
+                    } else {
+                        reviewedTranslation?.let { put(language, it) }
+                    }
                 }
             }.toSortedMap()
             ChurchGeoNameTranslation(japanese, translations, sources[japanese].orEmpty().sorted())
@@ -136,7 +152,13 @@ class ChurchGeoNameTranslationCatalog(
                 val rows = entries.asSequence()
                     .filter { entry -> kind.includes(entry.sources) }
                     .filter { language !in programmatic.getValue(it.ja) }
-                    .map { entry -> entry.ja to reviewed.getValue(language)[entry.ja].orEmpty() }
+                    .map { entry ->
+                        entry.ja to if (language == "ko") {
+                            entry.translations[language].orEmpty()
+                        } else {
+                            reviewed.getValue(language)[entry.ja].orEmpty()
+                        }
+                    }
                     .toList()
                 atomicWrite(reviewFile(geonamesDirectory, language, kind), rows.toReviewCsv())
             }

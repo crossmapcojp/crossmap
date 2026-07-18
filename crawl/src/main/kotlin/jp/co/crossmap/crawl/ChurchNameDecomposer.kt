@@ -25,6 +25,7 @@ enum class ChurchNamePattern {
     JAPANESE_NAME_WITH_KOREAN_PARENTHETICAL,
     KOREAN_NAME_WITH_JAPANESE_PARENTHETICAL,
     JAPANESE_NAME_WITH_BRANCH_PARENTHETICAL,
+    JAPANESE_NAME_WITH_KANA_READING,
     JAPANESE_NAME_WITH_CHURCH_DESCRIPTOR,
     JAPANESE_ABBREVIATION_WITH_FULL_NAME_PARENTHETICAL,
     JAPANESE_ABBREVIATION_WITH_FULL_NAME_WHITESPACE,
@@ -79,6 +80,7 @@ internal class ChurchNameDecomposer(
         japaneseWithKoreanParenthetical(original)?.let { return complete(it) }
         koreanWithJapaneseParenthetical(original)?.let { return complete(it) }
         japaneseWithBranchParenthetical(original)?.let { return complete(it) }
+        japaneseWithKanaReading(original)?.let { return complete(it) }
         japaneseWithChurchDescriptor(original)?.let { return complete(it) }
         japaneseAbbreviationWithFullNameParenthetical(original)?.let { return complete(it) }
         japaneseAbbreviationWithFullNameWhitespace(original)?.let { return complete(it) }
@@ -271,6 +273,39 @@ internal class ChurchNameDecomposer(
         )
     }
 
+    /**
+     * Preserves the kanji spelling while retaining a parenthetical kana reading as a searchable alias.
+     *
+     * Examples:
+     * - `香貫(かぬき)教会` -> canonical `香貫教会`, alias `かぬき教会`
+     * - `日本基督(キリスト)教団 香貫教会` -> canonical `日本基督教団 香貫教会`,
+     *   alias `日本キリスト教団 香貫教会`
+     */
+    private fun japaneseWithKanaReading(value: String): DecomposedChurchName? {
+        val match = PARENTHETICAL.find(value) ?: return null
+        val reading = match.groupValues[1].trim()
+        if (!KANA_READING.matches(reading)) return null
+
+        val before = value.substring(0, match.range.first)
+        val after = value.substring(match.range.last + 1)
+        TRAILING_KANJI.find(before)?.value ?: return null
+        val canonicalName = (before + after).replace(Regex("""\s+"""), " ").trim()
+        // Keep the reading alias deliberately narrow. Lucene fields are multi-valued, so the
+        // canonical value supplies the prefix tokens while this value supplies the hard reading.
+        // Guessing how many preceding kanji the annotation covers would corrupt names such as
+        // `日本キリスト教団世真留(せまる)教会`.
+        val readingName = (reading + after).replace(Regex("""\s+"""), " ").trim()
+        if (!containsJapanese(canonicalName) || canonicalName == readingName) return null
+
+        return DecomposedChurchName(
+            originalName = value,
+            japaneseName = canonicalName,
+            latinName = null,
+            localizedNames = listOf(LocalizedName("ja", readingName)),
+            pattern = ChurchNamePattern.JAPANESE_NAME_WITH_KANA_READING,
+        )
+    }
+
     private fun japaneseWithChurchDescriptor(value: String): DecomposedChurchName? {
         val match = PARENTHETICAL.find(value) ?: return null
         if (match.groupValues[1].trim() !in CHURCH_DESCRIPTORS) return null
@@ -433,6 +468,8 @@ internal class ChurchNameDecomposer(
 
     private companion object {
         val PARENTHETICAL = Regex("""[（(]([^()（）]+)[）)]""")
+        val KANA_READING = Regex("""[ぁ-ゖァ-ヺー・\s]+""")
+        val TRAILING_KANJI = Regex("""[\u3400-\u9fff々〆ヶ]+$""")
         val LATIN_ABBREVIATION_WITH_FULL_NAME = Regex("""^([A-Z][A-Z0-9]{1,12})\s*[（(]([^()（）]*[A-Za-z][^()（）]*)[）)]$""")
         val BRANCH_BUILDING_TERMS = listOf("礼拝堂", "会堂", "チャペル", "聖堂")
         val CHURCH_DESCRIPTORS = setOf("キリスト教会", "クリスチャン教会", "教会")

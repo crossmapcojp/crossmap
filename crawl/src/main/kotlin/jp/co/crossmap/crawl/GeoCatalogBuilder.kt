@@ -132,14 +132,23 @@ class GeoCatalogBuilder(private val json: Json = Json { prettyPrint = true; enco
             )
         }
         val existingNames = enriched.map(MunicipalitySource::name).toSet()
-        val parentCities = addressWards.mapNotNull { addressWard ->
-            if (addressWard.city in existingNames) return@mapNotNull null
-            val child = enriched.firstOrNull {
-                it.code.startsWith(addressWard.prefectureCode) && it.addressMatch == addressWard.city + addressWard.ward
-            } ?: return@mapNotNull null
+        val parentCities = addressWards.groupBy { it.prefectureCode to it.city }.mapNotNull { (identity, wards) ->
+            val (prefectureCode, city) = identity
+            if (city in existingNames) return@mapNotNull null
+            val wardAddressMatches = wards.mapTo(hashSetOf()) { it.city + it.ward }
+            val smallestWardCode = enriched.asSequence()
+                .filter { it.code.startsWith(prefectureCode) && it.addressMatch in wardAddressMatches }
+                .mapNotNull { it.code.dropLast(1).toIntOrNull() }
+                .minOrNull()
+                ?: return@mapNotNull null
+            // Designated-city ward codes share the parent's first four decimal positions, but
+            // Osaka's wards span 27102..27128. Deriving from each individual ward created fake
+            // parent codes such as 271101. Round the smallest sibling ward down to the parent
+            // ten-code once per city (27102 -> 27100, 40133 -> 40130).
+            val parentCodeWithoutCheckDigit = (smallestWardCode / 10 * 10).toString().padStart(5, '0')
             MunicipalitySource(
-                code = jisMunicipalityCode(child.code.take(4) + "0"),
-                name = addressWard.city,
+                code = jisMunicipalityCode(parentCodeWithoutCheckDigit),
+                name = city,
             )
         }
         return (enriched + parentCities).distinctBy { it.code }
@@ -258,7 +267,7 @@ class GeoCatalogBuilder(private val json: Json = Json { prettyPrint = true; enco
     companion object {
         private const val TOKYO_PREFECTURE_CODE = "13"
         private val japanCenter = GeoPoint(36.2048, 138.2529)
-        private val DESIGNATED_CITY_WARD = Regex("""^([^都道府県市区町村郡\\s]+市)([^都道府県市区町村郡\\s]+区)""")
+        private val DESIGNATED_CITY_WARD = Regex("""^([^\\s]+?市)([^\\s]+?区)""")
         private val tokyoRemoteIslandMunicipalities = setOf(
             "大島町",
             "利島村",

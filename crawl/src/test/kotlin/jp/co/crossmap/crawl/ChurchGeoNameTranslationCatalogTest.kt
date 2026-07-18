@@ -1,6 +1,7 @@
 package jp.co.crossmap.crawl
 
 import java.nio.file.Files
+import java.nio.file.Path
 import jp.co.crossmap.GeoPoint
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.decodeFromString
@@ -10,6 +11,30 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class ChurchGeoNameTranslationCatalogTest {
+    @Test
+    fun derivesKoreanJapanesePronunciationFromEnglishRomaji() {
+        assertEquals("가누키", JapaneseRomajiToHangul.transliterate("Kanuki"))
+        assertEquals("가미카누키", JapaneseRomajiToHangul.transliterate("Kamikanuki"))
+        assertEquals("시모카누키", JapaneseRomajiToHangul.transliterate("Shimokanuki"))
+        assertEquals("세타가야", JapaneseRomajiToHangul.transliterate("Setagaya"))
+        assertEquals("도쿄", JapaneseRomajiToHangul.transliterate("Tokyo"))
+        assertEquals("젠카이미나미마치", JapaneseRomajiToHangul.transliterate("Zenkaiminamimachi"))
+        assertTrue(JapaneseRomajiToHangul.hasCompatibleInitial("Kamikanuki", "가미카누키"))
+        assertTrue(JapaneseRomajiToHangul.hasCompatibleInitial("Kamikanuki", "카미카누키"))
+        assertTrue(!JapaneseRomajiToHangul.hasCompatibleInitial("Kamikanuki", "상향관"))
+        assertEquals(emptySet(), JapaneseRomajiToHangul.churchAbbreviations("UNIDOS COM CRISTO"))
+        assertEquals(emptySet(), JapaneseRomajiToHangul.churchAbbreviations("LORD ABBA"))
+        assertEquals(setOf("HCC", "JBC", "EMC"), JapaneseRomajiToHangul.churchAbbreviations("HCC JBC EMC"))
+        assertEquals(setOf("PMCC"), JapaneseRomajiToHangul.churchAbbreviations("PMCC4テーワッチ川崎"))
+        assertEquals("에이치시시 가누키 교회", JapaneseRomajiToHangul.transliterateLatinFragments("HCC Kanuki 교회"))
+        assertEquals(
+            "HCC 가누키 교회",
+            JapaneseRomajiToHangul.transliterateLatinFragments(
+                "HCC Kanuki 교회",
+                JapaneseRomajiToHangul.churchAbbreviations("HCCライブチャーチ寸座"),
+            ),
+        )
+    }
     private val json = Json { prettyPrint = true; encodeDefaults = true }
 
     @Test
@@ -44,7 +69,7 @@ class ChurchGeoNameTranslationCatalogTest {
             assertEquals(2, report.titleGeoNames)
             assertEquals(1, report.addressGeoNames)
             assertEquals(3, report.translatedCounts.getValue("en"))
-            assertEquals(2, report.translatedCounts.getValue("ko"))
+            assertEquals(3, report.translatedCounts.getValue("ko"))
             val all = Files.readString(resources.resolve("geonames/church-ja-all.json"))
             assertTrue(all.contains("Kumouchi"))
             assertTrue(all.contains("Osaka"))
@@ -73,6 +98,73 @@ class ChurchGeoNameTranslationCatalogTest {
             assertEquals("大阪聖和教会", osakaUsage.googlePlaceTitle)
             assertEquals(listOf("大阪"), osakaUsage.title)
             assertTrue(usages.any { "東京都" in it.address })
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun everyPreviouslyMissingKoreanGeonameUsesItsEnglishRomajiPronunciation() {
+        val resources = generateSequence(Path.of("").toAbsolutePath().normalize()) { it.parent }
+            .first { Files.isRegularFile(it.resolve("settings.gradle.kts")) }
+            .resolve("resources")
+        val entries = json.decodeFromString<List<ChurchGeoNameTranslation>>(
+            Files.readString(resources.resolve("geonames/church-ja-all.json")),
+        ).associateBy(ChurchGeoNameTranslation::ja)
+        val rows = listOf("title", "address").flatMap { kind ->
+            Files.readAllLines(resources.resolve("geonames/church-ja-ko-$kind-missing.csv"))
+                .filter(String::isNotBlank)
+        }
+
+        assertTrue(rows.isNotEmpty())
+        rows.forEach { row ->
+            val japanese = row.substringBefore(',')
+            val korean = row.substringAfter(',').trim()
+            val romaji = entries.getValue(japanese).translations.getValue("en")
+            assertTrue(korean.isNotBlank(), japanese)
+            assertTrue(korean.none { it in 'A'..'Z' || it in 'a'..'z' }, "$japanese: $romaji -> $korean")
+            assertEquals(JapaneseRomajiToHangul.transliterate(romaji), korean, japanese)
+            assertTrue(JapaneseRomajiToHangul.hasCompatibleInitial(romaji, korean), "$japanese: $romaji -> $korean")
+        }
+    }
+
+    @Test
+    fun replacesReviewedHanjaStyleMissingValueWithRomajiPronunciation() {
+        val root = Files.createTempDirectory("crossmap-korean-romaji-review")
+        try {
+            val resources = root.resolve("resources")
+            val candidates = root.resolve("google-place-candidates.json")
+            Files.createDirectories(resources.resolve("geonames"))
+            Files.writeString(resources.resolve("geonames/church-ja-ko-address-missing.csv"), "上香貫,상향관\n")
+            Files.writeString(
+                candidates,
+                json.encodeToString(
+                    listOf(
+                        candidate(
+                            "kanuki",
+                            "香貫教会",
+                            "香貫",
+                            mapOf("en" to "Kanuki"),
+                            address = "静岡県沼津市上香貫",
+                        ),
+                    ),
+                ),
+            )
+
+            ChurchGeoNameTranslationCatalog(json).build(
+                candidates,
+                resources,
+                officialTranslations = mapOf(
+                    "香貫" to mapOf("en" to "Kanuki"),
+                    "上香貫" to mapOf("en" to "Kamikanuki", "ko" to "상향관"),
+                    "東京都" to mapOf("en" to "Tokyo", "ko" to "도쿄"),
+                ),
+            )
+
+            val entries = json.decodeFromString<List<ChurchGeoNameTranslation>>(
+                Files.readString(resources.resolve("geonames/church-ja-all.json")),
+            )
+            assertEquals("가미카누키", entries.single { it.ja == "上香貫" }.translations["ko"])
         } finally {
             root.toFile().deleteRecursively()
         }

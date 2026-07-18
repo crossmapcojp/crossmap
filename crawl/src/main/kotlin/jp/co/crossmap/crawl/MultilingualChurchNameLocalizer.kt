@@ -36,7 +36,6 @@ class MultilingualChurchNameLocalizer(
     multilingualGeonames: Map<String, Map<String, String>> = emptyMap(),
     branchGeonames: Set<String> = emptySet(),
 ) {
-    private val supportedLanguages = listOf("ja", "en", "ko", "pt", "id")
     private val supportedTargets = listOf("en", "ko", "pt", "id")
     private val latinToJapaneseTerms = buildMap {
         listOf("en", "ko", "pt", "id", "es", "fr", "de", "it", "tl").forEach { sourceLanguage ->
@@ -47,6 +46,16 @@ class MultilingualChurchNameLocalizer(
         }
         geonames.forEach { (japanese, latin) ->
             put("$latin-shi", japanese.removeSuffix("市"))
+        }
+        multilingualGeonames.entries.sortedWith(compareBy({ it.key.length }, { it.key })).forEach { (japanese, translations) ->
+            translations.forEach { (language, translated) ->
+                // English romaji is already handled by the authoritative geoname map.
+                // Prefer the shortest Japanese base name when a localized alias is
+                // shared by both a municipality and its suffixed administrative form.
+                if (language in setOf("pt", "id", "es") && translated.isNotBlank()) {
+                    putIfAbsent(translated, japanese)
+                }
+            }
         }
         dictionaries.multilingual.entries("en", "ja", ChurchNameDictionaryCategory.GEONAME)
             .forEach { (latin, japanese) -> put("$latin-shi", japanese.removeSuffix("市")) }
@@ -83,6 +92,7 @@ class MultilingualChurchNameLocalizer(
             candidate.removePrefix(prefix).trimStart(' ', '　', '-', '–', '—', ':', '：')
         }.ifBlank { normalizedTitle }
         val decomposed = decomposer.decompose(publicTitle)
+        val preservedKoreanAbbreviations = JapaneseRomajiToHangul.churchAbbreviations(publicTitle)
         val initialJapaneseName = requireNotNull(decomposed.japaneseName) { "No Japanese name composed for $title" }
         val japaneseComponents = analyzeJapanese(initialJapaneseName)
         val sourceLatinLanguage = decomposed.latinName?.let { latinName ->
@@ -104,18 +114,42 @@ class MultilingualChurchNameLocalizer(
             ?.takeIf(String::isNotBlank)
             ?: initialJapaneseName
         val generated = supportedTargets.mapNotNull { language ->
-            compose(components, language)?.let { LocalizedName(language, it) }
+            compose(components, language)?.let { composed ->
+                LocalizedName(
+                    language,
+                    if (language == "ko") {
+                        JapaneseRomajiToHangul.transliterateLatinFragments(composed, preservedKoreanAbbreviations)
+                    } else {
+                        composed
+                    },
+                )
+            }
         }
         val latinName = generated.firstOrNull { it.languageCode == "en" }?.name
             ?: decomposed.latinName?.takeIf { sourceLatinLanguage == "en" }
-        val originalLanguages = decomposed.localizedNames.map { it.languageCode.substringBefore('-').lowercase() }.toSet()
+        val retainedDecomposedNames = decomposed.localizedNames.filterNot { localized ->
+            sourceComponents != null && localized.languageCode.substringBefore('-').lowercase() == "ja"
+        }
+        val originalLanguages = retainedDecomposedNames.map { it.languageCode.substringBefore('-').lowercase() }.toSet()
         val localizedNames = (
             listOf(LocalizedName("ja", japaneseName)) +
-                decomposed.localizedNames +
+                retainedDecomposedNames +
                 generated.filter { it.languageCode !in originalLanguages }
             )
             .filter { it.name.isNotBlank() }
-            .distinctBy { it.languageCode.substringBefore('-').lowercase() }
+            .map { localized ->
+                if (localized.languageCode.substringBefore('-').lowercase() == "ko") {
+                    localized.copy(
+                        name = JapaneseRomajiToHangul.transliterateLatinFragments(
+                            localized.name,
+                            preservedKoreanAbbreviations,
+                        ),
+                    )
+                } else {
+                    localized
+                }
+            }
+            .distinctBy { it.languageCode.substringBefore('-').lowercase() to it.name }
         return LocalizedChurchNameResult(
             japaneseName = japaneseName,
             latinName = latinName,
@@ -175,9 +209,15 @@ class MultilingualChurchNameLocalizer(
         val terminalGeoname = body.lastOrNull()?.takeIf {
             hasRomanceChurchStructure && it.role == MultilingualNameComponentRole.GEONAME
         }
+        val bodyWithoutTerminal = if (terminalGeoname == null) body else body.dropLast(1)
+        val contentBody = bodyWithoutTerminal.dropLastWhile { component ->
+            terminalGeoname != null &&
+                component.role == MultilingualNameComponentRole.OTHER &&
+                component.source.lowercase().trim('.', ',', '-', ' ') in setOf("de", "do", "da", "del", "di")
+        }
         val ordered = buildList {
             terminalGeoname?.let(::add)
-            addAll(if (terminalGeoname == null) body else body.dropLast(1))
+            addAll(contentBody)
             churchPrefix?.let(::add)
         }
         return ordered.joinToString("") { it.translations["ja"] ?: it.source }
@@ -221,13 +261,21 @@ class MultilingualChurchNameLocalizer(
     }
 
     private fun compose(components: List<MultilingualNameComponent>, targetLanguage: String): String? {
-        val orderedComponents = if (
-            targetLanguage in setOf("pt", "id") &&
-            components.lastOrNull()?.role == MultilingualNameComponentRole.CONGREGATION
-        ) {
-            listOf(components.last()) + components.dropLast(1)
+        val withoutLocationConnector = if (components.lastOrNull()?.role == MultilingualNameComponentRole.GEONAME) {
+            components.dropLast(1).dropLastWhile { component ->
+                component.role == MultilingualNameComponentRole.OTHER &&
+                    component.source.lowercase().trim('.', ',', '-', ' ') in setOf("de", "do", "da", "del", "di")
+            } + components.last()
         } else {
             components
+        }
+        val orderedComponents = if (
+            targetLanguage in setOf("pt", "id") &&
+            withoutLocationConnector.lastOrNull()?.role == MultilingualNameComponentRole.CONGREGATION
+        ) {
+            listOf(withoutLocationConnector.last()) + withoutLocationConnector.dropLast(1)
+        } else {
+            withoutLocationConnector
         }
         val translated = orderedComponents.map { component ->
             component.translations[targetLanguage]

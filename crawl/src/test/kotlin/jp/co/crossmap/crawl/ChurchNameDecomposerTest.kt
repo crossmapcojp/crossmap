@@ -15,6 +15,25 @@ class ChurchNameDecomposerTest {
     })
 
     @Test
+    fun preservesDifficultKanjiAndIndexesItsParentheticalKanaReading() {
+        val examples = mapOf(
+            "香貫(かぬき)教会" to ("香貫教会" to "かぬき教会"),
+            "日本キリスト教団世真留(せまる)教会" to
+                ("日本キリスト教団世真留教会" to "せまる教会"),
+            "日本基督(キリスト)教団 香貫教会" to
+                ("日本基督教団 香貫教会" to "キリスト教団 香貫教会"),
+        )
+
+        examples.forEach { (source, expected) ->
+            val result = decomposer.decompose(source)
+
+            assertEquals(expected.first, result.japaneseName, source)
+            assertEquals(ChurchNamePattern.JAPANESE_NAME_WITH_KANA_READING, result.pattern, source)
+            assertTrue(LocalizedName("ja", expected.second) in result.localizedNames, source)
+        }
+    }
+
+    @Test
     fun detectsFukuokaOhoriParkChurchAsJapanese() {
         val result = ChurchNameDecomposer().decompose("福岡大濠公園教会")
 

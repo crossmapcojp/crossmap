@@ -296,13 +296,34 @@ class ChurchSearchEngine(
         fullQuery: String,
         resolved: ResolvedGeoQuery,
         titleLanguages: List<String>,
-    ): Query = withAuthoritativeGeonameFilter(
-        withTitleLanguageFilter(
-            TermQuery(Term(ChurchIndex.FIELD_NAME_EXACT, ChurchIndex.normalizeExactName(fullQuery))),
-            titleLanguages,
-        ),
-        resolved,
-    )
+    ): Query {
+        val term = ChurchIndex.normalizeExactName(fullQuery)
+        val exact = BooleanQuery.Builder().apply {
+            add(
+                BoostQuery(TermQuery(Term(ChurchIndex.FIELD_NAME_EXACT, term)), EXACT_NAME_FIELD_BOOST),
+                BooleanClause.Occur.SHOULD,
+            )
+            if (normalizedLanguage == "ja") {
+                add(
+                    BoostQuery(TermQuery(Term(ChurchIndex.FIELD_NAME_READING_EXACT, term)), EXACT_NAME_READING_BOOST),
+                    BooleanClause.Occur.SHOULD,
+                )
+                add(
+                    BoostQuery(
+                        TermQuery(Term(ChurchIndex.FIELD_DENOMINATION_READING_EXACT, term)),
+                        EXACT_DENOMINATION_READING_BOOST,
+                    ),
+                    BooleanClause.Occur.SHOULD,
+                )
+                add(
+                    BoostQuery(TermQuery(Term(ChurchIndex.FIELD_CATEGORY_READING_EXACT, term)), EXACT_CATEGORY_READING_BOOST),
+                    BooleanClause.Occur.SHOULD,
+                )
+            }
+            setMinimumNumberShouldMatch(1)
+        }.build()
+        return withAuthoritativeGeonameFilter(withTitleLanguageFilter(exact, titleLanguages), resolved)
+    }
 
     private fun buildAllNameTokensQuery(
         analysis: QueryAnalysis,
@@ -380,6 +401,7 @@ class ChurchSearchEngine(
 
     private fun nameSearchFields(): LinkedHashMap<String, Float> = linkedMapOf(
         ChurchIndex.FIELD_NAME to 8f,
+        ChurchIndex.FIELD_NAME_READING to 7f,
     )
 
     private fun generalSearchFields(): LinkedHashMap<String, Float> = linkedMapOf(
@@ -439,8 +461,14 @@ class ChurchSearchEngine(
             appendLine("  analysis.locations=$locations")
             val topTierGeoFilter = resolved.explicitAdministrativeName || resolved.textQuery.isBlank() ||
                 resolved.locations.singleOrNull()?.type == GeoNameType.DEVICE
-            appendLine("  tier.1.type=EXACT_NAME boost=$EXACT_NAME_STAGE_BOOST field=${ChurchIndex.FIELD_NAME_EXACT} " +
-                "term=${ChurchIndex.normalizeExactName(request.query)} geoFilter=$topTierGeoFilter")
+            appendLine(
+                "  tier.1.type=EXACT_NAME_OR_READING boost=$EXACT_NAME_STAGE_BOOST " +
+                    "fields=[${ChurchIndex.FIELD_NAME_EXACT}^$EXACT_NAME_FIELD_BOOST, " +
+                    "${ChurchIndex.FIELD_NAME_READING_EXACT}^$EXACT_NAME_READING_BOOST, " +
+                    "${ChurchIndex.FIELD_DENOMINATION_READING_EXACT}^$EXACT_DENOMINATION_READING_BOOST, " +
+                    "${ChurchIndex.FIELD_CATEGORY_READING_EXACT}^$EXACT_CATEGORY_READING_BOOST] " +
+                    "term=${ChurchIndex.normalizeExactName(request.query)} geoFilter=$topTierGeoFilter",
+            )
             appendLine("  tier.2.type=ALL_NAME_TOKENS boost=$ALL_NAME_TOKENS_STAGE_BOOST enabled=$allTokenTierEnabled " +
                 "tokens=$tokens fields=${formatFields(nameSearchFields())} geoFilter=$topTierGeoFilter" +
                 if (allTokenTierEnabled) "" else " reason=generic-or-geoname-only-query")
@@ -586,6 +614,10 @@ class ChurchSearchEngine(
         const val DEFAULT_DEVICE_RADIUS_KM = 50.0
         private const val EXACT_NAME_STAGE_BOOST = 1_000_000f
         private const val ALL_NAME_TOKENS_STAGE_BOOST = 1_000f
+        private const val EXACT_NAME_FIELD_BOOST = 100f
+        private const val EXACT_NAME_READING_BOOST = 50f
+        private const val EXACT_DENOMINATION_READING_BOOST = 10f
+        private const val EXACT_CATEGORY_READING_BOOST = 5f
         private val LUCENE_QUERY_SPECIAL_CHARACTERS = setOf(
             '+', '-', '&', '|', '!', '(', ')', '{', '}', '[', ']', '^', '"', '~', '*', '?', ':', '\\', '/',
         )

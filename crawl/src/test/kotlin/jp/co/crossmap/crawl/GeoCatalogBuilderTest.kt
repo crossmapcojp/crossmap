@@ -3,6 +3,7 @@ package jp.co.crossmap.crawl
 import java.nio.file.Files
 import jp.co.crossmap.ChurchRecord
 import jp.co.crossmap.GeoNameType
+import jp.co.crossmap.GeoNameResolver
 import jp.co.crossmap.GeoPoint
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -114,6 +115,50 @@ class GeoCatalogBuilderTest {
             assertTrue("福岡市中央区" in fukuokaWard.aliases)
             assertEquals("Chuo Ward, Fukuoka", fukuokaWard.translations["en"])
             assertEquals("401307", result.single { it.name == "福岡市" }.code)
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun multipleOsakaWardsCreateOneCanonicalParentCityForKanaResolution() {
+        val root = Files.createTempDirectory("crossmap-osaka-parent-city")
+        try {
+            val jmaSource = root.resolve("jma-city.json")
+            Files.writeString(
+                jmaSource,
+                """
+                {
+                  "2710200": {"japanese":"大阪都島区","english":"Miyakojima Ward, Osaka"},
+                  "2711100": {"japanese":"大阪浪速区","english":"Naniwa Ward, Osaka"}
+                }
+                """.trimIndent(),
+            )
+            val churches = listOf(
+                ChurchRecord(
+                    id = "google:osaka-miyakojima",
+                    name = "大阪都島教会",
+                    englishName = "Osaka Miyakojima Church",
+                    address = "大阪府大阪市都島区都島本通1丁目",
+                    location = GeoPoint(34.7013, 135.5281),
+                    websiteUrl = "https://miyakojima.example/",
+                ),
+                ChurchRecord(
+                    id = "google:osaka-naniwa",
+                    name = "大阪浪速教会",
+                    englishName = "Osaka Naniwa Church",
+                    address = "大阪府大阪市浪速区難波中1丁目",
+                    location = GeoPoint(34.6594, 135.4996),
+                    websiteUrl = "https://naniwa.example/",
+                ),
+            )
+
+            val result = GeoCatalogBuilder().build(churches, jmaSource, root.resolve("japan.json"))
+            val osakaCity = result.single { it.name == "大阪市" }
+
+            assertEquals("271004", osakaCity.code, result.filter { it.prefectureCode == "27" }.joinToString())
+            assertEquals("271004", GeoNameResolver(result).resolve("おおさか").locations.single().code)
+            assertEquals("27", GeoNameResolver(result).resolve("大阪府").locations.single().code)
         } finally {
             root.toFile().deleteRecursively()
         }

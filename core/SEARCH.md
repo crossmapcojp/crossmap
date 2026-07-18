@@ -48,20 +48,23 @@ Each localized church name is indexed in several forms:
 - `name_exact`: an unanalyzed whole-name value for tier 1.
 - `name`: analyzed searchable name text.
 - `name_ja`, `name_en`, `name_ko`, `name_pt`, or `name_id`: language-specific analyzed name text.
+- `name_reading`: Japanese hiragana readings derived by Kuromoji. This lets kana-only input match kanji church names and reviewed readings such as `香貫(かぬき)教会`.
+- `name_reading_exact`, `denomination_reading_exact`, and `category_reading_exact`: compact untokenized readings used by tier 1. They preserve short proper-name particles such as the leading `さ` in `さぬき市` and keep exact denomination/tradition readings ahead of incidental content matches.
 
 The exact-name normalization currently:
 
 1. trims leading and trailing whitespace;
 2. converts letters to lowercase;
-3. collapses consecutive whitespace to one space.
+3. collapses consecutive whitespace to one space;
+4. removes that normalized whitespace when the value contains Japanese script, because spacing is optional in Japanese church names (`かぬき 教会` and `かぬき教会` are the same exact name).
 
 It does not currently remove punctuation or perform approximate matching. Therefore an exact match means equality after only those normalization steps.
 
-Changing exact-name, compact-search, or address-entity indexing requires incrementing `ChurchIndex.SCHEMA_VERSION` and rebuilding every language index. The current schema version is 9.
+Changing exact-name, compact-search, reading, or address-entity indexing requires incrementing `ChurchIndex.SCHEMA_VERSION` and rebuilding every language index. The current schema version is 11.
 
-## Tier 1: exact whole-name matching
+## Tier 1: exact whole-name or reading matching
 
-The complete user query is normalized and looked up as one `TermQuery` against `name_exact`.
+The complete user query is normalized and looked up against `name_exact`. For Japanese queries the same compact term is also looked up in exact name, denomination, and category reading fields. Exact written names remain strongest, followed by exact name readings, denomination readings, and category/tradition readings. This makes `にほんきりすときょうだん` rank UCCJ churches first and `ばぷてすと` rank Baptist churches first without trusting the poor tokenization of a long all-hiragana query.
 
 Example:
 
@@ -110,11 +113,13 @@ Like tier 1, tier 2 is normally not filtered by a named geoname embedded in a lo
 `GeoNameResolver` examines the query using names and translations for the active query language. It prefers longer matches and narrows geographic intent to at most one address entity.
 
 - A bare name shared by a prefecture and its capital city, such as `福岡` or `Fukuoka`, means the city.
+- The same city-first rule applies to script/reading variants: `大阪`, `おおさか`, and `Osaka` select Osaka City, while `大阪府`, `Osaka-fu`, or `Osaka Prefecture` explicitly select the prefecture.
 - An explicit suffix such as `福岡県`, `Fukuoka Prefecture`, or `Fukuoka-ken` means the prefecture.
 - Japanese administrative suffixes remain explicit when romanized, attached, hyphenated, or space-separated. Supported forms include `ken`, `to`, `do/dō`, `fu`, `shi`, `ku`, `cho/chō/chou`, `machi`, `mura`, `son`, and `gun`. For example, both `Yokohama-cho` and `Yokohamacho` select Aomori's `横浜町` and remove the complete suffixed form from the text remainder.
 - A unique prefecture, municipality, or ward selects that entity directly.
 - When multiple municipalities share a name, `detectIntendedGeonameFromUserLocation` selects the center nearest the browser/app coordinates. Without coordinates the resolver leaves the location ambiguous and the search remains text-only until the client can retry with location.
 - Country-wide names (`日本`, `Japan`, `일본`, `Japão`, and `Jepang`) are never resolved as geo filters. Crossmap already searches a Japan-only catalog, and this prevents denomination names such as `日本基督教団` and `日本バプテスト連盟` from being misread as locations.
+- Japanese canonical names and administrative aliases also receive Kuromoji hiragana readings. Reading recognition selects the same stable administrative code as its written form; it does not create a radius approximation.
 
 For this query:
 

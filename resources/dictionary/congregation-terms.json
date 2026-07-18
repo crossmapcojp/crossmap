@@ -55,5 +55,25 @@
       "pt": ["Assembleia de Deus", "Assembléia de Deus", "Assembreia de Deus"],
       "id": ["Sidang Jemaat Allah"]
     }
+  },
+  {
+    "id": "god-is-love-pentecostal-church",
+    "names": {
+      "ja": ["神は愛なりペンテコステ教会"],
+      "en": ["God is Love Pentecostal Church"],
+      "ko": ["하나님은 사랑이시다 오순절 교회"],
+      "pt": ["Igreja Pentecostal Deus É Amor", "Igreja Pentecostal Deus é Amor", "Igreja Pentecostal Deus E Amor"],
+      "id": ["Gereja Pentakosta Allah adalah Kasih"]
+    }
+  },
+  {
+    "id": "god-is-love-church",
+    "names": {
+      "ja": ["神は愛なり教会"],
+      "en": ["God is Love Church"],
+      "ko": ["하나님은 사랑이시다 교회"],
+      "pt": ["Igreja Deus É Amor", "Igreja Deus é Amor", "Igreja Deus E Amor"],
+      "id": ["Gereja Allah adalah Kasih"]
+    }
   }
 ]

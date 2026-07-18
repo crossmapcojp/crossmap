@@ -1699,7 +1699,7 @@
     },
     {
         "churchId": "google:10249850843296799799",
-        "googlePlaceTitle": "大泉福音派アッセンブレイア・デ・デウスDE教会",
+        "googlePlaceTitle": "大泉福音派アッセンブレイア・デ・デウス教会",
         "title": [
             "大泉"
         ],
@@ -2078,7 +2078,7 @@
     },
     {
         "churchId": "google:1029092389828308236",
-        "googlePlaceTitle": "宗教法人 栄光キリスト教会",
+        "googlePlaceTitle": "栄光キリスト教会",
         "title": [],
         "address": [
             "代々木",
@@ -2523,9 +2523,9 @@
     },
     {
         "churchId": "google:1033685490107057389",
-        "googlePlaceTitle": "津市エヷンゲリスティクセンタージャパンUPC",
+        "googlePlaceTitle": "つしエヷンゲリスティクセンタージャパンUPC",
         "title": [
-            "津市"
+            "つし"
         ],
         "address": [
             "三重県",
@@ -4653,9 +4653,9 @@
     },
     {
         "churchId": "google:10611054322471624625",
-        "googlePlaceTitle": "東京リフェ教会",
+        "googlePlaceTitle": "东京リフェ教会",
         "title": [
-            "東京"
+            "东京"
         ],
         "address": [
             "東京都",
@@ -5206,7 +5206,7 @@
     },
     {
         "churchId": "google:10709091938681114749",
-        "googlePlaceTitle": "東京愛",
+        "googlePlaceTitle": "東京愛キリスト教会",
         "title": [
             "東京"
         ],
@@ -5292,7 +5292,7 @@
     },
     {
         "churchId": "google:10730104042727388000",
-        "googlePlaceTitle": "栄光の福音キリスト教団東京教会宗教法人",
+        "googlePlaceTitle": "栄光の福音キリスト教団東京教会",
         "title": [
             "東京"
         ],
@@ -7495,7 +7495,7 @@
     },
     {
         "churchId": "google:11046194334530845450",
-        "googlePlaceTitle": "宗教法人 日本キリスト教団鈴鹿教会",
+        "googlePlaceTitle": "日本キリスト教団鈴鹿教会",
         "title": [
             "鈴鹿"
         ],
@@ -8420,7 +8420,7 @@
     },
     {
         "churchId": "google:11203158284788014477",
-        "googlePlaceTitle": "宗教法人キリスト兄弟団仙台教会",
+        "googlePlaceTitle": "キリスト兄弟団仙台教会",
         "title": [
             "仙台"
         ],
@@ -10457,7 +10457,7 @@
     },
     {
         "churchId": "google:11508332731232981333",
-        "googlePlaceTitle": "坂戶デ教会",
+        "googlePlaceTitle": "坂戶教会",
         "title": [
             "坂戶"
         ],
@@ -11405,8 +11405,10 @@
     },
     {
         "churchId": "google:11635514508288239775",
-        "googlePlaceTitle": "デウスエ́アモルナゴイア教会",
-        "title": [],
+        "googlePlaceTitle": "名古屋神は愛なり教会",
+        "title": [
+            "名古屋"
+        ],
         "address": [
             "名古屋市",
             "愛知県"
@@ -11826,7 +11828,7 @@
     },
     {
         "churchId": "google:11693695009451258329",
-        "googlePlaceTitle": "宗教法人 吉祥寺キリスト集会",
+        "googlePlaceTitle": "吉祥寺キリスト集会",
         "title": [
             "吉祥寺"
         ],
@@ -13328,7 +13330,7 @@
     },
     {
         "churchId": "google:11908883016947305886",
-        "googlePlaceTitle": "宗教法人東京若葉キリスト教会",
+        "googlePlaceTitle": "東京若葉キリスト教会",
         "title": [
             "東京",
             "若葉"
@@ -14212,7 +14214,7 @@
     },
     {
         "churchId": "google:12022058012945107394",
-        "googlePlaceTitle": "宗教法人使徒の信仰川崎キリスト教会",
+        "googlePlaceTitle": "使徒の信仰川崎キリスト教会",
         "title": [
             "川崎"
         ],
@@ -14840,7 +14842,7 @@
     },
     {
         "churchId": "google:12127466059215244806",
-        "googlePlaceTitle": "宗教法人 大阪希望教会",
+        "googlePlaceTitle": "大阪希望教会",
         "title": [
             "大阪"
         ],
@@ -16618,7 +16620,7 @@
     },
     {
         "churchId": "google:12372765701472218650",
-        "googlePlaceTitle": "宗教法人滝山聖書バプテスト教会",
+        "googlePlaceTitle": "滝山聖書バプテスト教会",
         "title": [],
         "address": [
             "東久留米市",
@@ -18252,9 +18254,9 @@
     },
     {
         "churchId": "google:12589089421359343286",
-        "googlePlaceTitle": "滋賀ファミリー61教会",
+        "googlePlaceTitle": "しがファミリー61教会",
         "title": [
-            "滋賀"
+            "しが"
         ],
         "address": [
             "湖南市",
@@ -19955,7 +19957,7 @@
     },
     {
         "churchId": "google:12883591515055389613",
-        "googlePlaceTitle": "宗教法人梅美台キリストチャーチ",
+        "googlePlaceTitle": "梅美台キリストチャーチ",
         "title": [],
         "address": [
             "京都府",
@@ -20750,7 +20752,7 @@
     },
     {
         "churchId": "google:13010342118647418144",
-        "googlePlaceTitle": "宗教法人 向島福音自由教会",
+        "googlePlaceTitle": "向島福音自由教会",
         "title": [
             "向島"
         ],
@@ -21191,8 +21193,10 @@
     },
     {
         "churchId": "google:13076297597277173337",
-        "googlePlaceTitle": "純福音",
-        "title": [],
+        "googlePlaceTitle": "純福音堺教会",
+        "title": [
+            "堺"
+        ],
         "address": [
             "堺市堺区",
             "大阪府",
@@ -21972,7 +21976,7 @@
     },
     {
         "churchId": "google:1317484985466146649",
-        "googlePlaceTitle": "宗教法人草加福音自由教会",
+        "googlePlaceTitle": "草加福音自由教会",
         "title": [
             "草加"
         ],
@@ -22401,7 +22405,7 @@
     },
     {
         "churchId": "google:13257919620043424867",
-        "googlePlaceTitle": "福崎",
+        "googlePlaceTitle": "福崎教会",
         "title": [
             "福崎"
         ],
@@ -23329,7 +23333,7 @@
     },
     {
         "churchId": "google:13370125583728798474",
-        "googlePlaceTitle": "宗教法人聖イエス教会狭山教会",
+        "googlePlaceTitle": "聖イエス教会狭山教会",
         "title": [
             "狭山"
         ],
@@ -25494,7 +25498,7 @@
     },
     {
         "churchId": "google:13687661218799872442",
-        "googlePlaceTitle": "日本キリスト教団 京北",
+        "googlePlaceTitle": "日本キリスト教団 京北教会",
         "title": [
             "北"
         ],
@@ -25856,10 +25860,10 @@
     },
     {
         "churchId": "google:13736005345859551643",
-        "googlePlaceTitle": "教会オフゴデ平塚金川",
+        "googlePlaceTitle": "教会オフゴデ平塚神奈川",
         "title": [
             "平塚",
-            "金川"
+            "神奈川"
         ],
         "address": [
             "八重咲町",
@@ -26209,9 +26213,9 @@
     },
     {
         "churchId": "google:13802711770665568768",
-        "googlePlaceTitle": "東京デレアム教会",
+        "googlePlaceTitle": "东京デレアム教会",
         "title": [
-            "東京"
+            "东京"
         ],
         "address": [
             "光が丘",
@@ -26443,8 +26447,10 @@
     },
     {
         "churchId": "google:13835464561707543633",
-        "googlePlaceTitle": "バプテストアトスデモカ教会",
-        "title": [],
+        "googlePlaceTitle": "真岡バプテストアトス教会",
+        "title": [
+            "真岡"
+        ],
         "address": [
             "並木町",
             "栃木県",
@@ -26557,7 +26563,7 @@
     },
     {
         "churchId": "google:13849653119283292305",
-        "googlePlaceTitle": "宗教法人めぐみの丘チャペル",
+        "googlePlaceTitle": "めぐみの丘チャペル",
         "title": [],
         "address": [
             "千葉県",
@@ -26614,7 +26620,7 @@
     },
     {
         "churchId": "google:13872163521606726245",
-        "googlePlaceTitle": "油木デ教会",
+        "googlePlaceTitle": "油木教会",
         "title": [
             "油木"
         ],
@@ -30827,9 +30833,9 @@
     },
     {
         "churchId": "google:1450716067479716707",
-        "googlePlaceTitle": "JCOB松戸",
+        "googlePlaceTitle": "JCOB松戶",
         "title": [
-            "松戸"
+            "松戶"
         ],
         "address": [
             "千葉県",
@@ -30991,9 +30997,9 @@
     },
     {
         "churchId": "google:14529869765091940830",
-        "googlePlaceTitle": "JTG伊那",
+        "googlePlaceTitle": "JTG伊奈",
         "title": [
-            "伊那"
+            "伊奈"
         ],
         "address": [
             "伊那市",
@@ -32734,7 +32740,7 @@
     },
     {
         "churchId": "google:14791963757233088295",
-        "googlePlaceTitle": "宗教法人徳島聖書バプテスト教会",
+        "googlePlaceTitle": "徳島聖書バプテスト教会",
         "title": [
             "徳島"
         ],
@@ -32853,7 +32859,7 @@
     },
     {
         "churchId": "google:14821420878260595685",
-        "googlePlaceTitle": "ホサナ・",
+        "googlePlaceTitle": "ホサナ",
         "title": [],
         "address": [
             "愛知県",
@@ -33259,9 +33265,9 @@
     },
     {
         "churchId": "google:14889868034077303151",
-        "googlePlaceTitle": "滋賀プレスビテリアナレノヷダデ教会",
+        "googlePlaceTitle": "しがプレスビテリアナレノヷダ教会",
         "title": [
-            "滋賀"
+            "しが"
         ],
         "address": [
             "湖南市",
@@ -33514,9 +33520,9 @@
     },
     {
         "churchId": "google:14933925210831204897",
-        "googlePlaceTitle": "東京ムルティクルテゥラル教会",
+        "googlePlaceTitle": "东京ムルティクルテゥラル教会",
         "title": [
-            "東京"
+            "东京"
         ],
         "address": [
             "墨田区",
@@ -35558,9 +35564,9 @@
     },
     {
         "churchId": "google:15220205725775606744",
-        "googlePlaceTitle": "岐阜クリスチャン集会教会",
+        "googlePlaceTitle": "ぎふクリスチャン集会教会",
         "title": [
-            "岐阜"
+            "ぎふ"
         ],
         "address": [
             "加茂郡",
@@ -35580,7 +35586,7 @@
     },
     {
         "churchId": "google:15223795146304768006",
-        "googlePlaceTitle": "宗教法人 水戸愛の教会",
+        "googlePlaceTitle": "水戸愛の教会",
         "title": [
             "水戸"
         ],
@@ -36674,7 +36680,7 @@
     },
     {
         "churchId": "google:15430130567292752173",
-        "googlePlaceTitle": "宗教法人グレース宣教会 高美会堂",
+        "googlePlaceTitle": "グレース宣教会 高美会堂",
         "title": [
             "高美"
         ],
@@ -38073,7 +38079,7 @@
     },
     {
         "churchId": "google:15624291001528292052",
-        "googlePlaceTitle": "宗教法人基督兄弟団上田教会",
+        "googlePlaceTitle": "基督兄弟団上田教会",
         "title": [
             "上田"
         ],
@@ -38164,9 +38170,9 @@
     },
     {
         "churchId": "google:15640784792406252004",
-        "googlePlaceTitle": "アワケニング東京教会",
+        "googlePlaceTitle": "アワケニング东京教会",
         "title": [
-            "東京"
+            "东京"
         ],
         "address": [
             "北上野",
@@ -39348,7 +39354,7 @@
     },
     {
         "churchId": "google:15819512843042149065",
-        "googlePlaceTitle": "宗教法人日本アッセンブリーズ・オブ・ゴッド教団 中村福音キリスト教会",
+        "googlePlaceTitle": "日本アッセンブリーズ・オブ・ゴッド教団 中村福音キリスト教会",
         "title": [
             "中村"
         ],
@@ -39567,7 +39573,7 @@
     },
     {
         "churchId": "google:15868537419454005780",
-        "googlePlaceTitle": "春日井福音キリスト教会 宗教法人",
+        "googlePlaceTitle": "春日井福音キリスト教会",
         "title": [
             "春日井"
         ],
@@ -40613,7 +40619,7 @@
     },
     {
         "churchId": "google:16015198459599245557",
-        "googlePlaceTitle": "宗教法人 日本キリスト改革派田無教会",
+        "googlePlaceTitle": "日本キリスト改革派田無教会",
         "title": [
             "田無"
         ],
@@ -41505,7 +41511,7 @@
     },
     {
         "churchId": "google:16146821731906582956",
-        "googlePlaceTitle": "宗教法人山梨中央教会",
+        "googlePlaceTitle": "山梨中央教会",
         "title": [
             "中央",
             "山梨"
@@ -41792,9 +41798,9 @@
     },
     {
         "churchId": "google:16185107790151850748",
-        "googlePlaceTitle": "福島市ニキリストロカレオフ教会",
+        "googlePlaceTitle": "福島ニキリストロカレオフ教会",
         "title": [
-            "福島市"
+            "福島"
         ],
         "address": [
             "小屋",
@@ -41905,9 +41911,9 @@
     },
     {
         "churchId": "google:16199709402982739480",
-        "googlePlaceTitle": "JMEAD高丘",
+        "googlePlaceTitle": "JMEAD高岡",
         "title": [
-            "高丘"
+            "高岡"
         ],
         "address": [
             "浜松市中区",
@@ -43966,9 +43972,9 @@
     },
     {
         "churchId": "google:16491553151273413207",
-        "googlePlaceTitle": "東京ウニオン教会",
+        "googlePlaceTitle": "东京ウニオン教会",
         "title": [
-            "東京"
+            "东京"
         ],
         "address": [
             "東京都",
@@ -45853,7 +45859,7 @@
     },
     {
         "churchId": "google:1675279358786955719",
-        "googlePlaceTitle": "岩倉アッセンブレイア・デ・デウスデ教会",
+        "googlePlaceTitle": "岩倉アッセンブレイア・デ・デウス教会",
         "title": [
             "岩倉"
         ],
@@ -45950,9 +45956,9 @@
     },
     {
         "churchId": "google:16761763618782257349",
-        "googlePlaceTitle": "リフェ国際教会オフ東松山市",
+        "googlePlaceTitle": "リフェ国際教会オフ東松山",
         "title": [
-            "東松山市"
+            "東松山"
         ],
         "address": [
             "六軒町",
@@ -46158,8 +46164,10 @@
     },
     {
         "churchId": "google:16788255951172026484",
-        "googlePlaceTitle": "プロテスタント",
-        "title": [],
+        "googlePlaceTitle": "東京ビジョン教会 東京VISION教会대한예수교장로회 동경비젼교회",
+        "title": [
+            "東京"
+        ],
         "address": [
             "東京都",
             "港区",
@@ -47392,9 +47400,9 @@
     },
     {
         "churchId": "google:1699544218257807784",
-        "googlePlaceTitle": "ペンテコステ宣教キリスト教会4テーワッチ東京",
+        "googlePlaceTitle": "ペンテコステ宣教キリスト教会4テーワッチ东京",
         "title": [
-            "東京"
+            "东京"
         ],
         "address": [
             "北砂",
@@ -47567,7 +47575,7 @@
     },
     {
         "churchId": "google:17024484425621619286",
-        "googlePlaceTitle": "宗教法人日本基督教団 平塚・富士見町教会",
+        "googlePlaceTitle": "日本基督教団 平塚・富士見町教会",
         "title": [
             "富士見町",
             "平塚"
@@ -47665,7 +47673,7 @@
     },
     {
         "churchId": "google:17040705028223693404",
-        "googlePlaceTitle": "日本キリスト教団世真留",
+        "googlePlaceTitle": "日本キリスト教団世真留教会",
         "title": [],
         "address": [
             "愛知県",
@@ -47734,9 +47742,9 @@
     },
     {
         "churchId": "google:17051228614525208928",
-        "googlePlaceTitle": "クレウズキルチェ東京",
+        "googlePlaceTitle": "クレウズキルチェ东京",
         "title": [
-            "東京"
+            "东京"
         ],
         "address": [
             "北品川",
@@ -50403,7 +50411,7 @@
     },
     {
         "churchId": "google:17445594595327538630",
-        "googlePlaceTitle": "宗教法人 タリタ.クム恵み多きイエスキリスト福音教会",
+        "googlePlaceTitle": "タリタ.クム恵み多きイエスキリスト福音教会",
         "title": [],
         "address": [
             "下松市",
@@ -52005,9 +52013,9 @@
     },
     {
         "churchId": "google:17681902593962322480",
-        "googlePlaceTitle": "東京ソフイア国際教会",
+        "googlePlaceTitle": "东京ソフイア国際教会",
         "title": [
-            "東京"
+            "东京"
         ],
         "address": [
             "後楽",
@@ -52045,10 +52053,10 @@
     },
     {
         "churchId": "google:17690465860492160127",
-        "googlePlaceTitle": "東京バプテスト教会TBC実郷",
+        "googlePlaceTitle": "东京バプテスト教会TBC実郷",
         "title": [
-            "実郷",
-            "東京"
+            "东京",
+            "実郷"
         ],
         "address": [
             "三郷市",
@@ -52203,9 +52211,9 @@
     },
     {
         "churchId": "google:1771386991272438353",
-        "googlePlaceTitle": "東京ハップイプレスブイテリアン教会",
+        "googlePlaceTitle": "东京ハップイプレスブイテリアン教会",
         "title": [
-            "東京"
+            "东京"
         ],
         "address": [
             "亀戸",
@@ -52857,7 +52865,7 @@
     },
     {
         "churchId": "google:17818972525623470230",
-        "googlePlaceTitle": "ペンテコステDEUSエ́AMOR教会",
+        "googlePlaceTitle": "神は愛なりペンテコステ教会",
         "title": [],
         "address": [
             "安城市",
@@ -55873,9 +55881,9 @@
     },
     {
         "churchId": "google:18279016951884536581",
-        "googlePlaceTitle": "カルバリーチャペルロゴス東京",
+        "googlePlaceTitle": "カルバリーチャペルロゴス东京",
         "title": [
-            "東京"
+            "东京"
         ],
         "address": [
             "東京都",
@@ -57913,7 +57921,7 @@
     },
     {
         "churchId": "google:1972101511605087755",
-        "googlePlaceTitle": "宗教法人町田純福音教会",
+        "googlePlaceTitle": "町田純福音教会",
         "title": [
             "町田"
         ],
@@ -60816,7 +60824,7 @@
     },
     {
         "churchId": "google:2379181376493777781",
-        "googlePlaceTitle": "宗教法人日本長老教会 久我山キリスト教会",
+        "googlePlaceTitle": "日本長老教会 久我山キリスト教会",
         "title": [
             "久我山"
         ],
@@ -62474,9 +62482,9 @@
     },
     {
         "churchId": "google:2632707367087880486",
-        "googlePlaceTitle": "RCCGドミニオンサンクチュアリ東京",
+        "googlePlaceTitle": "RCCGドミニオンサンクチュアリ东京",
         "title": [
-            "東京"
+            "东京"
         ],
         "address": [
             "墨田",
@@ -62700,9 +62708,9 @@
     },
     {
         "churchId": "google:266445390016453850",
-        "googlePlaceTitle": "津市ミッションアポイオ",
+        "googlePlaceTitle": "つしミッションアポイオ",
         "title": [
-            "津市"
+            "つし"
         ],
         "address": [
             "三重県",
@@ -63494,8 +63502,10 @@
     },
     {
         "churchId": "google:2772005929904607513",
-        "googlePlaceTitle": "日本キリスト教会",
-        "title": [],
+        "googlePlaceTitle": "日本キリスト教会釧路教会",
+        "title": [
+            "釧路"
+        ],
         "address": [
             "北海道",
             "柳町",
@@ -66007,7 +66017,7 @@
     },
     {
         "churchId": "google:3087672915895518037",
-        "googlePlaceTitle": "宗教法人日本基督教団川口教会",
+        "googlePlaceTitle": "日本基督教団川口教会",
         "title": [
             "川口"
         ],
@@ -67329,9 +67339,9 @@
     },
     {
         "churchId": "google:3307992362171810848",
-        "googlePlaceTitle": "日本基督",
+        "googlePlaceTitle": "日本基督教団 香貫教会",
         "title": [
-            "日本"
+            "香貫"
         ],
         "address": [
             "上香貫",
@@ -67462,9 +67472,9 @@
     },
     {
         "churchId": "google:3322847001377820112",
-        "googlePlaceTitle": "東京インテルデノミナセィ福音派インドネセィア教会",
+        "googlePlaceTitle": "东京インテルデノミナセィ福音派インドネセィア教会",
         "title": [
-            "東京"
+            "东京"
         ],
         "address": [
             "一番町",
@@ -68317,7 +68327,7 @@
         "churchId": "google:3455744954146231925",
         "googlePlaceTitle": "単立岡山福音教会",
         "title": [
-            "岡山"
+            "立岡"
         ],
         "address": [
             "岡山市中区",
@@ -68819,7 +68829,7 @@
     },
     {
         "churchId": "google:3567650578591729182",
-        "googlePlaceTitle": "宗教法人日本アッセンブリーズ・オブ・ゴッド教団 四万十キリスト教会",
+        "googlePlaceTitle": "日本アッセンブリーズ・オブ・ゴッド教団 四万十キリスト教会",
         "title": [
             "四万十"
         ],
@@ -69059,7 +69069,7 @@
     },
     {
         "churchId": "google:3613084170583331875",
-        "googlePlaceTitle": "宗教法人日本アッセンブリーズ・オブ・ゴッド教団 高知聖書教会",
+        "googlePlaceTitle": "日本アッセンブリーズ・オブ・ゴッド教団 高知聖書教会",
         "title": [
             "高知"
         ],
@@ -69834,9 +69844,9 @@
     },
     {
         "churchId": "google:3737479967073314930",
-        "googlePlaceTitle": "津市福音派アッセンブレイア・デ・デウスJMEAD教会",
+        "googlePlaceTitle": "つし福音派アッセンブレイア・デ・デウスJMEAD教会",
         "title": [
-            "津市"
+            "つし"
         ],
         "address": [
             "三重県",
@@ -70969,9 +70979,9 @@
     },
     {
         "churchId": "google:3902190432582362407",
-        "googlePlaceTitle": "カルバリーチャペル鹿児島",
+        "googlePlaceTitle": "カルバリーチャペル鹿儿岛",
         "title": [
-            "鹿児島"
+            "鹿儿岛"
         ],
         "address": [
             "中央",
@@ -73675,7 +73685,7 @@
     },
     {
         "churchId": "google:4307544610563723855",
-        "googlePlaceTitle": "宗教法人日本バプテスト同盟関東学院教会追浜チャペル",
+        "googlePlaceTitle": "日本バプテスト同盟関東学院教会追浜チャペル",
         "title": [
             "追浜",
             "関東"
@@ -74670,8 +74680,10 @@
     },
     {
         "churchId": "google:4463834160151944650",
-        "googlePlaceTitle": "東洋ローア・キリスト伝道教会",
-        "title": [],
+        "googlePlaceTitle": "東洋ローア・キリスト伝道教会名古屋伝道所",
+        "title": [
+            "名古屋"
+        ],
         "address": [
             "大治町",
             "愛知県",
@@ -75273,7 +75285,7 @@
     },
     {
         "churchId": "google:4561370390194441480",
-        "googlePlaceTitle": "ペンテコステDEUSエ́AMOR教会",
+        "googlePlaceTitle": "神は愛なりペンテコステ教会",
         "title": [],
         "address": [
             "上島",
@@ -75293,7 +75305,7 @@
     },
     {
         "churchId": "google:4564030332864051019",
-        "googlePlaceTitle": "宗教法人クロスロード・ゴスペルチャーチ",
+        "googlePlaceTitle": "クロスロード・ゴスペルチャーチ",
         "title": [],
         "address": [
             "佐賀県",
@@ -75527,7 +75539,7 @@
     },
     {
         "churchId": "google:4593402755075499894",
-        "googlePlaceTitle": "宗教法人バプテスト望キリスト教会",
+        "googlePlaceTitle": "バプテスト望キリスト教会",
         "title": [],
         "address": [
             "新生",
@@ -79486,7 +79498,7 @@
     },
     {
         "churchId": "google:5193953279967009999",
-        "googlePlaceTitle": "金沢愛",
+        "googlePlaceTitle": "金沢愛キリスト教会",
         "title": [
             "金沢"
         ],
@@ -80454,7 +80466,7 @@
     },
     {
         "churchId": "google:5298737951316416777",
-        "googlePlaceTitle": "宗教法人 高知イエス之御霊教会",
+        "googlePlaceTitle": "高知イエス之御霊教会",
         "title": [
             "高知"
         ],
@@ -81818,8 +81830,10 @@
     },
     {
         "churchId": "google:5523736653697127008",
-        "googlePlaceTitle": "リトルワンズミッションインターナショナルチャーチ",
-        "title": [],
+        "googlePlaceTitle": "LOM日本橋教会",
+        "title": [
+            "日本橋"
+        ],
         "address": [
             "日本橋蛎殻町",
             "東京都中央区"
@@ -82657,7 +82671,7 @@
     },
     {
         "churchId": "google:564465472069651538",
-        "googlePlaceTitle": "宗教法人神戸基督教改革宗長老会",
+        "googlePlaceTitle": "神戸基督教改革宗長老会",
         "title": [
             "神戸"
         ],
@@ -83858,9 +83872,9 @@
     },
     {
         "churchId": "google:5792218999456187940",
-        "googlePlaceTitle": "たきざわチャペル",
+        "googlePlaceTitle": "滝沢チャペル",
         "title": [
-            "たきざわ"
+            "滝沢"
         ],
         "address": [
             "浜松市北区",
@@ -83930,7 +83944,7 @@
     },
     {
         "churchId": "google:5822626571586571330",
-        "googlePlaceTitle": "名古屋ペンテコステデウスエ́アモルデ教会",
+        "googlePlaceTitle": "名古屋神は愛なりペンテコステ教会",
         "title": [
             "名古屋"
         ],
@@ -84756,9 +84770,9 @@
     },
     {
         "churchId": "google:5934198178333855636",
-        "googlePlaceTitle": "オアセィス東京",
+        "googlePlaceTitle": "オアセィス东京",
         "title": [
-            "東京"
+            "东京"
         ],
         "address": [
             "東京都",
@@ -85682,9 +85696,9 @@
     },
     {
         "churchId": "google:6082405136613770887",
-        "googlePlaceTitle": "IFGF東京",
+        "googlePlaceTitle": "IFGF东京",
         "title": [
-            "東京"
+            "东京"
         ],
         "address": [
             "旭町",
@@ -86643,7 +86657,7 @@
     },
     {
         "churchId": "google:6233795232239554762",
-        "googlePlaceTitle": "宗教法人習志野バプテスト教会 流山伝道所",
+        "googlePlaceTitle": "習志野バプテスト教会 流山伝道所",
         "title": [
             "流山",
             "習志野"
@@ -87256,9 +87270,9 @@
     },
     {
         "churchId": "google:6353194542558570448",
-        "googlePlaceTitle": "IAEI岐阜",
+        "googlePlaceTitle": "IAEIぎふ",
         "title": [
-            "岐阜"
+            "ぎふ"
         ],
         "address": [
             "岐阜県",
@@ -88048,7 +88062,7 @@
     },
     {
         "churchId": "google:6483409653273512060",
-        "googlePlaceTitle": "宗教法人中振キリストの教会",
+        "googlePlaceTitle": "中振キリストの教会",
         "title": [],
         "address": [
             "大阪府",
@@ -88502,7 +88516,7 @@
     },
     {
         "churchId": "google:6545575814491265478",
-        "googlePlaceTitle": "各务原プリメイラ教会バプテストデ",
+        "googlePlaceTitle": "各务原プリメイラ教会バプテスト",
         "title": [
             "各务原"
         ],
@@ -89706,7 +89720,7 @@
     },
     {
         "churchId": "google:6691824431260183217",
-        "googlePlaceTitle": "グレース宣教会",
+        "googlePlaceTitle": "グレース宣教会久宝チャペル.",
         "title": [],
         "address": [
             "八尾市",
@@ -90371,9 +90385,9 @@
     },
     {
         "churchId": "google:6782505172198313318",
-        "googlePlaceTitle": "イエステヘ福音教会千葉",
+        "googlePlaceTitle": "イエステヘ福音教会ちば",
         "title": [
-            "千葉"
+            "ちば"
         ],
         "address": [
             "千葉県",
@@ -91261,9 +91275,9 @@
     },
     {
         "churchId": "google:6889968816164697115",
-        "googlePlaceTitle": "東京ジュサラング教会",
+        "googlePlaceTitle": "东京ジュサラング教会",
         "title": [
-            "東京"
+            "东京"
         ],
         "address": [
             "新宿区",
@@ -91716,7 +91730,7 @@
     },
     {
         "churchId": "google:6935311143116135481",
-        "googlePlaceTitle": "宗教法人八尾福音教会 曙チャペル",
+        "googlePlaceTitle": "八尾福音教会 曙チャペル",
         "title": [
             "八尾"
         ],
@@ -93004,7 +93018,7 @@
     },
     {
         "churchId": "google:7118478650599284745",
-        "googlePlaceTitle": "宗教法人日本聖公会 高知聖パウロ教会",
+        "googlePlaceTitle": "日本聖公会 高知聖パウロ教会",
         "title": [
             "高知"
         ],
@@ -93276,7 +93290,7 @@
     },
     {
         "churchId": "google:7160434716633986243",
-        "googlePlaceTitle": "宗教法人川越聖書教会",
+        "googlePlaceTitle": "川越聖書教会",
         "title": [
             "川越"
         ],
@@ -93949,9 +93963,9 @@
     },
     {
         "churchId": "google:7247782546054769613",
-        "googlePlaceTitle": "ヱステ東京ウニオン教会",
+        "googlePlaceTitle": "ヱステ东京ウニオン教会",
         "title": [
-            "東京"
+            "东京"
         ],
         "address": [
             "三鷹市",
@@ -96602,9 +96616,9 @@
     },
     {
         "churchId": "google:762193197388720572",
-        "googlePlaceTitle": "フレエドム東京ヲルシプセンター",
+        "googlePlaceTitle": "フレエドム东京ヲルシプセンター",
         "title": [
-            "東京"
+            "东京"
         ],
         "address": [
             "東京都",
@@ -97489,7 +97503,7 @@
     },
     {
         "churchId": "google:7742612135795250018",
-        "googlePlaceTitle": "宗教法人聖イエス会 マリヤ教会",
+        "googlePlaceTitle": "聖イエス会 マリヤ教会",
         "title": [],
         "address": [
             "日立市",
@@ -97747,7 +97761,7 @@
     },
     {
         "churchId": "google:7774023604987179596",
-        "googlePlaceTitle": "宗教法人沖縄聖書教会",
+        "googlePlaceTitle": "沖縄聖書教会",
         "title": [
             "沖縄"
         ],
@@ -99358,9 +99372,9 @@
     },
     {
         "churchId": "google:8003788520392987114",
-        "googlePlaceTitle": "神戸ウニオン教会",
+        "googlePlaceTitle": "神戶ウニオン教会",
         "title": [
-            "神戸"
+            "神戶"
         ],
         "address": [
             "兵庫県",
@@ -100164,7 +100178,7 @@
     },
     {
         "churchId": "google:8139838421903698155",
-        "googlePlaceTitle": "焼津アデヹンティスタドセ́ティモディアデ教会",
+        "googlePlaceTitle": "焼津アデヹンティスタドセ́ティモディア教会",
         "title": [
             "焼津"
         ],
@@ -101718,7 +101732,7 @@
     },
     {
         "churchId": "google:8357279087520083052",
-        "googlePlaceTitle": "宗教法人東京中央教会",
+        "googlePlaceTitle": "東京中央教会",
         "title": [
             "東京中央"
         ],
@@ -102118,9 +102132,9 @@
     },
     {
         "churchId": "google:8425512762023392634",
-        "googlePlaceTitle": "東京国際クリスチャンフェローシップ",
+        "googlePlaceTitle": "东京国際クリスチャンフェローシップ",
         "title": [
-            "東京"
+            "东京"
         ],
         "address": [
             "伊興",
@@ -103104,7 +103118,7 @@
     },
     {
         "churchId": "google:8578690303336259801",
-        "googlePlaceTitle": "宗教法人 日本基督教団 三里塚教会",
+        "googlePlaceTitle": "日本基督教団 三里塚教会",
         "title": [
             "三里"
         ],
@@ -105231,9 +105245,9 @@
     },
     {
         "churchId": "google:8843711806117108309",
-        "googlePlaceTitle": "コルネルストネ東京ビリングアルクリスチャン教会",
+        "googlePlaceTitle": "コルネルストネ东京ビリングアルクリスチャン教会",
         "title": [
-            "東京"
+            "东京"
         ],
         "address": [
             "南長崎",
@@ -106162,7 +106176,7 @@
         "churchId": "google:8936876971814287439",
         "googlePlaceTitle": "単立町田バプテスト教会",
         "title": [
-            "町田"
+            "立町"
         ],
         "address": [
             "つくし野",
@@ -106245,7 +106259,7 @@
     },
     {
         "churchId": "google:8953090378212872256",
-        "googlePlaceTitle": "首里キリスト教会 宗教法人セブンスデー・アドベンチスト教団",
+        "googlePlaceTitle": "首里キリスト教会 セブンスデー・アドベンチスト教団",
         "title": [
             "首里"
         ],
@@ -107144,9 +107158,7 @@
     {
         "churchId": "google:9092264996903312197",
         "googlePlaceTitle": "甲府聖書バプテスト教会",
-        "title": [
-            "甲府"
-        ],
+        "title": [],
         "address": [
             "山梨県",
             "桜井町",
@@ -107752,9 +107764,9 @@
     },
     {
         "churchId": "google:9177883366161131371",
-        "googlePlaceTitle": "勝利ファミリーセンター東京",
+        "googlePlaceTitle": "勝利ファミリーセンター东京",
         "title": [
-            "東京"
+            "东京"
         ],
         "address": [
             "東京都",
@@ -108482,7 +108494,7 @@
     },
     {
         "churchId": "google:9290869555430627589",
-        "googlePlaceTitle": "宗教法人 神戸フィラデルフィア教会",
+        "googlePlaceTitle": "神戸フィラデルフィア教会",
         "title": [
             "神戸"
         ],
@@ -109120,7 +109132,7 @@
     },
     {
         "churchId": "google:9379476185983646317",
-        "googlePlaceTitle": "宗教法人日本同盟基督教団川西聖書教会",
+        "googlePlaceTitle": "日本同盟基督教団川西聖書教会",
         "title": [
             "川西"
         ],
@@ -109784,9 +109796,9 @@
     },
     {
         "churchId": "google:9479100844721771170",
-        "googlePlaceTitle": "神戸ニキリストロカレオフ教会",
+        "googlePlaceTitle": "神戶ニキリストロカレオフ教会",
         "title": [
-            "神戸"
+            "神戶"
         ],
         "address": [
             "兵庫県",
@@ -110267,7 +110279,7 @@
     },
     {
         "churchId": "google:9566292592139037609",
-        "googlePlaceTitle": "宗教法人日本ホーリネス教団池の上キリスト教会",
+        "googlePlaceTitle": "日本ホーリネス教団池の上キリスト教会",
         "title": [
             "池の上"
         ],
@@ -111597,7 +111609,7 @@
     },
     {
         "churchId": "google:9781139342459581333",
-        "googlePlaceTitle": "宗教法人香川イエス之御霊教会",
+        "googlePlaceTitle": "香川イエス之御霊教会",
         "title": [
             "香川"
         ],

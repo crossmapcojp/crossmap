@@ -22,7 +22,7 @@ import org.gnit.lucenekmp.index.IndexWriterConfig
 import org.gnit.lucenekmp.store.FSDirectory
 
 object ChurchIndex {
-    const val SCHEMA_VERSION = 9
+    const val SCHEMA_VERSION = 11
     const val FIELD_ID = "id"
     const val FIELD_NAME = "name"
     const val FIELD_NAME_EXACT = "name_exact"
@@ -33,8 +33,14 @@ object ChurchIndex {
     const val FIELD_NAME_PT = "name_pt"
     const val FIELD_NAME_ID = "name_id"
     const val FIELD_NAME_OTHER = "name_other"
+    const val FIELD_NAME_READING = "name_reading"
+    const val FIELD_NAME_READING_EXACT = "name_reading_exact"
     const val FIELD_CATEGORY = "category"
+    const val FIELD_CATEGORY_READING = "category_reading"
+    const val FIELD_CATEGORY_READING_EXACT = "category_reading_exact"
     const val FIELD_DENOMINATION = "denomination"
+    const val FIELD_DENOMINATION_READING = "denomination_reading"
+    const val FIELD_DENOMINATION_READING_EXACT = "denomination_reading_exact"
     const val FIELD_ADDRESS = "address"
     const val FIELD_ADDRESS_GEONAME_CODE = "address_geoname_code"
     const val FIELD_ADDRESS_PREFECTURE = "address_prefecture"
@@ -51,6 +57,7 @@ object ChurchIndex {
     const val FIELD_CONTENT = "content"
     const val FIELD_SOCIAL = "social"
     const val FIELD_GEONAME = "geoname"
+    const val FIELD_GEONAME_READING = "geoname_reading"
     const val FIELD_SEARCH_COMPACT = "search_compact"
     const val FIELD_TITLE_LANGUAGE = "title_language"
     const val FIELD_CONTENT_TYPE = "content_type"
@@ -97,10 +104,13 @@ object ChurchIndex {
         else -> FIELD_NAME_OTHER
     }
 
-    fun normalizeExactName(value: String): String = value
-        .trim()
-        .lowercase()
-        .replace(Regex("""\s+"""), " ")
+    fun normalizeExactName(value: String): String {
+        val normalized = value.trim().lowercase().replace(Regex("""\s+"""), " ")
+        return if (normalized.any(::isJapaneseScript)) normalized.replace(" ", "") else normalized
+    }
+
+    private fun isJapaneseScript(value: Char): Boolean =
+        value in '\u3040'..'\u30ff' || value in '\u3400'..'\u9fff'
 
     fun build(
         indexPath: Path,
@@ -164,10 +174,48 @@ object ChurchIndex {
             .filter(String::isNotBlank)
             .distinct()
         denominationNames.forEach { add(TextField(FIELD_DENOMINATION, it, Field.Store.YES)) }
+        val nameReadings = if (languageCode == "ja") readingVariants(names) else emptyList()
+        val denominationReadings = if (languageCode == "ja") readingVariants(denominationNames) else emptyList()
+        val categoryReadings = if (languageCode == "ja") {
+            readingVariants(listOfNotNull(category?.takeIf(String::isNotBlank)))
+        } else {
+            emptyList()
+        }
+        val japaneseGeoNames = if (languageCode == "ja") {
+            (
+                cleanTranslatedGeoNames + listOfNotNull(
+                    normalizedAddress.prefecture,
+                    normalizedAddress.county,
+                    normalizedAddress.municipality,
+                    normalizedAddress.cityWard,
+                    normalizedAddress.locality,
+                )
+                ).distinct()
+        } else {
+            emptyList()
+        }
+        val geonameReadings = readingVariants(japaneseGeoNames)
+        nameReadings.forEach { add(TextField(FIELD_NAME_READING, it, Field.Store.NO)) }
+        denominationReadings.forEach { add(TextField(FIELD_DENOMINATION_READING, it, Field.Store.NO)) }
+        categoryReadings.forEach { add(TextField(FIELD_CATEGORY_READING, it, Field.Store.NO)) }
+        geonameReadings.forEach { add(TextField(FIELD_GEONAME_READING, it, Field.Store.NO)) }
+        nameReadings.map(::compactReading).distinct().forEach {
+            add(StringField(FIELD_NAME_READING_EXACT, it, Field.Store.NO))
+        }
+        denominationReadings.map(::compactReading).distinct().forEach {
+            add(StringField(FIELD_DENOMINATION_READING_EXACT, it, Field.Store.NO))
+        }
+        categoryReadings.map(::compactReading).distinct().forEach {
+            add(StringField(FIELD_CATEGORY_READING_EXACT, it, Field.Store.NO))
+        }
         val compactSearchText = buildList {
             addAll(names)
             addAll(cleanTranslatedGeoNames)
             addAll(denominationNames)
+            addAll(nameReadings)
+            addAll(denominationReadings)
+            addAll(categoryReadings)
+            addAll(geonameReadings)
             if (languageCode == "ja") {
                 category?.takeIf(String::isNotBlank)?.let(::add)
                 address.takeIf(String::isNotBlank)?.let(::add)
@@ -211,4 +259,13 @@ object ChurchIndex {
         add(LatLonDocValuesField(FIELD_LOCATION, location.latitude, location.longitude))
         add(StoredField(FIELD_RECORD, json.encodeToString(this@toDocument)))
     }
+
+    private fun readingVariants(values: List<String>): List<String> = values.asSequence()
+        .flatMap { JapaneseReadingNormalizer.searchReadings(it).asSequence() }
+        .filter(String::isNotBlank)
+        .flatMap { reading -> sequenceOf(reading, reading.replace(" ", "")) }
+        .distinct()
+        .toList()
+
+    private fun compactReading(value: String): String = value.replace(" ", "")
 }

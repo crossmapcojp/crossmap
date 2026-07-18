@@ -30,6 +30,19 @@ class GeoNameResolver(private val geonames: List<GeoName>) {
         val explicitAdministrative: Boolean = false,
     )
 
+    private val japaneseReadingsByCode: Map<String, List<String>> by lazy {
+        geonames.associate { geoname ->
+            geoname.code to (
+                listOf(geoname.name, administrativeAlias(geoname.name)) + geoname.aliases
+                ).asSequence()
+                .filter { name -> name.any(::isJapaneseCharacter) }
+                .map(JapaneseReadingNormalizer::compactReading)
+                .filter { it.length >= MIN_GEONAME_MATCH_LENGTH }
+                .distinct()
+                .toList()
+        }
+    }
+
     fun resolve(
         query: String,
         radiusOverrideKm: Double? = null,
@@ -86,8 +99,16 @@ class GeoNameResolver(private val geonames: List<GeoName>) {
             } else {
                 emptyList()
             }
-                (canonicalMatches + jaMatches + translationMatches).asSequence()
+            val readingMatches = if (language == "ja") {
+                japaneseReadingsByCode[geoname.code].orEmpty()
+                    .filter(normalized::contains)
+                    .map { matchedText -> Candidate(matchedText, geoname) }
+            } else {
+                emptyList()
             }
+                (canonicalMatches + jaMatches + translationMatches + readingMatches).asSequence()
+            }
+            .distinctBy { it.matchedText to it.geoname.code }
             .sortedByDescending { it.matchedText.length }
             .toList()
         logger.trace { "geoname-resolve: ${candidates.size} candidate(s) matched: ${candidates.joinToString { "'${it.matchedText}' -> ${it.geoname.name}(${it.geoname.type})" }}" }
@@ -232,6 +253,9 @@ class GeoNameResolver(private val geonames: List<GeoName>) {
             .removeSuffix("区")
             .removeSuffix("町")
             .removeSuffix("村")
+
+        private fun isJapaneseCharacter(char: Char): Boolean =
+            char in '\u3040'..'\u30ff' || char in '\u3400'..'\u9fff'
 
         fun normalizeQuery(value: String): String = buildString(value.length) {
             value.trim().forEach { char ->

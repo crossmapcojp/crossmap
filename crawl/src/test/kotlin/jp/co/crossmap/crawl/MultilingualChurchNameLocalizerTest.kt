@@ -39,6 +39,72 @@ class MultilingualChurchNameLocalizerTest {
     }
 
     @Test
+    fun retainsParentheticalKanaSubstitutionAsAnAdditionalJapaneseSearchName() {
+        val result = localizer(
+            geonames = mapOf("香貫" to "Kanuki"),
+            denominations = listOf(Denomination("UCCJ", "日本基督教団", listOf("日本キリスト教団"))),
+        ).localize("日本基督(キリスト)教団 香貫教会")
+
+        assertEquals("日本基督教団 香貫教会", result.japaneseName)
+        assertTrue(result.localizedNames.any { it.languageCode == "ja" && it.name == "キリスト教団 香貫教会" })
+        assertTrue(result.localizedNames.single { it.languageCode == "ko" }.name.none { it in 'A'..'Z' || it in 'a'..'z' })
+    }
+
+    @Test
+    fun translatesPortugueseGodIsLoveNameAsAWholePhrase() {
+        val result = localizer(geonames = emptyMap())
+            .localize("IGREJA PENTECOSTAL DEUS É AMOR", evidencedLanguages = listOf("pt"))
+
+        assertEquals("神は愛なりペンテコステ教会", result.japaneseName)
+        assertEquals(
+            "하나님은 사랑이시다 오순절 교회",
+            result.localizedNames.single { it.languageCode == "ko" }.name,
+        )
+        assertTrue(result.localizedNames.single { it.languageCode == "ja" }.name.none { it in 'A'..'Z' })
+
+        val decomposedAccent = localizer(geonames = emptyMap())
+            .localize("Igreja Deus e\u0301 Amor", evidencedLanguages = listOf("pt"))
+        assertEquals("神は愛なり教会", decomposedAccent.japaneseName)
+        assertEquals(
+            "하나님은 사랑이시다 교회",
+            decomposedAccent.localizedNames.single { it.languageCode == "ko" }.name,
+        )
+
+        val decomposedAccentWholeName = localizer(geonames = emptyMap())
+            .localize("IGREJA PENTECOSTAL DEUS E\u0301 AMOR", evidencedLanguages = listOf("pt"))
+        assertEquals("神は愛なりペンテコステ教会", decomposedAccentWholeName.japaneseName)
+        assertEquals(
+            listOf("神は愛なりペンテコステ教会"),
+            decomposedAccentWholeName.localizedNames.filter { it.languageCode == "ja" }.map { it.name },
+        )
+
+        val withPortugueseGeoname = localizer(
+            geonames = mapOf("名古屋" to "Nagoya"),
+            multilingualGeonames = mapOf("名古屋" to mapOf("en" to "Nagoya", "pt" to "Nagoia")),
+        )
+        assertEquals(
+            "名古屋神は愛なり教会",
+            withPortugueseGeoname.localize("Igreja Deus é Amor Nagoia", listOf("pt")).japaneseName,
+        )
+        val withConnector = withPortugueseGeoname.localize(
+            "Igreja Pentecostal Deus é Amor de Nagoya",
+            listOf("pt"),
+        )
+        assertEquals(
+            "名古屋神は愛なりペンテコステ教会",
+            withConnector.japaneseName,
+        )
+        assertEquals(
+            "하나님은 사랑이시다 오순절 교회 나고야",
+            withConnector.localizedNames.single { it.languageCode == "ko" }.name,
+        )
+        assertEquals(
+            listOf("名古屋神は愛なりペンテコステ教会"),
+            withConnector.localizedNames.filter { it.languageCode == "ja" }.map { it.name },
+        )
+    }
+
+    @Test
     fun usesConcreteDenominationCatalogNamesAndKeepsTraditionComponentsSeparate() {
         val denomination = Denomination(
             "JELC",
@@ -246,8 +312,14 @@ class MultilingualChurchNameLocalizerTest {
         assertTrue(snowball.components.all { it.sourceLanguage == "pt" })
         assertEquals("山梨再臨キリスト教会", christComes.japaneseName)
         assertEquals(
-            christComes.localizedNames.size,
-            christComes.localizedNames.map { it.languageCode }.distinct().size,
+            setOf("ja", "en", "ko", "pt", "id", "es"),
+            christComes.localizedNames.map { it.languageCode }.toSet(),
+        )
+        assertEquals(
+            emptySet(),
+            christComes.localizedNames.groupingBy { it.languageCode }.eachCount()
+                .filterValues { it > 1 }
+                .keys,
         )
         assertEquals("Church Christ Is Coming Yamanashi", christComes.localizedNames.single { it.languageCode == "en" }.name)
         assertEquals("世界宣教運動", movement.japaneseName)
