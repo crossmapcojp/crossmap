@@ -15,6 +15,7 @@
     <string name="church_label">教会</string>
     <string name="church_address">住所</string>
     <string name="church_denomination">教派</string>
+    <string name="church_independent">単立</string>
     <string name="church_website">ウェブサイト</string>
     <string name="church_social_links">ソーシャルリンク</string>
     <string name="download_index_prompt">検索データをダウンロードすると、端末上でオフライン検索できます。</string>

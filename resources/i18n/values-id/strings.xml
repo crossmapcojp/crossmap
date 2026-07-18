@@ -15,6 +15,7 @@
     <string name="church_label">Gereja</string>
     <string name="church_address">Alamat</string>
     <string name="church_denomination">Denominasi</string>
+    <string name="church_independent">Independen</string>
     <string name="church_website">Situs web</string>
     <string name="church_social_links">Tautan sosial</string>
     <string name="download_index_prompt">Unduh data pencarian untuk mencari secara luring di perangkat ini.</string>

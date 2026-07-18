@@ -62,4 +62,46 @@ class LocalizedStaticSiteGeneratorTest {
         assertTrue(Files.isRegularFile(output.resolve("en/result.html")))
         assertTrue(Files.readString(output.resolve("sitemap.xml")).contains("xhtml:link"))
     }
+
+    @Test
+    fun rendersIndependentClassificationAboveAddressInEveryLanguage() {
+        val church = json.decodeFromString<List<ChurchRecord>>(
+            Files.readString(projectRoot.resolve("resources/catalog/churches.json")),
+        ).single { it.id == "google:10049608052870801463" }
+        assertEquals("INDEPENDENT_CHURCH", church.denominationId)
+        val denominationCatalogs = Language.entries.associate { language ->
+            language.code to json.decodeFromString<Map<String, String>>(
+                Files.readString(projectRoot.resolve("resources/catalog/denomination-${language.code}-names.json")),
+            )
+        }
+        val expected = mapOf(
+            Language.JAPANESE to "単立",
+            Language.ENGLISH to "Independent",
+            Language.KOREAN to "독립 교회",
+            Language.PORTUGUESE to "Independente",
+            Language.INDONESIAN to "Independen",
+        )
+        val output = Files.createTempDirectory("crossmap-independent-site")
+        try {
+            val generated = LocalizedStaticSiteGenerator(
+                XmlMessageCatalog.load(projectRoot.resolve("resources/i18n")),
+                "https://churches.example",
+            ).generate(
+                churches = listOf(church),
+                denominationEnglishNames = denominationCatalogs.getValue("en"),
+                denominationNamesByLanguage = denominationCatalogs,
+                outputDirectory = output,
+            )
+            generated.churchPages.forEach { page ->
+                val html = Files.readString(page.path)
+                val article = html.substringAfter("<article").substringBefore("</article>")
+                val classification = expected.getValue(page.language)
+                assertTrue(article.contains(classification), page.language.code)
+                assertTrue(article.indexOf(classification) < article.indexOf(church.address), page.language.code)
+                assertFalse(html.contains("INDEPENDENT_CHURCH"), page.language.code)
+            }
+        } finally {
+            output.toFile().deleteRecursively()
+        }
+    }
 }

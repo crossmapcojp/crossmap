@@ -22,6 +22,7 @@ enum class MessageKey(val xmlName: String) {
     CHURCH_LABEL("church_label"),
     CHURCH_ADDRESS("church_address"),
     CHURCH_DENOMINATION("church_denomination"),
+    CHURCH_INDEPENDENT("church_independent"),
     CHURCH_WEBSITE("church_website"),
     CHURCH_SOCIAL_LINKS("church_social_links"),
     DOWNLOAD_INDEX_PROMPT("download_index_prompt"),

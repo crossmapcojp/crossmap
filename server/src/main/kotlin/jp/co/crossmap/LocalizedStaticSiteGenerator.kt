@@ -200,18 +200,23 @@ class LocalizedStaticSiteGenerator(
         val churchName = requireNotNull(localizedDomainText(language, localizedNames, church.englishName, church.name))
         val alternateNames = localizedNames.filter { Language.fromCode(it.languageCode) == language }
             .map(LocalizedName::name).filter(String::isNotBlank).distinct().filterNot { it == churchName }
+        val isIndependent = church.denominationId == "INDEPENDENT_CHURCH"
         val denominationId = church.denominationId?.takeIf(String::isDisplayableDenominationId)
         val denominationValues = denominationId?.let { id ->
             Language.entries.mapNotNull { target ->
                 denominationNamesByLanguage[target.code]?.get(id)?.let { LocalizedName(target.code, it) }
             }
         }.orEmpty()
-        val denominationName = localizedDomainText(
-            language,
-            denominationValues,
-            denominationNamesByLanguage[Language.ENGLISH.code]?.get(denominationId),
-            denominationNamesByLanguage[Language.JAPANESE.code]?.get(denominationId),
-        ).orEmpty()
+        val denominationName = if (isIndependent) {
+            messages.text(language, MessageKey.CHURCH_INDEPENDENT)
+        } else {
+            localizedDomainText(
+                language,
+                denominationValues,
+                denominationNamesByLanguage[Language.ENGLISH.code]?.get(denominationId),
+                denominationNamesByLanguage[Language.JAPANESE.code]?.get(denominationId),
+            ).orEmpty()
+        }
         val website = websitePolicy.publicWebsiteUrl(church)
         val pageFile = "$slug.html"
         val languageLinks = languageLinks(pageFile, false)
