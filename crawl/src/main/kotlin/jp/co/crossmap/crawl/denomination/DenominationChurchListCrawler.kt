@@ -160,7 +160,7 @@ class DenominationChurchListCrawlerRunner(
         if (!Files.isRegularFile(mapFile)) return
         val map = json.decodeFromString<Map<String, String>>(Files.readString(mapFile)).toMutableMap()
         val removedContentHash = map.remove(url.sha1()) ?: return
-        atomicWrite(mapFile, json.encodeToString(map.toSortedMap()))
+        atomicWrite(mapFile, json.encodeToString<Map<String, String>>(map))
         if (removedContentHash !in map.values) {
             Files.deleteIfExists(cacheDirectory.resolve("pages/$removedContentHash.html"))
         }

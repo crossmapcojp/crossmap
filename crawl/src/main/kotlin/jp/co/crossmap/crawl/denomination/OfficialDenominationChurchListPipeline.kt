@@ -19,6 +19,9 @@ data class OfficialDenominationChurchListPipelineReport(
     val jbcChurches: Int,
     val jbbfChurches: Int,
     val jaccChurches: Int,
+    val jhcChurches: Int,
+    val rcjChurches: Int,
+    val igmChurches: Int,
     val cacheHits: Int,
     val reconciliation: OfficialDenominationReconciliationReport?,
 )
@@ -34,6 +37,9 @@ class OfficialDenominationChurchListPipeline(
         JBCDenominationChurchListCrawler(),
         JBBFDenominationChurchListCrawler(),
         JACCDenominationChurchListCrawler(),
+        JHCDenominationChurchListCrawler(),
+        RCJDenominationChurchListCrawler(),
+        IGMDenominationChurchListCrawler(),
     )
 
     fun run(
@@ -57,6 +63,9 @@ class OfficialDenominationChurchListPipeline(
         val jbc = lists.single { it.denominationId == "JBC" }
         val jbbf = lists.single { it.denominationId == "JBBF" }
         val jacc = lists.single { it.denominationId == "JACC" }
+        val jhc = lists.single { it.denominationId == "JHC" }
+        val rcj = lists.single { it.denominationId == "RCJ" }
+        val igm = lists.single { it.denominationId == "IGM" }
         return OfficialDenominationChurchListPipelineReport(
             sources = generic.sources + results.size,
             pages = generic.pages + results.size,
@@ -67,6 +76,9 @@ class OfficialDenominationChurchListPipeline(
             jbcChurches = jbc.churches.size,
             jbbfChurches = jbbf.churches.size,
             jaccChurches = jacc.churches.size,
+            jhcChurches = jhc.churches.size,
+            rcjChurches = rcj.churches.size,
+            igmChurches = igm.churches.size,
             cacheHits = results.count(DenominationChurchListCrawlResult::cacheHit),
             reconciliation = reconciliation,
         )
@@ -82,7 +94,7 @@ class OfficialDenominationChurchListPipeline(
     }
 
     private fun validateProductionLists(lists: List<OfficialDenominationChurchList>) {
-        val minimums = mapOf("UCCJ" to 1_500, "JBC" to 250, "JBBF" to 50, "JACC" to 100)
+        val minimums = mapOf("UCCJ" to 1_500, "JBC" to 250, "JBBF" to 50, "JACC" to 100, "JHC" to 100, "RCJ" to 100, "IGM" to 50)
         lists.forEach { list ->
             require(list.churches.size >= minimums.getValue(list.denominationId)) {
                 "${list.denominationId} official directory unexpectedly contained only ${list.churches.size} rows"

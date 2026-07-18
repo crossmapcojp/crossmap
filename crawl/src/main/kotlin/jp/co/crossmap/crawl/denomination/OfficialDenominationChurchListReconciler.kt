@@ -188,6 +188,9 @@ class OfficialDenominationChurchListReconciler(
         result = when (denominationId) {
             "UCCJ" -> result.replace(Regex("日本(?:基督|キリスト|基督[（(]キリスト[）)])教団"), "")
             "JBC" -> result.replace("日本バプテスト連盟", "")
+            "JHC" -> result.replace("日本ホーリネス教団", "")
+            "RCJ" -> result.replace("日本キリスト改革派教会", "")
+            "IGM" -> result.replace("イムマヌエル綜合伝道団", "")
             else -> result
         }
         return result.replace("基督", "キリスト").replace('ヶ', 'ケ').trim(' ', '・', '･')

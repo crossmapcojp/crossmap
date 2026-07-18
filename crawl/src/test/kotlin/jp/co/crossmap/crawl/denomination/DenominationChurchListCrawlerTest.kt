@@ -218,6 +218,89 @@ class DenominationChurchListCrawlerTest {
     }
 
     @Test
+    fun jhcParserReadsRealChurchRowsFromMultiTableLayout() {
+        val html = """
+            <table>
+              <tr style="background-color: #c200c2">
+                <td>ブロック</td><td>教区</td><td>教会</td><td>郵便番号</td><td>住所</td><td>電話</td><td>FAX</td><td>備考</td>
+              </tr>
+              <tr style="background-color: #000000">
+                <td>関東</td><td>東京教区</td><td>東京ホーリネス教会</td><td>113-0032</td><td>東京都文京区弥生1-1-1</td><td>03-3811-1234</td><td>03-3811-1235</td><td></td>
+              </tr>
+              <tr style="background-color: #000000">
+                <td>関東</td><td>東京教区</td><td>横浜ホーリネス教会</td><td>220-0011</td><td>横浜市西区北幸1-2-3</td><td>045-123-4567</td><td></td><td></td>
+              </tr>
+            </table>
+        """.trimIndent()
+
+        val churches = JHCDenominationChurchListCrawler().parse(html)
+
+        assertEquals(2, churches.size)
+        assertEquals("東京ホーリネス教会", churches[0].name)
+        assertEquals("〒113-0032 東京都文京区弥生1-1-1", churches[0].address)
+        assertEquals("東京教区", churches[0].jurisdiction)
+        assertEquals("03-3811-1234", churches[0].phone)
+        assertEquals("03-3811-1235", churches[0].fax)
+
+        assertEquals("横浜ホーリネス教会", churches[1].name)
+        assertEquals("〒220-0011 横浜市西区北幸1-2-3", churches[1].address)
+        assertEquals("045-123-4567", churches[1].phone)
+        assertEquals("", churches[1].fax)
+    }
+
+    @Test
+    fun rcjParserReadsRealChurchSectionsWithPostalAddresses() {
+        val html = """
+            <div class="list_area">
+              <section>
+                <h3><a href="detail.php?id=1">札幌キリスト改革派教会</a></h3>
+                <h4>〒060-0061 北海道札幌市中央区北一条西4-1-2</h4>
+                <div class="comment_area"><p>1881年設立</p></div>
+              </section>
+              <section>
+                <h3><a href="detail.php?id=2">函館改革派教会</a></h3>
+                <h4>〒040-0082 北海道函館市昭和4-15-10</h4>
+                <div class="comment_area"><p></p></div>
+              </section>
+            </div>
+        """.trimIndent()
+
+        val churches = RCJDenominationChurchListCrawler().parse(html)
+
+        assertEquals(2, churches.size)
+        assertEquals("札幌キリスト改革派教会", churches[0].name)
+        assertEquals("〒060-0061 北海道札幌市中央区北一条西4-1-2", churches[0].address)
+
+        assertEquals("函館改革派教会", churches[1].name)
+        assertEquals("〒040-0082 北海道函館市昭和4-15-10", churches[1].address)
+    }
+
+    @Test
+    fun igmParserReadsRealChurchTableRowsWithThAndTd() {
+        val html = """
+            <table>
+              <tr><th><a href="https://example.com/tokyo">東京中野教会</a></th>
+                <td>牧師：田中 太郎<br>〒165-0023 東京都中野区中野5-30-10<br>TEL 03-3368-1234　FAX 03-3368-1235</td></tr>
+              <tr><th><a href="https://example.com/okosho">大江戸教会</a></th>
+                <td>牧師：佐藤 花子<br>〒160-0023 東京都新宿区西新宿1-1-1<br>TEL 03-3344-5678</td></tr>
+            </table>
+        """.trimIndent()
+
+        val churches = IGMDenominationChurchListCrawler().parse(html)
+
+        assertEquals(2, churches.size)
+        assertEquals("東京中野教会", churches[0].name)
+        assertEquals("https://example.com/tokyo", churches[0].websiteUrl)
+        assertEquals("03-3368-1234", churches[0].phone)
+        assertEquals("03-3368-1235", churches[0].fax)
+
+        assertEquals("大江戸教会", churches[1].name)
+        assertEquals("https://example.com/okosho", churches[1].websiteUrl)
+        assertEquals("03-3344-5678", churches[1].phone)
+        assertEquals("", churches[1].fax)
+    }
+
+    @Test
     fun runnerWritesJaccPerDenominationJson() {
         val root = Files.createTempDirectory("crossmap-jacc-list")
         try {
@@ -301,6 +384,120 @@ class DenominationChurchListCrawlerTest {
             )
             assertEquals("UCCJ", written.denominationId)
             assertEquals("修善寺教会", written.churches.single().name)
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun runnerWritesJhcPerDenominationJson() {
+        val root = Files.createTempDirectory("crossmap-jhc-list")
+        try {
+            val crawler = JHCDenominationChurchListCrawler()
+            val runner = DenominationChurchListCrawlerRunner(
+                pageLoader = { _, _ ->
+                    LoadedDenominationChurchPage(
+                        crawler.sourceUrl,
+                        """
+                            <table>
+                              <tr style="background-color: #c200c2">
+                                <td>ブロック</td><td>教区</td><td>教会</td><td>郵便番号</td><td>住所</td><td>電話</td><td>FAX</td><td>備考</td>
+                              </tr>
+                              <tr style="background-color: #000000">
+                                <td>関東</td><td>東京教区</td><td>東京ホーリネス教会</td><td>113-0032</td><td>東京都文京区弥生1-1-1</td><td>03-3811-1234</td><td>03-3811-1235</td><td></td>
+                              </tr>
+                            </table>
+                        """.trimIndent(),
+                        "2026-07-19T00:00:00Z",
+                        cacheHit = false,
+                    )
+                },
+                json = json,
+            )
+
+            val result = runner.crawl(crawler, root, root.resolve("cache"), forceRefresh = true)
+
+            assertEquals(1, result.list.churches.size)
+            assertFalse(result.cacheHit)
+            val written = json.decodeFromString<OfficialDenominationChurchList>(
+                Files.readString(root.resolve("crawl/jhc-churches.json")),
+            )
+            assertEquals("JHC", written.denominationId)
+            assertEquals("東京ホーリネス教会", written.churches.single().name)
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun runnerWritesRcjPerDenominationJson() {
+        val root = Files.createTempDirectory("crossmap-rcj-list")
+        try {
+            val crawler = RCJDenominationChurchListCrawler()
+            val runner = DenominationChurchListCrawlerRunner(
+                pageLoader = { _, _ ->
+                    LoadedDenominationChurchPage(
+                        crawler.sourceUrl,
+                        """
+                            <div class="list_area">
+                              <section>
+                                <h3><a href="detail.php?id=1">札幌キリスト改革派教会</a></h3>
+                                <h4>〒060-0061 北海道札幌市中央区北一条西4-1-2</h4>
+                              </section>
+                            </div>
+                        """.trimIndent(),
+                        "2026-07-19T00:00:00Z",
+                        cacheHit = false,
+                    )
+                },
+                json = json,
+            )
+
+            val result = runner.crawl(crawler, root, root.resolve("cache"), forceRefresh = true)
+
+            assertEquals(1, result.list.churches.size)
+            assertFalse(result.cacheHit)
+            val written = json.decodeFromString<OfficialDenominationChurchList>(
+                Files.readString(root.resolve("crawl/rcj-churches.json")),
+            )
+            assertEquals("RCJ", written.denominationId)
+            assertEquals("札幌キリスト改革派教会", written.churches.single().name)
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun runnerWritesIgmPerDenominationJson() {
+        val root = Files.createTempDirectory("crossmap-igm-list")
+        try {
+            val crawler = IGMDenominationChurchListCrawler()
+            val runner = DenominationChurchListCrawlerRunner(
+                pageLoader = { _, _ ->
+                    LoadedDenominationChurchPage(
+                        crawler.sourceUrl,
+                        """
+                            <table>
+                              <tr><th><a href="https://example.com/tokyo">東京中野教会</a></th>
+                                <td>牧師：田中 太郎<br>〒165-0023 東京都中野区中野5-30-10<br>TEL 03-3368-1234</td></tr>
+                            </table>
+                        """.trimIndent(),
+                        "2026-07-19T00:00:00Z",
+                        cacheHit = false,
+                    )
+                },
+                json = json,
+            )
+
+            val result = runner.crawl(crawler, root, root.resolve("cache"), forceRefresh = true)
+
+            assertEquals(1, result.list.churches.size)
+            assertFalse(result.cacheHit)
+            val written = json.decodeFromString<OfficialDenominationChurchList>(
+                Files.readString(root.resolve("crawl/igm-churches.json")),
+            )
+            assertEquals("IGM", written.denominationId)
+            assertEquals("東京中野教会", written.churches.single().name)
         } finally {
             root.toFile().deleteRecursively()
         }

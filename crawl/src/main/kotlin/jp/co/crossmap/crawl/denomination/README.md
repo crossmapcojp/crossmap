@@ -18,11 +18,16 @@ with invented coordinates or English names.
   serializable JSON model. A row marked as a pending applicant is retained for review but cannot establish membership.
 - `UCCJDenominationChurchListCrawler` parses the `table.kyokai` rows from `https://uccj.org/diocese`.
 - `JBCDenominationChurchListCrawler` parses the `table.church-table` rows from `https://bapren.jp/church/`.
+- `JBBFDenominationChurchListCrawler` parses the `<p>` elements with postal codes from `https://jbbf.or.jp/住所録/`.
 - `JACCDenominationChurchListCrawler` parses the multi-row table from `https://db.jacc.info/database/db_list.php`.
+- `JHCDenominationChurchListCrawler` parses the 8-column tables from `https://jhc.or.jp/churches/locations.html`.
+- `RCJDenominationChurchListCrawler` parses the `<section>` elements from `https://www.rcj.gr.jp/_church_list/result_keyword.php`.
+- `IGMDenominationChurchListCrawler` parses the `<table>` with `<th>/<td>` rows from `https://www.immanuel.or.jp/link.html`.
 - `CachedHttpDenominationChurchPageLoader` stores current HTML and fetch metadata under
   `cache/denomination-church-lists/<denomination>/`.
 - `DenominationChurchListCrawlerRunner` invalidates requested caches, loads a page, parses and validates rows, and
-  atomically writes `resources/crawl/uccj-churches.json`, `resources/crawl/jbc-churches.json`, or `resources/crawl/jacc-churches.json`.
+  atomically writes `resources/crawl/uccj-churches.json`, `resources/crawl/jbc-churches.json`, `resources/crawl/jbbf-churches.json`,
+  `resources/crawl/jacc-churches.json`, `resources/crawl/jhc-churches.json`, `resources/crawl/rcj-churches.json`, or `resources/crawl/igm-churches.json`.
 - `OfficialDenominationChurchListReconciler` performs address-aware, one-official-row-to-one-catalog-record matching.
   It assigns supported memberships, clears unsupported programmatic labels, and preserves human overrides.
 - `OfficialDenominationChurchListPipeline` runs both explicit crawlers, replaces stale UCCJ/JBC candidate evidence,
@@ -32,23 +37,39 @@ with invented coordinates or English names.
 flowchart LR
     U[UCCJ /diocese] --> UL[Fresh HTML cache]
     B[JBC /church/] --> BL[Fresh HTML cache]
+    JBBF[JBBF /住所録/] --> JBBFL[Fresh HTML cache]
     A[JACC /db_list.php] --> AL[Fresh HTML cache]
+    H[JHC /locations.html] --> HL[Fresh HTML cache]
+    R[RCJ /result_keyword.php] --> RL[Fresh HTML cache]
+    I[IGM /link.html] --> IL[Fresh HTML cache]
     UL --> UP[UCCJ parser]
     BL --> BP[JBC parser]
+    JBBFL --> JBBFP[JBBF parser]
     AL --> AP[JACC parser]
+    HL --> HP[JHC parser]
+    RL --> RP[RCJ parser]
+    IL --> IP[IGM parser]
     UP --> UJ[resources/crawl/uccj-churches.json]
     BP --> BJ[resources/crawl/jbc-churches.json]
+    JBBFP --> JBBFJ[resources/crawl/jbbf-churches.json]
     AP --> AJ[resources/crawl/jacc-churches.json]
+    HP --> HJ[resources/crawl/jhc-churches.json]
+    RP --> RJ[resources/crawl/rcj-churches.json]
+    IP --> IJ[resources/crawl/igm-churches.json]
     UJ --> C[Official candidates]
     BJ --> C
+    JBBFJ --> C
     AJ --> C
-    G[Google Saved Places pending catalog] --> R[One-to-one official-list reconciler]
-    C --> R
-    R --> O[Correct denomination fields in churches.json]
+    HJ --> C
+    RJ --> C
+    IJ --> C
+    G[Google Saved Places pending catalog] --> R2[One-to-one official-list reconciler]
+    C --> R2
+    R2 --> O[Correct denomination fields in churches.json]
     C --> M[Unmatched official rows retained for later enrichment]
 ```
 
-Run both pages fresh and reconcile the catalog with:
+Run all dedicated crawlers fresh and reconcile the catalog with:
 
 ```shell
 ./gradlew :crawl:run --args='crawl-denomination-directories --force-refresh --dedicated-only'
@@ -60,17 +81,17 @@ Denomination coverage progress:
 - [ ] カトリック中央協議会
 - [ ] 日本聖公会
 - [x] JBC 日本バプテスト連盟
-- [~] JACC 日本同盟基督教団
+- [x] JACC 日本同盟基督教団
 - [ ] 日本アッセンブリーズ・オブ・ゴッド教団
 - [ ] イエス之御霊教会教団
 - [ ] 日本福音キリスト教会連合
 - [ ] セブンスデー・アドベンチスト教団
-- [ ] 日本ホーリネス教団
-- [ ] 日本キリスト改革派教会
+- [x] JHC 日本ホーリネス教団
+- [x] RCJ 日本キリスト改革派教会
 - [ ] 日本キリスト教会
 - [ ] 日本イエス・キリスト教団
 - [ ] 日本福音ルーテル教会
-- [ ] イムマヌエル綜合伝道団
+- [x] IGM イムマヌエル綜合伝道団
 - [ ] The Light of Eternal Agape
 - [ ] 聖イエス会
 - [ ] 在日大韓基督教会
