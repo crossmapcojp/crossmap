@@ -142,6 +142,7 @@
 - [x] Reuse that catalog from Compose and the JVM static-site generator; keep query-language detection independent from UI language.
 - [x] Use only the canonical template names `index.html`, `result.html`, and `church.html`.
 - [x] Keep `app.js` language agnostic and place only one UI language in each generated HTML document.
+- [x] Redirect the root index by supported browser language first; otherwise use geolocation for Japan, Korea, Indonesia, Brazil, or Portugal, then fall back to English while retaining the chooser as a no-JavaScript fallback.
 - [x] Generate `/ja`, `/en`, `/ko`, `/pt`, and `/id` index, result, and church pages with stable language-independent English slugs.
 - [x] Server-render church name, denomination, address, website, social links, canonical URL, reciprocal hreflang links, JSON-LD, and sitemap content.
 - [x] Make `webclient/` a portable static artifact: Ktor serves it unchanged in development and Cloudflare Pages can publish it unchanged in production.

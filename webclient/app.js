@@ -9,16 +9,59 @@ const linkLanguage = link => (link.getAttribute("hreflang") || "").toLowerCase()
 const supportedLanguages = languageLinks.map(linkLanguage).filter(Boolean);
 
 languageLinks.forEach(link => link.addEventListener("click", () => {
-  localStorage.setItem("crossmap.language", linkLanguage(link));
+  try {
+    localStorage.setItem("crossmap.language", linkLanguage(link));
+  } catch (_) {
+    // Language navigation still works when browser storage is unavailable.
+  }
 }));
 
-if (location.pathname === "/" || location.pathname.endsWith("/index.html") && !supportedLanguages.includes(uiLanguage)) {
-  const explicitLanguage = localStorage.getItem("crossmap.language");
-  const browserLanguage = (navigator.language || "en").toLowerCase().split("-")[0];
-  const suggested = supportedLanguages.includes(explicitLanguage)
-    ? explicitLanguage
-    : supportedLanguages.includes(browserLanguage) ? browserLanguage : "en";
-  document.querySelector(`a[hreflang="${CSS.escape(suggested)}"]`)?.setAttribute("aria-current", "true");
+const isInside = (latitude, longitude, south, west, north, east) =>
+  latitude >= south && latitude <= north && longitude >= west && longitude <= east;
+
+function languageFromCoordinates(latitude, longitude) {
+  if (isInside(latitude, longitude, 33.0, 124.5, 39.5, 130.0)) return "ko";
+  if (isInside(latitude, longitude, 30.0, 129.5, 46.5, 146.5)
+    || isInside(latitude, longitude, 24.0, 122.0, 30.0, 132.0)) return "ja";
+  if (isInside(latitude, longitude, -34.5, -74.0, 5.5, -34.0)) return "pt";
+  if (isInside(latitude, longitude, 36.5, -10.0, 42.5, -6.0)
+    || isInside(latitude, longitude, 32.0, -17.5, 33.5, -16.0)
+    || isInside(latitude, longitude, 36.5, -31.5, 40.5, -24.5)) return "pt";
+  const indonesiaRegions = [
+    [-6.5, 95.0, 6.5, 106.5],
+    [-9.5, 105.0, -5.0, 115.0],
+    [-4.5, 108.0, 4.5, 119.0],
+    [-6.5, 118.0, 2.5, 125.0],
+    [-11.5, 114.0, -7.0, 125.5],
+    [-10.8, 124.0, 2.5, 141.5],
+  ];
+  if (indonesiaRegions.some(bounds => isInside(latitude, longitude, ...bounds))) return "id";
+  return "en";
+}
+
+if (location.pathname === "/" || location.pathname === "/index.html") {
+  const browserLanguages = Array.isArray(navigator.languages) && navigator.languages.length
+    ? navigator.languages
+    : navigator.language ? [navigator.language] : [];
+  const detectedLanguage = browserLanguages
+    .map(language => String(language).toLowerCase().split("-")[0])
+    .find(language => supportedLanguages.includes(language));
+  const redirectToLanguage = language => {
+    const destination = languageLinks.find(link => linkLanguage(link) === language)
+      || languageLinks.find(link => linkLanguage(link) === "en");
+    if (destination) location.replace(destination.href);
+  };
+  if (detectedLanguage) {
+    redirectToLanguage(detectedLanguage);
+  } else if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      position => redirectToLanguage(languageFromCoordinates(position.coords.latitude, position.coords.longitude)),
+      () => redirectToLanguage("en"),
+      {enableHighAccuracy: false, timeout: 5000, maximumAge: 300000},
+    );
+  } else {
+    redirectToLanguage("en");
+  }
 }
 
 const messagesElement = $("#page-messages");

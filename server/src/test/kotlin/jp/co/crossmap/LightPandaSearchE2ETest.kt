@@ -90,6 +90,10 @@ class LightPandaSearchE2ETest {
                 timeout = Duration.ofSeconds(30),
                 renderWait = Duration.ofSeconds(15),
             )
+            val defaultIndexHtml = browser.fetchHtml("http://127.0.0.1:$port/")
+            assertTrue(defaultIndexHtml.contains("<html lang=\"en\""), defaultIndexHtml.take(1_000))
+            assertTrue(defaultIndexHtml.contains("id=\"search-form\""), defaultIndexHtml.take(1_000))
+
             val indexHtml = browser.fetchHtml("http://127.0.0.1:$port/ja/")
             assertTrue(indexHtml.contains("id=\"search-form\""), indexHtml.take(1_000))
             assertTrue(indexHtml.contains("id=\"language-chooser\""), indexHtml.take(1_000))
