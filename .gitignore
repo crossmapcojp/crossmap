@@ -48,7 +48,14 @@ resources/raw
 /output/
 /downloads/
 /.crossmap/
+/webclient/ja/
+/webclient/en/
+/webclient/ko/
+/webclient/pt/
+/webclient/id/
 /webclient/church/
+/webclient/manifest.json
+/webclient/sitemap.xml
 
 # Typed processing caches: payloads are ignored, directory contracts are committed.
 /cache/*

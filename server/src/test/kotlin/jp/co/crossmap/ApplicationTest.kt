@@ -108,27 +108,50 @@ class ApplicationTest {
         val projectRoot = Path.of(requireNotNull(System.getProperty("crossmap.project.root")))
         val resourcesRoot = Files.createTempDirectory("crossmap-server-static")
         try {
+            val church = Json.decodeFromString<List<ChurchRecord>>(
+                Files.readString(projectRoot.resolve("resources/catalog/churches.json")),
+            ).single { it.id == "google:6646597370070891755" }
+            val denominationCatalogs = Language.entries.associate { language ->
+                language.code to Json.decodeFromString<Map<String, String>>(
+                    Files.readString(projectRoot.resolve("resources/catalog/denomination-${language.code}-names.json")),
+                )
+            }
+            val generated = LocalizedStaticSiteGenerator(
+                XmlMessageCatalog.load(projectRoot.resolve("resources/i18n")),
+                "https://www.crossmap.co.jp",
+            ).generate(
+                listOf(church),
+                denominationCatalogs.getValue("en"),
+                denominationCatalogs,
+                resourcesRoot,
+            )
+            Files.copy(projectRoot.resolve("webclient/app.js"), resourcesRoot.resolve("app.js"))
+            Files.copy(projectRoot.resolve("webclient/styles.css"), resourcesRoot.resolve("styles.css"))
             testApplication {
                 application {
                     module(
                         searchEngine = null,
                         resourcesRoot = resourcesRoot,
-                        webRoot = projectRoot.resolve("webclient"),
+                        webRoot = resourcesRoot,
                     )
                 }
 
                 val index = client.get("/")
                 assertEquals(HttpStatusCode.OK, index.status)
-                assertTrue(index.bodyAsText().contains("id=\"search-form\""))
+                assertTrue(index.bodyAsText().contains("id=\"language-chooser\""))
 
-                val results = client.get("/result.html")
+                val japaneseIndex = client.get("/ja/")
+                assertEquals(HttpStatusCode.OK, japaneseIndex.status)
+                assertTrue(japaneseIndex.bodyAsText().contains("id=\"search-form\""))
+
+                val results = client.get("/ja/result.html")
                 assertEquals(HttpStatusCode.OK, results.status)
                 assertTrue(results.bodyAsText().contains("id=\"results\""))
-                assertTrue(results.bodyAsText().contains("src=\"/app.js\""))
+                assertTrue(results.bodyAsText().contains("src=\"../app.js\""))
 
-                val church = client.get("/church.html")
-                assertEquals(HttpStatusCode.OK, church.status)
-                assertTrue(church.bodyAsText().contains("id=\"church\""))
+                val churchPage = client.get(generated.churchPages.single { it.language == Language.JAPANESE }.pageUrl)
+                assertEquals(HttpStatusCode.OK, churchPage.status)
+                assertTrue(churchPage.bodyAsText().contains("class=\"church-detail\""))
 
                 val script = client.get("/app.js")
                 assertEquals(HttpStatusCode.OK, script.status)
@@ -142,9 +165,18 @@ class ApplicationTest {
 
     @Test
     fun servesGeneratedEnglishNameChurchPage() {
+        val projectRoot = Path.of(requireNotNull(System.getProperty("crossmap.project.root")))
         val webRoot = Files.createTempDirectory("crossmap-server-generated-church")
         try {
-            val page = StaticSiteGenerator().generate(
+            val denominationCatalogs = Language.entries.associate { language ->
+                language.code to Json.decodeFromString<Map<String, String>>(
+                    Files.readString(projectRoot.resolve("resources/catalog/denomination-${language.code}-names.json")),
+                )
+            }
+            val page = LocalizedStaticSiteGenerator(
+                messages = XmlMessageCatalog.load(projectRoot.resolve("resources/i18n")),
+                siteBaseUrl = "https://www.crossmap.co.jp",
+            ).generate(
                 churches = listOf(
                     ChurchRecord(
                         id = "official:tokyo-sophia",
@@ -156,21 +188,18 @@ class ApplicationTest {
                         websiteUrl = "https://olivetassembly.or.jp/our-regions.html",
                     ),
                 ),
-                denominationEnglishNames = mapOf("JOAC" to "Olivet Assembly Japan"),
-                outputDirectory = webRoot.resolve("church"),
-                denominationNamesByLanguage = mapOf(
-                    "en" to mapOf("JOAC" to "Olivet Assembly Japan"),
-                    "ko" to mapOf("JOAC" to "올리벳 어셈블리 재팬"),
-                ),
-            ).single()
+                denominationEnglishNames = denominationCatalogs.getValue("en"),
+                outputDirectory = webRoot,
+                denominationNamesByLanguage = denominationCatalogs,
+            ).churchPages.single { it.language == Language.ENGLISH }
 
             testApplication {
                 application { module(searchEngine = null, resourcesRoot = webRoot, webRoot = webRoot) }
-                val response = client.get("/church/${page.fileName}")
+                val response = client.get(page.pageUrl)
                 assertEquals(HttpStatusCode.OK, response.status)
                 assertTrue(response.bodyAsText().contains("Tokyo Sophia International Presbyterian Church"))
-                assertTrue(response.bodyAsText().contains("Olivet Assembly Japan"))
-                assertTrue(response.bodyAsText().contains("올리벳 어셈블리 재팬"))
+                assertTrue(response.bodyAsText().contains(denominationCatalogs.getValue("en").getValue("JOAC")))
+                assertTrue(response.bodyAsText().contains("hreflang=\"ko\""))
             }
         } finally {
             webRoot.toFile().deleteRecursively()

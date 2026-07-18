@@ -208,9 +208,10 @@ data class IndexManifest(
 
 @Serializable
 data class ChurchPageManifest(
-    val schemaVersion: Int = 1,
+    val schemaVersion: Int = 2,
     val sourceSha256: String,
     val pages: Map<String, String>,
+    val localizedPages: Map<String, Map<String, String>> = emptyMap(),
 )
 
 @Serializable

@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="${languageCode?html}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>${title?html}</title>
+  <meta name="description" content="${description?html}">
+  <link rel="canonical" href="${canonicalUrl?html}">
+  <#list alternates as alternate><link rel="alternate" hreflang="${alternate.languageCode?html}" href="${alternate.url?html}">
+  </#list><link rel="alternate" hreflang="x-default" href="${xDefaultUrl?html}">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="${title?html}">
+  <meta property="og:description" content="${description?html}">
+  <meta property="og:url" content="${canonicalUrl?html}">
+  <meta property="og:locale" content="${ogLocale?html}">
+  <link rel="stylesheet" href="<#if rootEntry>styles.css<#else>../styles.css</#if>">
+</head>
+<body>
+  <main>
+    <p class="eyebrow">${siteName?html}</p>
+    <h1>${heading?html}</h1>
+    <nav id="language-chooser" aria-label="${languagePickerAria?html}"><#list languageLinks as link><a lang="${link.languageCode?html}" hreflang="${link.languageCode?html}" href="${link.url?html}">${link.label?html}</a><#if link_has_next> · </#if></#list></nav>
+    <#if !rootEntry><form id="search-form" action="result.html" method="get">
+      <label for="query">${searchPlaceholder?html}</label>
+      <input id="query" name="q" type="search" required placeholder="${searchPlaceholder?html}">
+      <button type="submit">${searchButton?html}</button>
+    </form></#if>
+  </main>
+  <script src="<#if rootEntry>app.js<#else>../app.js</#if>"></script>
+</body>
+</html>

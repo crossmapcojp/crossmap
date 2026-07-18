@@ -1,0 +1,35 @@
+<resources>
+    <string name="site_name">Busca de Igrejas Crossmap</string>
+    <string name="search_heading">Encontrar uma igreja</string>
+    <string name="search_placeholder">Nome da igreja, denominação ou local</string>
+    <string name="search_button">Buscar</string>
+    <string name="search_results_title">Resultados para “%1$s”</string>
+    <string name="search_results_count">%1$s igrejas</string>
+    <string name="no_results">Nenhuma igreja foi encontrada. Tente outro nome ou local.</string>
+    <string name="loading">Carregando…</string>
+    <string name="back_to_search">Voltar à busca</string>
+    <string name="previous_page">Anterior</string>
+    <string name="next_page">Próxima</string>
+    <string name="language_picker">Idioma de exibição</string>
+    <string name="language_picker_aria">Escolher o idioma de exibição</string>
+    <string name="church_label">Igreja</string>
+    <string name="church_address">Endereço</string>
+    <string name="church_denomination">Denominação</string>
+    <string name="church_website">Site</string>
+    <string name="church_social_links">Redes sociais</string>
+    <string name="download_index_prompt">Baixe os dados de busca para pesquisar offline neste dispositivo.</string>
+    <string name="download_index_button">Baixar dados de busca</string>
+    <string name="download_failed">Não foi possível baixar os dados de busca.</string>
+    <string name="index_unavailable">O índice de busca não está disponível.</string>
+    <string name="search_failed">A busca falhou. Tente novamente.</string>
+    <string name="church_detail_unavailable">Os detalhes da igreja não estão disponíveis.</string>
+    <string name="distance_km">%1$s km</string>
+    <string name="home_title">Encontrar uma igreja · Crossmap</string>
+    <string name="home_description">Busque igrejas no Japão por nome, denominação ou local.</string>
+    <string name="results_title">Resultados da busca de igrejas · Crossmap</string>
+    <string name="results_description">Veja as igrejas encontradas na Busca de Igrejas Crossmap.</string>
+    <string name="church_page_title">%1$s · Crossmap</string>
+    <string name="church_page_description">Informações sobre %1$s: denominação, endereço, site e redes sociais.</string>
+    <string name="choose_language">Escolher idioma</string>
+    <string name="server_error">O serviço está temporariamente indisponível. Tente novamente.</string>
+</resources>

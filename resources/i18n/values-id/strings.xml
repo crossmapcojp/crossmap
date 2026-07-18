@@ -1,0 +1,35 @@
+<resources>
+    <string name="site_name">Pencarian Gereja Crossmap</string>
+    <string name="search_heading">Cari gereja</string>
+    <string name="search_placeholder">Nama gereja, denominasi, atau lokasi</string>
+    <string name="search_button">Cari</string>
+    <string name="search_results_title">Hasil pencarian “%1$s”</string>
+    <string name="search_results_count">%1$s gereja</string>
+    <string name="no_results">Tidak ada gereja yang ditemukan. Coba nama atau lokasi lain.</string>
+    <string name="loading">Memuat…</string>
+    <string name="back_to_search">Kembali ke pencarian</string>
+    <string name="previous_page">Sebelumnya</string>
+    <string name="next_page">Berikutnya</string>
+    <string name="language_picker">Bahasa tampilan</string>
+    <string name="language_picker_aria">Pilih bahasa tampilan</string>
+    <string name="church_label">Gereja</string>
+    <string name="church_address">Alamat</string>
+    <string name="church_denomination">Denominasi</string>
+    <string name="church_website">Situs web</string>
+    <string name="church_social_links">Tautan sosial</string>
+    <string name="download_index_prompt">Unduh data pencarian untuk mencari secara luring di perangkat ini.</string>
+    <string name="download_index_button">Unduh data pencarian</string>
+    <string name="download_failed">Data pencarian tidak dapat diunduh.</string>
+    <string name="index_unavailable">Indeks pencarian tidak tersedia.</string>
+    <string name="search_failed">Pencarian gagal. Silakan coba lagi.</string>
+    <string name="church_detail_unavailable">Detail gereja tidak tersedia.</string>
+    <string name="distance_km">%1$s km</string>
+    <string name="home_title">Cari gereja · Crossmap</string>
+    <string name="home_description">Cari gereja di Jepang berdasarkan nama, denominasi, atau lokasi.</string>
+    <string name="results_title">Hasil pencarian gereja · Crossmap</string>
+    <string name="results_description">Lihat gereja yang cocok di Pencarian Gereja Crossmap.</string>
+    <string name="church_page_title">%1$s · Crossmap</string>
+    <string name="church_page_description">Informasi gereja %1$s: denominasi, alamat, situs web, dan tautan sosial.</string>
+    <string name="choose_language">Pilih bahasa</string>
+    <string name="server_error">Layanan untuk sementara tidak tersedia. Silakan coba lagi.</string>
+</resources>

@@ -20,20 +20,28 @@ class SharedCommonTest {
             preferredChurchName(names, "en", "日本基督教団赤羽教会", "UCCJ Akabane Church"),
         )
         assertEquals(
-            "日本基督教団赤羽教会",
+            "UCCJ Akabane Church",
             preferredChurchName(names, "pt", "日本基督教団赤羽教会", "UCCJ Akabane Church"),
         )
     }
 
     @Test
-    fun preferredLanguageSelectsLocalizedDenominationNameAndFallsBackToId() {
+    fun preferredLanguageSelectsLocalizedDenominationNameAndFallsBackToEnglishThenId() {
         val names = listOf(
             LocalizedName("ja", "日本基督教団"),
             LocalizedName("ko", "일본기독교단"),
+            LocalizedName("en", "United Church of Christ in Japan"),
         )
 
         assertEquals("일본기독교단", preferredDenominationName(names, "ko", "UCCJ"))
-        assertEquals("UCCJ", preferredDenominationName(names, "pt", "UCCJ"))
+        assertEquals("United Church of Christ in Japan", preferredDenominationName(names, "pt", "UCCJ"))
+    }
+
+    @Test
+    fun savedLanguageOverridesOsLocaleAndUnsupportedLocaleFallsBackToEnglish() {
+        assertEquals(Language.KOREAN, initialUiLanguage("ko-KR", "ja-JP"))
+        assertEquals(Language.JAPANESE, initialUiLanguage(null, "ja-JP"))
+        assertEquals(Language.ENGLISH, initialUiLanguage(null, "fr-FR"))
     }
 
     @Test

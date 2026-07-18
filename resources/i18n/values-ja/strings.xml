@@ -1,0 +1,35 @@
+<resources>
+    <string name="site_name">Crossmap 教会検索</string>
+    <string name="search_heading">教会を探す</string>
+    <string name="search_placeholder">教会名・教派・地域</string>
+    <string name="search_button">検索</string>
+    <string name="search_results_title">「%1$s」の検索結果</string>
+    <string name="search_results_count">%1$s件の教会</string>
+    <string name="no_results">該当する教会が見つかりませんでした。検索語や地域を変えてください。</string>
+    <string name="loading">読み込み中…</string>
+    <string name="back_to_search">検索に戻る</string>
+    <string name="previous_page">前へ</string>
+    <string name="next_page">次へ</string>
+    <string name="language_picker">表示言語</string>
+    <string name="language_picker_aria">表示言語を選択</string>
+    <string name="church_label">教会</string>
+    <string name="church_address">住所</string>
+    <string name="church_denomination">教派</string>
+    <string name="church_website">ウェブサイト</string>
+    <string name="church_social_links">ソーシャルリンク</string>
+    <string name="download_index_prompt">検索データをダウンロードすると、端末上でオフライン検索できます。</string>
+    <string name="download_index_button">検索データをダウンロード</string>
+    <string name="download_failed">検索データをダウンロードできませんでした。</string>
+    <string name="index_unavailable">検索インデックスを利用できません。</string>
+    <string name="search_failed">検索できませんでした。もう一度お試しください。</string>
+    <string name="church_detail_unavailable">教会の詳細を表示できません。</string>
+    <string name="distance_km">%1$s km</string>
+    <string name="home_title">教会を探す · Crossmap</string>
+    <string name="home_description">日本の教会を教会名、教派、地域から検索できます。</string>
+    <string name="results_title">教会の検索結果 · Crossmap</string>
+    <string name="results_description">Crossmap 教会検索の検索結果を表示します。</string>
+    <string name="church_page_title">%1$s · Crossmap</string>
+    <string name="church_page_description">%1$sの教派、住所、ウェブサイト、ソーシャルリンクなどの教会情報です。</string>
+    <string name="choose_language">言語を選択</string>
+    <string name="server_error">現在サービスを利用できません。しばらくしてからお試しください。</string>
+</resources>

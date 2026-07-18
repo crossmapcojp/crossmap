@@ -1,0 +1,35 @@
+<resources>
+    <string name="site_name">Crossmap 교회 검색</string>
+    <string name="search_heading">교회 찾기</string>
+    <string name="search_placeholder">교회명, 교단 또는 지역</string>
+    <string name="search_button">검색</string>
+    <string name="search_results_title">“%1$s” 검색 결과</string>
+    <string name="search_results_count">교회 %1$s곳</string>
+    <string name="no_results">검색된 교회가 없습니다. 다른 이름이나 지역을 입력해 보세요.</string>
+    <string name="loading">불러오는 중…</string>
+    <string name="back_to_search">검색으로 돌아가기</string>
+    <string name="previous_page">이전</string>
+    <string name="next_page">다음</string>
+    <string name="language_picker">표시 언어</string>
+    <string name="language_picker_aria">표시 언어 선택</string>
+    <string name="church_label">교회</string>
+    <string name="church_address">주소</string>
+    <string name="church_denomination">교단</string>
+    <string name="church_website">웹사이트</string>
+    <string name="church_social_links">소셜 링크</string>
+    <string name="download_index_prompt">검색 데이터를 내려받으면 이 기기에서 오프라인으로 검색할 수 있습니다.</string>
+    <string name="download_index_button">검색 데이터 다운로드</string>
+    <string name="download_failed">검색 데이터를 내려받지 못했습니다.</string>
+    <string name="index_unavailable">검색 색인을 사용할 수 없습니다.</string>
+    <string name="search_failed">검색하지 못했습니다. 다시 시도해 주세요.</string>
+    <string name="church_detail_unavailable">교회 상세 정보를 사용할 수 없습니다.</string>
+    <string name="distance_km">%1$s km</string>
+    <string name="home_title">교회 찾기 · Crossmap</string>
+    <string name="home_description">일본의 교회를 이름, 교단 또는 지역으로 검색하세요.</string>
+    <string name="results_title">교회 검색 결과 · Crossmap</string>
+    <string name="results_description">Crossmap 교회 검색에서 일치하는 교회를 확인하세요.</string>
+    <string name="church_page_title">%1$s · Crossmap</string>
+    <string name="church_page_description">%1$s의 교단, 주소, 웹사이트 및 소셜 링크 정보입니다.</string>
+    <string name="choose_language">언어 선택</string>
+    <string name="server_error">서비스를 일시적으로 사용할 수 없습니다. 다시 시도해 주세요.</string>
+</resources>

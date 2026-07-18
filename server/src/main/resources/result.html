@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="${languageCode?html}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>${title?html}</title>
+  <meta name="description" content="${description?html}">
+  <link rel="canonical" href="${canonicalUrl?html}">
+  <#list alternates as alternate><link rel="alternate" hreflang="${alternate.languageCode?html}" href="${alternate.url?html}">
+  </#list><link rel="alternate" hreflang="x-default" href="${xDefaultUrl?html}">
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <main>
+    <a href="index.html">← ${backToSearch?html}</a>
+    <p class="eyebrow">${siteName?html}</p>
+    <nav id="language-chooser" aria-label="${languagePickerAria?html}"><#list languageLinks as link><a lang="${link.languageCode?html}" hreflang="${link.languageCode?html}" href="${link.url?html}">${link.label?html}</a><#if link_has_next> · </#if></#list></nav>
+    <h1 id="result-heading">${resultsTitle?html}</h1>
+    <p id="status" aria-live="polite">${loading?html}</p>
+    <div id="results"></div>
+    <nav id="pagination" aria-label="${resultsTitle?html}"></nav>
+  </main>
+  <script id="page-messages" type="application/json">${pageMessagesJson}</script>
+  <script src="../app.js"></script>
+</body>
+</html>

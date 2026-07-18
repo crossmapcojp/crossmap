@@ -13,6 +13,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
+import java.util.Locale
 
 class MainActivity : ComponentActivity() {
     private val requestLocationPermission = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { }
@@ -22,10 +23,18 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
+            val preferences = getSharedPreferences("crossmap-ui", MODE_PRIVATE)
             App(
                 appDataPath = filesDir.resolve("crossmap").absolutePath,
                 locationProvider = { lastKnownLocation() },
                 openUrl = { url -> startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) },
+                osLocaleCode = Locale.getDefault().toLanguageTag(),
+                languagePreferences = object : UiLanguagePreferences {
+                    override fun readLanguageCode(): String? = preferences.getString("language", null)
+                    override fun writeLanguageCode(languageCode: String) {
+                        preferences.edit().putString("language", languageCode).apply()
+                    }
+                },
             )
         }
     }

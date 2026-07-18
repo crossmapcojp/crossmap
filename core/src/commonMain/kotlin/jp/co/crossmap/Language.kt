@@ -21,6 +21,23 @@ enum class Language(val code: String, val displayName: String) {
 val supportedLanguages: List<Language> = Language.entries
 val supportedLanguageCodes: List<String> = supportedLanguages.map(Language::code)
 
+fun localizedDomainText(
+    language: Language,
+    localizedValues: List<LocalizedName>,
+    english: String? = null,
+    japanese: String? = null,
+): String? {
+    fun valueFor(target: Language): String? = localizedValues.firstOrNull {
+        Language.fromCode(it.languageCode) == target
+    }?.name?.takeIf(String::isNotBlank)
+    return valueFor(language)
+        ?: english?.takeIf(String::isNotBlank)
+        ?: valueFor(Language.ENGLISH)
+        ?: japanese?.takeIf(String::isNotBlank)
+        ?: valueFor(Language.JAPANESE)
+        ?: localizedValues.firstNotNullOfOrNull { it.name.takeIf(String::isNotBlank) }
+}
+
 class LocalizedText private constructor(
     private val values: Map<Language, String>,
 ) {

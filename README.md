@@ -140,7 +140,7 @@ The CLI automatically locates the latest local Crossmap snapshot unless an expli
 
 `:server:run` first rebuilds and publishes the `development` search snapshot from the current canonical catalog. At startup the server accepts `latest.json` only when its schema is current, its index directory exists, and its source-catalog SHA-256 matches `resources/catalog/churches.json`; it never silently serves a stale index.
 
-Open the server root in a browser. The user flow is `index.html` -> `/api/v1/churches/search` JSON -> `result.html` -> the generated `/church/{english-name}.html` detail page. Each search hit carries its canonical `detailUrl`; result links do not expose Google Place IDs. The server accepts the generated page manifest only when its catalog SHA-256 matches the current catalog and it covers every indexed church. All browser logic is vanilla JavaScript. Browser geolocation is requested only after the first search confirms that the query contains no geoname.
+Open `/` to choose a language, or open `/ja/`, `/en/`, `/ko/`, `/pt/`, or `/id/` directly. Each directory contains generated `index.html`, `result.html`, and stable-English-slug church pages. The UI language comes from that directory; query language is detected independently by the server, so an English query on `/ja/result.html` still uses the English analyzer while results remain Japanese. Each generated HTML document contains one UI language only. `app.js` contains behavior but no translated strings.
 
 Run the real browser regression with:
 
@@ -148,16 +148,16 @@ Run the real browser regression with:
 ./gradlew :server:lightpandaE2eTest
 ```
 
-It rebuilds the latest snapshot and generated pages, starts Netty, renders the `布佐キリスト教会` result page in Lightpanda, verifies that the old `/church.html?id=...` link is absent, and follows the English-name static church-detail link.
+It rebuilds the latest snapshot and generated pages, starts Netty, exercises all five language directories in Lightpanda, verifies cross-language query detection, and follows each language's same-slug static church-detail link.
 
-Static detail pages use `/church/{denomination-English}-{church-English}.html`. Supply a JSON object mapping denomination IDs to English names, for example `{"JBC":"Japan Baptist Convention"}`, then generate development or production pages:
+Generate the complete portable site with:
 
 ```sh
 ./gradlew :server:generateChurchPages \
-  -PdenominationEnglishNames=resources/catalog/denomination-en-names.json
+  -PcrossmapSiteBaseUrl=https://www.crossmap.co.jp
 ```
 
-The default output is `webclient/church` (generated and gitignored). Generated page and canonical links are root-relative `/church/...` paths, so the same files work on localhost and production. Generation fails if a church English name, a known denomination English name, or a collision-disambiguating English location is absent.
+The output is the `webclient/` directory. Ktor serves this directory unchanged in development. For production, publish the same directory as the Cloudflare Pages asset directory; no server-side template runtime is required. Navigation and assets are origin-relative, while canonical, hreflang, Open Graph, JSON-LD, and sitemap URLs use `crossmapSiteBaseUrl`. The JSON search API must remain available on the same origin at `/api/v1/` (for example through a Cloudflare route/proxy to Ktor). Generation fails if a required church name, denomination name, or collision-disambiguating location is missing.
 
 ## Mobile
 
@@ -223,7 +223,7 @@ The `Module(s)` column names every module that a task directly operates or orche
 | --- | --- | --- | --- | --- |
 | `server`, `core`, `webclient` | `./gradlew :server:runCurrentIndex` | Starts Ktor with the latest already-built compatible snapshot and serves the vanilla-JavaScript client. | Does not crawl, invoke Ollama, rebuild the index, or regenerate static pages. Best choice for local search iteration and benchmarks. | HTTP server on the configured host/port and request/query timing logs. |
 | `server`, `core`, `crawl`, `resources`, `webclient` | `./gradlew :server:run` | Rebuilds data-dependent artifacts and then starts the complete web application. | Depends on `:crawl:buildSearchSnapshot` and `generateChurchPages`; the latter depends on cleanup and can invoke Ollama or update catalog data. | Current snapshot, generated church pages, logs, and running HTTP server. |
-| `server`, `crawl`, `resources`, `webclient` | `./gradlew :server:generateChurchPages` | Generates every localized static church-detail page and its manifest from the reviewed denomination catalogs. | Depends on church cleanup and geoname preparation; it validates the committed 185-name catalogs and does not overwrite them with the opt-in denomination LLM task. | Generated files below `webclient/church`. |
+| `server`, `crawl`, `resources`, `webclient` | `./gradlew :server:generateChurchPages` | Generates the root chooser plus every localized index, result, church-detail page, manifest, and sitemap. | Depends on church cleanup and geoname preparation; set `crossmapSiteBaseUrl` for canonical production URLs. | Deployable `webclient/` tree with generated `ja/en/ko/pt/id` directories. |
 | `server`, `core` | `./gradlew :server:test` | Runs API, startup-safety, snapshot, static-site, and server integration tests. | Does not opt into the external Lightpanda flow. | `server/build/reports/tests`. |
 | `server`, `core`, `crawl`, `resources`, `webclient` | `./gradlew :server:lightpandaE2eTest` | Runs the real index-to-JSON-to-results-to-static-detail browser flow. | Rebuilds the snapshot/pages and inherits their cleanup side effects; requires Lightpanda. | E2E test report under `server/build/reports/tests`. |
 

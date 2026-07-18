@@ -15,6 +15,7 @@ import platform.CoreLocation.kCLAuthorizationStatusRestricted
 import platform.Foundation.NSError
 import platform.Foundation.NSHomeDirectory
 import platform.Foundation.NSURL
+import platform.Foundation.NSUserDefaults
 import platform.UIKit.UIApplication
 import platform.darwin.NSObject
 import kotlin.coroutines.resume
@@ -61,9 +62,17 @@ private class IosLocationProvider : NSObject(), CLLocationManagerDelegateProtoco
 @OptIn(ExperimentalForeignApi::class)
 fun MainViewController() = ComposeUIViewController {
     val locationProvider = IosLocationProvider()
+    val preferences = NSUserDefaults.standardUserDefaults
     App(
         appDataPath = "${NSHomeDirectory()}/Documents/crossmap",
         locationProvider = locationProvider::currentLocation,
         openUrl = { value -> NSURL.URLWithString(value)?.let(UIApplication.sharedApplication::openURL) },
+        osLocaleCode = (preferences.arrayForKey("AppleLanguages")?.firstOrNull() as? String) ?: "en",
+        languagePreferences = object : UiLanguagePreferences {
+            override fun readLanguageCode(): String? = preferences.stringForKey("crossmap.language")
+            override fun writeLanguageCode(languageCode: String) {
+                preferences.setObject(languageCode, forKey = "crossmap.language")
+            }
+        },
     )
 }

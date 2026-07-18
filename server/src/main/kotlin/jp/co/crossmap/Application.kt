@@ -185,13 +185,29 @@ fun Application.module(
             call.respondFile(archive)
         }
         get("/") { call.respondWebFile(webRoot.resolve("index.html"), ContentType.Text.Html) }
-        get("/church/{file}") {
+        get("/sitemap.xml") { call.respondWebFile(webRoot.resolve("sitemap.xml"), ContentType.Application.Xml) }
+        get("/{language}/") {
+            val language = Language.fromCode(call.parameters["language"])
+                ?: return@get call.respond(HttpStatusCode.NotFound, ApiError("language_not_supported", "Unsupported language"))
+            call.respondWebFile(webRoot.resolve(language.code).resolve("index.html"), ContentType.Text.Html)
+        }
+        get("/{language}/index.html") {
+            val language = Language.fromCode(call.parameters["language"])
+                ?: return@get call.respond(HttpStatusCode.NotFound, ApiError("language_not_supported", "Unsupported language"))
+            call.respondWebFile(webRoot.resolve(language.code).resolve("index.html"), ContentType.Text.Html)
+        }
+        get("/{language}/result.html") {
+            val language = Language.fromCode(call.parameters["language"])
+                ?: return@get call.respond(HttpStatusCode.NotFound, ApiError("language_not_supported", "Unsupported language"))
+            call.respondWebFile(webRoot.resolve(language.code).resolve("result.html"), ContentType.Text.Html)
+        }
+        get("/{language}/{file}") {
+            val language = Language.fromCode(call.parameters["language"])
+                ?: return@get call.respond(HttpStatusCode.NotFound, ApiError("language_not_supported", "Unsupported language"))
             val name = call.parameters["file"].orEmpty()
             require(name.matches(Regex("[a-z0-9]+(?:-[a-z0-9]+)*\\.html"))) { "invalid church page name" }
-            call.respondWebFile(webRoot.resolve("church").resolve(name), ContentType.Text.Html)
+            call.respondWebFile(webRoot.resolve(language.code).resolve(name), ContentType.Text.Html)
         }
-        get("/church.html") { call.respondWebFile(webRoot.resolve("church.html"), ContentType.Text.Html) }
-        get("/result.html") { call.respondWebFile(webRoot.resolve("result.html"), ContentType.Text.Html) }
         get("/app.js") { call.respondWebFile(webRoot.resolve("app.js"), ContentType.Application.JavaScript) }
         get("/styles.css") { call.respondWebFile(webRoot.resolve("styles.css"), ContentType.Text.CSS) }
     }
@@ -203,8 +219,8 @@ private suspend fun io.ktor.server.application.ApplicationCall.respondWebFile(pa
 }
 
 private fun loadSearchEngines(): Map<String, ChurchSearchEngine> =
-    listOf("ja", "en", "ko", "pt", "id").mapNotNull { language ->
-        loadSearchEngine(language)?.let { language to it }
+    Language.entries.mapNotNull { language ->
+        loadSearchEngine(language.code)?.let { language.code to it }
     }.toMap()
 
 private fun loadSearchEngine(languageCode: String): ChurchSearchEngine? = runCatching {
@@ -223,7 +239,7 @@ private fun loadSearchEngine(languageCode: String): ChurchSearchEngine? = runCat
     val indexManifest = wireJson.decodeFromString<IndexManifest>(Files.readString(manifestFile))
     // Static detail pages are an optional presentation artifact. A stale/missing page manifest
     // must not make the JSON search API unavailable; the web client can use church.html as fallback.
-    val churchPageUrls = loadChurchPageUrls(resourcesRoot, webRoot).orEmpty()
+    val churchPageUrls = loadChurchPageUrls(resourcesRoot, webRoot, languageCode).orEmpty()
     ChurchSearchEngine(
         index.toString().toPath(),
         geonames,
@@ -233,19 +249,27 @@ private fun loadSearchEngine(languageCode: String): ChurchSearchEngine? = runCat
     )
 }.getOrNull()
 
-internal fun loadChurchPageUrls(resourcesRoot: Path, webRoot: Path): Map<String, String>? {
-    val manifestFile = webRoot.resolve("church/manifest.json")
+internal fun loadChurchPageUrls(
+    resourcesRoot: Path,
+    webRoot: Path,
+    languageCode: String = Language.ENGLISH.code,
+): Map<String, String>? {
+    val language = Language.fromCode(languageCode) ?: return null
+    val manifestFile = webRoot.resolve("manifest.json")
     if (!Files.isRegularFile(manifestFile)) return null
     val manifest = runCatching {
         wireJson.decodeFromString<ChurchPageManifest>(Files.readString(manifestFile))
     }.getOrNull() ?: return null
     val catalog = resourcesRoot.resolve("catalog/churches.json")
     if (!Files.isRegularFile(catalog) || manifest.sourceSha256 != catalog.sha256()) return null
-    if (manifest.pages.isEmpty() || manifest.pages.values.any { page ->
-            !page.matches(Regex("""/church/[a-z0-9]+(?:-[a-z0-9]+)*\.html"""))
+    val pages = manifest.localizedPages.mapValues { (_, variants) -> variants[language.code].orEmpty() }
+        .filterValues(String::isNotBlank)
+        .ifEmpty { if (language == Language.ENGLISH) manifest.pages else emptyMap() }
+    if (pages.isEmpty() || pages.values.any { page ->
+            !page.matches(Regex("""/${language.code}/[a-z0-9]+(?:-[a-z0-9]+)*\.html"""))
         }
     ) return null
-    return manifest.pages
+    return pages
 }
 
 internal fun resolveServerIndex(

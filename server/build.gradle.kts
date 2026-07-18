@@ -53,12 +53,37 @@ tasks.register<JavaExec>("generateChurchPages") {
     mainClass = "jp.co.crossmap.StaticSiteGeneratorCli"
     workingDir = rootProject.projectDir
     dependsOn(":crawl:dataCleanup", ":crawl:prepareGeoNameCache")
+    val churchCatalog = providers.gradleProperty("churchCatalog").orElse("resources/catalog/churches.json")
+    val denominationEnglishNames = providers.gradleProperty("denominationEnglishNames").orElse("resources/catalog/denomination-en-names.json")
+    val churchPageOutput = providers.gradleProperty("churchPageOutput").orElse("webclient")
+    val geonameEnglishLexicon = providers.gradleProperty("geonameEnglishLexicon").orElse("cache/geoname/japan/church-name-lexicon.json")
+    val i18nDirectory = providers.gradleProperty("i18nDirectory").orElse("resources/i18n")
+    val siteBaseUrl = providers.gradleProperty("crossmapSiteBaseUrl").orElse("https://www.crossmap.co.jp")
+    inputs.file(rootProject.layout.projectDirectory.file(churchCatalog.get()))
+    inputs.files(rootProject.fileTree("resources/catalog") { include("denomination-*-names.json") })
+    inputs.dir(rootProject.layout.projectDirectory.dir(i18nDirectory.get()))
+    inputs.files(rootProject.fileTree("server/src/main/resources") { include("index.html", "result.html", "church.html") })
+    inputs.property("siteBaseUrl", siteBaseUrl)
+    outputs.dir(rootProject.layout.projectDirectory.dir(churchPageOutput.get()))
     args(
-        providers.gradleProperty("churchCatalog").orElse("resources/catalog/churches.json").get(),
-        providers.gradleProperty("denominationEnglishNames").orElse("resources/catalog/denomination-en-names.json").get(),
-        providers.gradleProperty("churchPageOutput").orElse("webclient/church").get(),
-        providers.gradleProperty("geonameEnglishLexicon").orElse("cache/geoname/japan/church-name-lexicon.json").get(),
+        churchCatalog.get(),
+        denominationEnglishNames.get(),
+        churchPageOutput.get(),
+        geonameEnglishLexicon.get(),
+        i18nDirectory.get(),
+        siteBaseUrl.get(),
     )
+}
+
+tasks.register<JavaExec>("validateI18n") {
+    group = "verification"
+    description = "Validate the five canonical UI message catalogs"
+    classpath = sourceSets.main.get().runtimeClasspath
+    mainClass = "jp.co.crossmap.I18nValidatorCli"
+    workingDir = rootProject.projectDir
+    val i18nDirectory = providers.gradleProperty("i18nDirectory").orElse("resources/i18n")
+    inputs.dir(rootProject.layout.projectDirectory.dir(i18nDirectory.get()))
+    args(i18nDirectory.get())
 }
 
 dependencies {

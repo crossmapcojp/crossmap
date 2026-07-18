@@ -12,13 +12,15 @@ import kotlinx.serialization.json.Json
 object StaticSiteGeneratorCli {
     @JvmStatic
     fun main(args: Array<String>) {
-        require(args.size == 4) {
-            "Usage: <churches.json> <denomination-en-names.json> <output-directory> <geoname-english-lexicon.json>"
+        require(args.size == 6) {
+            "Usage: <churches.json> <denomination-en-names.json> <output-directory> <geoname-english-lexicon.json> <i18n-directory> <site-base-url>"
         }
         val catalog = Path.of(args[0])
         val denominationNamesFile = Path.of(args[1])
         val output = Path.of(args[2])
         val geonameLexiconFile = Path.of(args[3])
+        val i18nDirectory = Path.of(args[4])
+        val siteBaseUrl = args[5]
         val json = Json { ignoreUnknownKeys = true; prettyPrint = true; encodeDefaults = true }
         val catalogBytes = Files.readAllBytes(catalog)
         val churches = json.decodeFromString<List<ChurchRecord>>(catalogBytes.toString(Charsets.UTF_8))
@@ -35,23 +37,28 @@ object StaticSiteGeneratorCli {
         } else {
             emptySet()
         }
-        val generator = StaticSiteGenerator()
-        val pages = generator.generate(
+        val slugger = StaticSiteGenerator()
+        val collisionLocations = ChurchPageCollisionResolver.resolve(
+            churches,
+            denominationEnglishNames,
+            geonameEnglishLexicon,
+            slugger,
+        )
+        val generated = LocalizedStaticSiteGenerator(
+            messages = XmlMessageCatalog.load(i18nDirectory),
+            siteBaseUrl = siteBaseUrl,
+        ).generate(
             churches = churches,
             denominationEnglishNames = denominationEnglishNames,
-            outputDirectory = output,
-            collisionLocationEnglishNames = ChurchPageCollisionResolver.resolve(
-                churches,
-                denominationEnglishNames,
-                geonameEnglishLexicon,
-                generator,
-            ),
             denominationNamesByLanguage = denominationNamesByLanguage,
+            outputDirectory = output,
+            collisionLocationEnglishNames = collisionLocations,
             excludedChurchListingDomains = excludedDomains,
         )
         val manifest = ChurchPageManifest(
             sourceSha256 = catalogBytes.sha256(),
-            pages = pages.associate { it.churchId to it.pageUrl },
+            pages = generated.localizedPageUrls.mapValues { (_, variants) -> variants.getValue(Language.ENGLISH.code) },
+            localizedPages = generated.localizedPageUrls,
         )
         val temporary = Files.createTempFile(output, ".church-page-manifest-", ".json")
         Files.writeString(temporary, json.encodeToString(manifest))
@@ -61,7 +68,7 @@ object StaticSiteGeneratorCli {
             StandardCopyOption.REPLACE_EXISTING,
             StandardCopyOption.ATOMIC_MOVE,
         )
-        println("Generated ${pages.size} church pages in $output")
+        println("Generated ${generated.churchPages.size} localized church pages in $output")
     }
 
     private fun ByteArray.sha256(): String = MessageDigest.getInstance("SHA-256").digest(this)

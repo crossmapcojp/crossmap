@@ -136,6 +136,20 @@
 
 ## 6. Ktor server and web client
 
+### Five-language UI and portable static site
+
+- [x] Define one canonical Android-compatible XML message catalog for Japanese, English, Korean, Portuguese, and Indonesian and validate exact key/placeholder parity.
+- [x] Reuse that catalog from Compose and the JVM static-site generator; keep query-language detection independent from UI language.
+- [x] Use only the canonical template names `index.html`, `result.html`, and `church.html`.
+- [x] Keep `app.js` language agnostic and place only one UI language in each generated HTML document.
+- [x] Generate `/ja`, `/en`, `/ko`, `/pt`, and `/id` index, result, and church pages with stable language-independent English slugs.
+- [x] Server-render church name, denomination, address, website, social links, canonical URL, reciprocal hreflang links, JSON-LD, and sitemap content.
+- [x] Make `webclient/` a portable static artifact: Ktor serves it unchanged in development and Cloudflare Pages can publish it unchanged in production.
+- [x] Update Lightpanda coverage for every localized route, cross-language query, and same-slug language switch.
+- [x] Verify full static generation, message validation, server tests, and the Lightpanda browser flow.
+- [ ] Verify Android/iOS app builds and tests later in the platform IDE/tooling workflow.
+- [x] Update root, webclient, and app documentation for localization and deployment.
+
 - [x] Implement `/api/v1/churches/search`, `/api/v1/indexes/churches/latest`, immutable archive download, and `/api/v1/health`.
 - [x] Implement `/api/v1/churches/{id}` and a church detail page showing name, denomination, address, website, and typed social links.
 - [x] Sanitize website URLs again at snapshot, API, and static-page boundaries so stale indexes/catalogs cannot expose excluded listing domains; cover search, detail, generated pages, and the real Lightpanda flow with regression tests.
@@ -143,13 +157,13 @@
 - [x] Make `:server:run` rebuild the development snapshot, validate latest-index schema and canonical-catalog SHA-256, and cover `布佐キリスト教会` results/detail with a real Lightpanda E2E test.
 - [x] Serve the vanilla HTML/JavaScript client from Ktor.
 - [x] Implement query, loading, error, empty, result, distance, snippet, link, and pagination UI states.
-- [x] Implement the vanilla-JavaScript `index.html` -> JSON-backed `result.html` -> JSON-backed `church.html` navigation flow.
+- [x] Implement the vanilla-JavaScript `index.html` -> JSON-backed `result.html` -> server-rendered `church.html` navigation flow.
 - [x] Add a persistent Japanese/English/Korean/Portuguese/Indonesian church-name selector to browser search results, API detail, and generated static detail pages.
 - [x] Render the denomination in the selected display language on JSON-backed and generated static church detail pages, with denomination ID only as a fallback.
 - [x] Return each generated English-name static detail URL in search JSON and use it for result links; omit stale page mappings without disabling the JSON search API, then regenerate pages through the Gradle run/E2E workflow.
 - [x] Generate static FreeMarker church detail pages at English denomination/name slugs using root-relative page and canonical links.
 - [x] Fail static publication when an English church name, known denomination English name, or collision-disambiguating English location is missing.
-- [x] Serve generated `/church/{english-slug}.html` pages and provide the `generateChurchPages` Gradle task.
+- [x] Serve generated `/{language}/{english-slug}.html` pages and provide the `generateChurchPages` Gradle task.
 - [x] Add Ktor API tests and a Lightpanda browser smoke test against `./gradlew :server:run`, covering index -> search JSON -> rendered result page -> church detail JSON/page.
 
 ## 7. Android and iOS app

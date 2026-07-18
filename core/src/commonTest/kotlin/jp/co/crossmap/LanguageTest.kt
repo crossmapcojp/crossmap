@@ -34,4 +34,23 @@ class LanguageTest {
         assertEquals("Gereja Lutheran", ChurchTradition.LUTHERAN.name(Language.INDONESIAN))
     }
 
+    @Test
+    fun domainTextUsesRequestedEnglishJapaneseThenFirstNonblankFallback() {
+        val names = listOf(
+            LocalizedName("ja", "東京バプテスト教会"),
+            LocalizedName("en", "Tokyo Baptist Church"),
+            LocalizedName("ko", "도쿄 침례교회"),
+        )
+        assertEquals("도쿄 침례교회", localizedDomainText(Language.KOREAN, names))
+        assertEquals("Tokyo Baptist Church", localizedDomainText(Language.PORTUGUESE, names))
+        assertEquals(
+            "東京バプテスト教会",
+            localizedDomainText(Language.INDONESIAN, listOf(LocalizedName("ja", "東京バプテスト教会"))),
+        )
+        assertEquals("Primeiro nome", localizedDomainText(
+            Language.INDONESIAN,
+            listOf(LocalizedName("fr", "Primeiro nome")),
+        ))
+    }
+
 }

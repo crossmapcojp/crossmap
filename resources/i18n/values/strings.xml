@@ -1,0 +1,35 @@
+<resources>
+    <string name="site_name">Crossmap Church Search</string>
+    <string name="search_heading">Find a church</string>
+    <string name="search_placeholder">Church name, denomination, or location</string>
+    <string name="search_button">Search</string>
+    <string name="search_results_title">Search results for “%1$s”</string>
+    <string name="search_results_count">%1$s churches</string>
+    <string name="no_results">No churches were found. Try another name or location.</string>
+    <string name="loading">Loading…</string>
+    <string name="back_to_search">Back to search</string>
+    <string name="previous_page">Previous</string>
+    <string name="next_page">Next</string>
+    <string name="language_picker">Display language</string>
+    <string name="language_picker_aria">Choose the display language</string>
+    <string name="church_label">Church</string>
+    <string name="church_address">Address</string>
+    <string name="church_denomination">Denomination</string>
+    <string name="church_website">Website</string>
+    <string name="church_social_links">Social links</string>
+    <string name="download_index_prompt">Download the search data to search offline on this device.</string>
+    <string name="download_index_button">Download search data</string>
+    <string name="download_failed">The search data could not be downloaded.</string>
+    <string name="index_unavailable">The search index is unavailable.</string>
+    <string name="search_failed">Search failed. Please try again.</string>
+    <string name="church_detail_unavailable">Church details are unavailable.</string>
+    <string name="distance_km">%1$s km</string>
+    <string name="home_title">Find a church · Crossmap</string>
+    <string name="home_description">Search churches in Japan by name, denomination, or location.</string>
+    <string name="results_title">Church search results · Crossmap</string>
+    <string name="results_description">View matching churches in Crossmap Church Search.</string>
+    <string name="church_page_title">%1$s · Crossmap</string>
+    <string name="church_page_description">Church information for %1$s: denomination, address, website, and social links.</string>
+    <string name="choose_language">Choose a language</string>
+    <string name="server_error">The service is temporarily unavailable. Please try again.</string>
+</resources>
