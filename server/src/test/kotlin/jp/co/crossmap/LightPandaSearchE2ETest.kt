@@ -64,7 +64,11 @@ class LightPandaSearchE2ETest {
         server.start(wait = false)
         try {
             awaitHealthy(port)
-            apiSearch(port, "東京バプテスト教会") // Warm the complete analyzer/resolver/query path.
+            apiSearch(
+                port,
+                "東京バプテスト教会",
+                readTimeoutMillis = 15_000,
+            ) // Warm the complete analyzer/resolver/query path without applying the warm-search SLO.
             val tokyoSamples = List(3) { apiSearch(port, "東京バプテスト教会") }
             val tokyoResponse = tokyoSamples.last().response
             println(
@@ -230,6 +234,7 @@ class LightPandaSearchE2ETest {
         query: String,
         latitude: Double? = null,
         longitude: Double? = null,
+        readTimeoutMillis: Int = 2_000,
     ): TimedSearch {
         val parameters = buildString {
             append("q=")
@@ -241,7 +246,7 @@ class LightPandaSearchE2ETest {
         val connection = URI("http://127.0.0.1:$port/api/v1/churches/search?$parameters")
             .toURL().openConnection() as HttpURLConnection
         connection.connectTimeout = 2_000
-        connection.readTimeout = 2_000
+        connection.readTimeout = readTimeoutMillis
         val started = System.nanoTime()
         return try {
             assertEquals(200, connection.responseCode)

@@ -36,6 +36,15 @@
 - [x] Add offline crawler fixtures and deterministic import tests.
 - [x] Add deterministic refresh tests.
 
+### Official UCCJ and JBC church lists
+
+- [x] Define the shared `DenominationChurchListCrawler` API and typed official-list JSON model.
+- [x] Implement fresh, cache-aware `UCCJDenominationChurchListCrawler` parsing `https://uccj.org/diocese` into `resources/crawl/uccj-churches.json`.
+- [x] Implement fresh, cache-aware `JBCDenominationChurchListCrawler` parsing `https://bapren.jp/church/` into `resources/crawl/jbc-churches.json`.
+- [x] Reconcile official UCCJ/JBC entries with the pending catalog: add official denomination evidence to matching churches and remove unsupported stale labels without overriding human decisions.
+- [x] Add real-name parser/reconciliation tests, including that イエス愛の教会 and 沼津キリストの教会 are not published as JBC churches.
+- [x] Invalidate any old UCCJ/JBC source-page cache, fetch both official lists fresh, rebuild `resources/catalog/churches.json`, and verify the generated list/catalog statistics.
+
 ## 3. Japanese geonames
 
 - [x] Use the official headerless GeoNames `JP.txt` dump plus language-tagged `alternatenames/JP.zip`; download and extract either cache when absent and join records by `geonameid`.

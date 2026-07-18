@@ -47,10 +47,11 @@ Build and refresh cached websites:
 ./gradlew :crawl:run --args='refresh --resources resources --max-concurrency 6'
 ```
 
-Official denomination directories are configured in `resources/sources/denominations.json` using CSS selectors, not denomination-specific Kotlin classes:
+Most official denomination directories are configured in `resources/sources/denominations.json`. UCCJ and JBC use validated table-specific crawlers because their complete official lists are also authoritative negative evidence. Use `--force-refresh --dedicated-only` to invalidate and refetch just those two pages before reconciling the catalog:
 
 ```sh
 ./gradlew :crawl:run --args='crawl-denomination-directories --resources resources'
+./gradlew :crawl:run --args='crawl-denomination-directories --resources resources --force-refresh --dedicated-only'
 ```
 
 Denomination resolution order is:

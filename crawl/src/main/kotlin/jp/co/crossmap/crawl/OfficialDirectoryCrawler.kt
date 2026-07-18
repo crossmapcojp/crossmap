@@ -102,11 +102,13 @@ class OfficialDirectoryCrawler(
     fun crawl(
         resourcesRoot: Path,
         cacheRoot: Path = CrossmapPaths.defaultCacheRoot(resourcesRoot),
+        excludedDenominationIds: Set<String> = emptySet(),
     ): DirectoryCrawlReport {
         val paths = CrossmapPaths(resourcesRoot, cacheRoot)
         val sourceFile = resourcesRoot.resolve("sources/denominations.json")
         require(Files.isRegularFile(sourceFile)) { "Missing standalone denomination source catalog: $sourceFile" }
         val sources = json.decodeFromString<List<DenominationDirectorySource>>(Files.readString(sourceFile))
+            .filterNot { it.denominationId in excludedDenominationIds }
         val pageLoader = loader ?: CachedDirectoryPageLoader(paths.churchWebPages, json = json)
         val websitePolicy = ExcludedChurchListingDomains.policy(resourcesRoot)
         val evidence = mutableListOf<EvidenceRecord>()

@@ -42,7 +42,7 @@ flowchart TD
     subgraph CLEANUP[One integrated Crossmap cleanup workflow]
         H --> I["WebsiteRefresher<br/>(WebsiteRefresher)"]
         I --> J[Website/about-page evidence cache]
-        J --> K["Official denomination/district/parish lists<br/>(OfficialDirectoryCrawler)"]
+        J --> K["Official denomination/district/parish lists<br/>(dedicated + generic crawlers)"]
         K --> L["Programmatic denomination and entity rules<br/>(DataCleanup)"]
         L -->|uncertain| M["Koog + Ollama fallback<br/>(DenominationDeterminer)"]
         L -->|confident| N[Provenance decision]
@@ -243,7 +243,7 @@ Use `--input /another/Takeout/saved` to override `local.properties` for one dire
 | `resolve-google-saved-places` | [`GoogleMapsPlaceResolver.kt`](src/main/kotlin/jp/co/crossmap/crawl/GoogleMapsPlaceResolver.kt) | Resolve seeds through copied CID cache, HTTP, then Lightpanda; reproduce gmap place extraction and Catholic filtering; reject configured listing domains before constructing candidates. | seeds, `raw/google-maps-pages`, `catalog/excludedChurchListingDomains.txt` | candidates whose public website is a church site or Google Maps CID fallback, resolution report | `logs/YYYY-MM-DD-HH-mm-resolve-google-saved-places.log` |
 | `promote-google-saved-places` | [`GoogleSavedPlacesCleanupWorkflow.kt`](src/main/kotlin/jp/co/crossmap/crawl/GoogleSavedPlacesCleanupWorkflow.kt) | Sanitize candidates and old page evidence first, then normalize/deduplicate and feed them through the shared website, official-directory, denomination, English-name, and override workflow. | candidates, existing evidence/catalog, exclusion catalog, cleanup configuration | complete canonical catalog plus cleanup reports | `logs/YYYY-MM-DD-HH-mm-promote-google-saved-places.log`, `logs/YYYY-MM-DD-HH-mm-data-cleanup-stat.log` |
 | `refresh` | [`WebsiteRefresher.kt`](src/main/kotlin/jp/co/crossmap/crawl/WebsiteRefresher.kt) | Download or reuse actual church webpages concurrently; listing aggregators and Google Maps fallback URLs are never fetched. | catalog, exclusion catalog, prior crawl manifest/cache | `crawl/pages`, `crawl/manifest.json`, URL cache map, sanitized page evidence | `logs/YYYY-MM-DD-HH-mm-refresh.log` |
-| `crawl-denomination-directories` | [`OfficialDirectoryCrawler.kt`](src/main/kotlin/jp/co/crossmap/crawl/OfficialDirectoryCrawler.kt) | Crawl configured denomination, diocese, district, parish, and branch lists after rejecting excluded listing domains before cache/HTTP loading. | `sources/denominations.json`, exclusion catalog, cached/HTTP pages | `cleanup/denomination-candidates.json` | `logs/YYYY-MM-DD-HH-mm-crawl-denomination-directories.log` |
+| `crawl-denomination-directories` | [`denomination/OfficialDenominationChurchListPipeline.kt`](src/main/kotlin/jp/co/crossmap/crawl/denomination/OfficialDenominationChurchListPipeline.kt), [`OfficialDirectoryCrawler.kt`](src/main/kotlin/jp/co/crossmap/crawl/OfficialDirectoryCrawler.kt) | Parse authoritative UCCJ/JBC tables, replace their stale candidates, reconcile the catalog one-to-one, then crawl other configured directories unless `--dedicated-only` is set. `--force-refresh` invalidates and refetches the two authoritative pages. | official UCCJ/JBC pages, `sources/denominations.json`, exclusion catalog, catalog | `crawl/uccj-churches.json`, `crawl/jbc-churches.json`, `cleanup/denomination-candidates.json`, corrected catalog | `logs/YYYY-MM-DD-HH-mm-crawl-denomination-directories.log` |
 | `cleanup-llm` | [`DataCleanup.kt`](src/main/kotlin/jp/co/crossmap/crawl/DataCleanup.kt) | Resolve denomination fields with programmatic rules, optional Ollama fallback, and human overrides. | catalog, denomination catalog, candidates, rules, overrides | updated catalog, `cleanup/decisions.json` | `logs/YYYY-MM-DD-HH-mm-cleanup-llm.log` |
 | `override-denomination` | [`DataCleanup.kt`](src/main/kotlin/jp/co/crossmap/crawl/DataCleanup.kt) | Record a reviewed denomination correction. | command arguments, prior overrides | `cleanup/human-overrides.json` | `logs/YYYY-MM-DD-HH-mm-override-denomination.log` |
 | `link-social` | [`SocialLinkPipeline.kt`](src/main/kotlin/jp/co/crossmap/crawl/SocialLinkPipeline.kt) | Link social candidates to churches with direct links, exact/contains matching, then LLM fallback. | catalog, social candidates, cached pages | updated social profiles, `cleanup/social-decisions.json` | `logs/YYYY-MM-DD-HH-mm-link-social.log` |
@@ -336,6 +336,13 @@ Gradle orchestration:
 - `DirectoryPageLoader` abstracts page loading; `HttpDirectoryPageLoader` fetches pages and `CachedDirectoryPageLoader` prefers the Crossmap cache.
 - `OfficialDirectoryCrawler` rejects configured source URLs before calling either loader, removes excluded church links extracted from otherwise-valid official pages, and emits normalized denomination candidates rather than hard-coding each denomination in Kotlin. Its report/log includes `excluded_urls`.
 - `JurisdictionKind`, `LoadedDirectoryPage`, `DirectoryEntry`, `DirectoryTarget`, and `DirectoryCrawlReport` represent directory hierarchy, work items, and results.
+
+### [`denomination`](src/main/kotlin/jp/co/crossmap/crawl/denomination/README.md)
+
+- `UCCJDenominationChurchListCrawler` and `JBCDenominationChurchListCrawler` parse the current official table formats into typed per-denomination JSON instead of relying on link-text heuristics.
+- `DenominationChurchListCrawlerRunner` owns fresh/cache-aware acquisition and atomic `resources/crawl/*-churches.json` output.
+- `OfficialDenominationChurchListReconciler` requires corroborating name and address evidence, assigns one catalog record per official row, preserves human overrides, and clears stale programmatic membership labels that the complete official list does not support.
+- `OfficialDenominationChurchListPipeline` integrates the dedicated lists with generic directory candidates and both the standalone directory command and full Google Saved Places promotion workflow.
 
 ### [`DataCleanup.kt`](src/main/kotlin/jp/co/crossmap/crawl/DataCleanup.kt)
 

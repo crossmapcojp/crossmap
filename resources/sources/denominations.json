@@ -3,9 +3,9 @@
     "id": "uccj",
     "denominationId": "UCCJ",
     "denominationName": "日本基督教団",
-    "denominationWebsiteUrl": "http://uccj.org/",
+    "denominationWebsiteUrl": "https://uccj.org/",
     "churchListUrlList": [
-      "http://uccj.org/diocese"
+      "https://uccj.org/diocese"
     ],
     "socialUrlList": [],
     "entrySelector": "",
@@ -755,8 +755,7 @@
     "denominationName": "日本バプテスト連盟",
     "denominationWebsiteUrl": "https://bapren.jp/",
     "churchListUrlList": [
-      "https://bapren.jp/church/",
-      "https://bapren.jp/2026/church/"
+      "https://bapren.jp/church/"
     ],
     "socialUrlList": [],
     "entrySelector": "",

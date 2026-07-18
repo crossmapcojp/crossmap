@@ -16,6 +16,7 @@ import java.nio.file.StandardCopyOption
 import java.time.Instant
 import jp.co.crossmap.ChurchRecord
 import jp.co.crossmap.GeoName as SearchGeoName
+import jp.co.crossmap.crawl.denomination.OfficialDenominationChurchListPipeline
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -578,18 +579,44 @@ private class NormalizeAddresses : CrawlCommand("normalize-addresses", CrawlRepo
 
 private class CrawlDenominationDirectories : CrawlCommand("crawl-denomination-directories", CrawlReport.CRAWL_DENOMINATION_DIRECTORIES) {
     private val resources by option("--resources").default("resources")
+    private val forceRefresh by option("--force-refresh", help = "Invalidate UCCJ/JBC HTML caches and fetch both official lists now").flag()
+    private val dedicatedOnly by option("--dedicated-only", help = "Run the authoritative UCCJ/JBC crawlers without refreshing other configured directories").flag()
     override fun execute(audit: CrawlCommandAudit) {
         val root = Path.of(resources)
         val paths = CrossmapPaths(root)
         audit.input("sources", root.resolve("sources/denominations.json").toAbsolutePath().normalize())
-        val report = OfficialDirectoryCrawler().crawl(root, paths.cacheRoot)
+        audit.setting("force_refresh", forceRefresh)
+        audit.setting("dedicated_only", dedicatedOnly)
+        val report = OfficialDenominationChurchListPipeline().run(
+            root,
+            paths.cacheRoot,
+            forceRefresh = forceRefresh,
+            crawlGenericDirectories = !dedicatedOnly,
+        )
         audit.metric("sources", report.sources)
         audit.metric("pages", report.pages)
         audit.metric("candidates", report.candidates)
         audit.metric("errors", report.errors)
         audit.metric("excluded_urls", report.excludedUrls)
+        audit.metric("uccj_churches", report.uccjChurches)
+        audit.metric("jbc_churches", report.jbcChurches)
+        audit.metric("official_cache_hits", report.cacheHits)
+        report.reconciliation?.let { reconciliation ->
+            audit.metric("official_matches", reconciliation.matchedOfficialEntries)
+            audit.metric("denominations_assigned", reconciliation.assigned)
+            audit.metric("unsupported_labels_removed", reconciliation.removedUnsupportedLabels)
+            audit.metric("human_overrides_preserved", reconciliation.humanOverridesPreserved)
+            audit.metric("unmatched_official_entries", reconciliation.unmatchedOfficialEntries)
+        }
         audit.output("candidates", paths.cleanup.resolve("denomination-candidates.json").toAbsolutePath().normalize())
-        echo("Crawled ${report.sources} denomination sources / ${report.pages} pages: ${report.candidates} candidates, ${report.errors} errors")
+        audit.output("uccj_churches", root.resolve("crawl/uccj-churches.json").toAbsolutePath().normalize())
+        audit.output("jbc_churches", root.resolve("crawl/jbc-churches.json").toAbsolutePath().normalize())
+        audit.output("catalog", paths.churchCatalog.toAbsolutePath().normalize())
+        echo(
+            "Crawled ${report.sources} denomination sources / ${report.pages} pages: ${report.candidates} candidates, " +
+                "UCCJ=${report.uccjChurches}, JBC=${report.jbcChurches}, ${report.errors} errors; " +
+                "removed=${report.reconciliation?.removedUnsupportedLabels ?: 0} unsupported labels",
+        )
     }
 }
 

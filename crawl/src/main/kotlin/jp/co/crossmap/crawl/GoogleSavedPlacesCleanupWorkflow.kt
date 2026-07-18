@@ -8,6 +8,7 @@ import jp.co.crossmap.ChurchRecord
 import jp.co.crossmap.DeterminationSource
 import jp.co.crossmap.FieldDetermination
 import jp.co.crossmap.LocalizedName
+import jp.co.crossmap.crawl.denomination.OfficialDenominationChurchListPipeline
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -38,7 +39,7 @@ class GoogleSavedPlacesCleanupWorkflow(
     private val postCrawlCleanup: PostCrawlCleanup,
     private val englishNameResolver: ChurchEnglishNameResolver,
     private val websiteRefresher: WebsiteRefresher = WebsiteRefresher(),
-    private val directoryCrawler: OfficialDirectoryCrawler = OfficialDirectoryCrawler(),
+    private val directoryCrawler: OfficialDenominationChurchListPipeline = OfficialDenominationChurchListPipeline(),
     private val now: () -> String = { Instant.now().toString() },
     private val json: Json = Json { ignoreUnknownKeys = true; prettyPrint = true; encodeDefaults = true },
 ) {
@@ -54,7 +55,11 @@ class GoogleSavedPlacesCleanupWorkflow(
         val prepared = preparePendingCatalog(resourcesRoot, cacheRoot)
         val staging = pendingCatalog(resourcesRoot, cacheRoot)
         val website = if (refreshWebsites) websiteRefresher.refresh(resourcesRoot, staging, cacheRoot) else null
-        val directory = if (crawlDirectories) directoryCrawler.crawl(resourcesRoot, cacheRoot) else null
+        val directory = if (crawlDirectories) {
+            directoryCrawler.run(resourcesRoot, cacheRoot, catalogFile = staging)
+        } else {
+            null
+        }
         val cleanup = postCrawlCleanup.run(
             resourcesRoot = resourcesRoot,
             limit = llmLimit,
@@ -63,6 +68,7 @@ class GoogleSavedPlacesCleanupWorkflow(
             catalogFile = staging,
             cacheRoot = cacheRoot,
         )
+        if (directory != null) directoryCrawler.reconcileGeneratedLists(staging, resourcesRoot)
         val completed = json.decodeFromString<List<ChurchRecord>>(Files.readString(staging))
         require(completed.all { it.englishName.isNotBlank() }) { "Pending catalog contains blank English names" }
 
