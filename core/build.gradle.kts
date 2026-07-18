@@ -30,6 +30,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+            implementation(libs.kotlin.logging)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.okio)
             implementation(libs.lucene.kmp.core)

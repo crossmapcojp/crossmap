@@ -22,6 +22,7 @@ dependencies {
 application {
     mainClass = "jp.co.crossmap.cli.MainKt"
     applicationName = "cm"
+    applicationDefaultJvmArgs = listOf("-Dkotlin-logging.logStartupMessage=false")
 }
 
 tasks.withType<JavaExec>().configureEach {

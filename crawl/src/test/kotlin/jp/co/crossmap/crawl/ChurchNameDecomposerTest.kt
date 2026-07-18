@@ -380,6 +380,30 @@ class ChurchNameDecomposerTest {
     }
 
     @Test
+    fun prefersTraditionalJapaneseOverSimplifiedChineseForGeonames() {
+        val composer = LatinChurchNameJapaneseComposer(
+            concepts = emptyMap(),
+            geonames = linkedMapOf(
+                "東京" to "Tokyo",
+                "東京都" to "Tokyo Prefecture",
+                "东京" to "Tokyo",
+                "三郷" to "Misato Saitama",
+                "実郷" to "Misato",
+            ),
+        )
+        // 東京 should be preferred over 东京 (simplified Chinese) when translating "Tokyo"
+        val tokyoParts = composer.translateParts("Tokyo", "en")
+        assertTrue(tokyoParts.isNotEmpty(), "translateParts should find a match for Tokyo")
+        assertTrue(tokyoParts.all { "\u4e1c" !in it.japanese }, "Should not use simplified Chinese 东 for Tokyo, got: ${tokyoParts.map { it.japanese }}")
+        // 三郷 should be preferred over 実郷 when translating "Misato Saitama"
+        val misatoSaitamaParts = composer.translateParts("Misato Saitama", "en")
+        assertEquals("三郷", misatoSaitamaParts.single().japanese)
+        // "Misato" (without qualifier) should match 実郷 (single-Misato group)
+        val misatoParts = composer.translateParts("Misato", "en")
+        assertEquals("実郷", misatoParts.single().japanese)
+    }
+
+    @Test
     fun composesLatinChurchNamesFromReviewedConceptsAndGeonames() {
         val composer = LatinChurchNameJapaneseComposer(
             concepts = linkedMapOf(

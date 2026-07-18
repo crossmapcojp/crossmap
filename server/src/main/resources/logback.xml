@@ -1,12 +1,14 @@
 <configuration>
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
+        <target>System.err</target>
         <encoder>
             <pattern>%d{YYYY-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
-    <root level="trace">
-        <appender-ref ref="STDOUT"/>
+    <root level="INFO">
+        <appender-ref ref="STDERR"/>
     </root>
-    <logger name="org.eclipse.jetty" level="INFO"/>
+    <logger name="jp.co.crossmap.server" level="DEBUG"/>
+    <logger name="jp.co.crossmap.ChurchSearchEngine" level="INFO"/>
     <logger name="io.netty" level="INFO"/>
 </configuration>

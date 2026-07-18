@@ -19,6 +19,7 @@ import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import io.ktor.serialization.kotlinx.json.json
+import io.ktor.server.application.log
 import java.nio.file.Files
 import java.nio.file.Path
 import java.security.MessageDigest
@@ -51,10 +52,13 @@ fun Application.module(
     ),
     webRoot: Path = Path.of(System.getenv("CROSSMAP_WEB_DIR") ?: "webclient"),
 ) {
+
+
     val availableSearchEngines = buildMap {
         searchEngine?.let { put("ja", it) }
         putAll(searchEngines)
     }
+    log.info("Available search engines: [${availableSearchEngines.keys.joinToString()}]")
     val churchIndexes = cacheRoot.resolve("search-indexes/churches")
     install(ContentNegotiation) { json(wireJson) }
     install(CORS) { anyHost() }
@@ -75,6 +79,7 @@ fun Application.module(
             val displayLanguage = call.request.queryParameters["lang"]?.substringBefore('-')?.lowercase() ?: "ja"
             val query = call.request.queryParameters["q"].orEmpty()
             val queryLanguage = QueryLanguageDetector.detect(query, displayLanguage)
+            call.application.environment.log.debug("search-request: query='$query', displayLang=$displayLanguage, detectedLang=$queryLanguage")
             val engine = availableSearchEngines[queryLanguage]
                 ?: availableSearchEngines[displayLanguage]
                 ?: availableSearchEngines["ja"]
@@ -90,7 +95,9 @@ fun Application.module(
             require((latitude == null) == (longitude == null)) { "lat and lon must be provided together" }
             val userLocation = if (latitude != null && longitude != null) GeoPoint(latitude, longitude) else null
             val titleLanguages = call.request.queryParameters.getAll("titleLanguage").orEmpty()
-            call.respond(engine.search(ChurchSearchRequest(query, offset, limit, radius, userLocation, titleLanguages)))
+            val response = engine.search(ChurchSearchRequest(query, offset, limit, radius, userLocation, titleLanguages))
+            call.application.environment.log.info("search-response: query='$query', lang=$queryLanguage, total=${response.total}, returned=${response.hits.size}, locations=[${response.resolvedLocations.joinToString { it.name }}]")
+            call.respond(response)
         }
         get("/api/v1/churches/{id}") {
             val engine = availableSearchEngines["ja"] ?: availableSearchEngines.values.firstOrNull() ?: return@get call.respond(

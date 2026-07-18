@@ -11,13 +11,21 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 class GeoCatalogBuilder(private val json: Json = Json { prettyPrint = true; encodeDefaults = true }) {
-    fun build(churches: List<ChurchRecord>, japaneseCitiesSource: Path, output: Path): List<GeoName> {
+    fun build(
+        churches: List<ChurchRecord>,
+        japaneseCitiesSource: Path,
+        output: Path,
+        multilingualLexicon: Map<String, Map<String, String>> = emptyMap(),
+    ): List<GeoName> {
         val municipalities = parseMunicipalities(Files.readString(japaneseCitiesSource))
         val aliasCounts = municipalities.groupingBy { stripSuffix(it.second) }.eachCount()
         val prefectureEntries = prefectures.mapIndexed { index, name ->
             val code = (index + 1).toString().padStart(2, '0')
-            val matching = churches.filter { it.address.contains(name) }
-            fromPoints(code, name, GeoNameType.PREFECTURE, code, emptyList(), matching.map { it.location }, japanCenter)
+            val matching = churches.filter {
+                it.address.contains(name) && isIncludedInPrefectureSearch(code, it.address)
+            }
+            val translations = multilingualLexicon[name].orEmpty()
+            fromPoints(code, name, GeoNameType.PREFECTURE, code, emptyList(), matching.map { it.location }, japanCenter, translations)
         }
         val prefectureByCode = prefectureEntries.associateBy { it.code }
         val cityEntries = municipalities.map { (code, name) ->
@@ -27,6 +35,7 @@ class GeoCatalogBuilder(private val json: Json = Json { prettyPrint = true; enco
                 church.address.contains(name) && (prefectureName.isBlank() || church.address.contains(prefectureName))
             }
             val alias = stripSuffix(name).takeIf { it != name && aliasCounts[it] == 1 }?.let(::listOf).orEmpty()
+            val translations = multilingualLexicon[name].orEmpty()
             fromPoints(
                 code,
                 name,
@@ -35,6 +44,8 @@ class GeoCatalogBuilder(private val json: Json = Json { prettyPrint = true; enco
                 alias,
                 matching.map { it.location },
                 prefectureByCode[prefectureCode]?.center ?: japanCenter,
+                translations,
+                includeInPrefectureSearch(prefectureCode, name),
             )
         }
         val result = (prefectureEntries + cityEntries).sortedBy { it.code }
@@ -45,7 +56,7 @@ class GeoCatalogBuilder(private val json: Json = Json { prettyPrint = true; enco
 
     private fun parseMunicipalities(source: String): List<Pair<String, String>> =
         Regex("""(\d+)\s+to\s+\"([^\"]+)\"""").findAll(source)
-            .map { it.groupValues[1] to it.groupValues[2] }
+            .map { it.groupValues[1].padStart(6, '0') to it.groupValues[2] }
             .distinctBy { it.first }
             .toList()
 
@@ -57,6 +68,8 @@ class GeoCatalogBuilder(private val json: Json = Json { prettyPrint = true; enco
         aliases: List<String>,
         points: List<GeoPoint>,
         fallback: GeoPoint,
+        translations: Map<String, String> = emptyMap(),
+        includeInPrefectureSearch: Boolean = true,
     ): GeoName {
         val center = if (points.isEmpty()) fallback else GeoPoint(
             points.map { it.latitude }.average(),
@@ -65,14 +78,42 @@ class GeoCatalogBuilder(private val json: Json = Json { prettyPrint = true; enco
         val radius = points.maxOfOrNull { GeoNameResolver.distanceKm(center, it) }
             ?.plus(10.0)?.coerceAtLeast(15.0)
             ?: 50.0
-        return GeoName(code, name, aliases, type, prefectureCode, center, radius)
+        return GeoName(
+            code,
+            name,
+            aliases,
+            type,
+            prefectureCode,
+            center,
+            radius,
+            translations,
+            includeInPrefectureSearch,
+        )
     }
+
+    private fun isIncludedInPrefectureSearch(prefectureCode: String, address: String): Boolean =
+        prefectureCode != TOKYO_PREFECTURE_CODE || tokyoRemoteIslandMunicipalities.none(address::contains)
+
+    private fun includeInPrefectureSearch(prefectureCode: String, municipalityName: String): Boolean =
+        prefectureCode != TOKYO_PREFECTURE_CODE || municipalityName !in tokyoRemoteIslandMunicipalities
 
     private fun stripSuffix(name: String): String = name.removeSuffix("市").removeSuffix("区")
         .removeSuffix("町").removeSuffix("村")
 
     companion object {
+        private const val TOKYO_PREFECTURE_CODE = "13"
         private val japanCenter = GeoPoint(36.2048, 138.2529)
+        private val tokyoRemoteIslandMunicipalities = setOf(
+            "大島町",
+            "利島村",
+            "新島村",
+            "神津島村",
+            "三宅村",
+            "御蔵島村",
+            "八丈町",
+            "青ヶ島村",
+            "小笠原村",
+        )
         private val prefectures = listOf(
             "北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県", "茨城県", "栃木県", "群馬県",
             "埼玉県", "千葉県", "東京都", "神奈川県", "新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県",
@@ -82,4 +123,3 @@ class GeoCatalogBuilder(private val json: Json = Json { prettyPrint = true; enco
         )
     }
 }
-

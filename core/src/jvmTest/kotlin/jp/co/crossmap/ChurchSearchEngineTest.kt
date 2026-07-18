@@ -2,6 +2,7 @@ package jp.co.crossmap
 
 import java.nio.file.Files
 import kotlin.test.Test
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -100,7 +101,7 @@ class ChurchSearchEngineTest {
 
             val name = engine.search(ChurchSearchRequest("東京 教会"))
             assertEquals(2, name.total)
-            assertEquals("教会", name.textQuery)
+            assertEquals("東京 教会", name.textQuery)
             assertTrue(name.hits.any { it.churchId == "google:2225537460932230335" })
 
             val body = engine.search(ChurchSearchRequest("ボーイスカウト"))
@@ -194,6 +195,66 @@ class ChurchSearchEngineTest {
     }
 
     @Test
+    fun englishQueryDetectsGeonameViaTranslations() {
+        val resolver = GeoNameResolver(
+            listOf(
+                GeoName(
+                    "13", "東京都", type = GeoNameType.PREFECTURE, prefectureCode = "13",
+                    center = GeoPoint(35.68, 139.69), coveringRadiusKm = 100.0,
+                    translations = mapOf("en" to "Tokyo", "ko" to "도쿄"),
+                ),
+                GeoName(
+                    "14", "神奈川県", type = GeoNameType.PREFECTURE, prefectureCode = "14",
+                    center = GeoPoint(35.45, 139.64), coveringRadiusKm = 80.0,
+                    translations = mapOf("en" to "Kanagawa"),
+                ),
+            )
+        )
+
+        val resolved = resolver.resolve("Tokyo Baptist Church", language = "en")
+
+        assertEquals("baptist church", resolved.textQuery)
+        assertEquals(listOf("13"), resolved.locations.map { it.code })
+        assertEquals("東京都", resolved.locations.single().name)
+    }
+
+    @Test
+    fun japaneseQueryStillResolvesViaNameWithoutTranslations() {
+        val resolver = GeoNameResolver(
+            listOf(
+                GeoName(
+                    "13", "東京都", type = GeoNameType.PREFECTURE, prefectureCode = "13",
+                    center = GeoPoint(35.68, 139.69), coveringRadiusKm = 100.0,
+                    translations = mapOf("en" to "Tokyo"),
+                ),
+            )
+        )
+
+        val resolved = resolver.resolve("東京バプテスト教会")
+
+        assertEquals("バプテスト教会", resolved.textQuery)
+        assertEquals(listOf("13"), resolved.locations.map { it.code })
+    }
+
+    @Test
+    fun nonJapaneseLanguageDoesNotMatchJapaneseTranslations() {
+        val resolver = GeoNameResolver(
+            listOf(
+                GeoName(
+                    "13", "東京都", type = GeoNameType.PREFECTURE, prefectureCode = "13",
+                    center = GeoPoint(35.68, 139.69), coveringRadiusKm = 100.0,
+                    translations = mapOf("en" to "Tokyo"),
+                ),
+            )
+        )
+
+        val resolved = resolver.resolve("Tokyo Baptist Church", language = "ko")
+
+        assertEquals("tokyo baptist church", resolved.textQuery)
+        assertTrue(resolved.locations.isEmpty())
+    }
+
+    @Test
     fun storesLargeCrawledPagesWithoutIndexingTheSerializedRecordAsOneTerm() {
         val root = Files.createTempDirectory("crossmap-large-record")
         try {
@@ -217,7 +278,7 @@ class ChurchSearchEngineTest {
     }
 
     @Test
-    fun prefectureSearchUsesMunicipalityAreasInsteadOfOneHugeCircle() {
+    fun tokyoPrefectureSearchUsesMainlandMunicipalitiesButDirectIslandSearchStillWorks() {
         val root = Files.createTempDirectory("crossmap-prefecture")
         try {
             val churches = listOf(
@@ -230,11 +291,198 @@ class ChurchSearchEngineTest {
             val geonames = listOf(
                 GeoName("13", "東京都", type = GeoNameType.PREFECTURE, prefectureCode = "13", center = GeoPoint(35.68, 139.69), coveringRadiusKm = 1_000.0),
                 GeoName("13104", "新宿区", type = GeoNameType.WARD, prefectureCode = "13", center = GeoPoint(35.69, 139.70), coveringRadiusKm = 15.0),
-                GeoName("13421", "小笠原村", type = GeoNameType.MUNICIPALITY, prefectureCode = "13", center = GeoPoint(27.09, 142.19), coveringRadiusKm = 30.0),
+                GeoName(
+                    "134210",
+                    "小笠原村",
+                    type = GeoNameType.MUNICIPALITY,
+                    prefectureCode = "13",
+                    center = GeoPoint(27.09, 142.19),
+                    coveringRadiusKm = 30.0,
+                    includeInPrefectureSearch = false,
+                ),
             )
 
-            val result = ChurchSearchEngine(index.toString().toPath(), geonames).search(ChurchSearchRequest("東京都"))
-            assertEquals(setOf("google:2225537460932230335", "google:16863838991523575183"), result.hits.map { it.churchId }.toSet())
+            val engine = ChurchSearchEngine(index.toString().toPath(), geonames)
+            val tokyo = engine.search(ChurchSearchRequest("東京都"))
+            val ogasawara = engine.search(ChurchSearchRequest("小笠原村"))
+
+            assertEquals(listOf("google:2225537460932230335"), tokyo.hits.map { it.churchId })
+            assertEquals(listOf("google:16863838991523575183"), ogasawara.hits.map { it.churchId })
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun englishQueryDetectsGeonameThroughFullSearchPipeline() {
+        val root = Files.createTempDirectory("crossmap-en-geoname")
+        try {
+            val churches = listOf(
+                ChurchRecord(
+                    id = "google:2225537460932230335",
+                    name = "東京バプテスト教会",
+                    englishName = "Tokyo Baptist Church",
+                    address = "〒105-0011 東京都港区芝公園３丁目６−１８",
+                    location = GeoPoint(35.6601808, 139.743601),
+                    websiteUrl = "http://www.tokyobaptist.org/",
+                ),
+                ChurchRecord(
+                    id = "google:12637710057937127475",
+                    name = "大阪バプテスト教会",
+                    englishName = "Osaka Baptist Church",
+                    address = "〒530-0013 大阪府大阪市北区茶屋町２−３０",
+                    location = GeoPoint(34.7061457, 135.4999131),
+                    websiteUrl = "http://www.osakabaptist.org/",
+                ),
+            )
+            val index = root.resolve("index")
+            ChurchIndex.build(
+                index.toString().toPath(), churches,
+                languageCode = "en",
+                translatedGeoNames = mapOf(
+                    "google:2225537460932230335" to listOf("Tokyo"),
+                    "google:12637710057937127475" to listOf("Osaka"),
+                ),
+            )
+            val geonames = listOf(
+                GeoName(
+                    "13", "東京都", type = GeoNameType.PREFECTURE, prefectureCode = "13",
+                    center = GeoPoint(35.68, 139.69), coveringRadiusKm = 100.0,
+                    translations = mapOf("en" to "Tokyo"),
+                ),
+                GeoName(
+                    "27", "大阪府", type = GeoNameType.PREFECTURE, prefectureCode = "27",
+                    center = GeoPoint(34.69, 135.52), coveringRadiusKm = 80.0,
+                    translations = mapOf("en" to "Osaka"),
+                ),
+            )
+
+            val result = ChurchSearchEngine(index.toString().toPath(), geonames, languageCode = "en")
+                .search(ChurchSearchRequest("Tokyo Baptist Church"))
+
+            assertEquals("Tokyo Baptist Church", result.textQuery)
+            assertEquals(1, result.resolvedLocations.size)
+            assertEquals("13", result.resolvedLocations.single().code)
+            assertEquals("東京都", result.resolvedLocations.single().name)
+            assertEquals("google:2225537460932230335", result.hits.single().churchId)
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun exactWholeNameThenAllNameTokensThenFullQueryGeoResultsAreMergedInOrder() {
+        val root = Files.createTempDirectory("crossmap-staged-name-search")
+        try {
+            val churches = listOf(
+                ChurchRecord(
+                    id = "google:6646597370070891755",
+                    name = "東京バプテスト教会",
+                    englishName = "Tokyo Baptist Church",
+                    address = "〒150-0035 東京都渋谷区鉢山町９−２",
+                    location = GeoPoint(35.6506, 139.6967),
+                    websiteUrl = "https://tokyobaptist.org/",
+                ),
+                ChurchRecord(
+                    id = "fixture:tokyo-first-baptist",
+                    name = "東京第一バプテスト教会",
+                    englishName = "Tokyo First Baptist Church",
+                    address = "東京都世田谷区",
+                    location = GeoPoint(35.6465, 139.6532),
+                    websiteUrl = "https://example.com/tokyo-first-baptist",
+                ),
+                ChurchRecord(
+                    id = "fixture:shibuya-baptist",
+                    name = "渋谷バプテスト教会",
+                    englishName = "Shibuya Baptist Church",
+                    address = "東京都渋谷区",
+                    location = GeoPoint(35.6580, 139.7016),
+                    websiteUrl = "https://example.com/shibuya-baptist",
+                ),
+                ChurchRecord(
+                    id = "fixture:osaka-baptist",
+                    name = "大阪バプテスト教会",
+                    englishName = "Osaka Baptist Church",
+                    address = "大阪府大阪市",
+                    location = GeoPoint(34.6937, 135.5023),
+                    websiteUrl = "https://example.com/osaka-baptist",
+                ),
+            )
+            val geonames = listOf(
+                GeoName(
+                    "13", "東京都", aliases = listOf("東京"), type = GeoNameType.PREFECTURE,
+                    prefectureCode = "13", center = GeoPoint(35.68, 139.69), coveringRadiusKm = 100.0,
+                    translations = mapOf("en" to "Tokyo"),
+                ),
+            )
+            fun engine(language: String): ChurchSearchEngine {
+                val index = root.resolve("index-$language")
+                ChurchIndex.build(
+                    index.toString().toPath(),
+                    churches,
+                    language,
+                    translatedGeoNames = mapOf(
+                        "google:6646597370070891755" to listOf(if (language == "ja") "東京" else "Tokyo"),
+                        "fixture:tokyo-first-baptist" to listOf(if (language == "ja") "東京" else "Tokyo"),
+                        "fixture:shibuya-baptist" to listOf(if (language == "ja") "東京" else "Tokyo"),
+                        "fixture:osaka-baptist" to listOf(if (language == "ja") "大阪" else "Osaka"),
+                    ),
+                )
+                return ChurchSearchEngine(index.toString().toPath(), geonames, languageCode = language)
+            }
+
+            val englishEngine = engine("en")
+            val englishPlan = englishEngine.explainQuery(ChurchSearchRequest("Tokyo Baptist Church"))
+            assertContains(englishPlan, "input.language=en analyzer=EnglishAnalyzer")
+            assertContains(englishPlan, "analysis.tokens=[tokyo, baptist, church] operator=AND")
+            assertContains(englishPlan, "analysis.locations=[tokyo -> 東京都(PREFECTURE, code=13")
+            assertContains(englishPlan, "tier.1.type=EXACT_NAME boost=1000000.0 field=name_exact term=tokyo baptist church")
+            assertContains(englishPlan, "tier.2.type=ALL_NAME_TOKENS boost=1000.0 enabled=true")
+            assertContains(englishPlan, "tier.3.geoFilter=true areas=東京都 (1 area(s))")
+            assertContains(englishPlan, "merge=SHOULD(tier.1,tier.2,tier.3) minimumShouldMatch=1 deduplicate=true")
+
+            val english = englishEngine.search(ChurchSearchRequest("Tokyo Baptist Church"))
+            assertEquals(
+                listOf(
+                    "google:6646597370070891755",
+                    "fixture:tokyo-first-baptist",
+                    "fixture:shibuya-baptist",
+                ),
+                english.hits.map { it.churchId },
+            )
+            assertEquals("Tokyo Baptist Church", english.textQuery)
+            assertEquals(3, english.total)
+
+            val japaneseEngine = engine("ja")
+            val japanesePlan = japaneseEngine.explainQuery(ChurchSearchRequest("東京バプテスト教会"))
+            assertContains(japanesePlan, "input.language=ja analyzer=JapaneseAnalyzer")
+            assertContains(japanesePlan, "analysis.tokens=[東京, バプテスト, 教会] operator=AND")
+            assertContains(japanesePlan, "analysis.locations=[東京 -> 東京都(PREFECTURE, code=13")
+            assertContains(japanesePlan, "tier.3.japaneseAddressGuard=true")
+
+            val japanese = japaneseEngine.search(ChurchSearchRequest("東京バプテスト教会"))
+            assertEquals(
+                listOf(
+                    "google:6646597370070891755",
+                    "fixture:tokyo-first-baptist",
+                    "fixture:shibuya-baptist",
+                ),
+                japanese.hits.map { it.churchId },
+            )
+            assertEquals("東京バプテスト教会", japanese.textQuery)
+
+            val genericPlan = englishEngine.explainQuery(
+                ChurchSearchRequest("Church", userLocation = GeoPoint(35.6506, 139.6967)),
+            )
+            assertContains(genericPlan, "tier.2.type=ALL_NAME_TOKENS boost=1000.0 enabled=false")
+            assertContains(genericPlan, "reason=generic-only-query")
+            assertContains(genericPlan, "analysis.locations=[device -> Current location(DEVICE")
+
+            val secondPage = engine("en").search(
+                ChurchSearchRequest("Tokyo Baptist Church", offset = 2, limit = 1),
+            )
+            assertEquals(3, secondPage.total)
+            assertEquals(listOf("fixture:shibuya-baptist"), secondPage.hits.map { it.churchId })
         } finally {
             root.toFile().deleteRecursively()
         }

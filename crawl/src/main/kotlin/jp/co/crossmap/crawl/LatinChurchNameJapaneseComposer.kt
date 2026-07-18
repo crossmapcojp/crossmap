@@ -91,18 +91,33 @@ internal class LatinChurchNameJapaneseComposer(
         .toList()
     }
 
-    private fun reverseGeonames(geonames: Map<String, String>): Map<String, String> = geonames.entries
-        .filter { (japanese, latin) -> japanese.isNotBlank() && latin.isNotBlank() }
-        .groupBy { normalizePhrase(it.value) }
-        .mapValues { (_, candidates) ->
-            candidates.minWithOrNull(
-                compareBy(
-                    { candidate -> candidate.key.none { it in '\u3400'..'\u9fff' } },
-                    { ADMINISTRATIVE_SUFFIX.containsMatchIn(it.key) },
-                    { it.key.length },
-                ),
-            )!!.key
+    private fun reverseGeonames(geonames: Map<String, String>): Map<String, String> {
+        val grouped = geonames.entries
+            .filter { (japanese, latin) -> japanese.isNotBlank() && latin.isNotBlank() }
+            .groupBy { normalizePhrase(it.value) }
+            .mapValues { (_, candidates) ->
+                candidates.minWithOrNull(
+                    compareBy(
+                        { candidate -> candidate.key.none { it in '\u3400'..'\u9fff' } },
+                        { candidate -> SIMPLIFIED_CHINESE_CHARS.any { ch -> ch in candidate.key } },
+                        { ADMINISTRATIVE_SUFFIX.containsMatchIn(it.key) },
+                        { it.key.length },
+                    ),
+                )!!.key
+            }
+        val result = linkedMapOf<String, String>()
+        for ((english, japanese) in grouped.entries.sortedBy { it.key.length }) {
+            result[english] = japanese
         }
+        for ((english, japanese) in grouped.entries.sortedByDescending { it.key.length }) {
+            val words = english.split(' ')
+            for (prefixLength in 1 until words.size) {
+                val prefix = words.take(prefixLength).joinToString(" ")
+                result.putIfAbsent(prefix, japanese)
+            }
+        }
+        return result
+    }
 
     private companion object {
         val WORD = Regex("""[\p{IsLatin}]+(?:['’][\p{IsLatin}]+)?|[0-9]+""")
@@ -112,6 +127,7 @@ internal class LatinChurchNameJapaneseComposer(
         val DOTTED_ACRONYM = Regex("""(?:\b[\p{Lu}]\.){2,}[\p{Lu}]?""")
         val ACRONYM = Regex("""[A-Z0-9]{2,6}""")
         val ADMINISTRATIVE_SUFFIX = Regex("""[都道府県市区町村郡]$""")
+        private val SIMPLIFIED_CHINESE_CHARS = setOf('\u4e1c', '\u5173')
         val STRUCTURAL_TERMS = linkedMapOf(
             "Church" to "チャーチ",
             "Churches" to "チャーチ",

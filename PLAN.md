@@ -94,6 +94,9 @@
 - [x] Keep social profile metadata independently indexable so future social content can be added without changing church/result JSON contracts.
 - [x] Keep crawled content type and optional sermon metadata independently indexable for a future sermon-result document model.
 - [x] Implement shared text-plus-geo search, exact totals, stable ordering, pagination, distance, matching page detection, and snippets.
+- [x] Rank search in three merged tiers: exact whole-name matches, name matches containing every analyzed query token, then full-query text matches within the resolved geoname area; keep the full query instead of removing the geoname text.
+- [x] Log a structured query plan for every search, including language/analyzer selection, tokens, geoname resolution, all three query tiers, fields/boosts, geo filters, and merge rules; keep JSON output clean by routing logs to standard error.
+- [x] Use mainland-focused geometry for ordinary Tokyo prefecture searches, exclude its nine remote island municipalities from implicit Tokyo expansion, keep explicit island searches available, and normalize leading-zero municipality codes.
 - [x] Implement deterministic versioned snapshot creation with manifest, document count, lucene-kmp version, archive size, and SHA-256.
 - [x] Complete shared search coverage for every indexed field, geo behavior, ordering, pagination, and JSON round trips. (Real-index and 19-scenario Clikt tests pass.)
 

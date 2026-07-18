@@ -22,9 +22,10 @@ import org.gnit.lucenekmp.index.IndexWriterConfig
 import org.gnit.lucenekmp.store.FSDirectory
 
 object ChurchIndex {
-    const val SCHEMA_VERSION = 6
+    const val SCHEMA_VERSION = 7
     const val FIELD_ID = "id"
     const val FIELD_NAME = "name"
+    const val FIELD_NAME_EXACT = "name_exact"
     const val FIELD_LOCALIZED_NAME = "localized_name"
     const val FIELD_NAME_JA = "name_ja"
     const val FIELD_NAME_KO = "name_ko"
@@ -83,6 +84,11 @@ object ChurchIndex {
         else -> FIELD_NAME_OTHER
     }
 
+    fun normalizeExactName(value: String): String = value
+        .trim()
+        .lowercase()
+        .replace(Regex("""\s+"""), " ")
+
     fun build(
         indexPath: Path,
         churches: List<ChurchRecord>,
@@ -113,6 +119,7 @@ object ChurchIndex {
             else -> localizedNames.filter { it.languageCode.substringBefore('-').lowercase() == languageCode }.map { it.name }
         }.filter(String::isNotBlank).distinct()
         names.forEach { localizedName ->
+            add(StringField(FIELD_NAME_EXACT, normalizeExactName(localizedName), Field.Store.NO))
             add(TextField(FIELD_NAME, localizedName, Field.Store.YES))
             add(TextField(localizedNameField(languageCode), localizedName, Field.Store.NO))
             localizedName.lowercase().split(Regex("""\s+""")).filter(String::isNotBlank).forEach {

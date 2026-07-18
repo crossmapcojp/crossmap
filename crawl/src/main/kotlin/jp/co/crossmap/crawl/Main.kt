@@ -295,7 +295,11 @@ private class BuildGeonames : CrawlCommand("build-geonames", CrawlReport.BUILD_G
         audit.input("catalog", catalog.toAbsolutePath().normalize())
         audit.input("cities_source", Path.of(citiesSource).toAbsolutePath().normalize())
         val churches = json.decodeFromString<List<ChurchRecord>>(java.nio.file.Files.readString(root.resolve("catalog/churches.json")))
-        val result = GeoCatalogBuilder().build(churches, Path.of(citiesSource), output)
+        val paths = CrossmapPaths(root)
+        val geoName = jp.co.crossmap.crawl.GeoName()
+        val multilingualLexicon = geoName.readMultilingualLexicon(paths.geoNamesMultilingualLexicon)
+            .ifEmpty { geoName.readMultilingualLexicon(paths.geoNameMultilingualLexicon) }
+        val result = GeoCatalogBuilder().build(churches, Path.of(citiesSource), output, multilingualLexicon)
         audit.metric("churches", churches.size)
         audit.metric("geonames_generated", result.size)
         audit.output("geonames", output.toAbsolutePath().normalize())

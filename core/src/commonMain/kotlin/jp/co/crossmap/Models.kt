@@ -1,5 +1,7 @@
 package jp.co.crossmap
 
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -105,6 +107,10 @@ data class GeoName(
     val prefectureCode: String,
     val center: GeoPoint,
     val coveringRadiusKm: Double,
+    val translations: Map<String, String> = emptyMap(),
+    @OptIn(ExperimentalSerializationApi::class)
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val includeInPrefectureSearch: Boolean = true,
 )
 
 @Serializable

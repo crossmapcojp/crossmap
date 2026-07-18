@@ -65,6 +65,108 @@ flowchart TD
 
 All accepted derived fields carry provenance through [`FieldDetermination`](../core/src/commonMain/kotlin/jp/co/crossmap/Models.kt): programmatic, LLM, or human. Human overrides always win. Social data and sermon evidence have typed places in the evidence model even though their full crawlers are later work.
 
+## Geoname data processing
+
+Geonames provide geographic location detection for church searches. The pipeline
+turns official Japanese municipality data into a runtime search catalog and
+per-church translation catalog, enabling location-aware queries in all supported
+languages.
+
+### Data sources
+
+| Source | Path | Purpose |
+|---|---|---|
+| Official GeoNames JP dump | `cache/geoname/japan/JP.txt` | Japanese municipality names, coordinates, population |
+| Official GeoNames alternate names | `cache/geoname/japan/alternatenames/JP.txt` | Language-tagged alternate names (en/ko/pt/id) |
+| JMA multilingual city dictionary | [`resources/geonames/jma-city.json`](resources/geonames/jma-city.json) | en/ko/pt/id translations maintained by Japan Meteorological Agency |
+| Municipality source | (supplied at build time) | `code → "name"` mapping for all municipalities |
+| Church catalog | [`resources/catalog/churches.json`](../resources/catalog/churches.json) | Church coordinates used to compute geoname centers and radii |
+| Google place candidates | `cache/google-saved-places/google-place-candidates.json` | Source of truth for which geonames appear in church titles/addresses |
+| Duplicated church name exclusion list | [`resources/geonames/geoname-duplicated-church-name.csv`](resources/geonames/geoname-duplicated-church-name.csv) | Geoname aliases that collide with church names |
+
+### Processing pipeline
+
+```mermaid
+flowchart TD
+    subgraph CACHE["Stage 1: prepare-geoname-cache"]
+        A["Official JP.txt<br/>(GeoName)"] --> B["Parse rows; retain municipalities<br/>with population > 0"]
+        B --> C["Generate Japanese aliases<br/>(suffix-stripped, deduplicated)"]
+        C --> D["Clean aliases:<br/>remove reviewed church names,<br/>katakana-only, 丁目 blocks"]
+        D --> E["Build english-lexicon.json<br/>(Japanese → ASCII English)"]
+
+        F["Official alternatenames/JP.txt<br/>(GeoName)"] --> G["Parse language-tagged alternates;<br/>merge with JP.txt aliases"]
+        G --> H["Build geonames-multilingual-lexicon.json<br/>(Japanese → en/ko/pt/id)"]
+
+        I["JMA city.json<br/>(GeoName)"] --> J["Convert JMA field names;<br/>strip administrative suffixes"]
+        J --> K["Merge into multilingual lexicon<br/>(GeoName.mergeMultilingualLexicons)"]
+        K --> L["Write church-name-multilingual-lexicon.json"]
+    end
+
+    subgraph CATALOG["Stage 2: church-geonames"]
+        M["Google place candidates<br/>(ChurchGeoNameTranslationCatalog)"] --> N["Longest-match geoname detection<br/>in title + address"]
+        N --> O["Clean detected geonames<br/>(JapaneseGeoNameCleaner)"]
+        O --> P["Merge translations from:<br/>GeoNames alternates + JMA + reviewed CSVs"]
+        P --> Q["church-ja-all.json<br/>(ChurchGeoNameTranslation)"]
+        P --> R["church-usage.json<br/>(ChurchGeoNameUsage)"]
+    end
+
+    subgraph GEOCATALOG["Stage 3: build-geonames"]
+        S["Church catalog + municipality source<br/>(GeoCatalogBuilder)"] --> T["Compute prefecture centers/radii<br/>from church coordinates"]
+        S --> U["Compute municipality centers/radii<br/>from matching churches"]
+        T --> V["japan.json<br/>(List of GeoName)"]
+        U --> V
+    end
+
+    subgraph SNAPSHOT["Stage 4: build-snapshot"]
+        V --> W["Copy japan.json → geonames.json<br/>(SnapshotBuilder)"]
+        Q --> X["translatedGeoNamesForLanguage<br/>(SnapshotBuilder)"]
+        R --> X
+        X --> Y["Per-language Lucene indexes<br/>(ChurchIndex.build)"]
+        W --> Z["Snapshot ZIP with<br/>geonames.json + indexes + manifest"]
+    end
+```
+
+### Stage details
+
+**Stage 1 — `prepare-geoname-cache`** ([`GeoName.kt`](src/main/kotlin/jp/co/crossmap/crawl/GeoName.kt), [`Main.kt`](src/main/kotlin/jp/co/crossmap/crawl/Main.kt#L306-L366))
+
+Downloads and processes official GeoNames data. Produces two lexicons:
+
+- `cache/geoname/japan/church-name-lexicon.json` — Japanese-to-English name map for church name generation.
+- `cache/geoname/japan/church-name-multilingual-lexicon.json` — Japanese-to-{en,ko,pt,id} map from official alternate names + JMA city dictionary.
+
+The multilingual lexicon is the translation source used by stages 2 and 4.
+[`JapaneseGeoNameCleaner`](src/main/kotlin/jp/co/crossmap/crawl/GeoName.kt#L60-L99) removes aliases that collide with church names, are katakana-only, or are `丁目` address blocks.
+
+**Stage 2 — `church-geonames`** ([`ChurchGeoNameTranslationCatalog.kt`](src/main/kotlin/jp/co/crossmap/crawl/ChurchGeoNameTranslationCatalog.kt), [`Main.kt`](src/main/kotlin/jp/co/crossmap/crawl/Main.kt#L368-L422))
+
+Builds the per-church geoname translation catalog. For each church, detects geonames in the title and address using longest-match against the multilingual lexicon. Produces:
+
+- [`resources/geonames/church-ja-all.json`](resources/geonames/church-ja-all.json) — `List<ChurchGeoNameTranslation>` mapping each Japanese geoname to its en/ko/pt/id translations.
+- [`resources/geonames/church-usage.json`](resources/geonames/church-usage.json) — `List<ChurchGeoNameUsage>` recording which geonames appear in each church's title and address.
+
+Separate title-first and address-only review CSVs are maintained for missing translations.
+
+**Stage 3 — `build-geonames`** ([`GeoCatalogBuilder.kt`](src/main/kotlin/jp/co/crossmap/crawl/GeoCatalogBuilder.kt), [`Main.kt`](src/main/kotlin/jp/co/crossmap/crawl/Main.kt#L288-L304))
+
+Builds the search geoname catalog ([`resources/geonames/japan.json`](resources/geonames/japan.json)). For each of the 47 prefectures and all municipalities from the source data:
+
+- Computes the geographic center from matching church coordinates.
+- Computes the covering radius (max distance from center + 10km buffer, minimum 15km).
+- Generates Japanese suffix-stripped aliases (e.g., `東京都` → `東京`).
+
+Output: `List<GeoName>` serialized to `resources/geonames/japan.json`. This file is copied into each snapshot as `geonames.json`.
+
+**Stage 4 — `build-snapshot`** ([`SnapshotBuilder.kt`](src/main/kotlin/jp/co/crossmap/crawl/SnapshotBuilder.kt), [`Main.kt`](src/main/kotlin/jp/co/crossmap/crawl/Main.kt#L450-L482))
+
+Copies `japan.json` into the snapshot and builds per-language Lucene indexes. For each language (ja/en/ko/pt/id), [`translatedGeoNamesForLanguage`](src/main/kotlin/jp/co/crossmap/crawl/SnapshotBuilder.kt#L102-L108) looks up each church's detected geonames in `church-ja-all.json` and returns the translated strings. These translated geonames are indexed into the Lucene `geoname` field, enabling text-based geographic matching within each language's index.
+
+### Runtime query flow
+
+At query time, the server loads `japan.json` into a [`GeoNameResolver`](../core/src/commonMain/kotlin/jp/co/crossmap/GeoNameResolver.kt) which matches user query text against Japanese `name`/`aliases` to extract geographic locations. The resolved locations drive [`LatLonPoint`](../core/src/commonMain/kotlin/jp/co/crossmap/ChurchSearchEngine.kt) distance filters and address-based scoring boosts in [`ChurchSearchEngine.buildQuery()`](../core/src/commonMain/kotlin/jp/co/crossmap/ChurchSearchEngine.kt).
+
+> **Note:** `GeoNameResolver` matches Japanese `name`/`aliases` for all queries, and additionally matches the query language's translation when `language != "ja"`. This enables location detection for English, Korean, Portuguese, and Indonesian queries (e.g., "Tokyo Baptist Church" resolves to 東京都).
+
 ## English-name workflow
 
 Every final `ChurchRecord` must have an English/Latin-script name. Static publication is a hard gate: it fails if even one record is unresolved.
@@ -284,12 +386,27 @@ Gradle orchestration:
 
 ### [`GeoCatalogBuilder.kt`](src/main/kotlin/jp/co/crossmap/crawl/GeoCatalogBuilder.kt)
 
-- `GeoName` downloads and safely extracts official GeoNames `JP.zip` and `alternatenames/JP.zip`, downloads and validates JMA `city.json`, and merges Japanese municipality aliases across EN/KO/PT/ID. `resources/geonames/japan.json` remains detection-only because it contains no English names.
-- `GeoCatalogBuilder` combines all 47 prefectures with municipality/ward source data, church coordinates, aliases, centers, and covering radii into the search geoname catalog.
+- `GeoCatalogBuilder` combines all 47 prefectures with municipality/ward source data, church coordinates, aliases, centers, and covering radii into the search geoname catalog (`resources/geonames/japan.json`).
+- Reads the municipality source and church catalog; for each geoname, computes center and covering radius from matching churches.
+- Output: `List<GeoName>` serialized to `resources/geonames/japan.json`. This file is copied into each snapshot as `geonames.json`.
+
+### [`GeoName.kt`](src/main/kotlin/jp/co/crossmap/crawl/GeoName.kt)
+
+- `GeoName` downloads and safely extracts official GeoNames `JP.zip` and `alternatenames/JP.zip`, downloads and validates JMA `city.json`, and merges Japanese municipality aliases across EN/KO/PT/ID.
+- `readMultilingualLexicon` and `mergeMultilingualLexicons` build the multilingual lexicon used by both the translation catalog and the snapshot builder.
+- `JapaneseGeoNameCleaner` removes aliases that collide with church names, are katakana-only, or are `丁目` address blocks.
+
+### [`ChurchGeoNameTranslationCatalog.kt`](src/main/kotlin/jp/co/crossmap/crawl/ChurchGeoNameTranslationCatalog.kt)
+
+- `ChurchGeoNameTranslationCatalog` detects geonames in church titles and addresses using longest-match against the multilingual lexicon, then merges translations from official GeoNames alternates, JMA city dictionary, and reviewed CSVs.
+- `ChurchGeoNameTranslation` is the per-church translation record mapping each Japanese geoname to its en/ko/pt/id translations.
+- `ChurchGeoNameUsage` records which geonames appear in each church's title and address.
+- Output: `resources/geonames/church-ja-all.json` and `resources/geonames/church-usage.json`.
 
 ### [`SnapshotBuilder.kt`](src/main/kotlin/jp/co/crossmap/crawl/SnapshotBuilder.kt)
 
 - `SnapshotBuilder` builds the church Lucene index, copies the exact geoname catalog used by the index, writes a manifest, ZIPs the immutable snapshot, computes SHA-256, and atomically updates latest metadata for CLI/server/mobile consumers.
+- `translatedGeoNamesForLanguage` looks up each church's detected geonames in `church-ja-all.json` and returns translated strings for each supported language (ja/en/ko/pt/id), enabling per-language Lucene geoname index population.
 
 ## Adding a new stage or rule
 

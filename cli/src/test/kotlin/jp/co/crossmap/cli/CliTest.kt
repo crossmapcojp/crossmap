@@ -32,7 +32,7 @@ class CliTest {
     @Test
     fun prefectureAndChurchTermsBecomeGeoAndTextParts() {
         val response = response("東京都 聖アンデレ")
-        assertEquals("聖アンデレ", response.textQuery)
+        assertEquals("東京都 聖アンデレ", response.textQuery)
         assertEquals("東京都", response.resolvedLocations.single().name)
         assertEquals("google:2225537460932230335", response.hits.first().churchId)
     }
@@ -40,7 +40,7 @@ class CliTest {
     @Test
     fun municipalityOnlyQueryFindsChurchInsideItsRadius() {
         val response = response("岡山市")
-        assertEquals("", response.textQuery)
+        assertEquals("岡山市", response.textQuery)
         assertEquals(listOf("google:906297735827744432"), response.hits.map { it.churchId })
     }
 

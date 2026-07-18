@@ -1,9 +1,12 @@
 package jp.co.crossmap
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
+
+private val logger = KotlinLogging.logger {}
 
 data class ResolvedGeoQuery(
     val textQuery: String,
@@ -13,14 +16,27 @@ data class ResolvedGeoQuery(
 class GeoNameResolver(private val geonames: List<GeoName>) {
     private data class Candidate(val matchedText: String, val geoname: GeoName)
 
-    fun resolve(query: String, radiusOverrideKm: Double? = null): ResolvedGeoQuery {
+    fun resolve(query: String, radiusOverrideKm: Double? = null, language: String = "ja"): ResolvedGeoQuery {
         val normalized = normalizeQuery(query)
+        logger.trace { "geoname-resolve: input=$query, normalized=$normalized, language=$language" }
         val candidates = geonames.flatMap { geoname ->
-            (listOf(geoname.name, administrativeAlias(geoname.name)) + geoname.aliases)
+            val jaMatches = (listOf(geoname.name, administrativeAlias(geoname.name)) + geoname.aliases)
                 .distinct()
                 .filter { it.length >= MIN_GEONAME_MATCH_LENGTH && normalized.contains(normalizeQuery(it)) }
                 .map { Candidate(normalizeQuery(it), geoname) }
+            val translationMatches = if (language != "ja") {
+                val translated = geoname.translations[language]
+                if (translated != null && translated.length >= MIN_GEONAME_MATCH_LENGTH && normalized.contains(normalizeQuery(translated))) {
+                    listOf(Candidate(normalizeQuery(translated), geoname))
+                } else {
+                    emptyList()
+                }
+            } else {
+                emptyList()
+            }
+            jaMatches + translationMatches
         }.sortedByDescending { it.matchedText.length }
+        logger.trace { "geoname-resolve: ${candidates.size} candidate(s) matched: ${candidates.joinToString { "'${it.matchedText}' -> ${it.geoname.name}(${it.geoname.type})" }}" }
 
         val acceptedTexts = mutableListOf<String>()
         candidates.forEach { candidate ->
@@ -46,7 +62,7 @@ class GeoNameResolver(private val geonames: List<GeoName>) {
         acceptedTexts.sortedByDescending { it.length }.forEach { remaining = remaining.replace(it, " ") }
         remaining = remaining.replace(Regex("\\s+"), " ").trim()
 
-        return ResolvedGeoQuery(
+        val resolved = ResolvedGeoQuery(
             textQuery = remaining,
             locations = selected.map {
                 ResolvedLocation(
@@ -59,6 +75,8 @@ class GeoNameResolver(private val geonames: List<GeoName>) {
                 )
             }.distinctBy { it.code },
         )
+        logger.trace { "geoname-resolve: textQuery='${resolved.textQuery}', locations=${resolved.locations.joinToString { "${it.name}(${it.type}, code=${it.code}, center=${it.center.latitude},${it.center.longitude}, r=${it.radiusKm}km)" }}" }
+        return resolved
     }
 
     companion object {
