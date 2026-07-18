@@ -18,6 +18,7 @@ data class OfficialDenominationChurchListPipelineReport(
     val uccjChurches: Int,
     val jbcChurches: Int,
     val jbbfChurches: Int,
+    val jaccChurches: Int,
     val cacheHits: Int,
     val reconciliation: OfficialDenominationReconciliationReport?,
 )
@@ -32,6 +33,7 @@ class OfficialDenominationChurchListPipeline(
         UCCJDenominationChurchListCrawler(),
         JBCDenominationChurchListCrawler(),
         JBBFDenominationChurchListCrawler(),
+        JACCDenominationChurchListCrawler(),
     )
 
     fun run(
@@ -54,6 +56,7 @@ class OfficialDenominationChurchListPipeline(
         val uccj = lists.single { it.denominationId == "UCCJ" }
         val jbc = lists.single { it.denominationId == "JBC" }
         val jbbf = lists.single { it.denominationId == "JBBF" }
+        val jacc = lists.single { it.denominationId == "JACC" }
         return OfficialDenominationChurchListPipelineReport(
             sources = generic.sources + results.size,
             pages = generic.pages + results.size,
@@ -63,6 +66,7 @@ class OfficialDenominationChurchListPipeline(
             uccjChurches = uccj.churches.size,
             jbcChurches = jbc.churches.size,
             jbbfChurches = jbbf.churches.size,
+            jaccChurches = jacc.churches.size,
             cacheHits = results.count(DenominationChurchListCrawlResult::cacheHit),
             reconciliation = reconciliation,
         )
@@ -78,7 +82,7 @@ class OfficialDenominationChurchListPipeline(
     }
 
     private fun validateProductionLists(lists: List<OfficialDenominationChurchList>) {
-        val minimums = mapOf("UCCJ" to 1_500, "JBC" to 250, "JBBF" to 50)
+        val minimums = mapOf("UCCJ" to 1_500, "JBC" to 250, "JBBF" to 50, "JACC" to 100)
         lists.forEach { list ->
             require(list.churches.size >= minimums.getValue(list.denominationId)) {
                 "${list.denominationId} official directory unexpectedly contained only ${list.churches.size} rows"

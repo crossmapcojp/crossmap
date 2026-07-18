@@ -77,6 +77,205 @@ class DenominationChurchListCrawlerTest {
     }
 
     @Test
+    fun jaccParserReadsRealChurchRowsAndExtractsAllFields() {
+        val html = """
+            <table border="1" class="honbun9p">
+              <tr bgcolor="#99FF66">
+                <td>教　　会</td><td>牧　　師</td><td>住所→地図</td>
+              </tr>
+              <tr bgcolor="#FFFF99">
+                <td><a href="db_disp.php?recordID=test"><strong>	  新札幌聖書教会</strong></a></td>
+                <td><strong>朴 永基</strong></td>
+                <td><strong>〒004-0033 北海道<a href="http://maps.google.co.jp/maps?q=test">北海道札幌市厚別区上野幌三条6-13-15</a></strong></td>
+              </tr>
+              <tr>
+                <td>[101・1]北海道宣教区</td>
+                <td>李 相勲</td>
+                <td>電話：[011(892)5233]　FAX：[011(892)5274]</td>
+              </tr>
+              <tr>
+                <td>礼拝：10:30,19:00</td>
+                <td></td>
+                <td>e-Mail：<a href="mailto:test@test.com">test@test.com</a></td>
+              </tr>
+              <tr>
+                <td>祈祷会：(水)10:30</td>
+                <td></td>
+                <td><a href="https://kirisutonoai.org/" target="_blank">https://kirisutonoai.org/</a></td>
+              </tr>
+              <tr>
+                <td colspan="3">★愛が満ちあふれる教会</td>
+              </tr>
+              <tr bgcolor="#FFFF99">
+                <td><a href="db_disp.php?recordID=test2"><strong>	  新札幌福音教会</strong></a></td>
+                <td><strong>野口 隆英</strong></td>
+                <td><strong>〒004-0001 北海道<a href="http://maps.google.co.jp/maps?q=test2">札幌市厚別区厚別東一条3丁目10-1</a></strong></td>
+              </tr>
+              <tr>
+                <td>[102・1]北海道宣教区</td>
+                <td></td>
+                <td>電話：[011(897)3345]　FAX：[011(897)3345]</td>
+              </tr>
+              <tr>
+                <td>礼拝：10:30</td>
+                <td></td>
+                <td>e-Mail：<a href="mailto:"></a></td>
+              </tr>
+              <tr>
+                <td>祈祷会：(火)14:00</td>
+                <td></td>
+                <td><a href="https://shinsapporo.jimdofree.com" target="_blank">https://shinsapporo.jimdofree.com</a></td>
+              </tr>
+              <tr>
+                <td colspan="3">★</td>
+              </tr>
+            </table>
+        """.trimIndent()
+
+        val churches = JACCDenominationChurchListCrawler().parse(html)
+
+        assertEquals(2, churches.size)
+        assertEquals("新札幌聖書教会", churches[0].name)
+        assertEquals("〒004-0033 北海道北海道札幌市厚別区上野幌三条6-13-15", churches[0].address)
+        assertEquals("[101・1]北海道宣教区", churches[0].jurisdiction)
+        assertEquals("011(892)5233", churches[0].phone)
+        assertEquals("011(892)5274", churches[0].fax)
+        assertEquals("https://kirisutonoai.org/", churches[0].websiteUrl)
+
+        assertEquals("新札幌福音教会", churches[1].name)
+        assertEquals("〒004-0001 北海道札幌市厚別区厚別東一条3丁目10-1", churches[1].address)
+        assertEquals("[102・1]北海道宣教区", churches[1].jurisdiction)
+        assertEquals("011(897)3345", churches[1].phone)
+        assertEquals("011(897)3345", churches[1].fax)
+        assertEquals("https://shinsapporo.jimdofree.com", churches[1].websiteUrl)
+    }
+
+    @Test
+    fun jaccParserHandlesEdgeCases() {
+        val html = """
+            <table border="1">
+              <tr bgcolor="#FFFF99">
+                <td><a href="db_disp.php?recordID=test"><strong>	  〒空教会</strong></a></td>
+                <td><strong>牧師</strong></td>
+                <td><strong>〒030-0123 青森県<a href="http://maps.google.co.jp/maps?q=test">青森市大矢沢字里見80-6</a></strong></td>
+              </tr>
+              <tr>
+                <td>[201・2]東北宣教区</td>
+                <td></td>
+                <td>電話：[090-3890-7001(本多)]　FAX：[なし]</td>
+              </tr>
+              <tr>
+                <td>礼拝：14:00</td>
+                <td></td>
+                <td>e-Mail：<a href="mailto:"></a></td>
+              </tr>
+              <tr>
+                <td>祈祷会：(水)13:30</td>
+                <td></td>
+                <td><a href="nasukougenchurch.com" target="_blank">nasukougenchurch.com</a></td>
+              </tr>
+              <tr>
+                <td colspan="3">★</td>
+              </tr>
+              <tr bgcolor="#FFFF99">
+                <td><a href="db_disp.php?recordID=test2"><strong>	  宗）二本松福音の家教会</strong></a></td>
+                <td><strong>吉兼 剛</strong></td>
+                <td><strong>〒969-1403 福島県<a href="http://maps.google.co.jp/maps?q=test2">二本松市渋川字上払川100-6</a></strong></td>
+              </tr>
+              <tr>
+                <td>[205・2]東北宣教区</td>
+                <td></td>
+                <td>電話：[0243(24)1492]　FAX：[]</td>
+              </tr>
+              <tr>
+                <td>礼拝：11:00</td>
+                <td></td>
+                <td>e-Mail：<a href="mailto:gospel-house@gol.com">gospel-house@gol.com</a></td>
+              </tr>
+              <tr>
+                <td>祈祷会：(水)10:30</td>
+                <td></td>
+                <td><a href="" target="_blank"></a></td>
+              </tr>
+              <tr>
+                <td colspan="3">★</td>
+              </tr>
+            </table>
+        """.trimIndent()
+
+        val churches = JACCDenominationChurchListCrawler().parse(html)
+
+        assertEquals(2, churches.size)
+        assertEquals("〒空教会", churches[0].name)
+        assertEquals("090-3890-7001(本多)", churches[0].phone)
+        assertEquals("", churches[0].fax)
+        assertEquals("https://nasukougenchurch.com", churches[0].websiteUrl)
+
+        assertEquals("宗）二本松福音の家教会", churches[1].name)
+        assertEquals("0243(24)1492", churches[1].phone)
+        assertEquals("", churches[1].fax)
+        assertEquals("", churches[1].websiteUrl)
+    }
+
+    @Test
+    fun runnerWritesJaccPerDenominationJson() {
+        val root = Files.createTempDirectory("crossmap-jacc-list")
+        try {
+            val crawler = JACCDenominationChurchListCrawler()
+            val runner = DenominationChurchListCrawlerRunner(
+                pageLoader = { _, _ ->
+                    LoadedDenominationChurchPage(
+                        crawler.sourceUrl,
+                        """
+                            <table border="1">
+                              <tr bgcolor="#FFFF99">
+                                <td><a href="db_disp.php?recordID=test"><strong>	  新札幌聖書教会</strong></a></td>
+                                <td><strong>朴 永基</strong></td>
+                                <td><strong>〒004-0033 北海道<a href="http://maps.google.co.jp/maps?q=test">北海道札幌市厚別区上野幌三条6-13-15</a></strong></td>
+                              </tr>
+                              <tr>
+                                <td>[101・1]北海道宣教区</td>
+                                <td></td>
+                                <td>電話：[011(892)5233]　FAX：[011(892)5274]</td>
+                              </tr>
+                              <tr>
+                                <td>礼拝：10:30</td>
+                                <td></td>
+                                <td>e-Mail：</td>
+                              </tr>
+                              <tr>
+                                <td>祈祷会：(水)10:30</td>
+                                <td></td>
+                                <td><a href="https://test.domei.church/" target="_blank">https://test.domei.church/</a></td>
+                              </tr>
+                              <tr>
+                                <td colspan="3">★</td>
+                              </tr>
+                            </table>
+                        """.trimIndent(),
+                        "2026-07-19T00:00:00Z",
+                        cacheHit = false,
+                    )
+                },
+                json = json,
+            )
+
+            val result = runner.crawl(crawler, root, root.resolve("cache"), forceRefresh = true)
+
+            assertEquals(1, result.list.churches.size)
+            assertFalse(result.cacheHit)
+            val written = json.decodeFromString<OfficialDenominationChurchList>(
+                Files.readString(root.resolve("crawl/jacc-churches.json")),
+            )
+            assertEquals("JACC", written.denominationId)
+            assertEquals("新札幌聖書教会", written.churches.single().name)
+            assertEquals("[101・1]北海道宣教区", written.churches.single().jurisdiction)
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun runnerWritesTypedPerDenominationJson() {
         val root = Files.createTempDirectory("crossmap-uccj-list")
         try {

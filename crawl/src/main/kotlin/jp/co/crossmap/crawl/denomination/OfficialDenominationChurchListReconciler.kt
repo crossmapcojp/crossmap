@@ -183,6 +183,7 @@ class OfficialDenominationChurchListReconciler(
     private fun comparableName(value: String, denominationId: String): String {
         var result = Normalizer.normalize(value, Normalizer.Form.NFKC)
             .replace(Regex("^[（(]?宗教法人[）)]?\\s*"), "")
+            .replace(Regex("^宗[）)]\\s*"), "")
             .trim()
         result = when (denominationId) {
             "UCCJ" -> result.replace(Regex("日本(?:基督|キリスト|基督[（(]キリスト[）)])教団"), "")

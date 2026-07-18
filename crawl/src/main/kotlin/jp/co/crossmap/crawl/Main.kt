@@ -586,7 +586,7 @@ private class NormalizeAddresses : CrawlCommand("normalize-addresses", CrawlRepo
 private class CrawlDenominationDirectories : CrawlCommand("crawl-denomination-directories", CrawlReport.CRAWL_DENOMINATION_DIRECTORIES) {
     private val resources by option("--resources").default("resources")
     private val forceRefresh by option("--force-refresh", help = "Invalidate dedicated official-list HTML caches and fetch them now").flag()
-    private val dedicatedOnly by option("--dedicated-only", help = "Run only the authoritative UCCJ/JBC/JBBF crawlers").flag()
+    private val dedicatedOnly by option("--dedicated-only", help = "Run only the authoritative UCCJ/JBC/JBBF/JACC crawlers").flag()
     override fun execute(audit: CrawlCommandAudit) {
         val root = Path.of(resources)
         val paths = CrossmapPaths(root)
@@ -607,6 +607,7 @@ private class CrawlDenominationDirectories : CrawlCommand("crawl-denomination-di
         audit.metric("uccj_churches", report.uccjChurches)
         audit.metric("jbc_churches", report.jbcChurches)
         audit.metric("jbbf_churches", report.jbbfChurches)
+        audit.metric("jacc_churches", report.jaccChurches)
         audit.metric("official_cache_hits", report.cacheHits)
         report.reconciliation?.let { reconciliation ->
             audit.metric("official_matches", reconciliation.matchedOfficialEntries)
@@ -619,10 +620,11 @@ private class CrawlDenominationDirectories : CrawlCommand("crawl-denomination-di
         audit.output("uccj_churches", root.resolve("crawl/uccj-churches.json").toAbsolutePath().normalize())
         audit.output("jbc_churches", root.resolve("crawl/jbc-churches.json").toAbsolutePath().normalize())
         audit.output("jbbf_churches", root.resolve("crawl/jbbf-churches.json").toAbsolutePath().normalize())
+        audit.output("jacc_churches", root.resolve("crawl/jacc-churches.json").toAbsolutePath().normalize())
         audit.output("catalog", paths.churchCatalog.toAbsolutePath().normalize())
         echo(
             "Crawled ${report.sources} denomination sources / ${report.pages} pages: ${report.candidates} candidates, " +
-                "UCCJ=${report.uccjChurches}, JBC=${report.jbcChurches}, JBBF=${report.jbbfChurches}, ${report.errors} errors; " +
+                "UCCJ=${report.uccjChurches}, JBC=${report.jbcChurches}, JBBF=${report.jbbfChurches}, JACC=${report.jaccChurches}, ${report.errors} errors; " +
                 "removed=${report.reconciliation?.removedUnsupportedLabels ?: 0} unsupported labels",
         )
     }
