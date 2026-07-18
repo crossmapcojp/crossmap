@@ -1081,6 +1081,16 @@
         ]
     },
     {
+        "ja": "すずらん",
+        "translations": {
+            "en": "Suzuran",
+            "ko": "수수란"
+        },
+        "sources": [
+            "TITLE"
+        ]
+    },
+    {
         "ja": "すわ",
         "translations": {
             "en": "Suwa",
@@ -5093,6 +5103,18 @@
         ]
     },
     {
+        "ja": "上越",
+        "translations": {
+            "en": "Joetsu",
+            "id": "Joetsu",
+            "ko": "조에쓰",
+            "pt": "Joetsu"
+        },
+        "sources": [
+            "TITLE"
+        ]
+    },
+    {
         "ja": "上越市",
         "translations": {
             "en": "Joetsu City",
@@ -8476,7 +8498,7 @@
     {
         "ja": "丹後",
         "translations": {
-            "en": "Tango",
+            "en": "Kyotango",
             "ko": "탄고"
         },
         "sources": [
@@ -17640,6 +17662,16 @@
         },
         "sources": [
             "ADDRESS"
+        ]
+    },
+    {
+        "ja": "千本",
+        "translations": {
+            "en": "Senbon",
+            "ko": "센본"
+        },
+        "sources": [
+            "TITLE"
         ]
     },
     {
@@ -31863,7 +31895,7 @@
     {
         "ja": "富来",
         "translations": {
-            "en": "Togi",
+            "en": "Togi-jitomachi",
             "ko": "도기"
         },
         "sources": [
@@ -32851,7 +32883,7 @@
     {
         "ja": "小岩",
         "translations": {
-            "en": "Koiwa",
+            "en": "Minamikoiwa",
             "ko": "고이와"
         },
         "sources": [
@@ -37189,7 +37221,7 @@
     {
         "ja": "巨摩",
         "translations": {
-            "en": "Koma",
+            "en": "Minamikoma-gun",
             "ko": "고마"
         },
         "sources": [
@@ -39216,7 +39248,7 @@
     {
         "ja": "彦島",
         "translations": {
-            "en": "Hikoshima",
+            "en": "Hikoshima-honmuracho",
             "ko": "히코시마"
         },
         "sources": [
@@ -43576,7 +43608,7 @@
     {
         "ja": "旭",
         "translations": {
-            "en": "Asahi",
+            "en": "Kembuchi",
             "ko": "아사히"
         },
         "sources": [
@@ -46145,7 +46177,7 @@
     {
         "ja": "東",
         "translations": {
-            "en": "Higashi",
+            "en": "Tokyo",
             "ko": "히가시"
         },
         "sources": [
@@ -51332,7 +51364,8 @@
             "ko": "게미가와초"
         },
         "sources": [
-            "ADDRESS"
+            "ADDRESS",
+            "TITLE"
         ]
     },
     {
@@ -52728,7 +52761,7 @@
     {
         "ja": "毛呂",
         "translations": {
-            "en": "Kero",
+            "en": "Moroyama",
             "ko": "게로"
         },
         "sources": [
@@ -55294,7 +55327,8 @@
             "ko": "센겐"
         },
         "sources": [
-            "ADDRESS"
+            "ADDRESS",
+            "TITLE"
         ]
     },
     {
@@ -57415,7 +57449,8 @@
             "ko": "다키야마"
         },
         "sources": [
-            "ADDRESS"
+            "ADDRESS",
+            "TITLE"
         ]
     },
     {
@@ -66652,7 +66687,7 @@
     {
         "ja": "網干",
         "translations": {
-            "en": "Aboshi",
+            "en": "Aboshiku-hamada",
             "ko": "아보시"
         },
         "sources": [
@@ -72907,7 +72942,7 @@
     {
         "ja": "西荻",
         "translations": {
-            "en": "Nishiogi",
+            "en": "Nishiogikita",
             "ko": "니시오기"
         },
         "sources": [
@@ -77063,7 +77098,7 @@
     {
         "ja": "釜利谷",
         "translations": {
-            "en": "Kamariya",
+            "en": "Kamariya-higashi",
             "ko": "가마리야"
         },
         "sources": [
@@ -80651,7 +80686,7 @@
     {
         "ja": "香貫",
         "translations": {
-            "en": "Kanuki",
+            "en": "Kamikanuki",
             "ko": "가누키"
         },
         "sources": [
@@ -82906,7 +82941,7 @@
     {
         "ja": "鵠沼",
         "translations": {
-            "en": "Kugenuma",
+            "en": "Kugenuma-kaigan",
             "ko": "구게누마"
         },
         "sources": [

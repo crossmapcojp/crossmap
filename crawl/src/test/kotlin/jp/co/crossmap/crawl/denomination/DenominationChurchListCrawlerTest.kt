@@ -57,6 +57,26 @@ class DenominationChurchListCrawlerTest {
     }
 
     @Test
+    fun jbbfParserReadsOfficialAddressBookWithoutTreatingMemberNamesAsAliases() {
+        val html = """
+            <p><b><a id="shizuoka" name="shizuoka"></a>静岡県</b></p>
+            <hr />
+            <p><b><a href="http://www.shimizubbc.com/">清水聖書バプテスト教会</a></b><br />
+            牧師：濱田 献<br />〒424-0832　静岡県静岡市清水区入江南町７－１１　TEL054-366-3804</p>
+            <p><b><a href="http://sennbonn.cocolog-wbs.com/blog/">千本浜聖書バプテスト教会（清水教会伝道所）</a></b><br />
+            伝道師：道下 義嗣<br />〒410-0866 静岡県沼津市市道町４ー１３ TEL055-913-3742</p>
+        """.trimIndent()
+
+        val churches = JBBFDenominationChurchListCrawler().parse(html)
+
+        assertEquals(listOf("清水聖書バプテスト教会", "千本浜聖書バプテスト教会"), churches.map { it.name })
+        assertEquals("〒424-0832　静岡県静岡市清水区入江南町７－１１", churches.first().address)
+        assertEquals("静岡県", churches.first().jurisdiction)
+        assertEquals("http://www.shimizubbc.com/", churches.first().websiteUrl)
+        assertEquals("清水教会伝道所", churches.last().note)
+    }
+
+    @Test
     fun runnerWritesTypedPerDenominationJson() {
         val root = Files.createTempDirectory("crossmap-uccj-list")
         try {

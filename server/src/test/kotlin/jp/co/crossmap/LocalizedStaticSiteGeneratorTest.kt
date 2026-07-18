@@ -104,4 +104,49 @@ class LocalizedStaticSiteGeneratorTest {
             output.toFile().deleteRecursively()
         }
     }
+
+    @Test
+    fun generatesAllLocalizedPagesWithRequestedParallelWorkers() {
+        val baseChurch = json.decodeFromString<List<ChurchRecord>>(
+            Files.readString(projectRoot.resolve("resources/catalog/churches.json")),
+        ).first()
+        val churches = (1..48).map { number ->
+            baseChurch.copy(
+                id = "parallel:$number",
+                googleCid = null,
+                name = "並列生成テスト教会$number",
+                englishName = "Parallel Generation Test Church $number",
+                localizedNames = emptyList(),
+            )
+        }
+        val denominationCatalogs = Language.entries.associate { language ->
+            language.code to json.decodeFromString<Map<String, String>>(
+                Files.readString(projectRoot.resolve("resources/catalog/denomination-${language.code}-names.json")),
+            )
+        }
+        val output = Files.createTempDirectory("crossmap-parallel-site")
+        try {
+            val generated = LocalizedStaticSiteGenerator(
+                XmlMessageCatalog.load(projectRoot.resolve("resources/i18n")),
+                "https://churches.example",
+                parallelism = 8,
+            ).generate(
+                churches = churches,
+                denominationEnglishNames = denominationCatalogs.getValue("en"),
+                denominationNamesByLanguage = denominationCatalogs,
+                outputDirectory = output,
+            )
+
+            assertEquals(churches.size * Language.entries.size, generated.churchPages.size)
+            assertEquals(8, generated.parallelism)
+            assertTrue(generated.workerThreadsUsed in 2..8)
+            Language.entries.forEach { language ->
+                Files.list(output.resolve(language.code)).use { files ->
+                    assertEquals(churches.size + 2L, files.filter { it.fileName.toString().endsWith(".html") }.count())
+                }
+            }
+        } finally {
+            output.toFile().deleteRecursively()
+        }
+    }
 }

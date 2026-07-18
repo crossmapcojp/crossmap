@@ -7,12 +7,16 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
+import java.util.concurrent.Callable
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Executors
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.add
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import org.slf4j.LoggerFactory
 
 data class LocalizedGeneratedChurchPage(
     val churchId: String,
@@ -26,12 +30,21 @@ data class LocalizedGeneratedChurchPage(
 data class LocalizedSiteResult(
     val churchPages: List<LocalizedGeneratedChurchPage>,
     val localizedPageUrls: Map<String, Map<String, String>>,
+    val parallelism: Int,
+    val workerThreadsUsed: Int,
+    val generationDurationMillis: Long,
 )
 
 class LocalizedStaticSiteGenerator(
     private val messages: MessageCatalog,
     private val siteBaseUrl: String,
+    private val parallelism: Int = Runtime.getRuntime().availableProcessors().coerceAtLeast(1),
 ) {
+    init {
+        require(parallelism > 0) { "parallelism must be positive" }
+    }
+
+    private val logger = LoggerFactory.getLogger(LocalizedStaticSiteGenerator::class.java)
     private val baseUrl = siteBaseUrl.trimEnd('/').also {
         require(it.startsWith("https://") || it.startsWith("http://")) { "siteBaseUrl must be absolute" }
     }
@@ -85,55 +98,99 @@ class LocalizedStaticSiteGenerator(
         val churchTemplate = freemarker.getTemplate("church.html")
         val websitePolicy = ChurchWebsitePolicy(excludedChurchListingDomains)
 
-        val pages = buildList {
+        val sortedChurches = churches.sortedBy(ChurchRecord::id)
+        Language.entries.forEach { language ->
+            val languageDirectory = outputDirectory.resolve(language.code)
+            Files.createDirectories(languageDirectory)
+            val expectedHtml = churches.map { "${slugs.getValue(it)}.html" }.toSet() + setOf("index.html", "result.html")
+            removeStaleHtml(languageDirectory, expectedHtml)
+        }
+        val jobs = buildList<Callable<LocalizedGeneratedChurchPage?>> {
             Language.entries.forEach { language ->
                 val languageDirectory = outputDirectory.resolve(language.code)
-                Files.createDirectories(languageDirectory)
-                val expectedHtml = churches.map { "${slugs.getValue(it)}.html" }.toSet() + setOf("index.html", "result.html")
-                removeStaleHtml(languageDirectory, expectedHtml)
-                writeTemplate(
-                    languageDirectory.resolve("index.html"),
-                    indexTemplate,
-                    shellModel(language, "index.html", rootEntry = false),
-                )
-                writeTemplate(
-                    languageDirectory.resolve("result.html"),
-                    resultTemplate,
-                    resultModel(language),
-                )
-                churches.sortedBy(ChurchRecord::id).forEach { church ->
+                add(Callable {
+                    writeTemplate(
+                        languageDirectory.resolve("index.html"),
+                        indexTemplate,
+                        shellModel(language, "index.html", rootEntry = false),
+                    )
+                    null
+                })
+                add(Callable {
+                    writeTemplate(
+                        languageDirectory.resolve("result.html"),
+                        resultTemplate,
+                        resultModel(language),
+                    )
+                    null
+                })
+                sortedChurches.forEach { church ->
                     val slug = slugs.getValue(church)
                     val fileName = "$slug.html"
                     val pageUrl = "/${language.code}/$fileName"
                     val canonicalUrl = absolute(pageUrl)
                     val destination = languageDirectory.resolve(fileName)
-                    writeTemplate(
-                        destination,
-                        churchTemplate,
-                        churchModel(
-                            church,
-                            language,
-                            slug,
-                            canonicalUrl,
-                            denominationNamesByLanguage,
-                            websitePolicy,
-                        ),
-                    )
-                    add(LocalizedGeneratedChurchPage(church.id, language, slug, destination, pageUrl, canonicalUrl))
+                    add(Callable {
+                        writeTemplate(
+                            destination,
+                            churchTemplate,
+                            churchModel(
+                                church,
+                                language,
+                                slug,
+                                canonicalUrl,
+                                denominationNamesByLanguage,
+                                websitePolicy,
+                            ),
+                        )
+                        LocalizedGeneratedChurchPage(church.id, language, slug, destination, pageUrl, canonicalUrl)
+                    })
                 }
             }
+            add(Callable {
+                writeTemplate(
+                    outputDirectory.resolve("index.html"),
+                    indexTemplate,
+                    shellModel(Language.ENGLISH, "index.html", rootEntry = true),
+                )
+                null
+            })
+            add(Callable {
+                writeAtomically(outputDirectory.resolve("sitemap.xml"), sitemap(slugs))
+                null
+            })
         }
-        writeTemplate(
-            outputDirectory.resolve("index.html"),
-            indexTemplate,
-            shellModel(Language.ENGLISH, "index.html", rootEntry = true),
+        val workerThreads = ConcurrentHashMap.newKeySet<String>()
+        val executor = Executors.newFixedThreadPool(parallelism) { task ->
+            Thread(task, "crossmap-static-site-${staticSiteThreadSequence.incrementAndGet()}").apply { isDaemon = true }
+        }
+        val startedAt = System.nanoTime()
+        val pages = try {
+            executor.invokeAll(jobs.map { job ->
+                Callable {
+                    workerThreads += Thread.currentThread().name
+                    job.call()
+                }
+            }).mapNotNull { it.get() }
+        } finally {
+            executor.shutdown()
+        }
+        val generationDurationMillis = (System.nanoTime() - startedAt) / 1_000_000
+        logger.info(
+            "Generated {} localized HTML files with parallelism={} workersUsed={} durationMs={}",
+            jobs.size,
+            parallelism,
+            workerThreads.size,
+            generationDurationMillis,
         )
-        writeAtomically(outputDirectory.resolve("sitemap.xml"), sitemap(slugs))
         return LocalizedSiteResult(
             churchPages = pages,
             localizedPageUrls = pages.groupBy(LocalizedGeneratedChurchPage::churchId).mapValues { (_, variants) ->
                 variants.associate { it.language.code to it.pageUrl }
             },
+            parallelism = parallelism,
+            workerThreadsUsed = workerThreads.size,
+            generationDurationMillis = generationDurationMillis,
         )
     }
 
@@ -347,4 +404,8 @@ class LocalizedStaticSiteGenerator(
         else -> json.encodeToString(value.toString())
     }.replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
     private fun xml(value: String): String = value.replace("&", "&amp;").replace("<", "&lt;").replace("\"", "&quot;")
+
+    private companion object {
+        val staticSiteThreadSequence = java.util.concurrent.atomic.AtomicInteger()
+    }
 }

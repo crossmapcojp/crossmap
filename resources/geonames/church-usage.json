@@ -1653,7 +1653,9 @@
     {
         "churchId": "google:10240769190511805106",
         "googlePlaceTitle": "清水聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "清水"
+        ],
         "address": [
             "入江",
             "南町",
@@ -1969,7 +1971,9 @@
     {
         "churchId": "google:10278202703997458393",
         "googlePlaceTitle": "調布聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "調布"
+        ],
         "address": [
             "上石原",
             "東京都",
@@ -5829,7 +5833,9 @@
     {
         "churchId": "google:10801995791316482609",
         "googlePlaceTitle": "幕張聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "幕張"
+        ],
         "address": [
             "千葉市花見川区",
             "千葉県",
@@ -7154,7 +7160,8 @@
         "churchId": "google:10993874019623897553",
         "googlePlaceTitle": "横浜聖書バプテスト教会 つくば伝道所",
         "title": [
-            "つくば"
+            "つくば",
+            "横浜"
         ],
         "address": [
             "つくば市",
@@ -7464,7 +7471,10 @@
     {
         "churchId": "google:11044120022151907151",
         "googlePlaceTitle": "豊橋ひかり聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "ひかり",
+            "豊橋"
+        ],
         "address": [
             "岩田",
             "愛知県",
@@ -9377,7 +9387,9 @@
     {
         "churchId": "google:11339189327564980187",
         "googlePlaceTitle": "検見川聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "検見川"
+        ],
         "address": [
             "千葉市花見川区",
             "千葉県",
@@ -12004,7 +12016,9 @@
     {
         "churchId": "google:11712062025249875680",
         "googlePlaceTitle": "浦和聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "浦和"
+        ],
         "address": [
             "さいたま市緑区",
             "原山",
@@ -14165,7 +14179,9 @@
     {
         "churchId": "google:12008506132421717350",
         "googlePlaceTitle": "甘木聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "甘木"
+        ],
         "address": [
             "朝倉市",
             "東町",
@@ -15287,7 +15303,9 @@
     {
         "churchId": "google:12185166116900781",
         "googlePlaceTitle": "上田聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "上田"
+        ],
         "address": [
             "上田原",
             "上田市",
@@ -16199,7 +16217,9 @@
     {
         "churchId": "google:1231826986495653015",
         "googlePlaceTitle": "長野聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "長野"
+        ],
         "address": [
             "吉田",
             "長野市",
@@ -16503,7 +16523,9 @@
     {
         "churchId": "google:12358371234907414493",
         "googlePlaceTitle": "浅間聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "浅間"
+        ],
         "address": [
             "北佐久郡",
             "御代田",
@@ -16621,7 +16643,9 @@
     {
         "churchId": "google:12372765701472218650",
         "googlePlaceTitle": "滝山聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "滝山"
+        ],
         "address": [
             "東久留米市",
             "東京都",
@@ -16992,7 +17016,9 @@
     {
         "churchId": "google:12417877896919743900",
         "googlePlaceTitle": "葛城聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "葛城"
+        ],
         "address": [
             "奈良県",
             "葛城市"
@@ -17137,7 +17163,9 @@
     {
         "churchId": "google:12434481644373028313",
         "googlePlaceTitle": "岡崎聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "岡崎"
+        ],
         "address": [
             "中町",
             "岡崎市",
@@ -20163,7 +20191,9 @@
     {
         "churchId": "google:12929462727779203321",
         "googlePlaceTitle": "京都聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "京都"
+        ],
         "address": [
             "京都市山科区",
             "京都府",
@@ -21027,7 +21057,9 @@
     {
         "churchId": "google:13048787240861859576",
         "googlePlaceTitle": "亀岡聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "亀岡"
+        ],
         "address": [
             "亀岡市",
             "京都府"
@@ -21376,7 +21408,9 @@
     {
         "churchId": "google:1310714868577164469",
         "googlePlaceTitle": "市原聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "市原"
+        ],
         "address": [
             "千葉県",
             "姉崎",
@@ -28240,7 +28274,9 @@
     {
         "churchId": "google:14098729743361523982",
         "googlePlaceTitle": "東京聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "東京"
+        ],
         "address": [
             "平井",
             "東京都",
@@ -31603,7 +31639,9 @@
     {
         "churchId": "google:14626124736716498381",
         "googlePlaceTitle": "大分聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "大分"
+        ],
         "address": [
             "大分市",
             "大分県",
@@ -41575,7 +41613,9 @@
     {
         "churchId": "google:16152617868256574430",
         "googlePlaceTitle": "稲毛聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "稲毛"
+        ],
         "address": [
             "千葉市稲毛区",
             "千葉県",
@@ -42801,7 +42841,9 @@
     {
         "churchId": "google:16311781506661320759",
         "googlePlaceTitle": "札幌東聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "札幌東"
+        ],
         "address": [
             "北海道",
             "札幌市東区",
@@ -43264,7 +43306,9 @@
     {
         "churchId": "google:16391184598147407819",
         "googlePlaceTitle": "小倉聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "小倉"
+        ],
         "address": [
             "北九州市小倉南区",
             "朽網東",
@@ -46993,7 +47037,9 @@
     {
         "churchId": "google:16936982937487842203",
         "googlePlaceTitle": "八千代聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "八千代"
+        ],
         "address": [
             "八千代市",
             "勝田",
@@ -47122,7 +47168,9 @@
     {
         "churchId": "google:16956736146345730298",
         "googlePlaceTitle": "上越聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "上越"
+        ],
         "address": [
             "上越市",
             "岩木",
@@ -48478,7 +48526,9 @@
     {
         "churchId": "google:17148804257180467494",
         "googlePlaceTitle": "葛西聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "西"
+        ],
         "address": [
             "中葛西",
             "東京都",
@@ -49004,7 +49054,9 @@
     {
         "churchId": "google:172405020373314316",
         "googlePlaceTitle": "掛川聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "掛川"
+        ],
         "address": [
             "掛川市",
             "静岡県",
@@ -49014,7 +49066,9 @@
     {
         "churchId": "google:17240986794959972765",
         "googlePlaceTitle": "高槻聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "高槻"
+        ],
         "address": [
             "大阪府",
             "安満",
@@ -54333,7 +54387,9 @@
     {
         "churchId": "google:180599933544999123",
         "googlePlaceTitle": "甲子園聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "甲子園"
+        ],
         "address": [
             "兵庫県",
             "浜甲子園",
@@ -54859,7 +54915,9 @@
     {
         "churchId": "google:18145326680751248366",
         "googlePlaceTitle": "千本浜聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "千本"
+        ],
         "address": [
             "市道町",
             "沼津市",
@@ -57672,7 +57730,9 @@
     {
         "churchId": "google:1940374589020032374",
         "googlePlaceTitle": "佐倉聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "佐倉"
+        ],
         "address": [
             "佐倉市",
             "千葉県",
@@ -57934,7 +57994,9 @@
     {
         "churchId": "google:1975151487161328867",
         "googlePlaceTitle": "北九州聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "北九州"
+        ],
         "address": [
             "北九州市八幡西区",
             "永犬丸",
@@ -58187,7 +58249,9 @@
     {
         "churchId": "google:2013799214688946306",
         "googlePlaceTitle": "茨木聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "茨木"
+        ],
         "address": [
             "園田町",
             "大阪府",
@@ -69856,7 +69920,9 @@
     {
         "churchId": "google:3740041202829134009",
         "googlePlaceTitle": "草加聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "草加"
+        ],
         "address": [
             "埼玉県",
             "草加市",
@@ -70028,7 +70094,9 @@
     {
         "churchId": "google:376370022314732772",
         "googlePlaceTitle": "横浜聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "横浜"
+        ],
         "address": [
             "下永谷",
             "横浜市港南区",
@@ -70338,7 +70406,9 @@
     {
         "churchId": "google:3817639747731397476",
         "googlePlaceTitle": "沖縄聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "沖縄"
+        ],
         "address": [
             "中頭郡",
             "北谷町",
@@ -75077,7 +75147,9 @@
     {
         "churchId": "google:4531222723689529682",
         "googlePlaceTitle": "浦添聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "浦添"
+        ],
         "address": [
             "勢理客",
             "沖縄県",
@@ -80843,7 +80915,9 @@
     {
         "churchId": "google:5359330187548312087",
         "googlePlaceTitle": "太田聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "太田"
+        ],
         "address": [
             "太田市",
             "石原町",
@@ -81735,7 +81809,9 @@
     {
         "churchId": "google:5501458543834101719",
         "googlePlaceTitle": "船橋聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "船橋"
+        ],
         "address": [
             "千葉県",
             "海神",
@@ -82947,7 +83023,9 @@
     {
         "churchId": "google:567997701177568318",
         "googlePlaceTitle": "松江聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "松江"
+        ],
         "address": [
             "吉町",
             "島根県",
@@ -83091,7 +83169,9 @@
     {
         "churchId": "google:5693975774125758294",
         "googlePlaceTitle": "立川聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "立川"
+        ],
         "address": [
             "一番町",
             "東京都",
@@ -83689,7 +83769,9 @@
     {
         "churchId": "google:5773832687917449042",
         "googlePlaceTitle": "瀬戸聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "瀬戸"
+        ],
         "address": [
             "愛知県",
             "権現町",
@@ -87236,7 +87318,9 @@
     {
         "churchId": "google:6348740409209095186",
         "googlePlaceTitle": "すずらん聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "すずらん"
+        ],
         "address": [
             "北広島市",
             "北海道",
@@ -88933,7 +89017,9 @@
     {
         "churchId": "google:6593949224009845634",
         "googlePlaceTitle": "枚方聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "枚方"
+        ],
         "address": [
             "北町",
             "大阪府",
@@ -89742,7 +89828,9 @@
     {
         "churchId": "google:6695235649451346531",
         "googlePlaceTitle": "名古屋聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "名古屋"
+        ],
         "address": [
             "名古屋市昭和区",
             "愛知県"
@@ -92851,7 +92939,9 @@
     {
         "churchId": "google:7089410274206619275",
         "googlePlaceTitle": "足利聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "足利"
+        ],
         "address": [
             "大町",
             "栃木県",
@@ -98168,7 +98258,9 @@
     {
         "churchId": "google:7840024417556216935",
         "googlePlaceTitle": "金沢聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "金沢"
+        ],
         "address": [
             "大桑",
             "石川県",
@@ -98683,7 +98775,9 @@
     {
         "churchId": "google:7912485738795425682",
         "googlePlaceTitle": "港北ニュータウン聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "港北"
+        ],
         "address": [
             "仲町台",
             "横浜市都筑区",
@@ -107158,7 +107252,9 @@
     {
         "churchId": "google:9092264996903312197",
         "googlePlaceTitle": "甲府聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "甲府"
+        ],
         "address": [
             "山梨県",
             "桜井町",
@@ -107849,7 +107945,9 @@
     {
         "churchId": "google:9186247173121675494",
         "googlePlaceTitle": "札幌聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "札幌"
+        ],
         "address": [
             "北海道",
             "札幌市南区",
@@ -109110,7 +109208,9 @@
     {
         "churchId": "google:9377198399163798533",
         "googlePlaceTitle": "福井聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "福井"
+        ],
         "address": [
             "元町",
             "坂井市",
@@ -109896,7 +109996,9 @@
     {
         "churchId": "google:9489402677087102579",
         "googlePlaceTitle": "瀬戸内聖書バプテスト教会",
-        "title": [],
+        "title": [
+            "瀬戸内"
+        ],
         "address": [
             "山田",
             "岡山県",

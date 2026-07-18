@@ -186,6 +186,36 @@ class LightPandaSearchE2ETest {
                 }
             }
 
+            val izuBaptist = apiSearch(
+                port,
+                "Baptist",
+                latitude = 34.87544654121299,
+                longitude = 138.92825706221615,
+            ).response
+            assertEquals("Senbon Hama Bible Baptist Church", izuBaptist.hits.first().englishName)
+            assertTrue(izuBaptist.hits.any { it.englishName == "Shimizu Bible Baptist Church" })
+            assertTrue(izuBaptist.hits.none { it.englishName == "JBBF" })
+            val izuBaptistUrl = "http://127.0.0.1:$port/en/result.html?q=" +
+                URLEncoder.encode("Baptist", Charsets.UTF_8.name())
+            LightPandaCdpSession.open(
+                izuBaptistUrl,
+                GeoPoint(34.87544654121299, 138.92825706221615),
+            ).use { session ->
+                session.waitUntil {
+                    session.evaluate("document.querySelectorAll('.result').length") != "0"
+                }
+                val visibleNames = Json.decodeFromString<List<String>>(
+                    assertNotNull(
+                        session.evaluate(
+                            "JSON.stringify([...document.querySelectorAll('.result a')].map(link => link.textContent))",
+                        ),
+                    ),
+                )
+                assertEquals("Senbon Hama Bible Baptist Church", visibleNames.first())
+                assertTrue(visibleNames.contains("Shimizu Bible Baptist Church"), visibleNames.toString())
+                assertFalse(visibleNames.contains("JBBF"), visibleNames.toString())
+            }
+
             val browser = LightPanda(
                 timeout = Duration.ofSeconds(30),
                 renderWait = Duration.ofSeconds(15),

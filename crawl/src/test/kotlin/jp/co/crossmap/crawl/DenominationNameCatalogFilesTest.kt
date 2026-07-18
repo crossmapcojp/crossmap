@@ -92,6 +92,26 @@ class DenominationNameCatalogFilesTest {
         }
     }
 
+    @Test
+    fun jbbfAliasesContainOnlyDenominationNamesNotMemberChurches() {
+        val resources = resourcesRoot()
+        val denominations = Json { ignoreUnknownKeys = true }.decodeFromString<List<Denomination>>(
+            Files.readString(resources.resolve("catalog/denominations.json")),
+        )
+        val rules = Json { ignoreUnknownKeys = true }.decodeFromString<List<DenominationRule>>(
+            Files.readString(resources.resolve("cleanup/denomination-rules.json")),
+        )
+
+        assertEquals(
+            setOf("JBBF", "日本バプテスト・バイブル・フェローシップ"),
+            denominations.single { it.id == "JBBF" }.aliases.toSet(),
+        )
+        assertEquals(
+            setOf("JBBF", "日本バプテスト・バイブル・フェローシップ"),
+            rules.single { it.denominationId == "JBBF" }.churchNameComponents.toSet(),
+        )
+    }
+
     private fun resourcesRoot(): Path = sequenceOf(Path.of("resources"), Path.of("../resources"))
         .map { it.toAbsolutePath().normalize() }
         .first { Files.exists(it.resolve("catalog/denominations.json")) }

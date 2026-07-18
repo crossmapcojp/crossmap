@@ -12,8 +12,8 @@ import kotlinx.serialization.json.Json
 object StaticSiteGeneratorCli {
     @JvmStatic
     fun main(args: Array<String>) {
-        require(args.size == 6) {
-            "Usage: <churches.json> <denomination-en-names.json> <output-directory> <geoname-english-lexicon.json> <i18n-directory> <site-base-url>"
+        require(args.size in 6..7) {
+            "Usage: <churches.json> <denomination-en-names.json> <output-directory> <geoname-english-lexicon.json> <i18n-directory> <site-base-url> [parallelism]"
         }
         val catalog = Path.of(args[0])
         val denominationNamesFile = Path.of(args[1])
@@ -21,6 +21,8 @@ object StaticSiteGeneratorCli {
         val geonameLexiconFile = Path.of(args[3])
         val i18nDirectory = Path.of(args[4])
         val siteBaseUrl = args[5]
+        val parallelism = args.getOrNull(6)?.toInt()
+            ?: Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
         val json = Json { ignoreUnknownKeys = true; prettyPrint = true; encodeDefaults = true }
         val catalogBytes = Files.readAllBytes(catalog)
         val churches = json.decodeFromString<List<ChurchRecord>>(catalogBytes.toString(Charsets.UTF_8))
@@ -47,6 +49,7 @@ object StaticSiteGeneratorCli {
         val generated = LocalizedStaticSiteGenerator(
             messages = XmlMessageCatalog.load(i18nDirectory),
             siteBaseUrl = siteBaseUrl,
+            parallelism = parallelism,
         ).generate(
             churches = churches,
             denominationEnglishNames = denominationEnglishNames,
@@ -68,7 +71,11 @@ object StaticSiteGeneratorCli {
             StandardCopyOption.REPLACE_EXISTING,
             StandardCopyOption.ATOMIC_MOVE,
         )
-        println("Generated ${generated.churchPages.size} localized church pages in $output")
+        println(
+            "Generated ${generated.churchPages.size} localized church pages in $output: " +
+                "parallelism=${generated.parallelism}, workersUsed=${generated.workerThreadsUsed}, " +
+                "durationMs=${generated.generationDurationMillis}",
+        )
     }
 
     private fun ByteArray.sha256(): String = MessageDigest.getInstance("SHA-256").digest(this)

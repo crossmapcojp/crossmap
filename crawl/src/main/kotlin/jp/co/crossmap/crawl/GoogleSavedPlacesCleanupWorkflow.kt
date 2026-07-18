@@ -49,6 +49,7 @@ class GoogleSavedPlacesCleanupWorkflow(
         enableLlm: Boolean = true,
         refreshWebsites: Boolean = true,
         crawlDirectories: Boolean = true,
+        cleanupDenominations: Boolean = true,
         promote: Boolean = true,
         cacheRoot: Path = CrossmapPaths.defaultCacheRoot(resourcesRoot),
     ): GoogleSavedPlacesPromotionReport {
@@ -60,14 +61,18 @@ class GoogleSavedPlacesCleanupWorkflow(
         } else {
             null
         }
-        val cleanup = postCrawlCleanup.run(
-            resourcesRoot = resourcesRoot,
-            limit = llmLimit,
-            applyChanges = true,
-            enableLlm = enableLlm,
-            catalogFile = staging,
-            cacheRoot = cacheRoot,
-        )
+        val cleanup = if (cleanupDenominations) {
+            postCrawlCleanup.run(
+                resourcesRoot = resourcesRoot,
+                limit = llmLimit,
+                applyChanges = true,
+                enableLlm = enableLlm,
+                catalogFile = staging,
+                cacheRoot = cacheRoot,
+            )
+        } else {
+            null
+        }
         if (directory != null) directoryCrawler.reconcileGeneratedLists(staging, resourcesRoot)
         val completed = json.decodeFromString<List<ChurchRecord>>(Files.readString(staging))
         require(completed.all { it.englishName.isNotBlank() }) { "Pending catalog contains blank English names" }
@@ -83,10 +88,10 @@ class GoogleSavedPlacesCleanupWorkflow(
             websiteFetched = website?.fetched ?: 0,
             websiteErrors = website?.errors ?: 0,
             directoryCandidates = directory?.candidates ?: 0,
-            denominationProgrammatic = cleanup.programmaticAccepted,
-            denominationLlm = cleanup.llmAccepted,
-            denominationHuman = cleanup.humanOverrides,
-            denominationUncertain = cleanup.uncertain,
+            denominationProgrammatic = cleanup?.programmaticAccepted ?: 0,
+            denominationLlm = cleanup?.llmAccepted ?: 0,
+            denominationHuman = cleanup?.humanOverrides ?: 0,
+            denominationUncertain = cleanup?.uncertain ?: 0,
             finalChurches = completed.size,
             englishNamesProgrammatic = prepared.englishNamesProgrammatic,
             englishNamesLlm = prepared.englishNamesLlm,

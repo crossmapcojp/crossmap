@@ -41,6 +41,7 @@
 - [x] Define the shared `DenominationChurchListCrawler` API and typed official-list JSON model.
 - [x] Implement fresh, cache-aware `UCCJDenominationChurchListCrawler` parsing `https://uccj.org/diocese` into `resources/crawl/uccj-churches.json`.
 - [x] Implement fresh, cache-aware `JBCDenominationChurchListCrawler` parsing `https://bapren.jp/church/` into `resources/crawl/jbc-churches.json`.
+- [x] Remove JBBF member churches from denomination aliases and crawl the official JBBF address book into `resources/crawl/jbbf-churches.json` as membership evidence.
 - [x] Reconcile official UCCJ/JBC entries with the pending catalog: add official denomination evidence to matching churches and remove unsupported stale labels without overriding human decisions.
 - [x] Add real-name parser/reconciliation tests, including that イエス愛の教会 and 沼津キリストの教会 are not published as JBC churches.
 - [x] Invalidate any old UCCJ/JBC source-page cache, fetch both official lists fresh, rebuild `resources/catalog/churches.json`, and verify the generated list/catalog statistics.
@@ -183,6 +184,7 @@
 - [x] Generate static FreeMarker church detail pages at English denomination/name slugs using root-relative page and canonical links.
 - [x] Fail static publication when an English church name, known denomination English name, or collision-disambiguating English location is missing.
 - [x] Serve generated `/{language}/{english-slug}.html` pages and provide the `generateChurchPages` Gradle task.
+- [x] Render static language shells and church pages in a bounded processor-sized worker pool, with a Gradle parallelism override and full-output concurrency test.
 - [x] Add Ktor API tests and a Lightpanda browser smoke test against `./gradlew :server:run`, covering index -> search JSON -> rendered result page -> church detail JSON/page.
 
 ## 7. Android and iOS app

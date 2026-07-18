@@ -326,6 +326,42 @@ class MultilingualChurchNameLocalizerTest {
         assertEquals("Worldwide Missionary Movement", movement.localizedNames.single { it.languageCode == "en" }.name)
     }
 
+    @Test
+    fun jbbfMembershipDoesNotCollapseChurchNamesAndAddressDisambiguatesShimizu() {
+        val localizer = localizer(
+            geonames = mapOf(
+                "清水" to "Shimizumachi",
+                "千本浜" to "Senbon Hama",
+            ),
+            multilingualGeonames = mapOf(
+                "清水" to mapOf("en" to "Shimizumachi"),
+                "静岡市清水区" to mapOf("en" to "Shimizu-ku"),
+            ),
+            denominations = listOf(
+                Denomination(
+                    id = "JBBF",
+                    name = "日本バプテスト・バイブル・フェローシップ",
+                    aliases = listOf("JBBF"),
+                    officialWebsite = "https://jbbf.or.jp/",
+                ),
+            ),
+        )
+
+        val shimizu = localizer.localize(
+            "清水聖書バプテスト教会",
+            addressContext = "〒424-0832 静岡県静岡市清水区入江南町７－１１",
+        )
+        val senbonHama = localizer.localize(
+            "千本浜聖書バプテスト教会",
+            addressContext = "〒410-0866 静岡県沼津市市道町４ー１３",
+        )
+
+        assertEquals("Shimizu Bible Baptist Church", shimizu.localizedNames.single { it.languageCode == "en" }.name)
+        assertEquals("Senbon Hama Bible Baptist Church", senbonHama.localizedNames.single { it.languageCode == "en" }.name)
+        assertTrue(shimizu.components.none { it.role == MultilingualNameComponentRole.DENOMINATION })
+        assertTrue(senbonHama.components.none { it.role == MultilingualNameComponentRole.DENOMINATION })
+    }
+
     private fun localizer(
         geonames: Map<String, String>,
         denominations: List<Denomination> = emptyList(),

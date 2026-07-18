@@ -157,6 +157,10 @@ private class PromoteGoogleSavedPlaces : CrawlCommand("promote-google-saved-plac
     private val programmaticOnly by option("--programmatic-only", help = "Disable every Ollama fallback").flag()
     private val skipWebsiteRefresh by option("--skip-website-refresh").flag()
     private val skipDirectoryCrawl by option("--skip-directory-crawl").flag()
+    private val skipDenominationCleanup by option(
+        "--skip-denomination-cleanup",
+        help = "Preserve existing/candidate denomination evidence without rerunning denomination matching",
+    ).flag()
     private val dryRun by option("--dry-run", help = "Complete the pending catalog but do not replace churches.json").flag()
 
     override fun execute(audit: CrawlCommandAudit) = runBlocking {
@@ -172,6 +176,7 @@ private class PromoteGoogleSavedPlaces : CrawlCommand("promote-google-saved-plac
         audit.setting("programmatic_only", programmaticOnly)
         audit.setting("refresh_websites", !skipWebsiteRefresh)
         audit.setting("crawl_directories", !skipDirectoryCrawl)
+        audit.setting("cleanup_denominations", !skipDenominationCleanup)
         audit.setting("dry_run", dryRun)
         require(limit > 0) { "limit must be positive" }
         if (!programmaticOnly) checkOllamaDiskSpace()
@@ -244,6 +249,7 @@ private class PromoteGoogleSavedPlaces : CrawlCommand("promote-google-saved-plac
             enableLlm = !programmaticOnly,
             refreshWebsites = !skipWebsiteRefresh,
             crawlDirectories = !skipDirectoryCrawl,
+            cleanupDenominations = !skipDenominationCleanup,
             promote = !dryRun,
             cacheRoot = paths.cacheRoot,
         )
@@ -579,8 +585,8 @@ private class NormalizeAddresses : CrawlCommand("normalize-addresses", CrawlRepo
 
 private class CrawlDenominationDirectories : CrawlCommand("crawl-denomination-directories", CrawlReport.CRAWL_DENOMINATION_DIRECTORIES) {
     private val resources by option("--resources").default("resources")
-    private val forceRefresh by option("--force-refresh", help = "Invalidate UCCJ/JBC HTML caches and fetch both official lists now").flag()
-    private val dedicatedOnly by option("--dedicated-only", help = "Run the authoritative UCCJ/JBC crawlers without refreshing other configured directories").flag()
+    private val forceRefresh by option("--force-refresh", help = "Invalidate dedicated official-list HTML caches and fetch them now").flag()
+    private val dedicatedOnly by option("--dedicated-only", help = "Run only the authoritative UCCJ/JBC/JBBF crawlers").flag()
     override fun execute(audit: CrawlCommandAudit) {
         val root = Path.of(resources)
         val paths = CrossmapPaths(root)
@@ -600,6 +606,7 @@ private class CrawlDenominationDirectories : CrawlCommand("crawl-denomination-di
         audit.metric("excluded_urls", report.excludedUrls)
         audit.metric("uccj_churches", report.uccjChurches)
         audit.metric("jbc_churches", report.jbcChurches)
+        audit.metric("jbbf_churches", report.jbbfChurches)
         audit.metric("official_cache_hits", report.cacheHits)
         report.reconciliation?.let { reconciliation ->
             audit.metric("official_matches", reconciliation.matchedOfficialEntries)
@@ -611,10 +618,11 @@ private class CrawlDenominationDirectories : CrawlCommand("crawl-denomination-di
         audit.output("candidates", paths.cleanup.resolve("denomination-candidates.json").toAbsolutePath().normalize())
         audit.output("uccj_churches", root.resolve("crawl/uccj-churches.json").toAbsolutePath().normalize())
         audit.output("jbc_churches", root.resolve("crawl/jbc-churches.json").toAbsolutePath().normalize())
+        audit.output("jbbf_churches", root.resolve("crawl/jbbf-churches.json").toAbsolutePath().normalize())
         audit.output("catalog", paths.churchCatalog.toAbsolutePath().normalize())
         echo(
             "Crawled ${report.sources} denomination sources / ${report.pages} pages: ${report.candidates} candidates, " +
-                "UCCJ=${report.uccjChurches}, JBC=${report.jbcChurches}, ${report.errors} errors; " +
+                "UCCJ=${report.uccjChurches}, JBC=${report.jbcChurches}, JBBF=${report.jbbfChurches}, ${report.errors} errors; " +
                 "removed=${report.reconciliation?.removedUnsupportedLabels ?: 0} unsupported labels",
         )
     }

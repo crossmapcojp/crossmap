@@ -33,7 +33,7 @@ class MultilingualChurchNameLocalizer(
     denominations: List<Denomination>,
     denominationNames: Map<Language, Map<String, String>> = emptyMap(),
     geonames: Map<String, String>,
-    multilingualGeonames: Map<String, Map<String, String>> = emptyMap(),
+    private val multilingualGeonames: Map<String, Map<String, String>> = emptyMap(),
     branchGeonames: Set<String> = emptySet(),
 ) {
     private val supportedTargets = listOf("en", "ko", "pt", "id")
@@ -86,7 +86,11 @@ class MultilingualChurchNameLocalizer(
         multilingualGeonames,
     )
 
-    fun localize(title: String, evidencedLanguages: Collection<String> = emptyList()): LocalizedChurchNameResult {
+    fun localize(
+        title: String,
+        evidencedLanguages: Collection<String> = emptyList(),
+        addressContext: String = "",
+    ): LocalizedChurchNameResult {
         val normalizedTitle = ChurchPublicNameNormalizer.normalize(title)
         val publicTitle = excludedChurchNamePrefixes.fold(normalizedTitle) { candidate, prefix ->
             candidate.removePrefix(prefix).trimStart(' ', '　', '-', '–', '—', ':', '：')
@@ -94,7 +98,7 @@ class MultilingualChurchNameLocalizer(
         val decomposed = decomposer.decompose(publicTitle)
         val preservedKoreanAbbreviations = JapaneseRomajiToHangul.churchAbbreviations(publicTitle)
         val initialJapaneseName = requireNotNull(decomposed.japaneseName) { "No Japanese name composed for $title" }
-        val japaneseComponents = analyzeJapanese(initialJapaneseName)
+        val japaneseComponents = analyzeJapanese(initialJapaneseName, addressContext)
         val sourceLatinLanguage = decomposed.latinName?.let { latinName ->
             val evidenced = evidencedLanguages.map { it.substringBefore('-').lowercase() }.filter { it != "ja" }
             val detected = CybozuChurchNameLanguageIdentifier.detect(latinName)?.substringBefore('-')?.lowercase()
@@ -223,7 +227,7 @@ class MultilingualChurchNameLocalizer(
         return ordered.joinToString("") { it.translations["ja"] ?: it.source }
     }
 
-    private fun analyzeJapanese(value: String): List<MultilingualNameComponent> {
+    private fun analyzeJapanese(value: String, addressContext: String = ""): List<MultilingualNameComponent> {
         val components = mutableListOf<MultilingualNameComponent>()
         val unknown = StringBuilder()
         fun flushUnknown() {
@@ -257,7 +261,25 @@ class MultilingualChurchNameLocalizer(
             }
         }
         flushUnknown()
-        return components
+        if (addressContext.isBlank()) return components
+        return components.map { component ->
+            if (component.role != MultilingualNameComponentRole.GEONAME) return@map component
+            val contextualEnglish = multilingualGeonames.entries
+                .asSequence()
+                .filter { (japanese, translations) ->
+                    japanese.length > component.source.length &&
+                        japanese.contains(component.source) &&
+                        addressContext.contains(japanese) &&
+                        !translations["en"].isNullOrBlank()
+                }
+                .maxByOrNull { (japanese) -> japanese.length }
+                ?.value
+                ?.get("en")
+                ?.removeEnglishAdministrativeSuffix()
+                ?.takeIf(String::isNotBlank)
+                ?: return@map component
+            component.copy(translations = component.translations + ("en" to contextualEnglish))
+        }
     }
 
     private fun compose(components: List<MultilingualNameComponent>, targetLanguage: String): String? {
@@ -369,5 +391,8 @@ class MultilingualChurchNameLocalizer(
 
     private fun isJapaneseCharacter(value: Char): Boolean =
         value in '\u3040'..'\u30ff' || value in '\u3400'..'\u9fff'
+
+    private fun String.removeEnglishAdministrativeSuffix(): String =
+        replace(Regex("(?i)(?:[- ](?:ku|shi|cho|machi|mura)| (?:ward|city|town|village))$"), "").trim()
 
 }

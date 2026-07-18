@@ -132,7 +132,7 @@ class GoogleMapsPlaceParser(
         val rawName = name.replace("\n", "").replace(Regex("""\s+"""), " ").trim()
         val savedTitle = seed.title.replace("\n", "").replace(Regex("""\s+"""), " ").trim()
         val localizationName = ChurchPublicNameNormalizer.normalize(savedTitle.ifBlank { rawName })
-        val localized = multilingualNameLocalizer?.localize(localizationName, seed.titleLanguages)
+        val localized = multilingualNameLocalizer?.localize(localizationName, seed.titleLanguages, address)
         val decomposed = localized?.let {
             DecomposedChurchName(localizationName, it.japaneseName, it.latinName, it.localizedNames, it.pattern)
         } ?: nameDecomposer.decompose(localizationName)

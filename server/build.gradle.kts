@@ -61,11 +61,14 @@ tasks.register<JavaExec>("generateChurchPages") {
     val geonameEnglishLexicon = providers.gradleProperty("geonameEnglishLexicon").orElse("cache/geoname/japan/church-name-lexicon.json")
     val i18nDirectory = providers.gradleProperty("i18nDirectory").orElse("resources/i18n")
     val siteBaseUrl = providers.gradleProperty("crossmapSiteBaseUrl").orElse("https://www.crossmap.co.jp")
+    val staticSiteParallelism = providers.gradleProperty("crossmapStaticSiteParallelism")
+        .orElse(Runtime.getRuntime().availableProcessors().coerceAtLeast(1).toString())
     inputs.file(rootProject.layout.projectDirectory.file(churchCatalog.get()))
     inputs.files(rootProject.fileTree("resources/catalog") { include("denomination-*-names.json") })
     inputs.dir(rootProject.layout.projectDirectory.dir(i18nDirectory.get()))
     inputs.files(rootProject.fileTree("server/src/main/resources") { include("index.html", "result.html", "church.html") })
     inputs.property("siteBaseUrl", siteBaseUrl)
+    inputs.property("parallelism", staticSiteParallelism)
     outputs.dir(rootProject.layout.projectDirectory.dir(churchPageOutput.get()))
     args(
         churchCatalog.get(),
@@ -74,6 +77,7 @@ tasks.register<JavaExec>("generateChurchPages") {
         geonameEnglishLexicon.get(),
         i18nDirectory.get(),
         siteBaseUrl.get(),
+        staticSiteParallelism.get(),
     )
 }
 

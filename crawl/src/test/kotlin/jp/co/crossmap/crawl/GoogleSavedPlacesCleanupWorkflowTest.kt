@@ -156,6 +156,69 @@ class GoogleSavedPlacesCleanupWorkflowTest {
         }
     }
 
+    @Test
+    fun nameOnlyPromotionReplacesStaleJbbfAcronymLocalizationAndPreservesMembership() = runBlocking {
+        val root = Files.createTempDirectory("crossmap-jbbf-name-only-promotion")
+        try {
+            Files.createDirectories(root.resolve("cache/google-saved-places"))
+            Files.createDirectories(root.resolve("catalog"))
+            val candidate = candidate(
+                cid = "10240769190511805106",
+                name = "清水聖書バプテスト教会",
+                address = "〒424-0832 静岡県静岡市清水区入江南町７−１１",
+                denomination = "JBBF",
+                latinName = "Shimizu Bible Baptist Church",
+            ).copy(
+                localizedNames = listOf(
+                    LocalizedName("ja", "清水聖書バプテスト教会"),
+                    LocalizedName("en", "Shimizu Bible Baptist Church"),
+                ),
+            )
+            Files.writeString(
+                root.resolve("cache/google-saved-places/google-place-candidates.json"),
+                json.encodeToString(listOf(candidate)),
+            )
+            Files.writeString(
+                root.resolve("catalog/churches.json"),
+                json.encodeToString(
+                    listOf(
+                        church(candidate, "JBBF Seisui Bible Baptist Church", "JBBF").copy(
+                            localizedNames = listOf(LocalizedName("en", "JBBF")),
+                        ),
+                    ),
+                ),
+            )
+            val resolver = ChurchEnglishNameResolver(
+                translator = { error("The resolved candidate English name must be deterministic") },
+            )
+
+            val report = GoogleSavedPlacesCleanupWorkflow(
+                postCrawlCleanup = PostCrawlCleanup(
+                    matcher = EntityMatcher { EntityMatchDecision(null, 0.0, reasoning = "not called") },
+                    englishNameResolver = resolver,
+                ),
+                englishNameResolver = resolver,
+            ).run(
+                resourcesRoot = root,
+                enableLlm = false,
+                refreshWebsites = false,
+                crawlDirectories = false,
+                cleanupDenominations = false,
+                cacheRoot = root.resolve("cache"),
+            )
+            val promoted = json.decodeFromString<List<ChurchRecord>>(
+                Files.readString(root.resolve("catalog/churches.json")),
+            ).single()
+
+            assertTrue(report.promoted)
+            assertEquals("JBBF", promoted.denominationId)
+            assertEquals("Shimizu Bible Baptist Church", promoted.englishName)
+            assertEquals("Shimizu Bible Baptist Church", promoted.localizedNames.single { it.languageCode == "en" }.name)
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
     private fun candidate(
         cid: String,
         name: String,

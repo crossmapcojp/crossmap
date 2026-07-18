@@ -1819,8 +1819,10 @@
     "id": "jbbf",
     "denominationId": "JBBF",
     "denominationName": "日本バプテスト・バイブル・フェローシップ",
-    "denominationWebsiteUrl": "http://jbbf.or.jp/",
-    "churchListUrlList": [],
+    "denominationWebsiteUrl": "https://jbbf.or.jp/",
+    "churchListUrlList": [
+      "https://jbbf.or.jp/%e4%bd%8f%e6%89%80%e9%8c%b2/"
+    ],
     "socialUrlList": [],
     "entrySelector": "",
     "nameSelector": "",
