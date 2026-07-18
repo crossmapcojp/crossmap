@@ -50,9 +50,7 @@ internal class ChurchNameDecomposer(
     private val knownLatinAbbreviations = knownLatinAbbreviations.map(String::uppercase).toSet()
 
     fun decompose(value: String): DecomposedChurchName {
-        val original = Normalizer.normalize(value, Normalizer.Form.NFKC)
-            .replace(Regex("""^[（(]宗[）)]\s*"""), "")
-            .replace(Regex("""\s+"""), " ").trim()
+        val original = ChurchPublicNameNormalizer.normalize(value)
         require(original.isNotBlank()) { "Church name must not be blank" }
 
         fun complete(result: DecomposedChurchName): DecomposedChurchName {

@@ -115,6 +115,9 @@ class GoogleSavedPlacesCleanupWorkflow(
         val normalized = rawCandidates.map { candidate ->
             candidate.copy(
                 name = normalizeChurchName(candidate.name),
+                localizedNames = candidate.localizedNames.map { localizedName ->
+                    localizedName.copy(name = normalizeChurchName(localizedName.name))
+                }.filter { it.name.isNotBlank() }.distinctBy { it.languageCode to it.name },
                 address = candidate.address.replace(Regex("""\s+"""), " ").trim(),
                 websiteUrl = websitePolicy.publicWebsiteUrl(candidate.websiteUrl, candidate.googleCid, candidate.id),
             )
@@ -242,12 +245,7 @@ class GoogleSavedPlacesCleanupWorkflow(
     private fun pendingCatalog(resourcesRoot: Path, cacheRoot: Path): Path =
         CrossmapPaths(resourcesRoot, cacheRoot).cleanup.resolve("google-saved-places-pending.json")
 
-    private fun normalizeChurchName(value: String): String = value
-        .replace("（宗教法人）", "")
-        .replace("(宗教法人)", "")
-        .replace("宗教法人", "")
-        .replace(Regex("""\s+"""), " ")
-        .trim()
+    private fun normalizeChurchName(value: String): String = ChurchPublicNameNormalizer.normalize(value)
 
     private fun exactEntityKey(name: String, address: String): String =
         JapaneseEntityNormalizer.name(name) + "|" + JapaneseEntityNormalizer.address(address)

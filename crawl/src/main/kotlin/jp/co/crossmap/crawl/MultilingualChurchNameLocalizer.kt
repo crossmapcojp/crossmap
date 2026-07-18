@@ -64,7 +64,9 @@ class MultilingualChurchNameLocalizer(
     private val excludedChurchNamePrefixes = denominations
         .filterNot(Denomination::useAsChurchNamePrefix)
         .flatMap { listOf(it.name) + it.aliases }
+        .map(ChurchPublicNameNormalizer::normalize)
         .filter(String::isNotBlank)
+        .distinct()
         .sortedByDescending(String::length)
     private val japaneseTerms: List<MultilingualNameComponent> = buildJapaneseTerms(
         dictionaries,
@@ -76,9 +78,10 @@ class MultilingualChurchNameLocalizer(
     )
 
     fun localize(title: String, evidencedLanguages: Collection<String> = emptyList()): LocalizedChurchNameResult {
-        val publicTitle = excludedChurchNamePrefixes.fold(title.trim()) { candidate, prefix ->
+        val normalizedTitle = ChurchPublicNameNormalizer.normalize(title)
+        val publicTitle = excludedChurchNamePrefixes.fold(normalizedTitle) { candidate, prefix ->
             candidate.removePrefix(prefix).trimStart(' ', '　', '-', '–', '—', ':', '：')
-        }.ifBlank { title }
+        }.ifBlank { normalizedTitle }
         val decomposed = decomposer.decompose(publicTitle)
         val initialJapaneseName = requireNotNull(decomposed.japaneseName) { "No Japanese name composed for $title" }
         val japaneseComponents = analyzeJapanese(initialJapaneseName)

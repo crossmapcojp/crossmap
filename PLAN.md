@@ -63,6 +63,7 @@
 - [x] Publish accepted social profiles and field provenance into the standalone church catalog while retaining an auditable `social-decisions.json`.
 - [x] Resolve each church `englishName` first from official webpage, URL/domain, or linked social evidence, then fall back to Koog + Ollama translation with auditable name-part roles.
 - [x] Translate mixed church-name structures deterministically in source order, including composite geonames, multiple adjacent concepts, `geoname + concepts`, and `concepts + geoname` patterns before any LLM fallback.
+- [x] Remove `宗教法人`, parenthesized `(宗教法人)`/`(宗)`, full-width variants, and adjacent slash/pipe/middle-dot/colon/dash decorations from Google church titles and localized aliases before decomposition or translation.
 - [x] Recompose Portuguese, Spanish, and Indonesian names for natural Japanese display: move a terminal geoname to the front when Romance church/concept structure is present, and move leading `Igreja`/`Iglesia`/`Gereja` to trailing `教会`.
 - [x] Write a timestamped LLM-composed-name detail log containing each Japanese church name and ordered child parts with type, translation, evidence, and translation method.
 - [x] Route data-cleanup statistics, church-name translation statistics, and LLM-composed-name details through crawl-module Logback configuration to timestamped files and the console.

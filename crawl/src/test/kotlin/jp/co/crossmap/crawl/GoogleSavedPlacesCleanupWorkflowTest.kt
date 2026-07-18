@@ -5,6 +5,7 @@ import jp.co.crossmap.ChurchRecord
 import jp.co.crossmap.DeterminationSource
 import jp.co.crossmap.FieldDetermination
 import jp.co.crossmap.GeoPoint
+import jp.co.crossmap.LocalizedName
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -15,6 +16,44 @@ import kotlinx.serialization.json.Json
 
 class GoogleSavedPlacesCleanupWorkflowTest {
     private val json = Json { ignoreUnknownKeys = true; prettyPrint = true; encodeDefaults = true }
+
+    @Test
+    fun recordsTakiyamaBibleBaptistChurchWithoutReligiousCorporationMarker() = runBlocking {
+        val root = Files.createTempDirectory("crossmap-google-name-cleanup")
+        try {
+            Files.createDirectories(root.resolve("cache/google-saved-places"))
+            Files.createDirectories(root.resolve("catalog"))
+            val raw = candidate(
+                cid = "12372765701472218650",
+                name = "宗教法人滝山聖書バプテスト教会",
+                address = "〒203-0033 東京都東久留米市滝山７丁目３−１６",
+                denomination = "JBBF",
+                latinName = "Takiyama Bible Baptist Church",
+            ).copy(localizedNames = listOf(LocalizedName("ja", "宗教法人／滝山聖書バプテスト教会")))
+            Files.writeString(
+                root.resolve("cache/google-saved-places/google-place-candidates.json"),
+                json.encodeToString(listOf(raw)),
+            )
+            val resolver = ChurchEnglishNameResolver(
+                translator = { error("The existing Latin name should be reused") },
+            )
+            GoogleSavedPlacesCleanupWorkflow(
+                postCrawlCleanup = PostCrawlCleanup(
+                    matcher = EntityMatcher { EntityMatchDecision(null, 0.0, reasoning = "LLM disabled") },
+                    englishNameResolver = resolver,
+                ),
+                englishNameResolver = resolver,
+            ).preparePendingCatalog(root, root.resolve("cache"))
+
+            val recorded = json.decodeFromString<List<ChurchRecord>>(
+                Files.readString(root.resolve("cache/cleanup/google-saved-places-pending.json")),
+            ).single()
+            assertEquals("滝山聖書バプテスト教会", recorded.name)
+            assertEquals("滝山聖書バプテスト教会", recorded.localizedNames.single { it.languageCode == "ja" }.name)
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
 
     @Test
     fun promotesResolvedCandidatesOnlyAfterExistingCleanupAndMandatoryEnglishNames() = runBlocking {
