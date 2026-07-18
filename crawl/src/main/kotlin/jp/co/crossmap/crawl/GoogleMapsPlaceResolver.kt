@@ -14,6 +14,7 @@ import java.time.Instant
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 import jp.co.crossmap.GeoPoint
+import jp.co.crossmap.ChurchWebsitePolicy
 import jp.co.crossmap.LocalizedName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -104,6 +105,7 @@ class CachedGoogleMapsPageSource(
 
 class GoogleMapsPlaceParser(
     private val multilingualNameLocalizer: MultilingualChurchNameLocalizer? = null,
+    private val websitePolicy: ChurchWebsitePolicy = ChurchWebsitePolicy(emptySet()),
 ) {
     private val nameDecomposer = ChurchNameDecomposer()
     fun parse(seed: GoogleSavedPlaceSeed, html: String, now: String = Instant.now().toString()): GooglePlaceChurchCandidate {
@@ -122,7 +124,7 @@ class GoogleMapsPlaceParser(
         val latitude = preview.groupValues[2].toDouble()
         val longitude = preview.groupValues[3].toDouble()
 
-        val website = extractWebsite(document, html) ?: "https://www.google.com/maps?cid=${seed.googleCid}"
+        val website = websitePolicy.publicWebsiteUrl(extractWebsite(document, html), seed.googleCid, seed.id)
         val category = document.selectFirst("meta[property=og:description]")?.attr("content")
             ?.substringAfter(" · ")
             ?.trim()

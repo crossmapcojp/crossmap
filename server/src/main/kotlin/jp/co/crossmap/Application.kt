@@ -4,6 +4,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.server.application.Application
+import io.ktor.server.application.ApplicationStopped
 import io.ktor.server.application.call
 import io.ktor.server.application.install
 import io.ktor.server.engine.embeddedServer
@@ -26,8 +27,37 @@ import java.security.MessageDigest
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import okio.Path.Companion.toPath
+import kotlin.math.roundToInt
+import kotlin.time.Duration
+import kotlin.time.TimeSource
 
 private val wireJson = Json { ignoreUnknownKeys = true; encodeDefaults = true }
+
+private fun ChurchSearchResponse.withPublicWebsiteUrls(policy: ChurchWebsitePolicy): ChurchSearchResponse =
+    copy(
+        hits = hits.map { hit ->
+            hit.copy(websiteUrl = policy.publicWebsiteUrl(hit.websiteUrl, null, hit.churchId))
+        },
+    )
+
+private fun ChurchDetailResponse.withPublicWebsiteUrl(policy: ChurchWebsitePolicy): ChurchDetailResponse =
+    copy(websiteUrl = policy.publicWebsiteUrl(websiteUrl, null, churchId))
+
+internal fun renderHttpSearchTiming(timings: Map<String, Duration>, total: Duration): String {
+    val totalNanoseconds = total.inWholeNanoseconds.coerceAtLeast(1L)
+    fun percentage(duration: Duration): Double =
+        ((duration.inWholeNanoseconds.toDouble() / totalNanoseconds * 1_000.0).roundToInt() / 10.0)
+    val measured = timings.values.fold(Duration.ZERO) { accumulated, duration -> accumulated + duration }
+    val other = (total - measured).coerceAtLeast(Duration.ZERO)
+    return buildString {
+        appendLine("search-http-timing:")
+        timings.forEach { (name, duration) ->
+            appendLine("  $name=$duration (${percentage(duration)}%)")
+        }
+        appendLine("  other=$other (${percentage(other)}%)")
+        append("  total=$total (100.0%)")
+    }
+}
 
 fun main() {
     embeddedServer(
@@ -36,7 +66,7 @@ fun main() {
         host = "0.0.0.0",
         module = {
             module(
-                searchEngine = loadSearchEngine("ja"),
+                searchEngine = null,
                 searchEngines = loadSearchEngines(),
             )
         },
@@ -52,11 +82,21 @@ fun Application.module(
     ),
     webRoot: Path = Path.of(System.getenv("CROSSMAP_WEB_DIR") ?: "webclient"),
 ) {
-
-
+    val excludedDomainsFile = resourcesRoot.resolve("catalog/excludedChurchListingDomains.txt")
+    val websitePolicy = ChurchWebsitePolicy(
+        if (Files.isRegularFile(excludedDomainsFile)) {
+            ChurchWebsitePolicy.parse(Files.readString(excludedDomainsFile))
+        } else {
+            emptySet()
+        },
+    )
     val availableSearchEngines = buildMap {
         searchEngine?.let { put("ja", it) }
         putAll(searchEngines)
+    }
+    availableSearchEngines.values.distinct().forEach(ChurchSearchEngine::warmUp)
+    monitor.subscribe(ApplicationStopped) {
+        availableSearchEngines.values.distinct().forEach(ChurchSearchEngine::close)
     }
     log.info("Available search engines: [${availableSearchEngines.keys.joinToString()}]")
     val churchIndexes = cacheRoot.resolve("search-indexes/churches")
@@ -76,9 +116,20 @@ fun Application.module(
             call.respond(mapOf("status" to if (availableSearchEngines.isEmpty()) "not_ready" else "ok"))
         }
         get("/api/v1/churches/search") {
+            val timeSource = TimeSource.Monotonic
+            val totalMark = timeSource.markNow()
+            val timings = linkedMapOf<String, Duration>()
+            var stepMark = timeSource.markNow()
+            fun finishStep(name: String) {
+                timings[name] = stepMark.elapsedNow()
+                stepMark = timeSource.markNow()
+            }
+
             val displayLanguage = call.request.queryParameters["lang"]?.substringBefore('-')?.lowercase() ?: "ja"
             val query = call.request.queryParameters["q"].orEmpty()
+            finishStep("request.readQuery")
             val queryLanguage = QueryLanguageDetector.detect(query, displayLanguage)
+            finishStep("language.detect")
             call.application.environment.log.debug("search-request: query='$query', displayLang=$displayLanguage, detectedLang=$queryLanguage")
             val engine = availableSearchEngines[queryLanguage]
                 ?: availableSearchEngines[displayLanguage]
@@ -87,6 +138,7 @@ fun Application.module(
                 HttpStatusCode.ServiceUnavailable,
                 ApiError("index_unavailable", "Church index is not configured"),
             )
+            finishStep("engine.select")
             val offset = call.request.queryParameters["offset"]?.toIntOrNull() ?: 0
             val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 20
             val radius = call.request.queryParameters["radiusKm"]?.toDoubleOrNull()
@@ -95,9 +147,15 @@ fun Application.module(
             require((latitude == null) == (longitude == null)) { "lat and lon must be provided together" }
             val userLocation = if (latitude != null && longitude != null) GeoPoint(latitude, longitude) else null
             val titleLanguages = call.request.queryParameters.getAll("titleLanguage").orEmpty()
+            finishStep("request.parseOptions")
             val response = engine.search(ChurchSearchRequest(query, offset, limit, radius, userLocation, titleLanguages))
-            call.application.environment.log.info("search-response: query='$query', lang=$queryLanguage, total=${response.total}, returned=${response.hits.size}, locations=[${response.resolvedLocations.joinToString { it.name }}]")
+                .withPublicWebsiteUrls(websitePolicy)
+            finishStep("engine.search")
             call.respond(response)
+            finishStep("response.send")
+            val total = totalMark.elapsedNow()
+            call.application.environment.log.info("search-response: query='$query', lang=$queryLanguage, total=${response.total}, returned=${response.hits.size}, locations=[${response.resolvedLocations.joinToString { it.name }}], duration=$total")
+            call.application.environment.log.info(renderHttpSearchTiming(timings, total))
         }
         get("/api/v1/churches/{id}") {
             val engine = availableSearchEngines["ja"] ?: availableSearchEngines.values.firstOrNull() ?: return@get call.respond(
@@ -109,7 +167,7 @@ fun Application.module(
                 HttpStatusCode.NotFound,
                 ApiError("church_not_found", "No church exists with id $id"),
             )
-            call.respond(church)
+            call.respond(church.withPublicWebsiteUrl(websitePolicy))
         }
         get("/api/v1/indexes/churches/latest") {
             val latest = churchIndexes.resolve("latest.json").toFile()

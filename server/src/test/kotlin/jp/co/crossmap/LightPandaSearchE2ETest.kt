@@ -9,6 +9,7 @@ import java.net.URLEncoder
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
+import kotlin.test.assertEquals
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
@@ -61,6 +62,28 @@ class LightPandaSearchE2ETest {
         server.start(wait = false)
         try {
             awaitHealthy(port)
+            apiSearch(port, "東京バプテスト教会") // Warm the complete analyzer/resolver/query path.
+            val tokyoSamples = List(3) { apiSearch(port, "東京バプテスト教会") }
+            val tokyoResponse = tokyoSamples.last().response
+            println(
+                "Warm 東京バプテスト教会 API durations: " +
+                    tokyoSamples.joinToString { it.elapsed.toString() },
+            )
+            assertTrue(
+                tokyoSamples.all { it.elapsed < Duration.ofSeconds(1) },
+                "Warm 東京バプテスト教会 searches must stay below one second: " +
+                    tokyoSamples.joinToString { it.elapsed.toString() },
+            )
+            assertEquals("13", tokyoResponse.resolvedLocations.single().code)
+            assertEquals("google:6646597370070891755", tokyoResponse.hits.first().churchId)
+
+            val tokyoCentral = apiSearch(port, "中央区", 35.681, 139.767).response
+            val fukuokaCentral = apiSearch(port, "中央区", 33.590, 130.401).response
+            assertEquals("131024", tokyoCentral.resolvedLocations.single().code)
+            assertEquals("401331", fukuokaCentral.resolvedLocations.single().code)
+            assertTrue(tokyoCentral.hits.all { it.address.contains("東京都中央区") })
+            assertTrue(fukuokaCentral.hits.all { it.address.contains("福岡市中央区") })
+
             val browser = LightPanda(
                 timeout = Duration.ofSeconds(30),
                 renderWait = Duration.ofSeconds(15),
@@ -98,6 +121,25 @@ class LightPandaSearchE2ETest {
                 assertTrue(html.contains("class=\"result\""), "denomination $language: ${html.take(2_000)}")
                 assertFalse(html.contains("Church index is not configured"), "denomination $language: ${html.take(2_000)}")
             }
+            val independentResult = browser.fetchHtml(
+                "http://127.0.0.1:$port/result.html?q=" +
+                    URLEncoder.encode("Machida Baptist Church", Charsets.UTF_8.name()),
+            )
+            assertTrue(independentResult.contains("Machida Baptist Church"), independentResult.take(2_000))
+            assertFalse(independentResult.contains("INDEPENDENT_CHURCH"), independentResult.take(2_000))
+            assertFalse(independentResult.contains("NOT_DETERMINED"), independentResult.take(2_000))
+            val listingDomainResult = browser.fetchHtml(
+                "http://127.0.0.1:$port/result.html?q=" +
+                    URLEncoder.encode("錦キリスト教会", Charsets.UTF_8.name()),
+            )
+            val listingDomainDetailPath = assertNotNull(pageUrls["google:10158070367548216990"])
+            assertTrue(listingDomainResult.contains(listingDomainDetailPath), listingDomainResult.take(2_000))
+            val listingDomainDetail = browser.fetchHtml("http://127.0.0.1:$port$listingDomainDetailPath")
+            assertFalse(listingDomainDetail.contains("church-info.jp"), listingDomainDetail.take(2_000))
+            assertTrue(
+                listingDomainDetail.contains("https://www.google.com/maps?cid=10158070367548216990"),
+                listingDomainDetail.take(2_000),
+            )
 
             val detailPath = Regex("""href="(/church/[a-z0-9-]+\.html)"""")
                 .find(resultPages.getValue("en"))?.groupValues?.get(1)
@@ -113,6 +155,38 @@ class LightPandaSearchE2ETest {
             assertFalse(detailHtml.contains("Field 'englishName' is required"), detailHtml.take(2_000))
         } finally {
             server.stop(1_000, 3_000)
+        }
+    }
+
+    private data class TimedSearch(val response: ChurchSearchResponse, val elapsed: Duration)
+
+    private fun apiSearch(
+        port: Int,
+        query: String,
+        latitude: Double? = null,
+        longitude: Double? = null,
+    ): TimedSearch {
+        val parameters = buildString {
+            append("q=")
+            append(URLEncoder.encode(query, Charsets.UTF_8.name()))
+            if (latitude != null && longitude != null) {
+                append("&lat=$latitude&lon=$longitude")
+            }
+        }
+        val connection = URI("http://127.0.0.1:$port/api/v1/churches/search?$parameters")
+            .toURL().openConnection() as HttpURLConnection
+        connection.connectTimeout = 2_000
+        connection.readTimeout = 2_000
+        val started = System.nanoTime()
+        return try {
+            assertEquals(200, connection.responseCode)
+            val body = connection.inputStream.bufferedReader().use { it.readText() }
+            TimedSearch(
+                response = Json.decodeFromString(body),
+                elapsed = Duration.ofNanos(System.nanoTime() - started),
+            )
+        } finally {
+            connection.disconnect()
         }
     }
 

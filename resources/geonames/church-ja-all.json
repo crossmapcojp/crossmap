@@ -26960,6 +26960,18 @@
         ]
     },
     {
+        "ja": "大馬木",
+        "translations": {
+            "en": "da ma mu",
+            "id": "da ma mu",
+            "ko": "da ma mu",
+            "pt": "da"
+        },
+        "sources": [
+            "TITLE"
+        ]
+    },
+    {
         "ja": "大鰐",
         "translations": {
             "en": "Owani",
@@ -40778,6 +40790,18 @@
         ]
     },
     {
+        "ja": "日本アルプス",
+        "translations": {
+            "en": "Japanese Alps",
+            "id": "Japanese Alps",
+            "ko": "일본 알프스",
+            "pt": "Alpes japoneses"
+        },
+        "sources": [
+            "TITLE"
+        ]
+    },
+    {
         "ja": "日本堤",
         "translations": {
             "en": "Nihonzutsumi"
@@ -44827,7 +44851,8 @@
             "pt": "cidade de Higashimatsuyama"
         },
         "sources": [
-            "ADDRESS"
+            "ADDRESS",
+            "TITLE"
         ]
     },
     {
@@ -51551,6 +51576,18 @@
         },
         "sources": [
             "ADDRESS",
+            "TITLE"
+        ]
+    },
+    {
+        "ja": "津久井三丁目",
+        "translations": {
+            "en": "Tsukui-sanchome",
+            "id": "Tsukui-sanchome",
+            "ko": "Tsukui-sanchome",
+            "pt": "Tsukui-sanchome"
+        },
+        "sources": [
             "TITLE"
         ]
     },
@@ -63456,6 +63493,7 @@
         "ja": "群馬",
         "translations": {
             "en": "Gunma",
+            "es": "Gunma",
             "id": "Prefektur Gunma",
             "ko": "군마현",
             "pt": "Gunma"

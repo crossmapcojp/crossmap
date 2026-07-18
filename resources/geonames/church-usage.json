@@ -11309,8 +11309,10 @@
     },
     {
         "churchId": "google:1162580972330559949",
-        "googlePlaceTitle": "ハウス・オブ・ワーシップヰテービジョン教会インテルミエ",
-        "title": [],
+        "googlePlaceTitle": "ハウス・オブ・ワーシップヰテービジョン教会インテル三重",
+        "title": [
+            "三重"
+        ],
         "address": [
             "三重県",
             "町中",
@@ -23069,8 +23071,10 @@
     },
     {
         "churchId": "google:13343474689726679508",
-        "googlePlaceTitle": "ニキリストグンマ教会",
-        "title": [],
+        "googlePlaceTitle": "群馬ニキリスト教会",
+        "title": [
+            "群馬"
+        ],
         "address": [
             "太田市",
             "群馬県"
@@ -24356,8 +24360,10 @@
     },
     {
         "churchId": "google:13525594827629404724",
-        "googlePlaceTitle": "アヹルダデダクルズ教会",
-        "title": [],
+        "googlePlaceTitle": "アヹルダデ大馬木クルズ教会",
+        "title": [
+            "大馬木"
+        ],
         "address": [
             "伊那市",
             "山寺",
@@ -26619,9 +26625,10 @@
     },
     {
         "churchId": "google:13872399234077991503",
-        "googlePlaceTitle": "HAT神戸福音ルーテル教会",
+        "googlePlaceTitle": "HAT神戸神戸福音ルーテル教会",
         "title": [
-            "HAT神戸"
+            "HAT神戸",
+            "神戸"
         ],
         "address": [
             "兵庫県",
@@ -35816,8 +35823,10 @@
     },
     {
         "churchId": "google:15279718804428659335",
-        "googlePlaceTitle": "ペンテコステ宣教キリスト教会4テーワッチGUNMAジャパン",
-        "title": [],
+        "googlePlaceTitle": "ペンテコステ宣教キリスト教会4テーワッチ群馬ジャパン",
+        "title": [
+            "群馬"
+        ],
         "address": [
             "群馬県",
             "豊岡町",
@@ -36551,8 +36560,10 @@
     },
     {
         "churchId": "google:15405199358217711637",
-        "googlePlaceTitle": "カテホリクツクイ教会",
-        "title": [],
+        "googlePlaceTitle": "カテホリク津久井三丁目教会",
+        "title": [
+            "津久井三丁目"
+        ],
         "address": [
             "中野",
             "相模原市緑区",
@@ -40275,8 +40286,10 @@
     },
     {
         "churchId": "google:15971764867343543988",
-        "googlePlaceTitle": "インセジェクグンマ",
-        "title": [],
+        "googlePlaceTitle": "インセジェク群馬",
+        "title": [
+            "群馬"
+        ],
         "address": [
             "太田市",
             "群馬県"
@@ -45937,8 +45950,10 @@
     },
     {
         "churchId": "google:16761763618782257349",
-        "googlePlaceTitle": "リフェ国際教会オフヒガシマツヤマ",
-        "title": [],
+        "googlePlaceTitle": "リフェ国際教会オフ東松山市",
+        "title": [
+            "東松山市"
+        ],
         "address": [
             "六軒町",
             "埼玉県",
@@ -68230,8 +68245,9 @@
     },
     {
         "churchId": "google:3445026351068639668",
-        "googlePlaceTitle": "岡崎共同体DAグレイス",
+        "googlePlaceTitle": "岡崎共同体大馬木グレイス",
         "title": [
+            "大馬木",
             "岡崎"
         ],
         "address": [
@@ -82713,8 +82729,9 @@
     },
     {
         "churchId": "google:5654494289632666123",
-        "googlePlaceTitle": "綾瀬ミッションイエスダガリレ́イア",
+        "googlePlaceTitle": "綾瀬ミッションイエス大馬木ガリレ́イア",
         "title": [
+            "大馬木",
             "綾瀬"
         ],
         "address": [
@@ -88862,8 +88879,10 @@
     },
     {
         "churchId": "google:6587915665849751407",
-        "googlePlaceTitle": "ジャパネセクリスチャン教会",
-        "title": [],
+        "googlePlaceTitle": "日本アルプスクリスチャン教会",
+        "title": [
+            "日本アルプス"
+        ],
         "address": [
             "上田",
             "奈良屋町",
@@ -91807,8 +91826,10 @@
     },
     {
         "churchId": "google:6943177239909200015",
-        "googlePlaceTitle": "アリアンク̧アダレスタウラク̧ア̃オ教会",
-        "title": [],
+        "googlePlaceTitle": "アリアンク̧ア大馬木レスタウラク̧ア̃オ教会",
+        "title": [
+            "大馬木"
+        ],
         "address": [
             "塚越",
             "富山県",
@@ -99705,8 +99726,10 @@
     },
     {
         "churchId": "google:8050466726084981888",
-        "googlePlaceTitle": "アッセンブレイア・デ・デウスアオスペ́スダクルズ教会",
-        "title": [],
+        "googlePlaceTitle": "アッセンブレイア・デ・デウスアオスペ́ス大馬木クルズ教会",
+        "title": [
+            "大馬木"
+        ],
         "address": [
             "不破郡",
             "垂井町",
@@ -102034,8 +102057,10 @@
     },
     {
         "churchId": "google:8411968974516737416",
-        "googlePlaceTitle": "フレエベリエヹルスインキリストフェローシップ国際グンマジャパン",
-        "title": [],
+        "googlePlaceTitle": "フレエベリエヹルスインキリストフェローシップ国際群馬ジャパン",
+        "title": [
+            "群馬"
+        ],
         "address": [
             "伊勢崎市",
             "群馬県",
@@ -102869,8 +102894,9 @@
     },
     {
         "churchId": "google:8546314314864659484",
-        "googlePlaceTitle": "常総ミッションイエスダガリレ́イア",
+        "googlePlaceTitle": "常総ミッションイエス大馬木ガリレ́イア",
         "title": [
+            "大馬木",
             "常総"
         ],
         "address": [
@@ -104016,8 +104042,10 @@
     },
     {
         "churchId": "google:8722564199371904959",
-        "googlePlaceTitle": "インマヌエルクリスチャンフェローシップオーハル",
-        "title": [],
+        "googlePlaceTitle": "インマヌエルクリスチャンフェローシップ大治",
+        "title": [
+            "大治"
+        ],
         "address": [
             "三本木",
             "大治町",
@@ -112361,8 +112389,10 @@
     },
     {
         "churchId": "google:9871374756077623189",
-        "googlePlaceTitle": "ベテルグンマ教会",
-        "title": [],
+        "googlePlaceTitle": "群馬ベテル教会",
+        "title": [
+            "群馬"
+        ],
         "address": [
             "太田市",
             "東別",
@@ -112590,8 +112620,10 @@
     },
     {
         "churchId": "google:9901852878694655097",
-        "googlePlaceTitle": "IFGFグンマ",
-        "title": [],
+        "googlePlaceTitle": "IFGF群馬",
+        "title": [
+            "群馬"
+        ],
         "address": [
             "太田市",
             "群馬県"

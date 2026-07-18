@@ -101,6 +101,7 @@ class GoogleSavedPlacesCleanupWorkflow(
         resourcesRoot: Path,
         cacheRoot: Path = CrossmapPaths.defaultCacheRoot(resourcesRoot),
     ): PreparationReport {
+        val websitePolicy = ExcludedChurchListingDomains.policy(resourcesRoot)
         val candidatesFile = CrossmapPaths(resourcesRoot, cacheRoot).googleSavedPlaces.resolve("google-place-candidates.json")
         require(Files.isRegularFile(candidatesFile)) { "Google place candidates do not exist: $candidatesFile" }
         val rawCandidates = json.decodeFromString<List<GooglePlaceChurchCandidate>>(Files.readString(candidatesFile))
@@ -115,6 +116,7 @@ class GoogleSavedPlacesCleanupWorkflow(
             candidate.copy(
                 name = normalizeChurchName(candidate.name),
                 address = candidate.address.replace(Regex("""\s+"""), " ").trim(),
+                websiteUrl = websitePolicy.publicWebsiteUrl(candidate.websiteUrl, candidate.googleCid, candidate.id),
             )
         }
         val groups = normalized.groupBy { exactEntityKey(it.name, it.address) }
@@ -154,7 +156,7 @@ class GoogleSavedPlacesCleanupWorkflow(
                 address = candidate.address,
                 location = candidate.location,
                 websiteUrl = candidate.websiteUrl,
-                pages = previous?.pages.orEmpty(),
+                pages = previous?.pages.orEmpty().filterNot { websitePolicy.isExcluded(it.url) },
                 socialProfiles = previous?.socialProfiles.orEmpty(),
             )
         }
@@ -209,13 +211,18 @@ class GoogleSavedPlacesCleanupWorkflow(
                 address = candidate.address,
                 location = candidate.location,
                 websiteUrl = candidate.websiteUrl,
-                pages = previous?.pages.orEmpty(),
+                pages = previous?.pages.orEmpty().filterNot { websitePolicy.isExcluded(it.url) },
                 socialProfiles = previous?.socialProfiles.orEmpty(),
                 determinations = determinations,
                 updatedAt = determinedAt,
             )
         }
-        val nonGoogle = existing.filter { it.googleCid == null }
+        val nonGoogle = existing.filter { it.googleCid == null }.map { church ->
+            church.copy(
+                websiteUrl = websitePolicy.publicWebsiteUrl(church.websiteUrl, church.googleCid, church.id),
+                pages = church.pages.filterNot { websitePolicy.isExcluded(it.url) },
+            )
+        }
         val pending = (fromGoogle + nonGoogle).sortedBy(ChurchRecord::id)
         val englishLlm = pending.count { church ->
             church.determinations.lastOrNull { it.field == "englishName" }?.source == DeterminationSource.LLM

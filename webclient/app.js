@@ -1,6 +1,7 @@
 const $ = (selector) => document.querySelector(selector);
 const escapeHtml = (value = "") => value.replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"})[c]);
 const supportedLanguages = ["ja", "en", "ko", "pt", "id"];
+const nonDisplayDenominationIds = new Set(["NOT_DETERMINED", "INDEPENDENT_CHURCH"]);
 const browserLanguage = (navigator.language || "en").toLowerCase().split("-")[0];
 let selectedLanguage = localStorage.getItem("crossmap.language");
 if (!supportedLanguages.includes(selectedLanguage)) selectedLanguage = supportedLanguages.includes(browserLanguage) ? browserLanguage : "en";
@@ -16,12 +17,12 @@ if (languagePicker) {
 
 function displayName(value) {
   const localized = (value.localizedNames || []).find(name => name.languageCode.toLowerCase().split("-")[0] === selectedLanguage);
-  if (localized?.name) return localized.name;
-  if (selectedLanguage === "en" && value.englishName) return value.englishName;
-  return value.name || value.japaneseName || value.englishName || "";
+  const candidate = localized?.name || (selectedLanguage === "en" ? value.englishName : "") || value.name || value.japaneseName || value.englishName || "";
+  return [...nonDisplayDenominationIds].reduce((name, marker) => name.replaceAll(marker, " "), candidate).replace(/\s+/g, " ").trim();
 }
 
 function displayDenomination(value) {
+  if (nonDisplayDenominationIds.has(value.denominationId)) return "";
   const localized = (value.localizedDenominationNames || []).find(name => name.languageCode.toLowerCase().split("-")[0] === selectedLanguage);
   return localized?.name || value.denominationId || "";
 }

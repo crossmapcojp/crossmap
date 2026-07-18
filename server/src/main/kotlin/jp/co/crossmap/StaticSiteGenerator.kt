@@ -35,14 +35,16 @@ class StaticSiteGenerator(
         outputDirectory: Path,
         collisionLocationEnglishNames: Map<String, String> = emptyMap(),
         denominationNamesByLanguage: Map<String, Map<String, String>> = emptyMap(),
+        excludedChurchListingDomains: Set<String> = emptySet(),
     ): List<GeneratedChurchPage> {
+        val websitePolicy = ChurchWebsitePolicy(excludedChurchListingDomains)
         val missingEnglishNames = churches.filter { it.englishName.isNullOrBlank() }
         require(missingEnglishNames.isEmpty()) {
             "Every church needs englishName before static publication; missing=${missingEnglishNames.size}: " +
                 missingEnglishNames.take(10).joinToString { "${it.id} (${it.name})" }
         }
         val missingDenominations = churches.mapNotNull { it.denominationId }
-            .filterNot(::isIndependentDenomination)
+            .filter(String::isDisplayableDenominationId)
             .distinct()
             .filter { denominationEnglishNames[it].isNullOrBlank() }
         require(missingDenominations.isEmpty()) {
@@ -52,7 +54,7 @@ class StaticSiteGenerator(
         val baseSlugs = churches.associateWith { church ->
             pageSlug(
                 denominationEnglishName = church.denominationId
-                    ?.takeUnless(::isIndependentDenomination)
+                    ?.takeIf(String::isDisplayableDenominationId)
                     ?.let(denominationEnglishNames::get),
                 churchEnglishName = church.englishName,
             )
@@ -66,7 +68,7 @@ class StaticSiteGenerator(
             }
             pageSlug(
                 denominationEnglishName = church.denominationId
-                    ?.takeUnless(::isIndependentDenomination)
+                    ?.takeIf(String::isDisplayableDenominationId)
                     ?.let(denominationEnglishNames::get),
                 churchEnglishName = "$location ${church.englishName}",
             )
@@ -90,16 +92,18 @@ class StaticSiteGenerator(
                         LocalizedName("ja", church.name),
                         LocalizedName("en", church.englishName),
                     )
-                ).distinctBy { it.languageCode.substringBefore('-').lowercase() }
+                ).map { it.copy(name = it.name.withoutInternalDenominationMarkers()) }
+                    .filter { it.name.isNotBlank() }
+                    .distinctBy { it.languageCode.substringBefore('-').lowercase() }
                     .map { mapOf("languageCode" to it.languageCode, "name" to it.name) },
                 "denominationEnglishName" to (
                     church.denominationId
-                        ?.takeUnless(::isIndependentDenomination)
+                        ?.takeIf(String::isDisplayableDenominationId)
                         ?.let(denominationEnglishNames::get)
                         ?: ""
                     ),
                 "localizedDenominationNames" to church.denominationId
-                    ?.takeUnless(::isIndependentDenomination)
+                    ?.takeIf(String::isDisplayableDenominationId)
                     ?.let { denominationId ->
                         val fromCatalogs = denominationNamesByLanguage.mapNotNull { (languageCode, names) ->
                             names[denominationId]?.takeIf(String::isNotBlank)?.let {
@@ -111,7 +115,7 @@ class StaticSiteGenerator(
                             .map { mapOf("languageCode" to it.languageCode, "name" to it.name) }
                     }.orEmpty(),
                 "address" to church.address,
-                "websiteUrl" to church.websiteUrl,
+                "websiteUrl" to websitePolicy.publicWebsiteUrl(church),
                 "socialProfiles" to church.socialProfiles.map {
                     mapOf(
                         "platform" to it.platform.name,
@@ -173,6 +177,4 @@ class StaticSiteGenerator(
         }
     }
 
-    private fun isIndependentDenomination(id: String): Boolean =
-        id.isBlank() || id == "NOT_DETERMINED" || id == "INDEPENDENT_CHURCH"
 }

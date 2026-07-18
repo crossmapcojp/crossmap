@@ -9,10 +9,16 @@ enum class DenominationNameMethod {
 data class DenominationNameEvidence(
     val method: DenominationNameMethod,
     val sourceUrl: String? = null,
+    val note: String? = null,
 ) {
     init {
-        if (method != DenominationNameMethod.TRANSLATED) {
+        if (method == DenominationNameMethod.OFFICIAL_WEBSITE) {
             require(!sourceUrl.isNullOrBlank()) { "$method denomination names require a source URL" }
+        }
+        if (method == DenominationNameMethod.ESTABLISHED_USAGE) {
+            require(!sourceUrl.isNullOrBlank() || !note.isNullOrBlank()) {
+                "$method denomination names require a source URL or catalog note"
+            }
         }
     }
 }
@@ -28,7 +34,7 @@ data class DenominationNameEvidence(
  */
 data class DenominationNames(
     val id: String,
-    val tradition: ChurchTradition,
+    val tradition: ChurchTradition?,
     val names: LocalizedText,
     val nameParts: LocalizedText,
     val evidence: Map<Language, DenominationNameEvidence>,
@@ -42,4 +48,33 @@ data class DenominationNames(
     fun name(language: Language): String = names[language]
     fun namePart(language: Language): String = nameParts[language]
     fun evidence(language: Language): DenominationNameEvidence = evidence.getValue(language)
+}
+
+val nonDisplayDenominationIds: Set<String> = setOf("NOT_DETERMINED", "INDEPENDENT_CHURCH")
+
+/** Internal classification sentinels are never user-facing denomination names. */
+fun String?.isDisplayableDenominationId(): Boolean =
+    !isNullOrBlank() && this !in nonDisplayDenominationIds
+
+/** Defensive cleanup for old cached localized names produced before sentinel filtering. */
+fun String.withoutInternalDenominationMarkers(): String = nonDisplayDenominationIds
+    .fold(this) { value, marker -> value.replace(marker, " ") }
+    .replace(Regex("\\s+"), " ")
+    .trim()
+
+/** A denomination's organization name with its congregation word removed for use inside a church name. */
+fun denominationNamePart(value: String, language: Language): String {
+    val trimmed = value.trim()
+    val withoutCongregation = when (language) {
+        Language.JAPANESE -> trimmed.removeSuffix("教会").removeSuffix("教団")
+        Language.ENGLISH -> trimmed.removeSuffix(" Church").removeSuffix(" Denomination")
+        Language.KOREAN -> trimmed.removeSuffix(" 교회").removeSuffix("교회").removeSuffix(" 교단").removeSuffix("교단")
+        Language.PORTUGUESE -> trimmed.removePrefix("Igreja ").removePrefix("Igrejas ")
+        Language.INDONESIAN -> trimmed.removePrefix("Gereja ")
+    }.trim()
+    return when {
+        language == Language.ENGLISH && withoutCongregation.matches(Regex("[a-z][a-z0-9.-]*")) ->
+            withoutCongregation.uppercase()
+        else -> withoutCongregation
+    }
 }

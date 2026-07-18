@@ -87,7 +87,13 @@ class CachedDirectoryPageLoader(
     }
 }
 
-data class DirectoryCrawlReport(val sources: Int, val pages: Int, val candidates: Int, val errors: Int)
+data class DirectoryCrawlReport(
+    val sources: Int,
+    val pages: Int,
+    val candidates: Int,
+    val errors: Int,
+    val excludedUrls: Int,
+)
 
 class OfficialDirectoryCrawler(
     private val loader: DirectoryPageLoader? = null,
@@ -102,9 +108,11 @@ class OfficialDirectoryCrawler(
         require(Files.isRegularFile(sourceFile)) { "Missing standalone denomination source catalog: $sourceFile" }
         val sources = json.decodeFromString<List<DenominationDirectorySource>>(Files.readString(sourceFile))
         val pageLoader = loader ?: CachedDirectoryPageLoader(paths.churchWebPages, json = json)
+        val websitePolicy = ExcludedChurchListingDomains.policy(resourcesRoot)
         val evidence = mutableListOf<EvidenceRecord>()
         var pages = 0
         var errors = 0
+        var excludedUrls = 0
         sources.forEach { source ->
             val targets = listOf(
                 DirectoryTarget(
@@ -131,6 +139,10 @@ class OfficialDirectoryCrawler(
             }
             targets.filter { it.urls.isNotEmpty() }.forEach { target ->
             target.urls.forEach { url ->
+                if (websitePolicy.isExcluded(url)) {
+                    excludedUrls++
+                    return@forEach
+                }
                 runCatching { pageLoader.load(url) }.onFailure { errors++ }.getOrNull()?.let { page ->
                     pages++
                     val document = Jsoup.parse(page.html, page.url)
@@ -155,7 +167,8 @@ class OfficialDirectoryCrawler(
                         val name = entry.name
                         if (name.isBlank()) return@forEachIndexed
                         val address = entry.address
-                        val churchUrl = entry.url
+                        val churchUrl = entry.url.takeUnless(websitePolicy::isExcluded).orEmpty()
+                        if (entry.url.isNotBlank() && churchUrl.isBlank()) excludedUrls++
                         val stable = "${target.sourceId}|${page.url}|$index|$name|$address".toByteArray().sha256().take(24)
                         evidence += EvidenceRecord(
                             id = "directory:$stable",
@@ -201,7 +214,7 @@ class OfficialDirectoryCrawler(
         Files.writeString(part, json.encodeToString((existing + discovered).distinctBy { Triple(it.denominationId, it.churchName, it.address) }.sortedWith(compareBy({ it.denominationId }, { it.churchName }))))
         runCatching { Files.move(part, candidateFile, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING) }
             .getOrElse { Files.move(part, candidateFile, StandardCopyOption.REPLACE_EXISTING) }
-        return DirectoryCrawlReport(sources.size, pages, discovered.size, errors)
+        return DirectoryCrawlReport(sources.size, pages, discovered.size, errors, excludedUrls)
     }
 }
 

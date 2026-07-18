@@ -22,7 +22,7 @@ import org.gnit.lucenekmp.index.IndexWriterConfig
 import org.gnit.lucenekmp.store.FSDirectory
 
 object ChurchIndex {
-    const val SCHEMA_VERSION = 7
+    const val SCHEMA_VERSION = 9
     const val FIELD_ID = "id"
     const val FIELD_NAME = "name"
     const val FIELD_NAME_EXACT = "name_exact"
@@ -36,9 +36,22 @@ object ChurchIndex {
     const val FIELD_CATEGORY = "category"
     const val FIELD_DENOMINATION = "denomination"
     const val FIELD_ADDRESS = "address"
+    const val FIELD_ADDRESS_GEONAME_CODE = "address_geoname_code"
+    const val FIELD_ADDRESS_PREFECTURE = "address_prefecture"
+    const val FIELD_ADDRESS_PREFECTURE_CODE = "address_prefecture_code"
+    const val FIELD_ADDRESS_COUNTY = "address_county"
+    const val FIELD_ADDRESS_MUNICIPALITY = "address_municipality"
+    const val FIELD_ADDRESS_MUNICIPALITY_CODE = "address_municipality_code"
+    const val FIELD_ADDRESS_CITY_WARD = "address_city_ward"
+    const val FIELD_ADDRESS_CITY_WARD_CODE = "address_city_ward_code"
+    const val FIELD_ADDRESS_KYOTO_STREET = "address_kyoto_street"
+    const val FIELD_ADDRESS_LOCALITY = "address_locality"
+    const val FIELD_ADDRESS_NUMBER = "address_number"
+    const val FIELD_ADDRESS_BUILDING = "address_building"
     const val FIELD_CONTENT = "content"
     const val FIELD_SOCIAL = "social"
     const val FIELD_GEONAME = "geoname"
+    const val FIELD_SEARCH_COMPACT = "search_compact"
     const val FIELD_TITLE_LANGUAGE = "title_language"
     const val FIELD_CONTENT_TYPE = "content_type"
     const val FIELD_LOCATION = "location"
@@ -94,6 +107,8 @@ object ChurchIndex {
         churches: List<ChurchRecord>,
         languageCode: String = "ja",
         translatedGeoNames: Map<String, List<String>> = emptyMap(),
+        geonames: List<GeoName> = emptyList(),
+        normalizedAddresses: Map<String, JapaneseAddress> = emptyMap(),
     ) {
         val directory = FSDirectory.open(indexPath)
         val normalizedLanguage = languageCode.substringBefore('-').lowercase()
@@ -102,13 +117,25 @@ object ChurchIndex {
         }
         IndexWriter(directory, config).use { writer ->
             churches.sortedBy { it.id }.forEach { church ->
-                writer.addDocument(church.toDocument(normalizedLanguage, translatedGeoNames[church.id].orEmpty()))
+                val normalizedAddress = normalizedAddresses[church.id]
+                    ?: JapaneseAddressNormalizer.normalize(church.address, geonames)
+                writer.addDocument(
+                    church.toDocument(
+                        normalizedLanguage,
+                        translatedGeoNames[church.id].orEmpty(),
+                        normalizedAddress,
+                    )
+                )
             }
         }
         directory.close()
     }
 
-    private fun ChurchRecord.toDocument(languageCode: String, translatedGeoNames: List<String>): Document = Document().apply {
+    private fun ChurchRecord.toDocument(
+        languageCode: String,
+        translatedGeoNames: List<String>,
+        normalizedAddress: JapaneseAddress,
+    ): Document = Document().apply {
         add(StringField(FIELD_ID, id, Field.Store.YES))
         titleLanguages.map { it.substringBefore('-').lowercase() }.filter(String::isNotBlank).distinct().forEach {
             add(StringField(FIELD_TITLE_LANGUAGE, it, Field.Store.NO))
@@ -126,19 +153,47 @@ object ChurchIndex {
                 add(StringField(FIELD_LOCALIZED_NAME, it, Field.Store.NO))
             }
         }
-        translatedGeoNames
+        val cleanTranslatedGeoNames = translatedGeoNames
             .map(String::trim)
             .filter(String::isNotBlank)
             .distinctBy { it.lowercase().replace(Regex("""\s+"""), " ") }
-            .forEach {
-            add(TextField(FIELD_GEONAME, it, Field.Store.NO))
-        }
-        localizedDenominationNames
+        cleanTranslatedGeoNames.forEach { add(TextField(FIELD_GEONAME, it, Field.Store.NO)) }
+        val denominationNames = localizedDenominationNames
             .filter { it.languageCode.substringBefore('-').lowercase() == languageCode }
             .map { it.name.trim() }
             .filter(String::isNotBlank)
             .distinct()
-            .forEach { add(TextField(FIELD_DENOMINATION, it, Field.Store.YES)) }
+        denominationNames.forEach { add(TextField(FIELD_DENOMINATION, it, Field.Store.YES)) }
+        val compactSearchText = buildList {
+            addAll(names)
+            addAll(cleanTranslatedGeoNames)
+            addAll(denominationNames)
+            if (languageCode == "ja") {
+                category?.takeIf(String::isNotBlank)?.let(::add)
+                address.takeIf(String::isNotBlank)?.let(::add)
+            }
+        }.distinct().joinToString("\n")
+        if (compactSearchText.isNotBlank()) add(TextField(FIELD_SEARCH_COMPACT, compactSearchText, Field.Store.NO))
+        normalizedAddress.prefecture?.let { add(StringField(FIELD_ADDRESS_PREFECTURE, it, Field.Store.YES)) }
+        normalizedAddress.prefectureCode?.let {
+            add(StringField(FIELD_ADDRESS_PREFECTURE_CODE, it, Field.Store.YES))
+            add(StringField(FIELD_ADDRESS_GEONAME_CODE, it, Field.Store.NO))
+        }
+        normalizedAddress.county?.let { add(StringField(FIELD_ADDRESS_COUNTY, it, Field.Store.YES)) }
+        normalizedAddress.municipality?.let { add(StringField(FIELD_ADDRESS_MUNICIPALITY, it, Field.Store.YES)) }
+        normalizedAddress.municipalityCode?.let {
+            add(StringField(FIELD_ADDRESS_MUNICIPALITY_CODE, it, Field.Store.YES))
+            add(StringField(FIELD_ADDRESS_GEONAME_CODE, it, Field.Store.NO))
+        }
+        normalizedAddress.cityWard?.let { add(StringField(FIELD_ADDRESS_CITY_WARD, it, Field.Store.YES)) }
+        normalizedAddress.cityWardCode?.let {
+            add(StringField(FIELD_ADDRESS_CITY_WARD_CODE, it, Field.Store.YES))
+            add(StringField(FIELD_ADDRESS_GEONAME_CODE, it, Field.Store.NO))
+        }
+        normalizedAddress.kyotoStreet?.let { add(StringField(FIELD_ADDRESS_KYOTO_STREET, it, Field.Store.YES)) }
+        normalizedAddress.locality?.let { add(StringField(FIELD_ADDRESS_LOCALITY, it, Field.Store.YES)) }
+        normalizedAddress.addressNumber?.let { add(StringField(FIELD_ADDRESS_NUMBER, it, Field.Store.YES)) }
+        normalizedAddress.building?.let { add(StringField(FIELD_ADDRESS_BUILDING, it, Field.Store.YES)) }
         if (languageCode == "ja") {
             category?.takeIf { it.isNotBlank() }?.let { add(TextField(FIELD_CATEGORY, it, Field.Store.YES)) }
             add(TextField(FIELD_ADDRESS, address, Field.Store.YES))

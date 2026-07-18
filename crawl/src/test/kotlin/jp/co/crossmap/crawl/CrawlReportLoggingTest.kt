@@ -35,6 +35,7 @@ class CrawlReportLoggingTest {
                 "build-geonames",
                 "prepare-geoname-cache",
                 "church-geonames",
+                "address-normalization",
                 "build-snapshot",
             ),
             (CrawlReport.entries - specializedReports).map(CrawlReport::fileSuffix).toSet(),

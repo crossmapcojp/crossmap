@@ -1846,7 +1846,7 @@
   },
   {
     "id": "xlsx_4351a1b72e63",
-    "denominationId": "XLSX_4351A1B72E63",
+    "denominationId": "CHRISTIAN_CHURCHES",
     "denominationName": "キリストの教会（クリスチャン・チャーチ系",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -2083,7 +2083,7 @@
   },
   {
     "id": "xlsx_beaf2936f9d6",
-    "denominationId": "XLSX_BEAF2936F9D6",
+    "denominationId": "CHURCHES_OF_CHRIST",
     "denominationName": "キリストの教会（チャーチオブクラィスト系",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -2141,7 +2141,7 @@
   },
   {
     "id": "xlsx_71c98e08d182",
-    "denominationId": "XLSX_71C98E08D182",
+    "denominationId": "ELCMC",
     "denominationName": "東洋ローア・キリスト伝道教会",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -2185,7 +2185,7 @@
   },
   {
     "id": "xlsx_dec43ef23b86",
-    "denominationId": "XLSX_DEC43EF23B86",
+    "denominationId": "NCG",
     "denominationName": "無教会主義集会",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -2321,7 +2321,7 @@
   },
   {
     "id": "xlsx_f0ad5c26dfdf",
-    "denominationId": "XLSX_F0AD5C26DFDF",
+    "denominationId": "JRL",
     "denominationName": "日本リバイバル連盟",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -2381,7 +2381,7 @@
   },
   {
     "id": "xlsx_d28e72a71d3c",
-    "denominationId": "XLSX_D28E72A71D3C",
+    "denominationId": "BIBLE_CHRISTIAN_ASSOCIATION",
     "denominationName": "聖書キリスト教会",
     "denominationWebsiteUrl": "https://seishokirisuto.com/",
     "churchListUrlList": [],
@@ -2455,7 +2455,7 @@
   },
   {
     "id": "xlsx_e6b8aa1c0d52",
-    "denominationId": "XLSX_E6B8AA1C0D52",
+    "denominationId": "GMI",
     "denominationName": "グレース宣教会",
     "denominationWebsiteUrl": "https://gmi.or.jp/",
     "churchListUrlList": [
@@ -2606,7 +2606,7 @@
   },
   {
     "id": "xlsx_eb798427f502",
-    "denominationId": "XLSX_EB798427F502",
+    "denominationId": "MENNONITE_BRETHREN_COUNCIL_JP",
     "denominationName": "日本メノナイト・キリスト教会協議会",
     "denominationWebsiteUrl": "http://www.mennonite.jp/",
     "churchListUrlList": [],
@@ -2620,7 +2620,7 @@
   },
   {
     "id": "xlsx_63ae906088cd",
-    "denominationId": "XLSX_63AE906088CD",
+    "denominationId": "CHRIST_EVANGELIZATION_TEAM",
     "denominationName": "キリスト伝道隊",
     "denominationWebsiteUrl": "https://dendoutai.org/",
     "churchListUrlList": [],
@@ -2634,7 +2634,7 @@
   },
   {
     "id": "xlsx_1ddc0311e89d",
-    "denominationId": "XLSX_1DDC0311E89D",
+    "denominationId": "COG_JP",
     "denominationName": "チャーチ・オブ・ゴッド",
     "denominationWebsiteUrl": "https://www.cogjapan.com/",
     "churchListUrlList": [
@@ -2650,7 +2650,7 @@
   },
   {
     "id": "xlsx_9321cb4c0350",
-    "denominationId": "XLSX_9321CB4C0350",
+    "denominationId": "SFDK",
     "denominationName": "世界福音伝道会",
     "denominationWebsiteUrl": "https://www.sfdk.org/",
     "churchListUrlList": [],
@@ -2664,7 +2664,7 @@
   },
   {
     "id": "xlsx_ba946c239dbb",
-    "denominationId": "XLSX_BA946C239DBB",
+    "denominationId": "JBM",
     "denominationName": "日本バプテスト宣教団",
     "denominationWebsiteUrl": "https://jbm.or.jp/",
     "churchListUrlList": [],
@@ -2678,7 +2678,7 @@
   },
   {
     "id": "xlsx_ee14f32cd273",
-    "denominationId": "XLSX_EE14F32CD273",
+    "denominationId": "JFDA",
     "denominationName": "日本フェローシップ・ディコンリー伝道会",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -2692,7 +2692,7 @@
   },
   {
     "id": "xlsx_1ea291cee6e2",
-    "denominationId": "XLSX_1EA291CEE6E2",
+    "denominationId": "JMCC",
     "denominationName": "日本メノナイト・キリスト教会会議",
     "denominationWebsiteUrl": "https://mennonite.jpn.org/",
     "churchListUrlList": [],
@@ -2706,7 +2706,7 @@
   },
   {
     "id": "xlsx_3d8857781562",
-    "denominationId": "XLSX_3D8857781562",
+    "denominationId": "SCMS",
     "denominationName": "札幌キリスト召団",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -2720,7 +2720,7 @@
   },
   {
     "id": "xlsx_2cc6deec710a",
-    "denominationId": "XLSX_2CC6DEEC710A",
+    "denominationId": "CCG",
     "denominationName": "カルバリーチャペルグループ",
     "denominationWebsiteUrl": "https://www.yamatocalvarychapel.com/service/branch_01.php",
     "churchListUrlList": [],
@@ -2734,7 +2734,7 @@
   },
   {
     "id": "xlsx_4d9409428c0e",
-    "denominationId": "XLSX_4D9409428C0E",
+    "denominationId": "JEMS_ASSOCIATION",
     "denominationName": "日本福音宣教会",
     "denominationWebsiteUrl": "http://senkyokai.com/",
     "churchListUrlList": [],
@@ -2748,7 +2748,7 @@
   },
   {
     "id": "xlsx_1ef0b120eb4b",
-    "denominationId": "XLSX_1EF0B120EB4B",
+    "denominationId": "FGCC",
     "denominationName": "神の家族キリスト教会",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -2762,7 +2762,7 @@
   },
   {
     "id": "xlsx_bea51a6ef98c",
-    "denominationId": "XLSX_BEA51A6EF98C",
+    "denominationId": "GFA",
     "denominationName": "福音交友会",
     "denominationWebsiteUrl": "http://fkk-web.net/",
     "churchListUrlList": [],
@@ -2776,7 +2776,7 @@
   },
   {
     "id": "xlsx_db37274d5efe",
-    "denominationId": "XLSX_DB37274D5EFE",
+    "denominationId": "MFK",
     "denominationName": "萬国福音教団",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -2790,7 +2790,7 @@
   },
   {
     "id": "xlsx_8b3ffe59db9e",
-    "denominationId": "XLSX_8B3FFE59DB9E",
+    "denominationId": "JCGG",
     "denominationName": "イエス・キリスト福音の群",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -2804,7 +2804,7 @@
   },
   {
     "id": "xlsx_c295ca6955ba",
-    "denominationId": "XLSX_C295CA6955BA",
+    "denominationId": "IEC",
     "denominationName": "インドネシア福音教会",
     "denominationWebsiteUrl": "https://www.giii-japan.org/",
     "churchListUrlList": [],
@@ -2818,7 +2818,7 @@
   },
   {
     "id": "xlsx_a3d05694dba6",
-    "denominationId": "XLSX_A3D05694DBA6",
+    "denominationId": "CCMJ",
     "denominationName": "カルバリーチャペルミニストリー JAPAN",
     "denominationWebsiteUrl": "http://www.calvaryjapan.com/",
     "churchListUrlList": [],
@@ -2832,7 +2832,7 @@
   },
   {
     "id": "xlsx_ff7a146a1be6",
-    "denominationId": "XLSX_FF7A146A1BE6",
+    "denominationId": "KECCJCC",
     "denominationName": "カンバーランド長老キリスト教会日本中会",
     "denominationWebsiteUrl": "https://www.cumberland.jp/",
     "churchListUrlList": [
@@ -2848,7 +2848,7 @@
   },
   {
     "id": "xlsx_11d4b56ceeba",
-    "denominationId": "XLSX_11D4B56CEEBA",
+    "denominationId": "BFG",
     "denominationName": "ブレッシング・フェローシップ・グループ",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -2862,7 +2862,7 @@
   },
   {
     "id": "xlsx_6177372d6810",
-    "denominationId": "XLSX_6177372D6810",
+    "denominationId": "KPCJ",
     "denominationName": "大韓イエス教長老会",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -2876,7 +2876,7 @@
   },
   {
     "id": "xlsx_2fb1b342a35b",
-    "denominationId": "XLSX_2FB1B342A35B",
+    "denominationId": "GGCC",
     "denominationName": "栄光の福音キリスト教団",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -2890,7 +2890,7 @@
   },
   {
     "id": "xlsx_f60319f0776d",
-    "denominationId": "XLSX_F60319F0776D",
+    "denominationId": "CCNZ",
     "denominationName": "チャーチオブクライストニュージーランド日本",
     "denominationWebsiteUrl": "https://www.ccnz.jp/",
     "churchListUrlList": [],
@@ -2904,7 +2904,7 @@
   },
   {
     "id": "xlsx_feb604a8f53f",
-    "denominationId": "XLSX_FEB604A8F53F",
+    "denominationId": "NEW_HOPE_ASIA_JP",
     "denominationName": "ニューホープ・インターナショナル・アジア・ジャパン",
     "denominationWebsiteUrl": "https://newhope.jp/",
     "churchListUrlList": [],
@@ -2918,7 +2918,7 @@
   },
   {
     "id": "xlsx_90e593f1346c",
-    "denominationId": "XLSX_90E593F1346C",
+    "denominationId": "JCGF",
     "denominationName": "日本神の教会連盟",
     "denominationWebsiteUrl": "http://xn--u9j463geip7pa94cc38by5dpv1d.com/",
     "churchListUrlList": [],
@@ -2932,7 +2932,7 @@
   },
   {
     "id": "xlsx_5355391f89a4",
-    "denominationId": "XLSX_5355391F89A4",
+    "denominationId": "OMF",
     "denominationName": "OMFインターナショナル（国際福音宣教会）",
     "denominationWebsiteUrl": "https://omf.org/jp/",
     "churchListUrlList": [
@@ -2948,7 +2948,7 @@
   },
   {
     "id": "xlsx_721d0bfd4cc8",
-    "denominationId": "XLSX_721D0BFD4CC8",
+    "denominationId": "JCGA",
     "denominationName": "日本チャーチオブゴッド教団",
     "denominationWebsiteUrl": "https://www.japanchurchofgod.org/",
     "churchListUrlList": [
@@ -2964,7 +2964,7 @@
   },
   {
     "id": "xlsx_6a651d97024c",
-    "denominationId": "XLSX_6A651D97024C",
+    "denominationId": "JGPC",
     "denominationName": "日本福音ペンテコステ教団",
     "denominationWebsiteUrl": "https://jgpc.jimdofree.com/",
     "churchListUrlList": [
@@ -2980,7 +2980,7 @@
   },
   {
     "id": "xlsx_f5981f2cf029",
-    "denominationId": "XLSX_F5981F2CF029",
+    "denominationId": "JFWB",
     "denominationName": "福音バプテスト宣教団",
     "denominationWebsiteUrl": "http://jfwb.net/",
     "churchListUrlList": [],
@@ -2994,7 +2994,7 @@
   },
   {
     "id": "xlsx_d84cfd1f2bba",
-    "denominationId": "XLSX_D84CFD1F2BBA",
+    "denominationId": "BIBLE_CHURCH_FEDERATION",
     "denominationName": "聖書教会連盟",
     "denominationWebsiteUrl": "http://www.kyoukai.com/rennmei/index.html",
     "churchListUrlList": [],
@@ -3008,7 +3008,7 @@
   },
   {
     "id": "xlsx_3fda285a9665",
-    "denominationId": "XLSX_3FDA285A9665",
+    "denominationId": "TCCG",
     "denominationName": "ト－タル・クリスチャン・チャ－チグループ",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3022,7 +3022,7 @@
   },
   {
     "id": "xlsx_8523c06cddf6",
-    "denominationId": "XLSX_8523C06CDDF6",
+    "denominationId": "JAM",
     "denominationName": "日本アライアンス・ミッション",
     "denominationWebsiteUrl": "https://japanalliancemission.org/",
     "churchListUrlList": [
@@ -3038,7 +3038,7 @@
   },
   {
     "id": "xlsx_1b16b781a295",
-    "denominationId": "XLSX_1B16B781A295",
+    "denominationId": "TFMC",
     "denominationName": "東京フリー・メソジスト教団",
     "denominationWebsiteUrl": "https://tokyofree.net/",
     "churchListUrlList": [],
@@ -3052,7 +3052,7 @@
   },
   {
     "id": "xlsx_5119df175df7",
-    "denominationId": "XLSX_5119DF175DF7",
+    "denominationId": "BFS",
     "denominationName": "聖書友の会",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3066,7 +3066,7 @@
   },
   {
     "id": "xlsx_1d8abc2de297",
-    "denominationId": "XLSX_1D8ABC2DE297",
+    "denominationId": "ALLIES_5",
     "denominationName": "アライズ5",
     "denominationWebsiteUrl": "https://www.hugedomains.com/domain_profile.cfm?d=arise5.com",
     "churchListUrlList": [],
@@ -3080,7 +3080,7 @@
   },
   {
     "id": "xlsx_9169e40b4959",
-    "denominationId": "XLSX_9169E40B4959",
+    "denominationId": "NLM",
     "denominationName": "ニューライフ・ミニストリーズ",
     "denominationWebsiteUrl": "https://www.newlifeministries.jp/",
     "churchListUrlList": [],
@@ -3094,7 +3094,7 @@
   },
   {
     "id": "xlsx_844629460c39",
-    "denominationId": "XLSX_844629460C39",
+    "denominationId": "LECC",
     "denominationName": "ルーテル福音キリスト教会",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3108,7 +3108,7 @@
   },
   {
     "id": "xlsx_7bb40e57e76b",
-    "denominationId": "XLSX_7BB40E57E76B",
+    "denominationId": "VCG",
     "denominationName": "勝利教会グループ",
     "denominationWebsiteUrl": "http://www5a.biglobe.ne.jp/~vct/",
     "churchListUrlList": [],
@@ -3122,7 +3122,7 @@
   },
   {
     "id": "xlsx_fe1793d78d3e",
-    "denominationId": "XLSX_FE1793D78D3E",
+    "denominationId": "CHRA",
     "denominationName": "基督心宗教団",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3136,7 +3136,7 @@
   },
   {
     "id": "xlsx_1dea8e7df7ec",
-    "denominationId": "XLSX_1DEA8E7DF7EC",
+    "denominationId": "CCA",
     "denominationName": "基督教カナン教団",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3150,7 +3150,7 @@
   },
   {
     "id": "xlsx_e7e83e768771",
-    "denominationId": "XLSX_E7E83E768771",
+    "denominationId": "JSCCF",
     "denominationName": "日本聖泉基督教会連合",
     "denominationWebsiteUrl": "https://seisen-rengou.blogspot.com/",
     "churchListUrlList": [],
@@ -3164,7 +3164,7 @@
   },
   {
     "id": "xlsx_8bb687c6219e",
-    "denominationId": "XLSX_8BB687C6219E",
+    "denominationId": "ENCJ",
     "denominationName": "エブリネイションチャーチズジャパン",
     "denominationWebsiteUrl": "https://everynation.jp/",
     "churchListUrlList": [
@@ -3180,7 +3180,7 @@
   },
   {
     "id": "xlsx_ca8acd3c790a",
-    "denominationId": "XLSX_CA8ACD3C790A",
+    "denominationId": "JBCF",
     "denominationName": "キリスト教日本バプテスト会(連盟)",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3194,7 +3194,7 @@
   },
   {
     "id": "xlsx_292583ff8978",
-    "denominationId": "XLSX_292583FF8978",
+    "denominationId": "RCC",
     "denominationName": "復活之キリスト教団",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3208,7 +3208,7 @@
   },
   {
     "id": "xlsx_18816f940131",
-    "denominationId": "XLSX_18816F940131",
+    "denominationId": "JOAC",
     "denominationName": "日本オリベットアッセンブリー教団",
     "denominationWebsiteUrl": "https://olivetassembly.or.jp/about-us/organization.html",
     "churchListUrlList": [
@@ -3224,7 +3224,7 @@
   },
   {
     "id": "xlsx_c2b6e3644d67",
-    "denominationId": "XLSX_C2B6E3644D67",
+    "denominationId": "JESUS_EVANGELICAL_CHURCH",
     "denominationName": "イエス福音教団",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3238,7 +3238,7 @@
   },
   {
     "id": "xlsx_5896cfa22330",
-    "denominationId": "XLSX_5896CFA22330",
+    "denominationId": "CLC",
     "denominationName": "ｸﾘｽﾁｬﾝ・ﾗｲﾌ・ﾁｬｰﾁｽﾞ・ｲﾝﾀｰﾅｼｮﾅﾙ",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3252,7 +3252,7 @@
   },
   {
     "id": "xlsx_c6d37e8056ed",
-    "denominationId": "XLSX_C6D37E8056ED",
+    "denominationId": "ZCF",
     "denominationName": "シオン・クリスチャン・フェロシップ",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3266,7 +3266,7 @@
   },
   {
     "id": "xlsx_6924cfbed8aa",
-    "denominationId": "XLSX_6924CFBED8AA",
+    "denominationId": "JCC",
     "denominationName": "日本キリストの教会",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3280,7 +3280,7 @@
   },
   {
     "id": "xlsx_0e0ac535c8df",
-    "denominationId": "XLSX_0E0AC535C8DF",
+    "denominationId": "JCB",
     "denominationName": "日本キリスト兄弟団",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3294,7 +3294,7 @@
   },
   {
     "id": "xlsx_84b3a8f19118",
-    "denominationId": "XLSX_84B3A8F19118",
+    "denominationId": "JCUC",
     "denominationName": "日本キリスト合同教会",
     "denominationWebsiteUrl": "http://web.archive.org/web/20180317203733/http:/www.godo.or.jp/",
     "churchListUrlList": [],
@@ -3308,7 +3308,7 @@
   },
   {
     "id": "xlsx_2ecc6d4ab227",
-    "denominationId": "XLSX_2ECC6D4AB227",
+    "denominationId": "TJC",
     "denominationName": "真イエス教会",
     "denominationWebsiteUrl": "https://tjc.org/jp/",
     "churchListUrlList": [
@@ -3325,7 +3325,7 @@
   },
   {
     "id": "xlsx_0f16b6b5691c",
-    "denominationId": "XLSX_0F16B6B5691C",
+    "denominationId": "OCCJ",
     "denominationName": "日本華僑基督教団",
     "denominationWebsiteUrl": "https://www.occj.net/",
     "churchListUrlList": [],
@@ -3339,7 +3339,7 @@
   },
   {
     "id": "xlsx_f88d24ba9ca6",
-    "denominationId": "XLSX_F88D24BA9CA6",
+    "denominationId": "JMSJ",
     "denominationName": "イエス教日本世界宣教会",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3353,7 +3353,7 @@
   },
   {
     "id": "xlsx_e61da6da7815",
-    "denominationId": "XLSX_E61DA6DA7815",
+    "denominationId": "ZCA",
     "denominationName": "シオン・キリスト教団",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3367,7 +3367,7 @@
   },
   {
     "id": "xlsx_4426359ab1ac",
-    "denominationId": "XLSX_4426359AB1AC",
+    "denominationId": "IECA",
     "denominationName": "国際福音キリスト教会",
     "denominationWebsiteUrl": "http://agapechapel.net/",
     "churchListUrlList": [],
@@ -3381,7 +3381,7 @@
   },
   {
     "id": "xlsx_5c2d4ac4e6c3",
-    "denominationId": "XLSX_5C2D4AC4E6C3",
+    "denominationId": "RPJ",
     "denominationName": "日本キリスト改革長老教会",
     "denominationWebsiteUrl": "http://www.rpjapan.org/",
     "churchListUrlList": [],
@@ -3395,7 +3395,7 @@
   },
   {
     "id": "xlsx_eef39a83ce96",
-    "denominationId": "XLSX_EEF39A83CE96",
+    "denominationId": "JBPCC",
     "denominationName": "日本バイブル・プロテスタント基督教会",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3409,7 +3409,7 @@
   },
   {
     "id": "xlsx_e616cbb5a18d",
-    "denominationId": "XLSX_E616CBB5A18D",
+    "denominationId": "JEMS_MISSION",
     "denominationName": "日本福音宣教団",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3423,7 +3423,7 @@
   },
   {
     "id": "xlsx_e0a6cc3f86eb",
-    "denominationId": "XLSX_E0A6CC3F86EB",
+    "denominationId": "JFMC",
     "denominationName": "日本自由メソヂスト教団",
     "denominationWebsiteUrl": "http://blog.livedoor.jp/methodist_free/",
     "churchListUrlList": [],
@@ -3437,7 +3437,7 @@
   },
   {
     "id": "xlsx_f19b6f1644a2",
-    "denominationId": "XLSX_F19B6F1644A2",
+    "denominationId": "CEG",
     "denominationName": "キリスト伝道団　",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3451,7 +3451,7 @@
   },
   {
     "id": "xlsx_afde972c6c12",
-    "denominationId": "XLSX_AFDE972C6C12",
+    "denominationId": "CFJYM",
     "denominationName": "キリスト友会日本年会",
     "denominationWebsiteUrl": "http://www.kirisutoyuukai.org/",
     "churchListUrlList": [],
@@ -3465,7 +3465,7 @@
   },
   {
     "id": "xlsx_958d0b351e84",
-    "denominationId": "XLSX_958D0B351E84",
+    "denominationId": "CHRISTIAN_FELLOWSHIP",
     "denominationName": "キリスト同信会",
     "denominationWebsiteUrl": "https://nakano-psc.org/about/other_area/",
     "churchListUrlList": [],
@@ -3479,7 +3479,7 @@
   },
   {
     "id": "xlsx_ce46a4a351d1",
-    "denominationId": "XLSX_CE46A4A351D1",
+    "denominationId": "ZION_MISSION",
     "denominationName": "シオン宣教団",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3493,7 +3493,7 @@
   },
   {
     "id": "xlsx_f045736c8a00",
-    "denominationId": "XLSX_F045736C8A00",
+    "denominationId": "BCA",
     "denominationName": "ベタニヤ・クリスチャン・アッセンブリーズ",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3507,7 +3507,7 @@
   },
   {
     "id": "xlsx_cbe40805f5f2",
-    "denominationId": "XLSX_CBE40805F5F2",
+    "denominationId": "MISSION_TOHOKU",
     "denominationName": "ミッション東北",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3521,7 +3521,7 @@
   },
   {
     "id": "xlsx_89b89f77d9fb",
-    "denominationId": "XLSX_89B89F77D9FB",
+    "denominationId": "KCGF",
     "denominationName": "九州キリスト福音フェローシップ",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3535,7 +3535,7 @@
   },
   {
     "id": "xlsx_7998d313189e",
-    "denominationId": "XLSX_7998D313189E",
+    "denominationId": "NLCCU",
     "denominationName": "新生キリスト教会連合",
     "denominationWebsiteUrl": "https://mccjapa8.wixsite.com/mccjapan/--c1k3t",
     "churchListUrlList": [
@@ -3551,7 +3551,7 @@
   },
   {
     "id": "xlsx_17a6c6c826c3",
-    "denominationId": "XLSX_17A6C6C826C3",
+    "denominationId": "JVCF",
     "denominationName": "日本ヴィンヤード・クリスチャン・フェロシップ",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3565,7 +3565,7 @@
   },
   {
     "id": "xlsx_8804ef621256",
-    "denominationId": "XLSX_8804EF621256",
+    "denominationId": "JMS",
     "denominationName": "日本宣教会",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3579,7 +3579,7 @@
   },
   {
     "id": "xlsx_0d532e2005b3",
-    "denominationId": "XLSX_0D532E2005B3",
+    "denominationId": "JAPAN_FREE_EVANGELICAL_CHURCH",
     "denominationName": "日本自由福音教団",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3593,7 +3593,7 @@
   },
   {
     "id": "xlsx_13299774b479",
-    "denominationId": "XLSX_13299774B479",
+    "denominationId": "OMS",
     "denominationName": "東洋宣教団",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3607,7 +3607,7 @@
   },
   {
     "id": "xlsx_1ce33e34700c",
-    "denominationId": "XLSX_1CE33E34700C",
+    "denominationId": "MINO_MISSION",
     "denominationName": "美濃ミッション",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3621,7 +3621,7 @@
   },
   {
     "id": "xlsx_3a801ebede90",
-    "denominationId": "XLSX_3A801EBEDE90",
+    "denominationId": "IFGF",
     "denominationName": "インターナショナル・フルゴスペル・フェローシップ",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3635,7 +3635,7 @@
   },
   {
     "id": "xlsx_6d96285ebb53",
-    "denominationId": "XLSX_6D96285EBB53",
+    "denominationId": "ECC",
     "denominationName": "ｴﾊﾞﾝｼﾞｪﾘｶﾙ･ｺﾝｸﾞﾘｹﾞｰｼｮﾅﾙ･ﾁｬｰﾁ",
     "denominationWebsiteUrl": "http://churchkyodo.sunnyday.jp/%e5%bd%93%e6%95%99%e4%bc%9a%e3%81%ab%e3%81%a4%e3%81%84%e3%81%a6/",
     "churchListUrlList": [],
@@ -3649,7 +3649,7 @@
   },
   {
     "id": "xlsx_bfa7feb22cb5",
-    "denominationId": "XLSX_BFA7FEB22CB5",
+    "denominationId": "CBA",
     "denominationName": "キリスト信徒の集会",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3663,7 +3663,7 @@
   },
   {
     "id": "xlsx_06ac1b7dbd49",
-    "denominationId": "XLSX_06AC1B7DBD49",
+    "denominationId": "CGEC",
     "denominationName": "キリスト教ガリラヤ福音教団",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3677,7 +3677,7 @@
   },
   {
     "id": "xlsx_3d7df0c98a2d",
-    "denominationId": "XLSX_3D7DF0C98A2D",
+    "denominationId": "ATD",
     "denominationName": "日本聖公会東京教区　",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3691,7 +3691,7 @@
   },
   {
     "id": "xlsx_a125ddd08c3c",
-    "denominationId": "XLSX_A125DDD08C3C",
+    "denominationId": "ICEC",
     "denominationName": "キリスト教国際福音教団",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3705,7 +3705,7 @@
   },
   {
     "id": "xlsx_cd5426a9421a",
-    "denominationId": "XLSX_CD5426A9421A",
+    "denominationId": "CJMSB",
     "denominationName": "クリスター日本宣教団体",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3719,7 +3719,7 @@
   },
   {
     "id": "xlsx_dcbdd0636d26",
-    "denominationId": "XLSX_DCBDD0636D26",
+    "denominationId": "ZION_GROUP",
     "denominationName": "シオンの群",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3733,7 +3733,7 @@
   },
   {
     "id": "xlsx_3e8f489a41cf",
-    "denominationId": "XLSX_3E8F489A41CF",
+    "denominationId": "SIMS",
     "denominationName": "センド国際宣教団",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3747,7 +3747,7 @@
   },
   {
     "id": "xlsx_d63906a6e148",
-    "denominationId": "XLSX_D63906A6E148",
+    "denominationId": "CBJM",
     "denominationName": "保守バプテスト日本宣教団",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3761,7 +3761,7 @@
   },
   {
     "id": "xlsx_3cb0d9712a01",
-    "denominationId": "XLSX_3CB0D9712A01",
+    "denominationId": "ICC",
     "denominationName": "国際基督教団",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3775,7 +3775,7 @@
   },
   {
     "id": "xlsx_1d64f4cb6767",
-    "denominationId": "XLSX_1D64F4CB6767",
+    "denominationId": "JAPAN_BETHESDA_CHURCH",
     "denominationName": "日本ベテスダ教団",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3789,7 +3789,7 @@
   },
   {
     "id": "xlsx_807dd8e42ab3",
-    "denominationId": "XLSX_807DD8E42AB3",
+    "denominationId": "JAPAN_BETHEL_MISSION",
     "denominationName": "日本べテルミッション",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3803,7 +3803,7 @@
   },
   {
     "id": "xlsx_a9cf9ed2fe17",
-    "denominationId": "XLSX_A9CF9ED2FE17",
+    "denominationId": "TDMCF",
     "denominationName": "東京地区メノナイト教会連合",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3817,7 +3817,7 @@
   },
   {
     "id": "xlsx_05ee80c87704",
-    "denominationId": "XLSX_05EE80C87704",
+    "denominationId": "EEMKCA",
     "denominationName": "東洋宣教団きよめキリスト教会",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3831,7 +3831,7 @@
   },
   {
     "id": "xlsx_a0114277d55e",
-    "denominationId": "XLSX_A0114277D55E",
+    "denominationId": "EGM",
     "denominationName": "東洋福音教団",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3845,7 +3845,7 @@
   },
   {
     "id": "xlsx_e5f97c9f58cd",
-    "denominationId": "XLSX_E5F97C9F58CD",
+    "denominationId": "BSG",
     "denominationName": "聖書研究会",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3859,7 +3859,7 @@
   },
   {
     "id": "xlsx_a62900a57458",
-    "denominationId": "XLSX_A62900A57458",
+    "denominationId": "KEFA",
     "denominationName": "関西福音交友会",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3873,7 +3873,7 @@
   },
   {
     "id": "xlsx_3bb530af6c0b",
-    "denominationId": "XLSX_3BB530AF6C0B",
+    "denominationId": "TCCT",
     "denominationName": "高松コミュニティ・チャーチ（TCCh）",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3887,7 +3887,7 @@
   },
   {
     "id": "xlsx_419457cd203e",
-    "denominationId": "XLSX_419457CD203E",
+    "denominationId": "CALVARY_BAPTIST",
     "denominationName": "カルバリー　バプテスト",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3901,7 +3901,7 @@
   },
   {
     "id": "xlsx_1761f2ad5674",
-    "denominationId": "XLSX_1761F2AD5674",
+    "denominationId": "SANBI_MISSION",
     "denominationName": "サンビ教団",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3915,7 +3915,7 @@
   },
   {
     "id": "xlsx_4c7e0c0cc240",
-    "denominationId": "XLSX_4C7E0C0CC240",
+    "denominationId": "JCM",
     "denominationName": "ジーザス・クライスト・ミニストリーズ",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3929,7 +3929,7 @@
   },
   {
     "id": "xlsx_5a967b84695b",
-    "denominationId": "XLSX_5A967B84695B",
+    "denominationId": "JAPAN_BETHANY_MISSION",
     "denominationName": "ジャパン・ベサニー・ミッション",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3943,7 +3943,7 @@
   },
   {
     "id": "xlsx_474ebf9142be",
-    "denominationId": "XLSX_474EBF9142BE",
+    "denominationId": "SACC",
     "denominationName": "スウェーデン同盟キリスト教団",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3957,7 +3957,7 @@
   },
   {
     "id": "xlsx_f4af1afe226e",
-    "denominationId": "XLSX_F4AF1AFE226E",
+    "denominationId": "DBBC",
     "denominationName": "デフ聖書バプテスト教会",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3971,7 +3971,7 @@
   },
   {
     "id": "xlsx_b42a3359eeb8",
-    "denominationId": "XLSX_B42A3359EEB8",
+    "denominationId": "AJBMM",
     "denominationName": "全日本バプテスト・ミド・ミッション",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3985,7 +3985,7 @@
   },
   {
     "id": "xlsx_54e7f69f30d8",
-    "denominationId": "XLSX_54E7F69F30D8",
+    "denominationId": "KIRISUTO_DENDOTAI",
     "denominationName": "基督伝道隊",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -3999,7 +3999,7 @@
   },
   {
     "id": "xlsx_0823a1c9e8c1",
-    "denominationId": "XLSX_0823A1C9E8C1",
+    "denominationId": "HOPE_CHURCH",
     "denominationName": "希望の教会",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -4013,7 +4013,7 @@
   },
   {
     "id": "xlsx_c8ace915cf1a",
-    "denominationId": "XLSX_C8ACE915CF1A",
+    "denominationId": "JCA",
     "denominationName": "日本基督会",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -4027,7 +4027,7 @@
   },
   {
     "id": "xlsx_3aa37d2fe37d",
-    "denominationId": "XLSX_3AA37D2FE37D",
+    "denominationId": "THC",
     "denominationName": "東京ホライズンチャペル",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -4041,7 +4041,7 @@
   },
   {
     "id": "xlsx_76e20d9095d1",
-    "denominationId": "XLSX_76E20D9095D1",
+    "denominationId": "LWCC",
     "denominationName": "活水基督教団",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -4055,7 +4055,7 @@
   },
   {
     "id": "xlsx_c4158babcb9e",
-    "denominationId": "XLSX_C4158BABCB9E",
+    "denominationId": "GBF",
     "denominationName": "福音バプテスト連合 ",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -4069,7 +4069,7 @@
   },
   {
     "id": "xlsx_46cca3b8cc05",
-    "denominationId": "XLSX_46CCA3B8CC05",
+    "denominationId": "HSGFCEMS",
     "denominationName": "聖流の群（旧：キリスト福音宣教会）",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -4083,7 +4083,7 @@
   },
   {
     "id": "xlsx_b0f67bb89696",
-    "denominationId": "XLSX_B0F67BB89696",
+    "denominationId": "ICM",
     "denominationName": "インターナショナル・チャペル・ ﾐﾆｽﾄﾘｰｽﾞ",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -4097,7 +4097,7 @@
   },
   {
     "id": "xlsx_103813112184",
-    "denominationId": "XLSX_103813112184",
+    "denominationId": "CAMS",
     "denominationName": "クリスチャンズ・イン・アクション宣教団",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -4111,7 +4111,7 @@
   },
   {
     "id": "xlsx_e7bc111f3436",
-    "denominationId": "XLSX_E7BC111F3436",
+    "denominationId": "BEMS",
     "denominationName": "バルナバ福音宣教会",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -4125,7 +4125,7 @@
   },
   {
     "id": "xlsx_18a9344e85e0",
-    "denominationId": "XLSX_18A9344E85E0",
+    "denominationId": "YWAM",
     "denominationName": "ユース･ウィズ･ア･ミッション",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -4139,7 +4139,7 @@
   },
   {
     "id": "xlsx_aeb91c317f1e",
-    "denominationId": "XLSX_AEB91C317F1E",
+    "denominationId": "JAPAN_APOSTOLIC_CHRISTIAN_CHURCH",
     "denominationName": "日本使徒キリスト教会",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -4153,7 +4153,7 @@
   },
   {
     "id": "xlsx_00b215a90ef6",
-    "denominationId": "XLSX_00B215A90EF6",
+    "denominationId": "JNAC",
     "denominationName": "日本新使徒教会",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -4167,7 +4167,7 @@
   },
   {
     "id": "xlsx_02aa52956dc4",
-    "denominationId": "XLSX_02AA52956DC4",
+    "denominationId": "JEBC",
     "denominationName": "日本福音基督教団",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -4181,7 +4181,7 @@
   },
   {
     "id": "xlsx_99044433ea4a",
-    "denominationId": "XLSX_99044433EA4A",
+    "denominationId": "OPCJM",
     "denominationName": "正統長老教会日本ミッション",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -4195,7 +4195,7 @@
   },
   {
     "id": "xlsx_edaf8c8a844f",
-    "denominationId": "XLSX_EDAF8C8A844F",
+    "denominationId": "FCWMS",
     "denominationName": "藤原キリスト世界伝道団",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -4209,7 +4209,7 @@
   },
   {
     "id": "xlsx_60adaa925b2e",
-    "denominationId": "XLSX_60ADAA925B2E",
+    "denominationId": "CCC",
     "denominationName": "カルバリキリスト教団",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],
@@ -4223,7 +4223,7 @@
   },
   {
     "id": "xlsx_4ae62f1bb60e",
-    "denominationId": "XLSX_4AE62F1BB60E",
+    "denominationId": "SEGMJ",
     "denominationName": "在日スエーデン東洋福音伝道団",
     "denominationWebsiteUrl": "",
     "churchListUrlList": [],

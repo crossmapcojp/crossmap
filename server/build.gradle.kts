@@ -20,6 +20,14 @@ tasks.named<JavaExec>("run") {
     dependsOn(":crawl:buildSearchSnapshot", "generateChurchPages")
 }
 
+tasks.register<JavaExec>("runCurrentIndex") {
+    group = "crossmap"
+    description = "Start the server immediately with the current schema-compatible latest search snapshot"
+    classpath = sourceSets.main.get().runtimeClasspath
+    mainClass = "jp.co.crossmap.ApplicationKt"
+    workingDir = rootProject.projectDir
+}
+
 tasks.test {
     systemProperty("crossmap.project.root", rootProject.projectDir.absolutePath)
 }
@@ -44,7 +52,7 @@ tasks.register<JavaExec>("generateChurchPages") {
     classpath = sourceSets.main.get().runtimeClasspath
     mainClass = "jp.co.crossmap.StaticSiteGeneratorCli"
     workingDir = rootProject.projectDir
-    dependsOn(":crawl:dataCleanup", ":crawl:populateDenominationEnglishNames", ":crawl:prepareGeoNameCache")
+    dependsOn(":crawl:dataCleanup", ":crawl:prepareGeoNameCache")
     args(
         providers.gradleProperty("churchCatalog").orElse("resources/catalog/churches.json").get(),
         providers.gradleProperty("denominationEnglishNames").orElse("resources/catalog/denomination-en-names.json").get(),

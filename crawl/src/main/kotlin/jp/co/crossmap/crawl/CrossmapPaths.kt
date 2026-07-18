@@ -12,6 +12,8 @@ data class CrossmapPaths(
     val churchWebPages: Path get() = cacheRoot.resolve("church-web-pages")
     val cleanup: Path get() = cacheRoot.resolve("cleanup")
     val churchNameTranslation: Path get() = cacheRoot.resolve("church-name-translation")
+    val addressNormalization: Path get() = cacheRoot.resolve("address-normalization")
+    val normalizedChurchAddresses: Path get() = addressNormalization.resolve("normalized-addresses.json")
     val searchIndexes: Path get() = cacheRoot.resolve("search-indexes/churches")
     val geoNameCache: Path get() = cacheRoot.resolve("geoname")
     val geoNameOfficialJapan: Path get() = geoNameCache.resolve("japan/JP.txt")

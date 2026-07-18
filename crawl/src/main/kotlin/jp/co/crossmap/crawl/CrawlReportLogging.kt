@@ -21,6 +21,7 @@ internal enum class CrawlReport(val fileSuffix: String) {
     CHURCH_GEONAMES("church-geonames"),
     GEONAME_TRANSLATION_COVERAGE("geoname-translation-coverage"),
     PREPARE_GEONAME_CACHE("prepare-geoname-cache"),
+    ADDRESS_NORMALIZATION("address-normalization"),
     BUILD_SNAPSHOT("build-snapshot"),
     CRAWL_DENOMINATION_DIRECTORIES("crawl-denomination-directories"),
     REFRESH("refresh"),

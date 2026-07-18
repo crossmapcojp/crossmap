@@ -120,13 +120,17 @@ class CliTest {
     }
 
     @Test
-    fun ambiguousCityNameSearchesEveryMatchingMunicipality() {
-        val response = response("府中市")
-        assertEquals(setOf("13206", "34208"), response.resolvedLocations.map { it.code }.toSet())
-        assertEquals(
-            setOf("google:11669795733969339645", "google:3344590218577063144"),
-            response.hits.map { it.churchId }.toSet(),
-        )
+    fun ambiguousCityNameUsesUserCoordinatesToSelectOneMunicipality() {
+        val withoutLocation = response("府中市")
+        assertTrue(withoutLocation.resolvedLocations.isEmpty())
+
+        val tokyo = response("府中市", "--latitude", "35.67", "--longitude", "139.48")
+        assertEquals("13206", tokyo.resolvedLocations.single().code)
+        assertEquals(listOf("google:11669795733969339645"), tokyo.hits.map { it.churchId })
+
+        val hiroshima = response("府中市", "--latitude", "34.57", "--longitude", "133.24")
+        assertEquals("34208", hiroshima.resolvedLocations.single().code)
+        assertEquals(listOf("google:3344590218577063144"), hiroshima.hits.map { it.churchId })
     }
 
     @Test
@@ -261,24 +265,24 @@ class CliTest {
                 websiteUrl = "https://www.google.com/maps?cid=3344590218577063144",
             ),
         )
+        val geonameEntries = listOf(
+            GeoName("13", "東京都", type = GeoNameType.PREFECTURE, prefectureCode = "13", center = GeoPoint(35.68, 139.69), coveringRadiusKm = 1_000.0),
+            GeoName("34", "広島県", type = GeoNameType.PREFECTURE, prefectureCode = "34", center = GeoPoint(34.39, 132.46), coveringRadiusKm = 100.0),
+            GeoName("13103", "港区", type = GeoNameType.WARD, prefectureCode = "13", center = GeoPoint(35.658, 139.751), coveringRadiusKm = 15.0),
+            GeoName("13421", "小笠原村", type = GeoNameType.MUNICIPALITY, prefectureCode = "13", center = GeoPoint(27.093, 142.191), coveringRadiusKm = 30.0),
+            GeoName("33100", "岡山市", aliases = listOf("岡山"), type = GeoNameType.MUNICIPALITY, prefectureCode = "33", center = GeoPoint(34.655, 133.919), coveringRadiusKm = 25.0),
+            GeoName("01100", "札幌市", aliases = listOf("札幌"), type = GeoNameType.MUNICIPALITY, prefectureCode = "01", center = GeoPoint(43.061, 141.354), coveringRadiusKm = 30.0),
+            GeoName("14100", "横浜市", aliases = listOf("横浜"), type = GeoNameType.MUNICIPALITY, prefectureCode = "14", center = GeoPoint(35.444, 139.638), coveringRadiusKm = 30.0),
+            GeoName("27100", "大阪市", aliases = listOf("大阪"), type = GeoNameType.MUNICIPALITY, prefectureCode = "27", center = GeoPoint(34.694, 135.502), coveringRadiusKm = 30.0),
+            GeoName("13206", "府中市", type = GeoNameType.MUNICIPALITY, prefectureCode = "13", center = GeoPoint(35.668, 139.478), coveringRadiusKm = 15.0),
+            GeoName("34208", "府中市", type = GeoNameType.MUNICIPALITY, prefectureCode = "34", center = GeoPoint(34.568, 133.236), coveringRadiusKm = 15.0),
+        )
         val index = root.resolve("index")
-        ChurchIndex.build(index.toString().toPath(), churches)
+        ChurchIndex.build(index.toString().toPath(), churches, geonames = geonameEntries)
         val geonames = root.resolve("geonames.json")
         Files.writeString(
             geonames,
-            Json.encodeToString(
-                listOf(
-                    GeoName("13", "東京都", type = GeoNameType.PREFECTURE, prefectureCode = "13", center = GeoPoint(35.68, 139.69), coveringRadiusKm = 1_000.0),
-                    GeoName("13103", "港区", type = GeoNameType.WARD, prefectureCode = "13", center = GeoPoint(35.658, 139.751), coveringRadiusKm = 15.0),
-                    GeoName("13421", "小笠原村", type = GeoNameType.MUNICIPALITY, prefectureCode = "13", center = GeoPoint(27.093, 142.191), coveringRadiusKm = 30.0),
-                    GeoName("33100", "岡山市", aliases = listOf("岡山"), type = GeoNameType.MUNICIPALITY, prefectureCode = "33", center = GeoPoint(34.655, 133.919), coveringRadiusKm = 25.0),
-                    GeoName("01100", "札幌市", aliases = listOf("札幌"), type = GeoNameType.MUNICIPALITY, prefectureCode = "01", center = GeoPoint(43.061, 141.354), coveringRadiusKm = 30.0),
-                    GeoName("14100", "横浜市", aliases = listOf("横浜"), type = GeoNameType.MUNICIPALITY, prefectureCode = "14", center = GeoPoint(35.444, 139.638), coveringRadiusKm = 30.0),
-                    GeoName("27100", "大阪市", aliases = listOf("大阪"), type = GeoNameType.MUNICIPALITY, prefectureCode = "27", center = GeoPoint(34.694, 135.502), coveringRadiusKm = 30.0),
-                    GeoName("13206", "府中市", type = GeoNameType.MUNICIPALITY, prefectureCode = "13", center = GeoPoint(35.668, 139.478), coveringRadiusKm = 15.0),
-                    GeoName("34208", "府中市", type = GeoNameType.MUNICIPALITY, prefectureCode = "34", center = GeoPoint(34.568, 133.236), coveringRadiusKm = 15.0),
-                )
-            ),
+            Json.encodeToString(geonameEntries),
         )
         return Fixture(index, geonames)
     }

@@ -3,6 +3,7 @@ package jp.co.crossmap.crawl
 import java.nio.file.Files
 import java.nio.file.Path
 import jp.co.crossmap.GeoPoint
+import jp.co.crossmap.ChurchWebsitePolicy
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -40,6 +41,25 @@ class GoogleMapsPlaceResolverTest {
         assertEquals("https://gracechapel.example.jp/", candidate.websiteUrl)
         assertEquals("キリスト教会", candidate.category)
         assertEquals(null, candidate.denominationHint)
+    }
+
+    @Test
+    fun thirdPartyChurchListingWebsiteFallsBackToTheGooglePlacePageDuringParsing() {
+        val seed = seed("10158070367548216990", "錦キリスト教会", "教会")
+        val page = html("錦キリスト教会", "熊本県球磨郡錦町", 32.20, 130.84)
+            .replace(
+                "</body>",
+                "/url?q\\u003dhttp://www.church-info.jp/sp/search/detail.php?key=16230012\\u0026opi\\u003d1</body>",
+            )
+
+        val candidate = GoogleMapsPlaceParser(
+            websitePolicy = ChurchWebsitePolicy(setOf("church-info.jp")),
+        ).parse(seed, page, now = "2026-07-18T00:00:00Z")
+
+        assertEquals(
+            "https://www.google.com/maps?cid=10158070367548216990",
+            candidate.websiteUrl,
+        )
     }
 
     @Test

@@ -1,10 +1,14 @@
 package jp.co.crossmap.crawl
 
 import jp.co.crossmap.LocalizedName
+import jp.co.crossmap.ChurchTradition
+import jp.co.crossmap.Language
+import jp.co.crossmap.denominationNamePart
+import jp.co.crossmap.isDisplayableDenominationId
 import kotlinx.serialization.Serializable
 
 @Serializable
-enum class MultilingualNameComponentRole { DENOMINATION, GEONAME, CONCEPT, CONGREGATION, CHURCH_NAME, OTHER }
+enum class MultilingualNameComponentRole { DENOMINATION, TRADITION, GEONAME, CONCEPT, CONGREGATION, CHURCH_NAME, OTHER }
 
 @Serializable
 data class MultilingualNameComponent(
@@ -27,6 +31,7 @@ class MultilingualChurchNameLocalizer(
     private val dictionaries: ChurchNameEnglishDictionaries,
     private val congregationTerms: CongregationTermDictionary,
     denominations: List<Denomination>,
+    denominationNames: Map<Language, Map<String, String>> = emptyMap(),
     geonames: Map<String, String>,
     multilingualGeonames: Map<String, Map<String, String>> = emptyMap(),
     branchGeonames: Set<String> = emptySet(),
@@ -56,16 +61,25 @@ class MultilingualChurchNameLocalizer(
         branchGeonames = branchGeonames,
         knownLatinAbbreviations = denominations.knownLatinAbbreviations(),
     )
+    private val excludedChurchNamePrefixes = denominations
+        .filterNot(Denomination::useAsChurchNamePrefix)
+        .flatMap { listOf(it.name) + it.aliases }
+        .filter(String::isNotBlank)
+        .sortedByDescending(String::length)
     private val japaneseTerms: List<MultilingualNameComponent> = buildJapaneseTerms(
         dictionaries,
         congregationTerms,
         denominations,
+        denominationNames,
         geonames,
         multilingualGeonames,
     )
 
     fun localize(title: String, evidencedLanguages: Collection<String> = emptyList()): LocalizedChurchNameResult {
-        val decomposed = decomposer.decompose(title)
+        val publicTitle = excludedChurchNamePrefixes.fold(title.trim()) { candidate, prefix ->
+            candidate.removePrefix(prefix).trimStart(' ', '　', '-', '–', '—', ':', '：')
+        }.ifBlank { title }
+        val decomposed = decomposer.decompose(publicTitle)
         val initialJapaneseName = requireNotNull(decomposed.japaneseName) { "No Japanese name composed for $title" }
         val japaneseComponents = analyzeJapanese(initialJapaneseName)
         val sourceLatinLanguage = decomposed.latinName?.let { latinName ->
@@ -225,6 +239,7 @@ class MultilingualChurchNameLocalizer(
         dictionaries: ChurchNameEnglishDictionaries,
         congregationTerms: CongregationTermDictionary,
         denominations: List<Denomination>,
+        denominationNames: Map<Language, Map<String, String>>,
         geonames: Map<String, String>,
         multilingualGeonames: Map<String, Map<String, String>>,
     ): List<MultilingualNameComponent> {
@@ -235,11 +250,12 @@ class MultilingualChurchNameLocalizer(
         val terms = linkedMapOf<String, MutableTerm>()
         fun rolePriority(role: MultilingualNameComponentRole): Int = when (role) {
             MultilingualNameComponentRole.DENOMINATION -> 0
-            MultilingualNameComponentRole.CHURCH_NAME -> 1
-            MultilingualNameComponentRole.CONGREGATION -> 2
-            MultilingualNameComponentRole.CONCEPT -> 3
-            MultilingualNameComponentRole.GEONAME -> 4
-            MultilingualNameComponentRole.OTHER -> 5
+            MultilingualNameComponentRole.TRADITION -> 1
+            MultilingualNameComponentRole.CHURCH_NAME -> 2
+            MultilingualNameComponentRole.CONGREGATION -> 3
+            MultilingualNameComponentRole.CONCEPT -> 4
+            MultilingualNameComponentRole.GEONAME -> 5
+            MultilingualNameComponentRole.OTHER -> 6
         }
         fun add(source: String, role: MultilingualNameComponentRole, targetLanguage: String, target: String) {
             if (source.isBlank() || target.isBlank()) return
@@ -249,8 +265,25 @@ class MultilingualChurchNameLocalizer(
         }
 
         denominations.forEach { denomination ->
+            if (!denomination.id.isDisplayableDenominationId() || !denomination.useAsChurchNamePrefix) return@forEach
             (listOf(denomination.name) + denomination.aliases).filter(String::isNotBlank).forEach { alias ->
-                add(alias, MultilingualNameComponentRole.DENOMINATION, "en", denomination.id)
+                supportedTargets.forEach { languageCode ->
+                    val language = requireNotNull(Language.fromCode(languageCode))
+                    val catalogName = denominationNames[language]?.get(denomination.id)
+                    val namePart = catalogName?.let { denominationNamePart(it, language) }
+                    val acronym = denomination.id.takeIf {
+                        language == Language.ENGLISH && it.matches(Regex("[A-Z][A-Z0-9]{1,8}"))
+                    }
+                    add(alias, MultilingualNameComponentRole.DENOMINATION, languageCode, acronym ?: namePart.orEmpty())
+                }
+            }
+        }
+        ChurchTradition.entries.forEach { tradition ->
+            tradition.aliases.filter { alias -> alias.any(::isJapaneseCharacter) }.forEach { alias ->
+                supportedTargets.forEach { languageCode ->
+                    val language = requireNotNull(Language.fromCode(languageCode))
+                    add(alias, MultilingualNameComponentRole.TRADITION, languageCode, tradition.namePart(language))
+                }
             }
         }
         geonames.forEach { (japanese, english) ->
@@ -285,4 +318,5 @@ class MultilingualChurchNameLocalizer(
 
     private fun isJapaneseCharacter(value: Char): Boolean =
         value in '\u3040'..'\u30ff' || value in '\u3400'..'\u9fff'
+
 }

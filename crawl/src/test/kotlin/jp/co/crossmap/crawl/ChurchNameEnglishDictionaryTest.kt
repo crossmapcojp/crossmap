@@ -66,7 +66,7 @@ class ChurchNameEnglishDictionaryTest {
             Denomination("JELC", "日本福音ルーテル教会"),
             Denomination("JEC", "日本福音教会", aliases = listOf("JEC")),
             Denomination("HCC", "ハレルヤコミュニティチャーチ", aliases = listOf("HCC")),
-            Denomination("XLSX_123", "架空の教団"),
+            Denomination("CATHOLIC_JP", "カトリック中央協議会"),
         )
 
         assertEquals(setOf("JELC", "JEC", "HCC"), denominations.knownLatinAbbreviations())

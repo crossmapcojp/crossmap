@@ -23,7 +23,7 @@ The three tiers are combined into one Lucene Boolean query. Lucene deduplicates 
 |------------------|--------------------:|------------------------------------------------------------------------------------------------------------------|
 | Exact whole name |         `1,000,000` | Put an exact church name first.                                                                                  |
 | All name tokens  |             `1,000` | Find expanded names that contain every query word.                                                               |
-| Geo/full-query   | normal field boosts | Find churches whose complete query matches across name, denomination, and geoname data inside the detected area. |
+| Geo/remainder    | normal field boosts | Find churches whose non-generic remainder matches `search_compact` inside the detected address entity.            |
 
 Scores determine ordering within each tier.
 
@@ -57,7 +57,7 @@ The exact-name normalization currently:
 
 It does not currently remove punctuation or perform approximate matching. Therefore an exact match means equality after only those normalization steps.
 
-Changing exact-name indexing requires incrementing `ChurchIndex.SCHEMA_VERSION` and rebuilding every language index. The current schema version is 7.
+Changing exact-name, compact-search, or address-entity indexing requires incrementing `ChurchIndex.SCHEMA_VERSION` and rebuilding every language index. The current schema version is 9.
 
 ## Tier 1: exact whole-name matching
 
@@ -79,7 +79,7 @@ Tokyo Baptist Church: TBC@Misato
 Shibuya Baptist Church
 ```
 
-The exact tier is intentionally not constrained by detected or device location. A user who provides the complete church name can therefore find that church even when it is outside the default device radius.
+Normally the exact tier is not constrained by detected or device location, so a complete church name can be found outside the default device radius. An explicit administrative name such as `横浜町`, `Yokohama-cho`, or `Yokohamacho` is authoritative: its exact address-entity filter is also applied to tiers 1 and 2. This prevents Kuromoji from splitting `横浜町` into `横浜` + `町` and returning churches in Kanagawa's much larger Yokohama City.
 
 ## Tier 2: all analyzed name tokens
 
@@ -101,13 +101,19 @@ Both names contain every query token:
 
 The exact name belongs to tier 1, so `東京第一バプテスト教会` is considered in tier 2.
 
-Generic church terms alone do not activate this unfiltered tier. For example, `教会`, `Church`, `교회`, `Igreja`, and `Gereja` proceed to the general/geo tier. This preserves browser and app location filtering for broad searches.
+Generic church terms alone and geoname-only queries do not activate this unfiltered tier. For example, `教会`, `Church`, `교회`, `Igreja`, `Gereja`, and an ambiguous `府中市` proceed to the general/geo tier. This preserves browser/app filtering for broad searches and ensures coordinates select only one same-named municipality.
 
-Like tier 1, tier 2 is not geo-filtered. Its purpose is to recognize a church name even if the name happens to include text that is also a geoname.
+Like tier 1, tier 2 is normally not geo-filtered. Its purpose is to recognize a church name even if the name happens to include text that is also a geoname. Explicit administrative names are the exception and filter this tier too.
 
 ## Geoname resolution
 
-`GeoNameResolver` examines the query using names and translations for the active query language. It prefers longer and more specific matches and can resolve more than one location.
+`GeoNameResolver` examines the query using names and translations for the active query language. It prefers longer matches and narrows geographic intent to at most one address entity.
+
+- A bare name shared by a prefecture and its capital city, such as `福岡` or `Fukuoka`, means the city.
+- An explicit suffix such as `福岡県`, `Fukuoka Prefecture`, or `Fukuoka-ken` means the prefecture.
+- Japanese administrative suffixes remain explicit when romanized, attached, hyphenated, or space-separated. Supported forms include `ken`, `to`, `do/dō`, `fu`, `shi`, `ku`, `cho/chō/chou`, `machi`, `mura`, `son`, and `gun`. For example, both `Yokohama-cho` and `Yokohamacho` select Aomori's `横浜町` and remove the complete suffixed form from the text remainder.
+- A unique prefecture, municipality, or ward selects that entity directly.
+- When multiple municipalities share a name, `detectIntendedGeonameFromUserLocation` selects the center nearest the browser/app coordinates. Without coordinates the resolver leaves the location ambiguous and the search remains text-only until the client can retry with location.
 
 For this query:
 
@@ -124,11 +130,13 @@ the English resolver recognizes `Tokyo` as the English translation of `東京都
 - a covering radius;
 - the canonical code and prefecture code.
 
-The resolver also calculates a remainder such as `Baptist Church`. That remainder is useful for diagnostics, but it is no longer used as the Lucene text query. The search response's `textQuery` contains the complete original query.
+The resolver also calculates a remainder such as `Baptist Church`. Tier 3 analyzes that remainder while the exact entity code preserves the removed geographic intent. The public search response's `textQuery` still contains the complete original query.
 
-## Tier 3: full-query geo search
+## Tier 3: address-entity and remainder search
 
-The geo tier uses the entire original query, including the recognized geoname.
+The exact and all-name-token tiers use the entire original query. In the geo tier, the recognized geoname is represented losslessly by the exact address-entity code filter, while the remaining distinctive words form the scored text query. Generic church words (`教会`, `church`, `교회`, `igreja`, `gereja`, and equivalents) are removed from this tier because they occur in nearly every document and made Lucene traverse a large posting list without adding useful discrimination. Thus `Tokyo Baptist Church` becomes exact Tokyo code + `baptist`; it never becomes an unrestricted `Baptist Church` search or the former union of municipality clauses.
+
+The exception is a geoname-only query such as `Tokyo` or `東京`. Its text branch is `MatchAllDocsQuery`; the single exact address-entity filter supplies the complete intent, so every church in that city/prefecture can be returned even when its name does not contain the geoname.
 
 For example:
 
@@ -142,54 +150,39 @@ is analyzed as approximately:
 tokyo / baptist / church
 ```
 
-Every token is required, but different tokens may match different fields. The principal fields and boosts are:
+Every remaining distinctive token is required in the schema-9 `search_compact` field. That field contains current-language names, translated title/address geonames, and translated denomination names; Japanese additionally contains category and full address. Website and social text are a separate conditional fallback.
 
-| Field                   | Boost | Notes                                                                                 |
-|-------------------------|------:|---------------------------------------------------------------------------------------|
-| Church name             |     8 | Localized name for the active index.                                                  |
-| Language-specific name  |     8 | For example, `name_en`.                                                               |
-| Translated geoname      |     6 | Geonames found in the Google title or Japanese address and translated for this index. |
-| Translated denomination |     5 | Denomination name in the active language.                                             |
-| Japanese category       |     5 | Japanese index only.                                                                  |
-| Japanese address        |     3 | Japanese index only.                                                                  |
-| Crawled website content |     1 | Japanese index only.                                                                  |
-| Social metadata         |     1 | Japanese index only.                                                                  |
+| Field            | Boost | Notes                                                                                                     |
+|------------------|------:|-----------------------------------------------------------------------------------------------------------|
+| `search_compact` |     1 | Fast combined name, translated geoname, denomination, and Japanese category/address field.               |
+| `content`        |     1 | Japanese crawled-page fallback, executed only if tiers 1–3 cannot fill the requested page.               |
+| `social`         |     1 | Japanese social-metadata fallback under the same condition.                                               |
 
 This allows a church such as `Shibuya Baptist Church` to match as follows:
 
 ```text
-tokyo   -> translated address geoname
-baptist -> church name
-church  -> church name
+Tokyo code -> exact address_geoname_code filter
+baptist    -> search_compact
+church     -> removed as a non-discriminating generic token
 ```
 
-Text matching is not sufficient. The church's latitude and longitude must also pass the Lucene geo filter for Tokyo.
+Text matching is not sufficient. The church's normalized address must also contain the selected canonical address-entity code.
 
 An Osaka church fails the Tokyo geo stage even if its name contains `Baptist Church`, because it does not have the Tokyo geoname and its coordinates are outside the resolved Tokyo area.
 
-## Coordinate filtering
+## Exact normalized-address filtering
 
-Every `ChurchRecord` has a Lucene `LatLonPoint` and `LatLonDocValuesField`.
+Every document stores exact tags produced by `JapaneseAddressNormalizer`: prefecture/code, county, municipality/code, designated-city ward/code, Kyoto street expression, locality, address number, building, and a repeated `address_geoname_code` field. A named geoname creates exactly one `TermQuery` filter against that code. There is no prefecture expansion, distance-circle union, or language-specific address guard.
 
-For a municipality or ward, the engine creates one `LatLonPoint.newDistanceQuery` using that location's center and covering radius.
+The crawl `normalize-addresses` stage first uses the locally cloned Geolonia normalizer and records its level (0/1/2/3/8), then enriches the result with Crossmap's typed decomposition and geoname codes. The canonical catalog combines GeoNames and JMA municipality data, including designated-city wards such as Tokyo `中央区` (`131024`) and Fukuoka `中央区` (`401331`). The normalization cache records a geoname-catalog SHA-256; when only that catalog changes, cached Geolonia output is re-enriched locally rather than invoking Node again. The deterministic Kotlin normalizer remains the index-build fallback when a cached Geolonia result is absent or failed.
 
-For a prefecture, the engine expands the prefecture into its known municipalities and wards and creates a union of their distance queries. A church passes if it is inside at least one area.
-
-The catalog can mark a municipality as excluded from its parent prefecture's implicit search area while leaving the municipality independently searchable. Tokyo uses this for its nine remote island municipalities. Consequently, an ordinary `Tokyo` or `東京都` query uses the mainland Tokyo geometry (currently about a 53.5 km covering radius and 53 municipality/ward areas), while an explicit `小笠原村` query still searches Ogasawara normally. This represents typical user intent and avoids a roughly 995 km Tokyo circle covering most of Japan.
-
-If a query resolves multiple locations, their geo areas are also combined as a union.
-
-### Japanese address guard
-
-The Japanese index adds an address filter for non-device locations. The address must contain the resolved canonical Japanese place name. This reduces false positives near prefecture or municipality borders.
-
-The matched geoname text is also added as an optional boosted name clause, so a church whose name explicitly contains the requested place may rank above another church in the same area.
+The exact and all-name tiers already reward a church whose name contains the place. Tier 3 therefore does not add a redundant optional geoname-name scorer; every document in that tier already has the selected exact entity code.
 
 ## Device-location fallback
 
 When the query contains no recognized geoname, the browser or app may supply the user's coordinates.
 
-The engine then creates a synthetic `DEVICE` location with a default radius of 25 km unless the request specifies another radius. The general search tier is constrained by this circle.
+The engine then creates a synthetic `DEVICE` location with a default radius of 25 km unless the request specifies another radius. This is the only case that uses `LatLonPoint.newDistanceQuery`; named geonames never use radius filtering.
 
 Broad generic name queries skip tier 2 so that a query such as `Church` or `教会` does not bypass the device-location filter.
 
@@ -221,11 +214,11 @@ the pipeline is:
 ```text
 1. Detect English query language.
 2. Open the English index.
-3. Resolve Tokyo -> 東京都 and its geo areas.
+3. Resolve Tokyo to one intended address entity and code.
 4. Run exact whole-name query.
 5. Run all-name-token query using Tokyo + Baptist + Church.
-6. Run the full-query field search using Tokyo + Baptist + Church.
-7. Apply the Tokyo coordinate filter to tier 3.
+6. Run the compact remainder search using Baptist; omit the generic word Church.
+7. Apply one exact `address_geoname_code` filter to tier 3.
 8. Merge the tiers with exact and all-token boosts.
 9. Deduplicate, paginate, decode ChurchRecord JSON, and calculate distance.
 ```
@@ -235,7 +228,7 @@ Expected ranking shape:
 ```text
 First tier:  Tokyo Baptist Church
 Second tier: Tokyo First Baptist Church and other names containing all tokens
-Third tier:  churches in the Tokyo area whose name/geoname fields collectively match all tokens
+Third tier:  churches with the Tokyo address code whose compact metadata contains Baptist
 ```
 
 ## Query-plan logging
@@ -244,9 +237,9 @@ Every search writes an INFO-level `search-query-plan` entry before it executes. 
 
 - the original term, detected language, selected analyzer, pagination, and optional title-language filter;
 - analyzed tokens and the AND operator used to combine them;
-- every resolved geoname, its feature type, code, center, and radius;
+- candidate geonames, the selection reason, and the one selected feature type/code;
 - the exact-name term, all-token tier status, searchable fields, and boosts;
-- the tier-3 geo areas, Japanese address guard, and final merge/deduplication rule.
+- the tier-3 exact-address or device-radius filter and final merge/deduplication rule.
 
 For example, `Tokyo Baptist Church` produces a plan shaped like:
 
@@ -258,15 +251,33 @@ search-query-plan:
   analysis.geonameRemainder=baptist church
   analysis.locations=[tokyo -> 東京都(PREFECTURE, code=13, center=35.6895,139.6917, radiusKm=...)]
   tier.1.type=EXACT_NAME boost=1000000.0 field=name_exact term=tokyo baptist church geoFilter=false
-  tier.2.type=ALL_NAME_TOKENS boost=1000.0 enabled=true tokens=[tokyo, baptist, church] fields=[name^8.0, name_en^8.0] geoFilter=false
-  tier.3.type=FULL_QUERY_GEO boost=normal tokens=[tokyo, baptist, church] fields=[name^8.0, name_en^8.0, geoname^6.0, denomination^5.0]
-  tier.3.geoFilter=true areas=東京都 (... area(s))
+  tier.2.type=ALL_NAME_TOKENS boost=1000.0 enabled=true tokens=[tokyo, baptist, church] fields=[name^8.0] geoFilter=false
+  analysis.explicitAdministrativeName=false
+  tier.3.type=ADDRESS_ENTITY_REMAINDER boost=normal tokens=[baptist] fields=[search_compact^1.0]
+  tier.3.geoFilter=true filter=EXACT_ADDRESS_ENTITY field=address_geoname_code code=13
   merge=SHOULD(tier.1,tier.2,tier.3) minimumShouldMatch=1 deduplicate=true
 ```
 
 The CLI and server route logs to standard error, so CLI `--json` output on standard output remains valid JSON. Android and iOS use their platform logging sink.
 
 INFO deliberately shows the compact semantic plan rather than the potentially large Lucene query tree. Set `jp.co.crossmap.ChurchSearchEngine` to TRACE in the applicable Logback configuration when the exact generated Lucene queries are needed; the `search-query-lucene` entry then contains all three tier queries and the merged Boolean query.
+
+### Search timing logs
+
+Every successful search emits two monotonic timing reports. Durations use `TimeSource.Monotonic`, and every line includes its percentage of the relevant total.
+
+`search-timing` covers the shared engine:
+
+- request validation and logging;
+- geoname resolution and single-entity selection;
+- query-plan rendering, tier construction, and tier merging;
+- acquisition of the warmed, long-lived index searcher;
+- `lucene.collect.fastTiers`, which executes the merged query once and collects/counts the requested page;
+- stored-record decoding, matched-page generation, and response construction.
+
+`search-http-timing` covers the Ktor request from route entry through `call.respond`: reading the query, language detection, engine selection, option parsing, shared-engine execution, and response serialization/sending. The normal `search-response` line also includes the end-to-end duration.
+
+`other` is the small amount of uninstrumented control-flow overhead. The interactive acceptance target is at most 1 second end to end, preferably at most 0.5 second. The server warms one long-lived reader/searcher per language at startup. After replacing the former 53-area Tokyo filter, consolidating search fields, collecting tiers once, and dropping generic tier-3 terms, the real Ktor + schema-9 snapshot + JSON path measured 449 ms, 420 ms, and 381 ms for three warm `東京バプテスト教会` requests on 2026-07-18. `LightPandaSearchE2ETest` fails if any warm sample reaches one second.
 
 ## Current limitations and improvement candidates
 
@@ -275,13 +286,13 @@ These are useful areas to evaluate when improving search quality:
 1. **Exact normalization**: consider NFKC, punctuation rules, apostrophe variants, and reviewed aliases without weakening "no more, no less" semantics.
 2. **Fixed tier boosts**: the current large numeric boosts are simple and effective, but explicit staged collection could express the tier contract without relying on score ranges.
 3. **Within-tier ordering**: all-token candidates are ordered by Lucene relevance, not edit distance or the number and position of extra tokens. A closer-name reranker could improve this.
-4. **Prefecture-query performance**: a prefecture can expand into many distance queries. Benchmark clustering, bounding shapes, cached filters, and other lucene-kmp geo representations.
-5. **Geo ambiguity**: a word such as `Tokyo` can be part of an official organization name rather than a user's intended location. Exact and all-token tiers protect name lookup, but the geo intent itself remains implicit.
+4. **Exact address coverage**: monitor normalization level/error reports and geoname-code coverage; missing codes make the named-location tier intentionally conservative.
+5. **Geo ambiguity**: continue testing same-name municipalities and clients that deny coordinates. Explicit administrative names constrain every tier; bare place-like text preserves exact/all-token church-name lookup.
 6. **Translated address coverage**: non-Japanese indexes depend on translated geonames extracted from Japanese titles and addresses. Missing translations reduce recall.
-7. **Address guard consistency**: the additional canonical-address filter currently exists only for Japanese.
+7. **Address translations**: exact entity codes are language-neutral, while translated address terms still affect text recall.
 8. **Device-location policy**: exact and distinctive all-token names intentionally bypass device radius, while generic queries do not. This policy should remain covered by UX tests.
 9. **Distance meaning**: prefecture distance is measured from its configured center, not from the nearest municipality center or boundary.
-10. **Reader and filter reuse**: the engine currently opens the index for each request. Long-lived readers and cached geo filters may reduce server and device latency.
+10. **Snapshot refresh**: each immutable engine keeps a long-lived reader. A server snapshot swap must construct/warm the replacement before closing the old engine.
 11. **Evaluation corpus**: continue adding real queries, expected ranking tiers, no-result cases, multilingual names, ambiguous geonames, and pagination assertions.
 
 Any ranking change should be tested at minimum in `ChurchSearchEngineTest`, the `cm` Clikt scenarios, Ktor tests, and the Lightpanda browser flow. Index-field changes require a schema bump and a complete snapshot rebuild.

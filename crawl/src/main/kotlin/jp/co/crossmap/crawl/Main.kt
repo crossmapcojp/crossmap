@@ -15,6 +15,7 @@ import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.time.Instant
 import jp.co.crossmap.ChurchRecord
+import jp.co.crossmap.GeoName as SearchGeoName
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -96,6 +97,7 @@ private class ResolveGoogleSavedPlaces : CrawlCommand("resolve-google-saved-plac
             dictionaries = dictionaries,
             congregationTerms = CongregationTermDictionary.load(root),
             denominations = denominations,
+            denominationNames = DenominationNameCatalogFiles.load(root),
             geonames = nameGeonames,
             multilingualGeonames = mergeReviewedChurchGeoNames(
                 createGeoName(paths).readMultilingualLexicon(paths.geoNameMultilingualLexicon),
@@ -108,7 +110,7 @@ private class ResolveGoogleSavedPlaces : CrawlCommand("resolve-google-saved-plac
         audit.setting("offline", offline)
         val report = GoogleMapsPlaceResolver(
             pageSource = CachedGoogleMapsPageSource(paths.googleMapsPages, allowNetwork = !offline),
-            parser = GoogleMapsPlaceParser(localizer),
+            parser = GoogleMapsPlaceParser(localizer, ExcludedChurchListingDomains.policy(root)),
             maxConcurrency = concurrency,
         ).resolve(root, paths.cacheRoot)
         audit.metric("seeds", report.seeds)
@@ -506,6 +508,74 @@ private class BuildSnapshot : CrawlCommand("build-snapshot", CrawlReport.BUILD_S
     }
 }
 
+private class NormalizeAddresses : CrawlCommand("normalize-addresses", CrawlReport.ADDRESS_NORMALIZATION) {
+    private val resources by option("--resources").default("resources")
+    private val normalizerDirectory by option(
+        "--normalizer-dir",
+        help = "Local clone of Geolonia normalize-japanese-addresses",
+    )
+    private val concurrency by option("--concurrency").int().default(4)
+
+    override fun execute(audit: CrawlCommandAudit) {
+        val root = Path.of(resources)
+        val paths = CrossmapPaths(root)
+        val localNormalizer = GeoloniaNormalizerInput.resolve(normalizerDirectory) ?: throw UsageError(
+            "Geolonia normalizer is not configured. Set ${GeoloniaNormalizerInput.PROPERTY} in local.properties " +
+                "or pass --normalizer-dir.",
+        )
+        val churches = json.decodeFromString<List<ChurchRecord>>(Files.readString(paths.churchCatalog))
+        val geonames = json.decodeFromString<List<SearchGeoName>>(Files.readString(paths.geonames))
+        val runner = projectLogsDirectory().parent.resolve("crawl/scripts/geolonia-normalize.mjs")
+        audit.input("church_catalog", paths.churchCatalog.toAbsolutePath().normalize())
+        audit.input("geonames", paths.geonames.toAbsolutePath().normalize())
+        audit.input("local_geolonia", localNormalizer)
+        audit.setting("concurrency", concurrency)
+        val report = JapaneseAddressNormalizationPipeline(
+            LocalGeoloniaAddressNormalizer(localNormalizer, runner, concurrency),
+        ).normalize(churches, geonames, paths.normalizedChurchAddresses)
+        audit.metric("churches", report.entries.size)
+        audit.metric("cache_reused", report.reused)
+        audit.metric("cache_reenriched_for_geonames", report.reEnriched)
+        audit.metric("success", report.entries.size - report.errors.size)
+        audit.metric("failed", report.errors.size)
+        listOf(0, 1, 2, 3, 8).forEach { level ->
+            audit.metric("level.$level.${addressNormalizationLevelName(level)}", report.levelCounts[level] ?: 0)
+        }
+        report.entries.forEachIndexed { index, entry ->
+            audit.detail(
+                "church_${index + 1}",
+                listOf(
+                    "id=${entry.churchId}",
+                    "name=${entry.churchName}",
+                    "status=${entry.status}",
+                    "level=${entry.level}:${entry.levelName}",
+                    "original=${entry.originalAddress}",
+                    "normalized=${entry.normalizedAddress.normalized}",
+                    "prefecture=${entry.normalizedAddress.prefecture.orEmpty()}",
+                    "municipality=${entry.normalizedAddress.municipality.orEmpty()}",
+                    "ward=${entry.normalizedAddress.cityWard.orEmpty()}",
+                    "locality=${entry.normalizedAddress.locality.orEmpty()}",
+                    "number=${entry.normalizedAddress.addressNumber.orEmpty()}",
+                    "building=${entry.normalizedAddress.building.orEmpty()}",
+                    "error=${entry.error.orEmpty()}",
+                ).joinToString("|"),
+            )
+        }
+        report.errors.forEachIndexed { index, entry ->
+            audit.detail(
+                "error_${index + 1}",
+                "id=${entry.churchId}|name=${entry.churchName}|address=${entry.originalAddress}|" +
+                    "level=${entry.level}:${entry.levelName}|error=${entry.error.orEmpty()}",
+            )
+        }
+        audit.output("normalized_addresses", paths.normalizedChurchAddresses.toAbsolutePath().normalize())
+        echo(
+            "Normalized ${report.entries.size - report.errors.size}/${report.entries.size} church addresses; " +
+                "levels=${report.levelCounts}, errors=${report.errors.size}",
+        )
+    }
+}
+
 private class CrawlDenominationDirectories : CrawlCommand("crawl-denomination-directories", CrawlReport.CRAWL_DENOMINATION_DIRECTORIES) {
     private val resources by option("--resources").default("resources")
     override fun execute(audit: CrawlCommandAudit) {
@@ -517,6 +587,7 @@ private class CrawlDenominationDirectories : CrawlCommand("crawl-denomination-di
         audit.metric("pages", report.pages)
         audit.metric("candidates", report.candidates)
         audit.metric("errors", report.errors)
+        audit.metric("excluded_urls", report.excludedUrls)
         audit.output("candidates", paths.cleanup.resolve("denomination-candidates.json").toAbsolutePath().normalize())
         echo("Crawled ${report.sources} denomination sources / ${report.pages} pages: ${report.candidates} candidates, ${report.errors} errors")
     }
@@ -1100,5 +1171,5 @@ private class PopulateDenominationEnglishNames : CrawlCommand("denomination-engl
 
 fun main(args: Array<String>) = Crawl().subcommands(
     ReadGoogleSavedPlaces(), ResolveGoogleSavedPlaces(), PromoteGoogleSavedPlaces(), Refresh(), CrawlDenominationDirectories(), BuildGeonames(), CleanupLlm(), OverrideDenomination(), LinkSocial(),
-    PopulateEnglishNames(), AnalyzeEnglishNames(), PopulateDenominationEnglishNames(), PrepareGeoNameCache(), BuildChurchGeonames(), BuildSnapshot(),
+    PopulateEnglishNames(), AnalyzeEnglishNames(), PopulateDenominationEnglishNames(), PrepareGeoNameCache(), BuildChurchGeonames(), NormalizeAddresses(), BuildSnapshot(),
 ).main(args)

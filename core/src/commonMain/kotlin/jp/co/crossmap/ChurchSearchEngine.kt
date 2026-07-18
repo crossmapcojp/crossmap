@@ -8,7 +8,6 @@ import org.gnit.lucenekmp.document.LatLonPoint
 import org.gnit.lucenekmp.index.StandardDirectoryReader
 import org.gnit.lucenekmp.index.Term
 import org.gnit.lucenekmp.queryparser.classic.MultiFieldQueryParser
-import org.gnit.lucenekmp.queryparser.classic.QueryParser
 import org.gnit.lucenekmp.search.BooleanClause
 import org.gnit.lucenekmp.search.BooleanQuery
 import org.gnit.lucenekmp.search.BoostQuery
@@ -17,8 +16,27 @@ import org.gnit.lucenekmp.search.MatchAllDocsQuery
 import org.gnit.lucenekmp.search.Query
 import org.gnit.lucenekmp.search.TermQuery
 import org.gnit.lucenekmp.store.FSDirectory
+import kotlin.math.roundToInt
+import kotlin.time.Duration
+import kotlin.time.TimeSource
 
 private val logger = KotlinLogging.logger {}
+
+internal fun renderSearchTiming(timings: Map<String, Duration>, total: Duration): String {
+    val totalNanoseconds = total.inWholeNanoseconds.coerceAtLeast(1L)
+    fun percentage(duration: Duration): Double =
+        ((duration.inWholeNanoseconds.toDouble() / totalNanoseconds * 1_000.0).roundToInt() / 10.0)
+    val measured = timings.values.fold(Duration.ZERO) { accumulated, duration -> accumulated + duration }
+    val other = (total - measured).coerceAtLeast(Duration.ZERO)
+    return buildString {
+        appendLine("search-timing:")
+        timings.forEach { (name, duration) ->
+            appendLine("  $name=$duration (${percentage(duration)}%)")
+        }
+        appendLine("  other=$other (${percentage(other)}%)")
+        append("  total=$total (100.0%)")
+    }
+}
 
 class ChurchSearchEngine(
     private val indexPath: Path,
@@ -31,124 +49,184 @@ class ChurchSearchEngine(
     private val json = Json { ignoreUnknownKeys = true }
     private val normalizedLanguage = languageCode.substringBefore('-').lowercase()
     private val analyzer = ChurchIndex.analyzer(normalizedLanguage)
+    private val directoryHolder = lazy { FSDirectory.open(indexPath) }
+    private val readerHolder = lazy { StandardDirectoryReader.open(directoryHolder.value, null, null) }
+    private val searcherHolder = lazy { IndexSearcher(readerHolder.value) }
 
     fun church(churchId: String): ChurchDetailResponse? {
-        val directory = FSDirectory.open(indexPath)
-        return try {
-            StandardDirectoryReader.open(directory, null, null).use { reader ->
-                val searcher = IndexSearcher(reader)
-                val scoreDoc = searcher.search(TermQuery(Term(ChurchIndex.FIELD_ID, churchId)), 1).scoreDocs.firstOrNull()
-                    ?: return@use null
-                val recordJson = requireNotNull(searcher.storedFields().document(scoreDoc.doc).get(ChurchIndex.FIELD_RECORD))
-                val record = json.decodeFromString<ChurchRecord>(recordJson)
-                ChurchDetailResponse(
-                    indexVersion = indexVersion,
-                    churchId = record.id,
-                    name = record.name,
-                    englishName = record.englishName,
-                    localizedNames = record.localizedNames,
-                    localizedDenominationNames = record.localizedDenominationNames,
-                    titleLanguages = record.titleLanguages,
-                    denominationId = record.denominationId,
-                    category = record.category,
-                    address = record.address,
-                    location = record.location,
-                    websiteUrl = record.websiteUrl,
-                    socialProfiles = record.socialProfiles,
-                )
-            }
-        } finally {
-            directory.close()
-        }
+        val searcher = searcherHolder.value
+        val scoreDoc = searcher.search(TermQuery(Term(ChurchIndex.FIELD_ID, churchId)), 1).scoreDocs.firstOrNull()
+            ?: return null
+        val recordJson = requireNotNull(searcher.storedFields().document(scoreDoc.doc).get(ChurchIndex.FIELD_RECORD))
+        val record = json.decodeFromString<ChurchRecord>(recordJson)
+        return ChurchDetailResponse(
+            indexVersion = indexVersion,
+            churchId = record.id,
+            name = record.name,
+            englishName = record.englishName,
+            localizedNames = record.localizedNames,
+            localizedDenominationNames = record.localizedDenominationNames,
+            titleLanguages = record.titleLanguages,
+            denominationId = record.denominationId,
+            category = record.category,
+            address = record.address,
+            location = record.location,
+            websiteUrl = record.websiteUrl,
+            socialProfiles = record.socialProfiles,
+        )
+    }
+
+    /** Opens and touches the immutable snapshot so the first user request does not pay index startup cost. */
+    fun warmUp() {
+        searcherHolder.value.search(MatchAllDocsQuery(), 1)
+    }
+
+    fun close() {
+        if (readerHolder.isInitialized()) readerHolder.value.close()
+        if (directoryHolder.isInitialized()) directoryHolder.value.close()
     }
 
     fun search(request: ChurchSearchRequest): ChurchSearchResponse {
-        require(request.query.isNotBlank()) { "query must not be blank" }
-        require(request.offset >= 0) { "offset must not be negative" }
-        require(request.limit in 1..100) { "limit must be between 1 and 100" }
-        require(request.radiusKm == null || request.radiusKm > 0.0) { "radiusKm must be positive" }
-
-        logger.info { "search: query='${request.query}', lang=$languageCode, offset=${request.offset}, limit=${request.limit}, radiusKm=${request.radiusKm}, userLocation=${request.userLocation}, titleLanguages=${request.titleLanguages}" }
-
-        val resolved = resolveRequest(request)
-        val geoAreaLocations = resolved.locations.flatMap(::geoAreas)
-        logger.info { renderQueryPlan(request, resolved, geoAreaLocations) }
-        val directory = FSDirectory.open(indexPath)
-        return try {
-            StandardDirectoryReader.open(directory, null, null).use { reader ->
-            val searcher = IndexSearcher(reader)
-            val queries = buildQueries(request.query, resolved, geoAreaLocations, request.titleLanguages)
-            val requestedHits = maxOf(1, request.offset + request.limit)
-            val mergedQuery = BooleanQuery.Builder().apply {
-                add(BoostQuery(queries[0], EXACT_NAME_STAGE_BOOST), BooleanClause.Occur.SHOULD)
-                add(BoostQuery(queries[1], ALL_NAME_TOKENS_STAGE_BOOST), BooleanClause.Occur.SHOULD)
-                add(queries[2], BooleanClause.Occur.SHOULD)
-                setMinimumNumberShouldMatch(1)
-            }.build()
-            logger.trace {
-                "search-query-lucene:\n" +
-                    "  tier.1=${queries[0]}\n" +
-                    "  tier.2=${queries[1]}\n" +
-                    "  tier.3=${queries[2]}\n" +
-                    "  merged=$mergedQuery"
+        val timeSource = TimeSource.Monotonic
+        val totalMark = timeSource.markNow()
+        val timings = linkedMapOf<String, Duration>()
+        fun <T> measured(name: String, block: () -> T): T {
+            val mark = timeSource.markNow()
+            return try {
+                block()
+            } finally {
+                timings[name] = mark.elapsedNow()
             }
-            val topDocs = searcher.search(mergedQuery, requestedHits)
-            val orderedScoreDocs = topDocs.scoreDocs.toList()
-            val totalHits = topDocs.totalHits.value
-            val storedFields = searcher.storedFields()
-            val hits = orderedScoreDocs.drop(request.offset).take(request.limit).map { scoreDoc ->
-                val recordJson = requireNotNull(storedFields.document(scoreDoc.doc).get(ChurchIndex.FIELD_RECORD))
-                val record = json.decodeFromString<ChurchRecord>(recordJson)
-                val distance = resolved.locations.minOfOrNull {
-                    GeoNameResolver.distanceKm(it.center, record.location)
-                }
-                ChurchSearchHit(
-                    churchId = record.id,
-                    name = record.name,
-                    englishName = record.englishName,
-                    localizedNames = record.localizedNames,
-                    localizedDenominationNames = record.localizedDenominationNames,
-                    titleLanguages = record.titleLanguages,
-                    denominationId = record.denominationId,
-                    category = record.category,
-                    address = record.address,
-                    location = record.location,
-                    websiteUrl = record.websiteUrl,
-                    score = scoreDoc.score,
-                    distanceKm = distance,
-                    matchedPages = matchingPages(record.pages, request.query),
-                    socialProfiles = record.socialProfiles,
-                    detailUrl = churchPageUrls[record.id],
-                )
-            }
-            val response = ChurchSearchResponse(
-                indexVersion = indexVersion,
-                query = request.query,
-                textQuery = request.query.trim(),
-                resolvedLocations = resolved.locations,
-                total = totalHits,
-                offset = request.offset,
-                limit = request.limit,
-                hits = hits,
+        }
+
+        measured("request.validate") {
+            require(request.query.isNotBlank()) { "query must not be blank" }
+            require(request.offset >= 0) { "offset must not be negative" }
+            require(request.limit in 1..100) { "limit must be between 1 and 100" }
+            require(request.radiusKm == null || request.radiusKm > 0.0) { "radiusKm must be positive" }
+        }
+        measured("logging.request") {
+            logger.info { "search: query='${request.query}', lang=$languageCode, offset=${request.offset}, limit=${request.limit}, radiusKm=${request.radiusKm}, userLocation=${request.userLocation}, titleLanguages=${request.titleLanguages}" }
+        }
+
+        val resolved = measured("geoname.resolve") { resolveRequest(request) }
+        val analysis = measured("query.analyze") {
+            QueryAnalysis(
+                fullTokens = analyzedTokens(request.query),
+                remainderTokens = analyzedTokens(resolved.textQuery),
             )
-            logger.info { "search: total=$totalHits, returned=${hits.size}" }
-            hits.forEach { hit ->
+        }
+        measured("logging.queryPlan") { logger.info { renderQueryPlan(request, resolved, analysis) } }
+        val searcher = measured("index.acquireSearcher") { searcherHolder.value }
+        val response = run {
+                val queries = measured("query.buildTiers") {
+                    buildQueries(request.query, resolved, request.titleLanguages, analysis)
+                }
+                val requestedHits = maxOf(1, request.offset + request.limit)
+                val mergedQuery = measured("query.mergeTiers") {
+                    BooleanQuery.Builder().apply {
+                        add(BoostQuery(queries[0], EXACT_NAME_STAGE_BOOST), BooleanClause.Occur.SHOULD)
+                        add(BoostQuery(queries[1], ALL_NAME_TOKENS_STAGE_BOOST), BooleanClause.Occur.SHOULD)
+                        add(queries[2], BooleanClause.Occur.SHOULD)
+                        setMinimumNumberShouldMatch(1)
+                    }.build()
+                }
+                measured("logging.luceneQuery") {
+                    logger.trace {
+                        "search-query-lucene:\n" +
+                            "  tier.1=${queries[0]}\n" +
+                            "  tier.2=${queries[1]}\n" +
+                            "  tier.3=${queries[2]}\n" +
+                            "  tier.4=${queries[3]}\n" +
+                            "  merged=$mergedQuery"
+                    }
+                }
+                val fastDocs = measured("lucene.collect.fastTiers") { searcher.search(mergedQuery, requestedHits) }
+                val fastTotalHits = fastDocs.totalHits.value
+                val finalDocs = if (fastTotalHits < requestedHits.toLong()) {
+                    val withContentFallback = measured("query.addContentFallback") {
+                        BooleanQuery.Builder().apply {
+                            add(mergedQuery, BooleanClause.Occur.SHOULD)
+                            add(queries[3], BooleanClause.Occur.SHOULD)
+                            setMinimumNumberShouldMatch(1)
+                        }.build()
+                    }
+                    measured("lucene.collect.withContentFallback") { searcher.search(withContentFallback, requestedHits) }
+                } else {
+                    fastDocs
+                }
+                val totalHits = finalDocs.totalHits.value
+                val storedFields = searcher.storedFields()
+                val hits = measured("results.decode") {
+                    finalDocs.scoreDocs.drop(request.offset).take(request.limit).map { scoreDoc ->
+                        val recordJson = requireNotNull(storedFields.document(scoreDoc.doc).get(ChurchIndex.FIELD_RECORD))
+                        val record = json.decodeFromString<ChurchRecord>(recordJson)
+                        val distance = resolved.locations.minOfOrNull {
+                            GeoNameResolver.distanceKm(it.center, record.location)
+                        }
+                        ChurchSearchHit(
+                            churchId = record.id,
+                            name = record.name,
+                            englishName = record.englishName,
+                            localizedNames = record.localizedNames,
+                            localizedDenominationNames = record.localizedDenominationNames,
+                            titleLanguages = record.titleLanguages,
+                            denominationId = record.denominationId,
+                            category = record.category,
+                            address = record.address,
+                            location = record.location,
+                            websiteUrl = record.websiteUrl,
+                            score = scoreDoc.score,
+                            distanceKm = distance,
+                            matchedPages = matchingPages(record.pages, request.query),
+                            socialProfiles = record.socialProfiles,
+                            detailUrl = churchPageUrls[record.id],
+                        )
+                    }
+                }
+                measured("response.build") {
+                    ChurchSearchResponse(
+                        indexVersion = indexVersion,
+                        query = request.query,
+                        textQuery = request.query.trim(),
+                        resolvedLocations = resolved.locations,
+                        total = totalHits,
+                        offset = request.offset,
+                        limit = request.limit,
+                        hits = hits,
+                    )
+                }
+        }
+        measured("logging.results") {
+            logger.info { "search: total=${response.total}, returned=${response.hits.size}" }
+            response.hits.forEach { hit ->
                 logger.trace { "search: hit id=${hit.churchId}, name='${hit.name}', english='${hit.englishName}', score=${hit.score}, distance=${hit.distanceKm}km, pages=${hit.matchedPages.size}" }
             }
-            response
-            }
-        } finally {
-            directory.close()
         }
+        val total = totalMark.elapsedNow()
+        logger.info { renderSearchTiming(timings, total) }
+        return response
     }
 
     internal fun explainQuery(request: ChurchSearchRequest): String {
         val resolved = resolveRequest(request)
-        return renderQueryPlan(request, resolved, resolved.locations.flatMap(::geoAreas))
+        return renderQueryPlan(
+            request,
+            resolved,
+            QueryAnalysis(
+                fullTokens = analyzedTokens(request.query),
+                remainderTokens = analyzedTokens(resolved.textQuery),
+            ),
+        )
     }
 
     private fun resolveRequest(request: ChurchSearchRequest): ResolvedGeoQuery {
-        var resolved = resolver.resolve(request.query, request.radiusKm, normalizedLanguage)
+        var resolved = resolver.resolve(
+            request.query,
+            request.radiusKm,
+            normalizedLanguage,
+            request.userLocation,
+        )
         if (resolved.locations.isEmpty() && request.userLocation != null) {
             resolved = resolved.copy(
                 locations = listOf(
@@ -173,88 +251,113 @@ class ChurchSearchEngine(
     private fun buildQueries(
         fullQuery: String,
         resolved: ResolvedGeoQuery,
-        geoAreaLocations: List<ResolvedLocation>,
         titleLanguages: List<String>,
+        analysis: QueryAnalysis,
     ): List<Query> {
-        val exact = buildExactNameQuery(fullQuery, titleLanguages)
-        val allNameTokens = buildAllNameTokensQuery(fullQuery, titleLanguages)
-        val general = buildGeneralQuery(fullQuery, resolved, geoAreaLocations, titleLanguages)
+        val exact = buildExactNameQuery(fullQuery, resolved, titleLanguages)
+        val allNameTokens = buildAllNameTokensQuery(analysis, resolved, titleLanguages)
+        val general = buildGeneralQuery(
+            fullQuery,
+            resolved,
+            titleLanguages,
+            analysis,
+            addGeonameNameBoost = false,
+        )
+        val contentFallback = buildGeneralQuery(
+            fullQuery,
+            resolved,
+            titleLanguages,
+            analysis,
+            fields = contentFallbackFields(),
+            matchAllForGeonameOnly = false,
+            addGeonameNameBoost = false,
+        )
         return listOf(
             exact,
             allNameTokens,
             general,
+            contentFallback,
         )
     }
 
-    private fun buildExactNameQuery(fullQuery: String, titleLanguages: List<String>): Query = withTitleLanguageFilter(
-        TermQuery(Term(ChurchIndex.FIELD_NAME_EXACT, ChurchIndex.normalizeExactName(fullQuery))),
-        titleLanguages,
+    private fun buildExactNameQuery(
+        fullQuery: String,
+        resolved: ResolvedGeoQuery,
+        titleLanguages: List<String>,
+    ): Query = withAuthoritativeGeonameFilter(
+        withTitleLanguageFilter(
+            TermQuery(Term(ChurchIndex.FIELD_NAME_EXACT, ChurchIndex.normalizeExactName(fullQuery))),
+            titleLanguages,
+        ),
+        resolved,
     )
 
-    private fun buildAllNameTokensQuery(fullQuery: String, titleLanguages: List<String>): Query {
+    private fun buildAllNameTokensQuery(
+        analysis: QueryAnalysis,
+        resolved: ResolvedGeoQuery,
+        titleLanguages: List<String>,
+    ): Query {
         val fields = nameSearchFields()
-        val tokens = analyzedTokens(fullQuery)
-        val genericTokens = GENERIC_CHURCH_WORDS[normalizedLanguage].orEmpty()
-            .flatMap(::analyzedTokens)
-            .toSet()
-        val query = if (tokens.any { it !in genericTokens }) {
-            analyzedAcrossFieldsQuery(tokens, fields)
+        val query = if (allNameTokenTierEnabled(analysis, resolved)) {
+            analyzedAcrossFieldsQuery(analysis.fullTokens, fields)
         } else {
             BooleanQuery.Builder().build()
         }
-        return withTitleLanguageFilter(query, titleLanguages)
+        return withAuthoritativeGeonameFilter(withTitleLanguageFilter(query, titleLanguages), resolved)
     }
 
     private fun buildGeneralQuery(
         fullQuery: String,
         resolved: ResolvedGeoQuery,
-        geoAreaLocations: List<ResolvedLocation>,
         titleLanguages: List<String>,
+        analysis: QueryAnalysis,
+        fields: LinkedHashMap<String, Float> = generalSearchFields(),
+        matchAllForGeonameOnly: Boolean = true,
+        addGeonameNameBoost: Boolean = true,
     ): Query {
-        val searchableText = fullQuery.trim()
-        val textQuery = if (searchableText.isBlank()) {
+        val namedGeonameOnly = resolved.locations.singleOrNull()?.type != GeoNameType.DEVICE &&
+            resolved.locations.isNotEmpty() && resolved.textQuery.isBlank()
+        val namedAddressEntity = resolved.locations.singleOrNull()?.type != GeoNameType.DEVICE && resolved.locations.isNotEmpty()
+        val searchableText = when {
+            namedGeonameOnly && matchAllForGeonameOnly -> ""
+            namedAddressEntity && resolved.textQuery.isNotBlank() -> resolved.textQuery
+            else -> fullQuery.trim()
+        }
+        val searchableTokens = when {
+            searchableText.isBlank() -> emptyList()
+            namedAddressEntity && resolved.textQuery.isNotBlank() -> analysis.remainderTokens
+            else -> analysis.fullTokens
+        }.filterNot { it in genericChurchTokens }
+        val textQuery = if (searchableTokens.isEmpty()) {
             logger.debug { "buildQuery: text query is blank after filtering, using MatchAllDocsQuery" }
             MatchAllDocsQuery()
         } else {
-            val fields = generalSearchFields()
             logger.debug { "buildQuery: fields=[${fields.entries.joinToString { "${it.key}:boost=${it.value}" }}], analyzer=$normalizedLanguage" }
-            analyzedAcrossFieldsQuery(searchableText, fields)
+            analyzedAcrossFieldsQuery(searchableTokens, fields)
         }
         if (resolved.locations.isEmpty()) {
             logger.debug { "buildQuery: no locations resolved, text-only query" }
             return withTitleLanguageFilter(textQuery, titleLanguages)
         }
 
-        logger.debug { "buildQuery: building geo-filtered query for ${resolved.locations.size} location(s)" }
-        val geoUnion = BooleanQuery.Builder().apply {
-            geoAreaLocations.forEach { location ->
-                add(
-                    LatLonPoint.newDistanceQuery(
-                        ChurchIndex.FIELD_LOCATION,
-                        location.center.latitude,
-                        location.center.longitude,
-                        location.radiusKm * 1000.0,
-                    ),
-                    BooleanClause.Occur.SHOULD,
-                )
-            }
-        }.build()
+        val location = resolved.locations.single()
+        logger.debug { "buildQuery: building one ${location.type} filter for '${location.name}'(${location.code})" }
+        val locationFilter = if (location.type == GeoNameType.DEVICE) {
+            LatLonPoint.newDistanceQuery(
+                ChurchIndex.FIELD_LOCATION,
+                location.center.latitude,
+                location.center.longitude,
+                location.radiusKm * 1000.0,
+            )
+        } else {
+            TermQuery(Term(ChurchIndex.FIELD_ADDRESS_GEONAME_CODE, location.code))
+        }
         val geoQuery = BooleanQuery.Builder().apply {
             add(textQuery, BooleanClause.Occur.MUST)
-            add(geoUnion, BooleanClause.Occur.FILTER)
-            val addressLocations = resolved.locations.filter {
-                normalizedLanguage == "ja" && it.type != GeoNameType.DEVICE
-            }
-            val addressUnion = BooleanQuery.Builder().apply {
-                addressLocations.map { it.name }.filter { it.isNotBlank() }.distinct().forEach { placeName ->
-                    QueryParser(ChurchIndex.FIELD_ADDRESS, analyzer).parse(escapeLuceneSyntax(placeName))?.let {
-                        add(it, BooleanClause.Occur.SHOULD)
-                    }
-                }
-            }.build()
-            if (addressLocations.isNotEmpty()) add(addressUnion, BooleanClause.Occur.FILTER)
+            add(locationFilter, BooleanClause.Occur.FILTER)
             val nameFields = arrayOf(ChurchIndex.FIELD_NAME, ChurchIndex.localizedNameField(normalizedLanguage))
-            addressLocations.map { it.matchedText }.filter { it.isNotBlank() }.distinct().forEach { placeName ->
+            resolved.locations.filter { addGeonameNameBoost && it.type != GeoNameType.DEVICE }
+                .map { it.matchedText }.filter { it.isNotBlank() }.distinct().forEach { placeName ->
                 MultiFieldQueryParser(nameFields, analyzer).parse(escapeLuceneSyntax(placeName))?.let {
                     add(BoostQuery(it, 6f), BooleanClause.Occur.SHOULD)
                 }
@@ -265,45 +368,43 @@ class ChurchSearchEngine(
 
     private fun nameSearchFields(): LinkedHashMap<String, Float> = linkedMapOf(
         ChurchIndex.FIELD_NAME to 8f,
-        ChurchIndex.localizedNameField(normalizedLanguage) to 8f,
     )
 
     private fun generalSearchFields(): LinkedHashMap<String, Float> = linkedMapOf(
-        ChurchIndex.FIELD_NAME to 8f,
-        ChurchIndex.localizedNameField(normalizedLanguage) to 8f,
-        ChurchIndex.FIELD_GEONAME to 6f,
-        ChurchIndex.FIELD_DENOMINATION to 5f,
-    ).apply {
-        if (normalizedLanguage == "ja") {
-            this[ChurchIndex.FIELD_CATEGORY] = 5f
-            this[ChurchIndex.FIELD_ADDRESS] = 3f
-            this[ChurchIndex.FIELD_CONTENT] = 1f
-            this[ChurchIndex.FIELD_SOCIAL] = 1f
-        }
+        ChurchIndex.FIELD_SEARCH_COMPACT to 1f,
+    )
+
+    private fun contentFallbackFields(): LinkedHashMap<String, Float> = if (normalizedLanguage == "ja") {
+        linkedMapOf(
+            ChurchIndex.FIELD_CONTENT to 1f,
+            ChurchIndex.FIELD_SOCIAL to 1f,
+        )
+    } else {
+        linkedMapOf()
     }
 
     private fun renderQueryPlan(
         request: ChurchSearchRequest,
         resolved: ResolvedGeoQuery,
-        geoAreaLocations: List<ResolvedLocation>,
+        analysis: QueryAnalysis,
     ): String {
-        val tokens = analyzedTokens(request.query)
-        val genericTokens = GENERIC_CHURCH_WORDS[normalizedLanguage].orEmpty()
-            .flatMap(::analyzedTokens)
-            .toSet()
-        val allTokenTierEnabled = tokens.any { it !in genericTokens }
+        val tokens = analysis.fullTokens
+        val allTokenTierEnabled = allNameTokenTierEnabled(analysis, resolved)
         val locations = resolved.locations.joinToString(prefix = "[", postfix = "]") { location ->
             val matched = location.matchedText.takeIf(String::isNotBlank) ?: "device"
             "$matched -> ${location.name}(${location.type}, code=${location.code}, " +
                 "center=${location.center.latitude},${location.center.longitude}, radiusKm=${location.radiusKm})"
         }
-        val geoAreaSample = geoAreaLocations.take(8).joinToString { it.name }
-        val omittedGeoAreas = (geoAreaLocations.size - 8).coerceAtLeast(0)
-        val geoAreas = when {
-            geoAreaLocations.isEmpty() -> "none"
-            omittedGeoAreas == 0 -> "$geoAreaSample (${geoAreaLocations.size} area(s))"
-            else -> "$geoAreaSample, ... +$omittedGeoAreas (${geoAreaLocations.size} area(s))"
+        val candidates = resolved.candidates.joinToString(prefix = "[", postfix = "]") {
+            "${it.name}(${it.type}, code=${it.code})"
         }
+        val filter = resolved.locations.singleOrNull()?.let {
+            if (it.type == GeoNameType.DEVICE) {
+                "LAT_LON_RADIUS center=${it.center.latitude},${it.center.longitude} radiusKm=${it.radiusKm}"
+            } else {
+                "EXACT_ADDRESS_ENTITY field=${ChurchIndex.FIELD_ADDRESS_GEONAME_CODE} code=${it.code}"
+            }
+        } ?: "none"
         val titleFilter = request.titleLanguages
             .map { it.substringBefore('-').lowercase() }
             .filter(String::isNotBlank)
@@ -316,15 +417,30 @@ class ChurchSearchEngine(
             appendLine("  input.pagination=offset:${request.offset},limit:${request.limit} titleLanguageFilter=$titleFilter")
             appendLine("  analysis.tokens=$tokens operator=AND")
             appendLine("  analysis.geonameRemainder=${resolved.textQuery.ifBlank { "<empty>" }}")
+            appendLine("  analysis.geonameCandidates=$candidates")
+            appendLine("  analysis.geonameSelection=${resolved.selectionReason}")
+            appendLine("  analysis.explicitAdministrativeName=${resolved.explicitAdministrativeName}")
             appendLine("  analysis.locations=$locations")
             appendLine("  tier.1.type=EXACT_NAME boost=$EXACT_NAME_STAGE_BOOST field=${ChurchIndex.FIELD_NAME_EXACT} " +
-                "term=${ChurchIndex.normalizeExactName(request.query)} geoFilter=false")
+                "term=${ChurchIndex.normalizeExactName(request.query)} geoFilter=${resolved.explicitAdministrativeName}")
             appendLine("  tier.2.type=ALL_NAME_TOKENS boost=$ALL_NAME_TOKENS_STAGE_BOOST enabled=$allTokenTierEnabled " +
-                "tokens=$tokens fields=${formatFields(nameSearchFields())} geoFilter=false" +
-                if (allTokenTierEnabled) "" else " reason=generic-only-query")
-            appendLine("  tier.3.type=FULL_QUERY_GEO boost=normal tokens=$tokens fields=${formatFields(generalSearchFields())}")
-            appendLine("  tier.3.geoFilter=${if (resolved.locations.isEmpty()) "false" else "true"} areas=$geoAreas")
-            appendLine("  tier.3.japaneseAddressGuard=${normalizedLanguage == "ja" && resolved.locations.any { it.type != GeoNameType.DEVICE }}")
+                "tokens=$tokens fields=${formatFields(nameSearchFields())} geoFilter=${resolved.explicitAdministrativeName}" +
+                if (allTokenTierEnabled) "" else " reason=generic-or-geoname-only-query")
+            val namedLocation = resolved.locations.isNotEmpty() && resolved.locations.none { it.type == GeoNameType.DEVICE }
+            val tier3Tokens = when {
+                namedLocation && resolved.textQuery.isBlank() -> emptyList()
+                namedLocation -> analysis.remainderTokens
+                else -> analysis.fullTokens
+            }.filterNot { it in genericChurchTokens }
+            appendLine("  tier.3.type=ADDRESS_ENTITY_REMAINDER boost=normal tokens=$tier3Tokens fields=${formatFields(generalSearchFields())}")
+            val tier3TextMode = when {
+                resolved.locations.isNotEmpty() && resolved.locations.none { it.type == GeoNameType.DEVICE } && tier3Tokens.isEmpty() -> "MATCH_ALL_GEONAME_ONLY_OR_GENERIC"
+                resolved.locations.isNotEmpty() && resolved.locations.none { it.type == GeoNameType.DEVICE } -> "GEONAME_REMAINDER"
+                else -> "FULL_QUERY"
+            }
+            appendLine("  tier.3.textMode=$tier3TextMode")
+            appendLine("  tier.3.geoFilter=${if (resolved.locations.isEmpty()) "false" else "true"} filter=$filter")
+            appendLine("  tier.4.type=CONTENT_FALLBACK fields=${formatFields(contentFallbackFields())} executeWhen=fastTierTotal<requestedHits")
             append("  merge=SHOULD(tier.1,tier.2,tier.3) minimumShouldMatch=1 deduplicate=true")
         }
     }
@@ -333,6 +449,16 @@ class ChurchSearchEngine(
         prefix = "[",
         postfix = "]",
     ) { (field, boost) -> "$field^$boost" }
+
+    private fun allNameTokenTierEnabled(analysis: QueryAnalysis, resolved: ResolvedGeoQuery): Boolean {
+        if (analysis.fullTokens.none { it !in genericChurchTokens }) return false
+        if (resolved.locations.isEmpty()) return true
+        return analysis.remainderTokens.any { it !in genericChurchTokens }
+    }
+
+    private val genericChurchTokens: Set<String> by lazy {
+        GENERIC_CHURCH_WORDS[normalizedLanguage].orEmpty().flatMap(::analyzedTokens).toSet()
+    }
 
     private fun analyzerDisplayName(): String = when (normalizedLanguage) {
         "ja" -> "JapaneseAnalyzer"
@@ -354,6 +480,18 @@ class ChurchSearchEngine(
         return BooleanQuery.Builder().apply {
             add(query, BooleanClause.Occur.MUST)
             add(languages, BooleanClause.Occur.FILTER)
+        }.build()
+    }
+
+    private fun withAuthoritativeGeonameFilter(query: Query, resolved: ResolvedGeoQuery): Query {
+        val location = resolved.locations.singleOrNull()
+        if (!resolved.explicitAdministrativeName || location == null || location.type == GeoNameType.DEVICE) return query
+        return BooleanQuery.Builder().apply {
+            add(query, BooleanClause.Occur.MUST)
+            add(
+                TermQuery(Term(ChurchIndex.FIELD_ADDRESS_GEONAME_CODE, location.code)),
+                BooleanClause.Occur.FILTER,
+            )
         }.build()
     }
 
@@ -393,20 +531,6 @@ class ChurchSearchEngine(
         }
     }
 
-    private fun geoAreas(location: ResolvedLocation): List<ResolvedLocation> {
-        if (location.type != GeoNameType.PREFECTURE) return listOf(location)
-        val municipalities = geonames.filter {
-            it.prefectureCode == location.code &&
-                it.type != GeoNameType.PREFECTURE &&
-                it.includeInPrefectureSearch
-        }
-        val areas = municipalities.takeIf { it.isNotEmpty() }?.map {
-            ResolvedLocation(it.name, it.code, it.name, it.type, it.center, it.coveringRadiusKm)
-        } ?: listOf(location)
-        logger.debug { "geoAreas: prefecture '${location.name}'(${location.code}) expanded to ${areas.size} area(s): ${areas.joinToString { it.name }}" }
-        return areas
-    }
-
     private fun matchingPages(pages: List<CrawledPage>, query: String): List<MatchedPage> {
         if (normalizedLanguage != "ja") return emptyList()
         if (query.isBlank()) return pages.take(1).map { MatchedPage(it.url, it.title, snippet(it.text, "")) }
@@ -441,4 +565,9 @@ class ChurchSearchEngine(
             "id" to listOf("gereja", "kapel"),
         )
     }
+
+    private data class QueryAnalysis(
+        val fullTokens: List<String>,
+        val remainderTokens: List<String>,
+    )
 }

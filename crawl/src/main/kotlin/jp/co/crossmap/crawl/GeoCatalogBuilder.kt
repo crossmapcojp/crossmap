@@ -9,16 +9,29 @@ import jp.co.crossmap.GeoNameType
 import jp.co.crossmap.GeoPoint
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 class GeoCatalogBuilder(private val json: Json = Json { prettyPrint = true; encodeDefaults = true }) {
+    private data class MunicipalitySource(
+        val code: String,
+        val name: String,
+        val addressMatch: String = name,
+        val aliases: List<String> = emptyList(),
+        val translations: Map<String, String> = emptyMap(),
+    )
+
     fun build(
         churches: List<ChurchRecord>,
         japaneseCitiesSource: Path,
         output: Path,
         multilingualLexicon: Map<String, Map<String, String>> = emptyMap(),
     ): List<GeoName> {
-        val municipalities = parseMunicipalities(Files.readString(japaneseCitiesSource))
-        val aliasCounts = municipalities.groupingBy { stripSuffix(it.second) }.eachCount()
+        val municipalities = enrichDesignatedCityWards(
+            parseMunicipalities(Files.readString(japaneseCitiesSource)),
+            churches,
+        )
+        val aliasCounts = municipalities.groupingBy { stripSuffix(it.name) }.eachCount()
         val prefectureEntries = prefectures.mapIndexed { index, name ->
             val code = (index + 1).toString().padStart(2, '0')
             val matching = churches.filter {
@@ -28,20 +41,24 @@ class GeoCatalogBuilder(private val json: Json = Json { prettyPrint = true; enco
             fromPoints(code, name, GeoNameType.PREFECTURE, code, emptyList(), matching.map { it.location }, japanCenter, translations)
         }
         val prefectureByCode = prefectureEntries.associateBy { it.code }
-        val cityEntries = municipalities.map { (code, name) ->
+        val cityEntries = municipalities.map { municipality ->
+            val code = municipality.code
+            val name = municipality.name
             val prefectureCode = code.take(2)
             val prefectureName = prefectures.getOrNull(prefectureCode.toIntOrNull()?.minus(1) ?: -1).orEmpty()
             val matching = churches.filter { church ->
-                church.address.contains(name) && (prefectureName.isBlank() || church.address.contains(prefectureName))
+                church.address.contains(municipality.addressMatch) &&
+                    (prefectureName.isBlank() || church.address.contains(prefectureName))
             }
-            val alias = stripSuffix(name).takeIf { it != name && aliasCounts[it] == 1 }?.let(::listOf).orEmpty()
-            val translations = multilingualLexicon[name].orEmpty()
+            val shortAlias = stripSuffix(name).takeIf { it != name && aliasCounts[it] == 1 }
+            val aliases = (municipality.aliases + listOfNotNull(shortAlias)).distinct().filter { it != name }
+            val translations = municipality.translations + multilingualLexicon[name].orEmpty()
             fromPoints(
                 code,
                 name,
                 if (name.endsWith("区")) GeoNameType.WARD else GeoNameType.MUNICIPALITY,
                 prefectureCode,
-                alias,
+                aliases,
                 matching.map { it.location },
                 prefectureByCode[prefectureCode]?.center ?: japanCenter,
                 translations,
@@ -54,11 +71,120 @@ class GeoCatalogBuilder(private val json: Json = Json { prettyPrint = true; enco
         return result
     }
 
-    private fun parseMunicipalities(source: String): List<Pair<String, String>> =
+    private fun parseMunicipalities(source: String): List<MunicipalitySource> =
+        if (source.trimStart().startsWith("{")) parseJmaMunicipalities(source) else parseKotlinMunicipalities(source)
+
+    private data class CityWardAddress(val prefectureCode: String, val city: String, val ward: String)
+
+    private fun enrichDesignatedCityWards(
+        municipalities: List<MunicipalitySource>,
+        churches: List<ChurchRecord>,
+    ): List<MunicipalitySource> {
+        val addressWards = churches.mapNotNull { church ->
+            val prefecture = prefectures.withIndex().firstOrNull { church.address.contains(it.value) } ?: return@mapNotNull null
+            val withoutPrefecture = church.address.substringAfter(prefecture.value)
+            val match = DESIGNATED_CITY_WARD.find(withoutPrefecture) ?: return@mapNotNull null
+            CityWardAddress(
+                prefectureCode = (prefecture.index + 1).toString().padStart(2, '0'),
+                city = match.groupValues[1],
+                ward = match.groupValues[2],
+            )
+        }.distinct()
+        val enriched = municipalities.map { municipality ->
+            if (!municipality.name.endsWith("区")) return@map municipality
+            val match = addressWards.firstOrNull { addressWard ->
+                municipality.code.startsWith(addressWard.prefectureCode) &&
+                    municipality.name.startsWith(addressWard.city.removeSuffix("市")) &&
+                    municipality.name.endsWith(addressWard.ward)
+            } ?: return@map municipality
+            municipality.copy(
+                name = match.ward,
+                addressMatch = match.city + match.ward,
+                aliases = (municipality.aliases + listOf(municipality.name, match.city + match.ward)).distinct(),
+            )
+        }
+        val existingNames = enriched.map(MunicipalitySource::name).toSet()
+        val parentCities = addressWards.mapNotNull { addressWard ->
+            if (addressWard.city in existingNames) return@mapNotNull null
+            val child = enriched.firstOrNull {
+                it.code.startsWith(addressWard.prefectureCode) && it.addressMatch == addressWard.city + addressWard.ward
+            } ?: return@mapNotNull null
+            MunicipalitySource(
+                code = jisMunicipalityCode(child.code.take(4) + "0"),
+                name = addressWard.city,
+            )
+        }
+        return (enriched + parentCities).distinctBy { it.code }
+    }
+
+    private fun parseKotlinMunicipalities(source: String): List<MunicipalitySource> =
         Regex("""(\d+)\s+to\s+\"([^\"]+)\"""").findAll(source)
-            .map { it.groupValues[1].padStart(6, '0') to it.groupValues[2] }
-            .distinctBy { it.first }
+            .map { MunicipalitySource(it.groupValues[1].padStart(6, '0'), it.groupValues[2]) }
+            .distinctBy { it.code }
             .toList()
+
+    /**
+     * JMA uses seven-digit area keys without the JIS check digit and prefixes designated-city wards
+     * with their parent city (for example `4013300 -> 福岡中央区`). Crossmap restores the official
+     * six-digit local-government code and indexes the ward as `中央区`, retaining parent-qualified
+     * aliases such as `福岡市中央区` for longest-match resolution.
+     */
+    private fun parseJmaMunicipalities(source: String): List<MunicipalitySource> {
+        data class JmaRow(
+            val key: String,
+            val japanese: String,
+            val translations: Map<String, String>,
+        )
+
+        val rows = json.parseToJsonElement(source).jsonObject.mapNotNull { (key, value) ->
+            val fields = value.jsonObject
+            val japanese = fields["japanese"]?.jsonPrimitive?.content.orEmpty().trim()
+            if (key.length < 5 || japanese.isBlank()) return@mapNotNull null
+            JmaRow(
+                key = key,
+                japanese = japanese,
+                translations = mapOf(
+                    "en" to fields["english"]?.jsonPrimitive?.content.orEmpty(),
+                    "ko" to fields["korean"]?.jsonPrimitive?.content.orEmpty(),
+                    "pt" to fields["portuguese"]?.jsonPrimitive?.content.orEmpty(),
+                    "id" to fields["indonesian"]?.jsonPrimitive?.content.orEmpty(),
+                ).filterValues(String::isNotBlank),
+            )
+        }
+        val cities = rows.filter { it.japanese.endsWith("市") }
+        return rows.map { row ->
+            val prefectureCode = row.key.take(2)
+            val parentCity = cities.asSequence()
+                .filter { it.key.take(2) == prefectureCode }
+                .filter { row.japanese.startsWith(it.japanese.removeSuffix("市")) }
+                .maxByOrNull { it.japanese.length }
+                .takeIf { row.japanese.endsWith("区") }
+            val tokyoWardPrefix = row.japanese.takeIf {
+                prefectureCode == TOKYO_PREFECTURE_CODE && it.startsWith("東京") && it.endsWith("区")
+            }?.let { "東京" }
+            val canonicalName = when {
+                parentCity != null -> row.japanese.removePrefix(parentCity.japanese.removeSuffix("市"))
+                tokyoWardPrefix != null -> row.japanese.removePrefix(tokyoWardPrefix)
+                else -> row.japanese
+            }
+            val addressMatch = parentCity?.let { it.japanese + canonicalName } ?: canonicalName
+            MunicipalitySource(
+                code = jisMunicipalityCode(row.key.take(5)),
+                name = canonicalName,
+                addressMatch = addressMatch,
+                aliases = listOf(row.japanese, addressMatch).distinct().filter { it != canonicalName },
+                translations = row.translations,
+            )
+        }.distinctBy { it.code }
+    }
+
+    private fun jisMunicipalityCode(baseCode: String): String {
+        require(baseCode.length == 5 && baseCode.all(Char::isDigit)) { "Invalid JMA municipality key: $baseCode" }
+        val weighted = baseCode.mapIndexed { index, character -> character.digitToInt() * (6 - index) }.sum()
+        val candidate = 11 - weighted % 11
+        val checkDigit = if (candidate >= 10) 0 else candidate
+        return baseCode + checkDigit
+    }
 
     private fun fromPoints(
         code: String,
@@ -103,6 +229,7 @@ class GeoCatalogBuilder(private val json: Json = Json { prettyPrint = true; enco
     companion object {
         private const val TOKYO_PREFECTURE_CODE = "13"
         private val japanCenter = GeoPoint(36.2048, 138.2529)
+        private val DESIGNATED_CITY_WARD = Regex("""^([^都道府県市区町村郡\\s]+市)([^都道府県市区町村郡\\s]+区)""")
         private val tokyoRemoteIslandMunicipalities = setOf(
             "大島町",
             "利島村",

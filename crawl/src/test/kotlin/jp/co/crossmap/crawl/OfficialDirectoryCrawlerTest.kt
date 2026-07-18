@@ -146,4 +146,40 @@ class OfficialDirectoryCrawlerTest {
             root.toFile().deleteRecursively()
         }
     }
+
+    @Test
+    fun excludedListingDirectoryIsRejectedBeforeTheLoaderRuns() {
+        val root = Files.createTempDirectory("crossmap-excluded-directory")
+        try {
+            Files.createDirectories(root.resolve("sources"))
+            Files.createDirectories(root.resolve("catalog"))
+            Files.writeString(
+                root.resolve("sources/denominations.json"),
+                json.encodeToString(
+                    listOf(
+                        DenominationDirectorySource(
+                            id = "listing-site",
+                            denominationId = "JBC",
+                            denominationName = "日本バプテスト連盟",
+                            churchListUrlList = listOf("https://search.church-info.jp/churches"),
+                        ),
+                    ),
+                ),
+            )
+            Files.writeString(root.resolve("catalog/excludedChurchListingDomains.txt"), "church-info.jp\n")
+            var loaderCalls = 0
+
+            val report = OfficialDirectoryCrawler(DirectoryPageLoader {
+                loaderCalls++
+                error("An excluded listing domain must never be loaded")
+            }).crawl(root, root.resolve("cache"))
+
+            assertEquals(0, loaderCalls)
+            assertEquals(0, report.pages)
+            assertEquals(0, report.candidates)
+            assertEquals(1, report.excludedUrls)
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
 }

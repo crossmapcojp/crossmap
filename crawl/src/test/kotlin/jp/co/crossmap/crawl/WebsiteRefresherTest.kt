@@ -97,6 +97,45 @@ class WebsiteRefresherTest {
     }
 
     @Test
+    fun excludedListingDomainIsNeverRequestedAndIsReplacedByGoogleMaps() {
+        val root = Files.createTempDirectory("crossmap-excluded-listing")
+        try {
+            Files.createDirectories(root.resolve("catalog"))
+            Files.createDirectories(root.resolve("cache/church-web-pages"))
+            Files.writeString(root.resolve("catalog/excludedChurchListingDomains.txt"), "church-info.jp\n")
+            Files.writeString(
+                root.resolve("catalog/churches.json"),
+                json.encodeToString(
+                    listOf(
+                        ChurchRecord(
+                            id = "google:10158070367548216990",
+                            googleCid = "10158070367548216990",
+                            name = "錦キリスト教会",
+                            englishName = "Nishiki Christ Church",
+                            address = "熊本県球磨郡錦町",
+                            location = GeoPoint(32.20, 130.84),
+                            websiteUrl = "http://www.church-info.jp/sp/search/detail.php?key=16230012",
+                        ),
+                    ),
+                ),
+            )
+            Files.writeString(root.resolve("cache/church-web-pages/manifest.json"), "[]")
+
+            val report = WebsiteRefresher(maxConcurrency = 1, hostDelayMillis = 0)
+                .refresh(root, cacheRoot = root.resolve("cache"))
+            val church = json.decodeFromString<List<ChurchRecord>>(
+                Files.readString(root.resolve("catalog/churches.json")),
+            ).single()
+
+            assertEquals(0, report.fetched)
+            assertEquals("https://www.google.com/maps?cid=10158070367548216990", church.websiteUrl)
+            assertTrue(church.pages.isEmpty())
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun reusesUrlMappedHtmlCacheWithoutAnHttpRequest() {
         val requests = AtomicInteger()
         val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)

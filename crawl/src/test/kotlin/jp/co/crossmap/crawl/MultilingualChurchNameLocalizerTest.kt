@@ -2,6 +2,7 @@ package jp.co.crossmap.crawl
 
 import java.nio.file.Files
 import java.nio.file.Path
+import jp.co.crossmap.Language
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -35,6 +36,68 @@ class MultilingualChurchNameLocalizerTest {
             ),
             result.components.map(MultilingualNameComponent::role),
         )
+    }
+
+    @Test
+    fun usesConcreteDenominationCatalogNamesAndKeepsTraditionComponentsSeparate() {
+        val denomination = Denomination(
+            "JELC",
+            "日本福音ルーテル教会",
+            listOf("日本福音ルーテル"),
+        )
+        val catalogNames = DenominationNameCatalogFiles.load(resourcesRoot)
+        val result = localizer(
+            geonames = mapOf("東京" to "Tokyo"),
+            denominations = listOf(denomination),
+            denominationNames = catalogNames,
+            multilingualGeonames = mapOf(
+                "東京" to mapOf("en" to "Tokyo", "ko" to "도쿄", "pt" to "Tóquio", "id" to "Tokyo"),
+            ),
+        ).localize("日本福音ルーテル東京教会")
+
+        assertEquals("JELC Tokyo Church", result.localizedNames.single { it.languageCode == "en" }.name)
+        assertEquals("일본 복음 루터 도쿄 교회", result.localizedNames.single { it.languageCode == "ko" }.name)
+        assertEquals(MultilingualNameComponentRole.DENOMINATION, result.components.first().role)
+
+        val traditionOnly = localizer(
+            geonames = mapOf("東京" to "Tokyo"),
+            denominationNames = catalogNames,
+        ).localize("東京ルーテル教会")
+        assertEquals(MultilingualNameComponentRole.TRADITION, traditionOnly.components[1].role)
+        assertEquals("Tokyo Lutheran Church", traditionOnly.localizedNames.single { it.languageCode == "en" }.name)
+    }
+
+    @Test
+    fun internalDenominationSentinelsCannotEnterLocalizedChurchNames() {
+        val sentinelCatalog = Language.entries.associateWith {
+            mapOf("INDEPENDENT_CHURCH" to "INDEPENDENT_CHURCH")
+        }
+        val result = localizer(
+            geonames = mapOf("町田" to "Machida"),
+            denominations = listOf(Denomination("INDEPENDENT_CHURCH", "単立教会", listOf("単立"))),
+            denominationNames = sentinelCatalog,
+        ).localize("単立町田バプテスト教会")
+
+        assertTrue(result.localizedNames.none { "INDEPENDENT_CHURCH" in it.name })
+        assertTrue(result.components.none { it.role == MultilingualNameComponentRole.DENOMINATION })
+    }
+
+    @Test
+    fun outsiderMovementLabelIsNotPrefixedToARealChurchName() {
+        val result = localizer(
+            geonames = mapOf("御茶の水" to "Ochanomizu"),
+            denominations = listOf(
+                Denomination(
+                    id = "CHURCHES_OF_CHRIST",
+                    name = "キリストの教会（無楽器派）",
+                    useAsChurchNamePrefix = false,
+                ),
+            ),
+        ).localize("キリストの教会（無楽器派） 御茶の水キリストの教会")
+
+        assertEquals("御茶の水キリストの教会", result.japaneseName)
+        assertTrue(result.localizedNames.none { "CHURCHES_OF_CHRIST" in it.name })
+        assertTrue(result.components.none { it.role == MultilingualNameComponentRole.DENOMINATION })
     }
 
     @Test
@@ -194,11 +257,13 @@ class MultilingualChurchNameLocalizerTest {
     private fun localizer(
         geonames: Map<String, String>,
         denominations: List<Denomination> = emptyList(),
+        denominationNames: Map<Language, Map<String, String>> = emptyMap(),
         multilingualGeonames: Map<String, Map<String, String>> = emptyMap(),
     ) = MultilingualChurchNameLocalizer(
         dictionaries = dictionaries,
         congregationTerms = congregationTerms,
         denominations = denominations,
+        denominationNames = denominationNames,
         geonames = geonames,
         multilingualGeonames = multilingualGeonames,
     )

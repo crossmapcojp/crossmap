@@ -13,6 +13,7 @@ import java.util.concurrent.Callable
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import jp.co.crossmap.ChurchRecord
+import jp.co.crossmap.ChurchWebsitePolicy
 import jp.co.crossmap.CrawledContentType
 import jp.co.crossmap.CrawledPage
 import kotlinx.serialization.decodeFromString
@@ -48,13 +49,16 @@ class WebsiteRefresher(
         val urlCacheFile = webCache.resolve("url-cache-map.json")
         urlCache = if (Files.isRegularFile(urlCacheFile)) json.decodeFromString(Files.readString(urlCacheFile)) else emptyMap()
         val churches = json.decodeFromString<List<ChurchRecord>>(Files.readString(catalogFile))
+        val websitePolicy = ExcludedChurchListingDomains.policy(resourcesRoot)
         val oldManifest = if (Files.isRegularFile(manifestFile)) {
             json.decodeFromString<List<CrawlManifestEntry>>(Files.readString(manifestFile))
         } else emptyList()
         val manifestByUrl = oldManifest.associateBy { it.churchId to it.requestedUrl }
         val executor = Executors.newFixedThreadPool(maxConcurrency)
         val results = try {
-            executor.invokeAll(churches.map { church -> Callable { refreshChurch(church, webCache, manifestByUrl) } })
+            executor.invokeAll(churches.map { church ->
+                Callable { refreshChurch(church, webCache, manifestByUrl, websitePolicy) }
+            })
                 .map { it.get() }
         } finally {
             executor.shutdown()
@@ -82,12 +86,19 @@ class WebsiteRefresher(
         church: ChurchRecord,
         webCache: Path,
         previous: Map<Pair<String, String>, CrawlManifestEntry>,
+        websitePolicy: ChurchWebsitePolicy,
     ): ChurchRefresh {
-        val home = church.websiteUrl.takeIf { it.startsWith("http://") || it.startsWith("https://") }
-            ?: return ChurchRefresh(church, emptyList(), 0, 0, 0)
+        val sanitizedChurch = church.copy(
+            websiteUrl = websitePolicy.publicWebsiteUrl(church),
+            pages = church.pages.filterNot { websitePolicy.isExcluded(it.url) },
+        )
+        val home = sanitizedChurch.websiteUrl.takeIf(websitePolicy::isCrawlableChurchWebsite)
+            ?: return ChurchRefresh(sanitizedChurch, emptyList(), 0, 0, 0)
         val queue = ArrayDeque<String>().apply {
             add(home)
-            church.pages.map { it.url }.filter { it != home }.forEach(::add)
+            sanitizedChurch.pages.map { it.url }
+                .filter { it != home && websitePolicy.isCrawlableChurchWebsite(it) }
+                .forEach(::add)
         }
         val visited = linkedSetOf<String>()
         val pages = mutableListOf<CrawledPage>()
@@ -111,8 +122,14 @@ class WebsiteRefresher(
                 else -> fetched++
             }
         }
-        val finalPages = if (pages.isEmpty() && unchanged > 0) church.pages else pages
-        return ChurchRefresh(church.copy(pages = finalPages, updatedAt = Instant.now().toString()), entries, fetched, unchanged, errors)
+        val finalPages = if (pages.isEmpty() && unchanged > 0) sanitizedChurch.pages else pages
+        return ChurchRefresh(
+            sanitizedChurch.copy(pages = finalPages, updatedAt = Instant.now().toString()),
+            entries,
+            fetched,
+            unchanged,
+            errors,
+        )
     }
 
     private data class FetchResult(val entry: CrawlManifestEntry, val page: CrawledPage?, val html: String?)

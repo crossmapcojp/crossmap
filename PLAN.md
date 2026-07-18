@@ -20,6 +20,7 @@
 - [x] Treat `カトリック教会.csv` membership as authoritative programmatic `CATHOLIC_JP` denomination evidence throughout parsing and promotion, including reuse of older candidate caches, while preserving human overrides.
 - [x] Resolve raw Saved Places seeds through copied CID HTML cache first, plain HTTP second, and lightweight Lightpanda rendering last; parse name, coordinates, address, website, and category into raw church candidates with an audit report.
 - [x] Apply exclusion lists and Catholic-list non-church filtering from gmap, normalize candidate names during resolution, and perform entity-level deduplication before promotion.
+- [x] Treat `resources/catalog/excludedChurchListingDomains.txt` as the shared website boundary: reject listing/search/map aggregators before page acquisition or cleanup, remove their cached page evidence, and replace missing/excluded public website URLs with the church's Google Maps CID URL.
 - [x] Feed resolved candidates into the existing Crossmap deterministic → official-directory/page evidence → LLM → human-override cleanup workflow; do not create a parallel cleanup implementation.
 - [x] Produce timestamped source/crawl/cleanup completeness reports and promote only complete records into the canonical catalog.
 - [x] Replace denomination-specific control flow with a generic evidence -> candidate -> resolution -> review -> publication pipeline.
@@ -78,10 +79,31 @@
 - [ ] For globally organized denominations, require official names from their global or national bodies in every supported language; do not coin replacements.
 - [ ] For names without official translations, check established internet usage, then translate semantic parts into a naturally ordered final name.
 - [x] Complete and generate `denomination-ja/en/ko/pt/id-names.json`, with a 185 x 5 test proving exact ID coverage and nonblank names in every supported language.
-- [ ] Record official-site, established-usage, or translated provenance for every denomination-language name.
-- [ ] Feed denomination name parts and tradition name parts into multilingual church-name localization without conflating the organization with its tradition.
+- [x] Replace spreadsheet-hash `XLSX_*` denomination IDs with stable readable abbreviations and enforce the invariant in catalog tests.
+- [x] Keep `NOT_DETERMINED` and `INDEPENDENT_CHURCH` as internal classification sentinels only; remove them from localized church names, web details, and generated pages.
+- [x] Mark outsider movement labels such as `キリストの教会（無楽器派）` as non-prefix classifications so they cannot be composed into a church's public full name.
+- [x] Record official-site, established-usage, or translated provenance for every denomination-language name.
+- [x] Feed denomination name parts and tradition name parts into multilingual church-name localization without conflating the organization with its tradition.
 
 ## 4. Shared Lucene index and search
+
+### Single-address-entity geoname filtering
+
+- [x] Meet the interactive search latency target: at most 1 second per request, preferably at most 0.5 second, measured on the real server/index path.
+
+- [x] Add a best-effort `JapaneseAddressNormalizer` and typed decomposition for prefecture, municipality, city ward, Kyoto street expression, locality/geoname, address number, and optional building.
+- [x] Cover normal Tokyo, designated-city ward, county/town, building, and Kyoto `上る`/`下る` address examples with core unit tests.
+- [x] Add exact Lucene address-entity/code fields, index normalized address parts, and increment the church index schema.
+- [x] Add a crawl `normalize-addresses` stage using the local Geolonia checkout, cache its structured output, and emit a timestamped Logback report with one church per entry, detected normalization level, normalized components, summary counts by level, and detailed errors/timeouts.
+- [x] Resolve a query to exactly one intended administrative geoname: explicit prefecture suffix wins; otherwise prefer the unique municipality/city interpretation; use a unique prefecture only when no city shares the term.
+- [x] Implement and test `detectIntendedGeonameFromUserLocation` by selecting the nearest ambiguous candidate to browser/app coordinates with deterministic fallback when coordinates are unavailable.
+- [x] Replace named-geoname distance-query unions with one exact address-entity filter; retain Lucene `LatLonPoint` radius filtering only for device-location fallback when no geoname is present.
+- [x] Pass browser/app user coordinates early enough to disambiguate named geonames, while preserving search when permission is denied.
+- [x] Update query-plan and timing logs to show the chosen candidate, ambiguity decision, and the single exact address filter.
+- [x] Rebuild the multilingual snapshot and verify `東京バプテスト教会` no longer creates 53 geo clauses and returns the exact church first with substantially lower `lucene.collect` time.
+- [x] Add core, CLI, Ktor, shared-app, and Lightpanda webclient regression coverage for unique, explicit-prefecture, ambiguous-nearest, direct-island, and no-geoname device-radius searches.
+- [x] Treat explicit Japanese and romanized administrative names as authoritative across every ranking tier, so `横浜町`, `Yokohama-cho`, and `Yokohamacho` cannot fall through to Yokohama City name matches.
+- [x] Document the address normalization boundary, Kyoto best-effort behavior, query-intent rules, and remaining limitations in `core/SEARCH.md` and the field-by-field build contract in `core/INDEX.md`.
 
 - [x] Dogfood the built `lc` command against Crossmap fixtures to compare field extraction, boosts, and result ranking; improve lucene-cli generically if the experiment exposes a missing capability.
 - [x] Define serializable church, crawl, geoname, request, response, hit, page, error, and index-manifest models.
@@ -96,6 +118,7 @@
 - [x] Implement shared text-plus-geo search, exact totals, stable ordering, pagination, distance, matching page detection, and snippets.
 - [x] Rank search in three merged tiers: exact whole-name matches, name matches containing every analyzed query token, then full-query text matches within the resolved geoname area; keep the full query instead of removing the geoname text.
 - [x] Log a structured query plan for every search, including language/analyzer selection, tokens, geoname resolution, all three query tiers, fields/boosts, geo filters, and merge rules; keep JSON output clean by routing logs to standard error.
+- [x] Log monotonic duration and percentage breakdowns for every shared search-engine stage and the complete Ktor receive-to-send request path so search bottlenecks are directly visible.
 - [x] Use mainland-focused geometry for ordinary Tokyo prefecture searches, exclude its nine remote island municipalities from implicit Tokyo expansion, keep explicit island searches available, and normalize leading-zero municipality codes.
 - [x] Implement deterministic versioned snapshot creation with manifest, document count, lucene-kmp version, archive size, and SHA-256.
 - [x] Complete shared search coverage for every indexed field, geo behavior, ordering, pagination, and JSON round trips. (Real-index and 19-scenario Clikt tests pass.)
@@ -115,6 +138,7 @@
 
 - [x] Implement `/api/v1/churches/search`, `/api/v1/indexes/churches/latest`, immutable archive download, and `/api/v1/health`.
 - [x] Implement `/api/v1/churches/{id}` and a church detail page showing name, denomination, address, website, and typed social links.
+- [x] Sanitize website URLs again at snapshot, API, and static-page boundaries so stale indexes/catalogs cannot expose excluded listing domains; cover search, detail, generated pages, and the real Lightpanda flow with regression tests.
 - [x] Validate and open the configured index at server startup and return structured JSON errors.
 - [x] Make `:server:run` rebuild the development snapshot, validate latest-index schema and canonical-catalog SHA-256, and cover `布佐キリスト教会` results/detail with a real Lightpanda E2E test.
 - [x] Serve the vanilla HTML/JavaScript client from Ktor.

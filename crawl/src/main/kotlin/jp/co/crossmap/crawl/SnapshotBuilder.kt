@@ -9,9 +9,13 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import jp.co.crossmap.ChurchIndex
 import jp.co.crossmap.ChurchRecord
+import jp.co.crossmap.ChurchWebsitePolicy
+import jp.co.crossmap.GeoName
+import jp.co.crossmap.JapaneseAddress
 import jp.co.crossmap.IndexManifest
 import jp.co.crossmap.Language
 import jp.co.crossmap.LocalizedName
+import jp.co.crossmap.isDisplayableDenominationId
 import jp.co.crossmap.supportedLanguageCodes
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -27,9 +31,14 @@ class SnapshotBuilder(private val json: Json = Json { ignoreUnknownKeys = true; 
         val catalogBytes = Files.readAllBytes(resourcesRoot.resolve("catalog/churches.json"))
         val churches = json.decodeFromString<List<ChurchRecord>>(catalogBytes.toString(Charsets.UTF_8))
         val denominationNames = DenominationNameCatalogFiles.load(resourcesRoot)
+        val websitePolicy = ExcludedChurchListingDomains.policy(resourcesRoot)
         val indexedChurches = churches.map { church ->
             church.copy(
-                localizedDenominationNames = church.denominationId?.let { denominationId ->
+                websiteUrl = websitePolicy.publicWebsiteUrl(church),
+                pages = church.pages.filterNot { websitePolicy.isExcluded(it.url) },
+                localizedDenominationNames = church.denominationId
+                    ?.takeIf(String::isDisplayableDenominationId)
+                    ?.let { denominationId ->
                     Language.entries.mapNotNull { language ->
                         denominationNames.getValue(language)[denominationId]
                             ?.takeIf(String::isNotBlank)
@@ -38,7 +47,8 @@ class SnapshotBuilder(private val json: Json = Json { ignoreUnknownKeys = true; 
                 }.orEmpty(),
             )
         }
-        val indexes = CrossmapPaths(resourcesRoot, cacheRoot).searchIndexes
+        val paths = CrossmapPaths(resourcesRoot, cacheRoot)
+        val indexes = paths.searchIndexes
         val snapshotDir = indexes.resolve(version)
         val indexDir = snapshotDir.resolve("index")
         Files.createDirectories(indexDir)
@@ -51,13 +61,30 @@ class SnapshotBuilder(private val json: Json = Json { ignoreUnknownKeys = true; 
         val usages = if (Files.isRegularFile(geonameUsagesFile)) {
             json.decodeFromString<List<ChurchGeoNameUsage>>(Files.readString(geonameUsagesFile)).associateBy { it.churchId }
         } else emptyMap()
+        val geonames = json.decodeFromString<List<GeoName>>(Files.readString(paths.geonames))
+        val churchAddressesById = churches.associate { it.id to it.address }
+        val normalizedAddresses: Map<String, JapaneseAddress> = if (Files.isRegularFile(paths.normalizedChurchAddresses)) {
+            json.decodeFromString<JapaneseAddressNormalizationCache>(Files.readString(paths.normalizedChurchAddresses))
+                .entries
+                .filter { it.status == "success" && it.originalAddress == churchAddressesById[it.churchId] }
+                .associate { it.churchId to it.normalizedAddress }
+        } else {
+            emptyMap()
+        }
         supportedLanguageCodes.forEach { language ->
             val translatedGeoNames = usages.mapValues { (_, usage) ->
                 translatedGeoNamesForLanguage(usage, translations, language)
             }
             val languageIndex = indexDir.resolve(language)
             Files.createDirectories(languageIndex)
-            ChurchIndex.build(languageIndex.toString().toPath(), indexedChurches, language, translatedGeoNames)
+            ChurchIndex.build(
+                languageIndex.toString().toPath(),
+                indexedChurches,
+                language,
+                translatedGeoNames,
+                geonames,
+                normalizedAddresses,
+            )
         }
         Files.copy(
             resourcesRoot.resolve("geonames/japan.json"),

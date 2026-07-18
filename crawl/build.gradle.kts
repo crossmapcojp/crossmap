@@ -64,6 +64,14 @@ val googleSavedPlacesInput = providers.gradleProperty("crossmap.googleSavedPlace
         },
     )
 
+val geoloniaNormalizerDirectory = providers.gradleProperty("crossmap.geoloniaNormalizerDir")
+    .orElse(
+        providers.provider {
+            localProperties.getProperty("crossmap.geoloniaNormalizerDir")
+                ?: "/home/joel/code/normalize-japanese-addresses"
+        },
+    )
+
 tasks.register<JavaExec>("readGoogleSavedPlaces") {
     group = "crossmap"
     description = "Read Google Takeout Saved Places CSV files into standalone raw Crossmap seeds"
@@ -185,13 +193,29 @@ tasks.register<JavaExec>("prepareGeoNameCache") {
     )
 }
 
+val buildGeoCatalog by tasks.registering(JavaExec::class) {
+    group = "crossmap"
+    description = "Build the runtime prefecture, municipality, and designated-city ward resolver catalog from JMA data"
+    classpath = sourceSets.main.get().runtimeClasspath
+    mainClass = "jp.co.crossmap.crawl.MainKt"
+    workingDir = rootProject.projectDir
+    dependsOn("prepareGeoNameCache")
+    args(
+        "build-geonames",
+        "--resources",
+        providers.gradleProperty("crossmapResources").orElse("resources").get(),
+        "--cities-source",
+        providers.gradleProperty("jmaCitySource").orElse("resources/geonames/jma-city.json").get(),
+    )
+}
+
 val prepareChurchGeoNames by tasks.registering(JavaExec::class) {
     group = "crossmap"
     description = "Collect title/address geonames and merge official/reviewed JA-EN-KO-PT-ID translations"
     classpath = sourceSets.main.get().runtimeClasspath
     mainClass = "jp.co.crossmap.crawl.MainKt"
     workingDir = rootProject.projectDir
-    dependsOn("prepareGeoNameCache")
+    dependsOn(buildGeoCatalog)
     args(
         "church-geonames",
         "--resources",
@@ -199,8 +223,26 @@ val prepareChurchGeoNames by tasks.registering(JavaExec::class) {
     )
 }
 
-tasks.named("buildSearchSnapshot") {
+val normalizeChurchAddresses by tasks.registering(JavaExec::class) {
+    group = "crossmap"
+    description = "Normalize church addresses with the local Geolonia checkout and checkpoint quality results"
+    classpath = sourceSets.main.get().runtimeClasspath
+    mainClass = "jp.co.crossmap.crawl.MainKt"
+    workingDir = rootProject.projectDir
     dependsOn(prepareChurchGeoNames)
+    args(
+        "normalize-addresses",
+        "--resources",
+        providers.gradleProperty("crossmapResources").orElse("resources").get(),
+        "--normalizer-dir",
+        geoloniaNormalizerDirectory.get(),
+        "--concurrency",
+        providers.gradleProperty("addressNormalizationConcurrency").orElse("4").get(),
+    )
+}
+
+tasks.named("buildSearchSnapshot") {
+    dependsOn(normalizeChurchAddresses)
 }
 
 tasks.register<JavaExec>("populateDenominationEnglishNames") {

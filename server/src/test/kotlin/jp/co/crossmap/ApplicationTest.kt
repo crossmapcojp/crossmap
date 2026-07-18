@@ -10,12 +10,32 @@ import java.net.URLEncoder
 import java.security.MessageDigest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertContains
 import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import okio.Path.Companion.toPath
 
 class ApplicationTest {
+    @Test
+    fun rendersHttpSearchStepDurationsAndPercentages() {
+        val output = renderHttpSearchTiming(
+            linkedMapOf(
+                "language.detect" to 5.milliseconds,
+                "engine.search" to 80.milliseconds,
+                "response.send" to 10.milliseconds,
+            ),
+            100.milliseconds,
+        )
+
+        assertContains(output, "language.detect=5ms (5.0%)")
+        assertContains(output, "engine.search=80ms (80.0%)")
+        assertContains(output, "response.send=10ms (10.0%)")
+        assertContains(output, "other=5ms (5.0%)")
+        assertContains(output, "total=100ms (100.0%)")
+    }
+
     @Test
     fun resolvesPublishedLatestSnapshotWithoutCurrentSymlink() {
         val root = Files.createTempDirectory("crossmap-server-latest")
@@ -130,17 +150,17 @@ class ApplicationTest {
                         id = "official:tokyo-sophia",
                         name = "東京ソフィア長老教会",
                         englishName = "Tokyo Sophia International Presbyterian Church",
-                        denominationId = "XLSX_18816F940131",
+                        denominationId = "JOAC",
                         address = "東京都新宿区西早稲田",
                         location = GeoPoint(35.708, 139.709),
                         websiteUrl = "https://olivetassembly.or.jp/our-regions.html",
                     ),
                 ),
-                denominationEnglishNames = mapOf("XLSX_18816F940131" to "Olivet Assembly Japan"),
+                denominationEnglishNames = mapOf("JOAC" to "Olivet Assembly Japan"),
                 outputDirectory = webRoot.resolve("church"),
                 denominationNamesByLanguage = mapOf(
-                    "en" to mapOf("XLSX_18816F940131" to "Olivet Assembly Japan"),
-                    "ko" to mapOf("XLSX_18816F940131" to "올리벳 어셈블리 재팬"),
+                    "en" to mapOf("JOAC" to "Olivet Assembly Japan"),
+                    "ko" to mapOf("JOAC" to "올리벳 어셈블리 재팬"),
                 ),
             ).single()
 
@@ -209,6 +229,43 @@ class ApplicationTest {
                     church.localizedDenominationNames.single { it.languageCode == "ko" }.name,
                 )
                 assertEquals(SocialPlatform.YOUTUBE, church.socialProfiles.single().platform)
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun apiNeverReturnsAnExcludedChurchListingDomain() {
+        val root = Files.createTempDirectory("crossmap-server-listing-domain")
+        try {
+            Files.createDirectories(root.resolve("catalog"))
+            Files.writeString(root.resolve("catalog/excludedChurchListingDomains.txt"), "church-info.jp\n")
+            val index = root.resolve("index")
+            val church = ChurchRecord(
+                id = "google:10158070367548216990",
+                googleCid = "10158070367548216990",
+                name = "錦キリスト教会",
+                englishName = "Nishiki Christ Church",
+                address = "熊本県球磨郡錦町",
+                location = GeoPoint(32.20, 130.84),
+                websiteUrl = "http://www.church-info.jp/sp/search/detail.php?key=16230012",
+            )
+            ChurchIndex.build(index.toString().toPath(), listOf(church))
+            val engine = ChurchSearchEngine(index.toString().toPath(), emptyList(), "listing-domain-fixture")
+
+            testApplication {
+                application { module(engine, resourcesRoot = root, webRoot = root) }
+                val search = Json.decodeFromString<ChurchSearchResponse>(
+                    client.get("/api/v1/churches/search?q=錦キリスト教会").bodyAsText(),
+                )
+                val detail = Json.decodeFromString<ChurchDetailResponse>(
+                    client.get("/api/v1/churches/google%3A10158070367548216990").bodyAsText(),
+                )
+                val fallback = "https://www.google.com/maps?cid=10158070367548216990"
+
+                assertEquals(fallback, search.hits.single().websiteUrl)
+                assertEquals(fallback, detail.websiteUrl)
             }
         } finally {
             root.toFile().deleteRecursively()

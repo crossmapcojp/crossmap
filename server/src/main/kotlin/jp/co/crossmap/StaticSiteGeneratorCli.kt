@@ -29,6 +29,12 @@ object StaticSiteGeneratorCli {
             json.decodeFromString<Map<String, String>>(Files.readString(file))
         }
         val geonameEnglishLexicon = json.decodeFromString<Map<String, String>>(Files.readString(geonameLexiconFile))
+        val excludedDomainsFile = catalog.parent.resolve("excludedChurchListingDomains.txt")
+        val excludedDomains = if (Files.isRegularFile(excludedDomainsFile)) {
+            ChurchWebsitePolicy.parse(Files.readString(excludedDomainsFile))
+        } else {
+            emptySet()
+        }
         val generator = StaticSiteGenerator()
         val pages = generator.generate(
             churches = churches,
@@ -41,6 +47,7 @@ object StaticSiteGeneratorCli {
                 generator,
             ),
             denominationNamesByLanguage = denominationNamesByLanguage,
+            excludedChurchListingDomains = excludedDomains,
         )
         val manifest = ChurchPageManifest(
             sourceSha256 = catalogBytes.sha256(),

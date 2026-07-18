@@ -374,7 +374,7 @@ class ChurchEnglishNameResolverTest {
         val church = ChurchEnglishNameInput(
             id = "official:tokyo-sophia",
             name = "東京ソフィア長老教会",
-            denominationId = "XLSX_18816F940131",
+            denominationId = "JOAC",
             address = "東京都新宿区西早稲田",
             location = GeoPoint(35.708, 139.709),
             websiteUrl = "https://olivetassembly.or.jp/our-regions.html",
@@ -451,7 +451,7 @@ class ChurchEnglishNameResolverTest {
         val fallback = ChurchEnglishNameInput(
             id = "official:tokyo-sophia",
             name = "東京ソフィア長老教会",
-            denominationId = "XLSX_18816F940131",
+            denominationId = "JOAC",
             address = "東京都新宿区西早稲田",
             location = GeoPoint(35.708, 139.709),
             websiteUrl = "https://olivetassembly.or.jp/our-regions.html",

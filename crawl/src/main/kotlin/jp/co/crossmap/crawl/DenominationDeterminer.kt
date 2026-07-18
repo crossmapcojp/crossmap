@@ -20,6 +20,7 @@ data class Denomination(
     val aliases: List<String> = emptyList(),
     val officialWebsite: String = "",
     val proposed: Boolean = false,
+    val useAsChurchNamePrefix: Boolean = true,
 ) {
     companion object {
         val NOT_DETERMINED = Denomination(jp.co.crossmap.crawl.NOT_DETERMINED, "未判定")
@@ -30,6 +31,7 @@ private val latinDenominationAbbreviation = Regex("""[A-Z][A-Z0-9]{1,12}""")
 
 /** Latin denomination identifiers and aliases that may occur verbatim in Google place titles. */
 internal fun Iterable<Denomination>.knownLatinAbbreviations(): Set<String> = flatMap { denomination ->
+    if (!denomination.useAsChurchNamePrefix) return@flatMap emptyList()
     (listOf(denomination.id) + denomination.aliases)
         .map(String::uppercase)
         .filter(latinDenominationAbbreviation::matches)
