@@ -157,6 +157,8 @@ class ApplicationTest {
                 assertEquals(HttpStatusCode.OK, script.status)
                 assertTrue(script.bodyAsText().contains("/api/v1/churches/search"))
                 assertTrue(script.bodyAsText().contains("/api/v1/churches/"))
+                assertTrue(script.bodyAsText().contains("history.pushState"))
+                assertTrue(script.bodyAsText().contains("popstate"))
             }
         } finally {
             resourcesRoot.toFile().deleteRecursively()

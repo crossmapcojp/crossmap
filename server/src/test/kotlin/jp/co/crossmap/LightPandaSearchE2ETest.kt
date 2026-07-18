@@ -86,6 +86,25 @@ class LightPandaSearchE2ETest {
             assertTrue(tokyoCentral.hits.all { it.address.contains("東京都中央区") })
             assertTrue(fukuokaCentral.hits.all { it.address.contains("福岡市中央区") })
 
+            val paginationUrl = "http://127.0.0.1:$port/ja/result.html?q=" +
+                URLEncoder.encode("東京バプテスト教会", Charsets.UTF_8.name())
+            LightPandaCdpSession.open(paginationUrl).use { session ->
+                session.waitUntil { session.evaluate("Boolean(document.querySelector('#next'))") == "true" }
+                val firstPageChurch = assertNotNull(
+                    session.evaluate("document.querySelector('.result a')?.textContent || ''"),
+                )
+                session.evaluate("document.querySelector('#next').click(); 'clicked'")
+                session.waitUntil {
+                    session.evaluate("new URLSearchParams(location.search).get('offset')") == "20" &&
+                        session.evaluate("document.querySelector('.result a')?.textContent || ''") != firstPageChurch
+                }
+                session.evaluate("history.back(); 'back'")
+                session.waitUntil {
+                    session.evaluate("new URLSearchParams(location.search).get('offset') || '0'") == "0" &&
+                        session.evaluate("document.querySelector('.result a')?.textContent || ''") == firstPageChurch
+                }
+            }
+
             val browser = LightPanda(
                 timeout = Duration.ofSeconds(30),
                 renderWait = Duration.ofSeconds(15),

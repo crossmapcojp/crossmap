@@ -159,6 +159,7 @@
 - [x] Make `:server:run` rebuild the development snapshot, validate latest-index schema and canonical-catalog SHA-256, and cover `布佐キリスト教会` results/detail with a real Lightpanda E2E test.
 - [x] Serve the vanilla HTML/JavaScript client from Ktor.
 - [x] Implement query, loading, error, empty, result, distance, snippet, link, and pagination UI states.
+- [x] Push pagination offsets into browser history and restore the matching result page on browser Back/Forward navigation.
 - [x] Implement the vanilla-JavaScript `index.html` -> JSON-backed `result.html` -> server-rendered `church.html` navigation flow.
 - [x] Add a persistent Japanese/English/Korean/Portuguese/Indonesian church-name selector to browser search results, API detail, and generated static detail pages.
 - [x] Render the denomination in the selected display language on JSON-backed and generated static church detail pages, with denomination ID only as a fallback.

@@ -8,6 +8,8 @@ class ChurchPublicNameNormalizerTest {
     fun removesReligiousCorporationMarkersAndAdjacentEdgeSymbols() {
         val examples = listOf(
             "宗教法人滝山聖書バプテスト教会",
+            "宗教法人 滝山聖書バプテスト教会",
+            "宗教法人　滝山聖書バプテスト教会",
             "（宗教法人）滝山聖書バプテスト教会",
             "(宗教法人) 滝山聖書バプテスト教会",
             "（宗）滝山聖書バプテスト教会",
@@ -21,6 +23,7 @@ class ChurchPublicNameNormalizerTest {
             "滝山聖書バプテスト教会・宗教法人",
             "滝山聖書バプテスト教会 / (宗)",
             "【宗教法人】滝山聖書バプテスト教会",
+            "INDEPENDENT_CHURCH 滝山聖書バプテスト教会",
         )
 
         examples.forEach { source ->

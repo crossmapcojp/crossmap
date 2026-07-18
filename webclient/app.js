@@ -143,8 +143,17 @@ if (results) {
   };
   const changePage = nextOffset => {
     offset = nextOffset;
-    history.replaceState(null, "", `?q=${encodeURIComponent(query)}&offset=${offset}`);
+    const target = new URL(location.href);
+    target.searchParams.set("q", query);
+    if (offset > 0) target.searchParams.set("offset", String(offset));
+    else target.searchParams.delete("offset");
+    history.pushState({offset}, "", target.pathname + target.search);
     run();
   };
+  window.addEventListener("popstate", () => {
+    const restoredParameters = new URLSearchParams(location.search);
+    offset = Math.max(0, Number(restoredParameters.get("offset")) || 0);
+    run();
+  });
   run();
 }
