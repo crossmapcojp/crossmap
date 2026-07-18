@@ -21,7 +21,6 @@
     <h1>${heading?html}</h1>
     <nav id="language-chooser" aria-label="${languagePickerAria?html}"><#list languageLinks as link><a lang="${link.languageCode?html}" hreflang="${link.languageCode?html}" href="${link.url?html}">${link.label?html}</a><#if link_has_next> · </#if></#list></nav>
     <#if !rootEntry><form id="search-form" action="result.html" method="get">
-      <label for="query">${searchPlaceholder?html}</label>
       <input id="query" name="q" type="search" required placeholder="${searchPlaceholder?html}">
       <button type="submit">${searchButton?html}</button>
     </form></#if>

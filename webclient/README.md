@@ -15,7 +15,7 @@ Development:
 Cloudflare Pages production build:
 
 ```sh
-./gradlew :server:generateChurchPages -PcrossmapSiteBaseUrl=https://www.crossmap.co.jp
+./gradlew :server:generateChurchPages
 ```
 
 Set the Pages output directory to `webclient`. Route `/api/v1/*` and the snapshot download endpoints to the Ktor service on the same origin.

@@ -20,6 +20,55 @@ import okio.Path.Companion.toPath
 
 class LightPandaSearchE2ETest {
     @Test
+    fun runningServerLoadsSnapshotPublishedAfterStartup() {
+        if (System.getenv("CROSSMAP_LIGHTPANDA_E2E") != "1") return
+        val projectRoot = Path.of(requireNotNull(System.getProperty("crossmap.project.root")))
+        val resources = projectRoot.resolve("resources")
+        val publishedIndexes = projectRoot.resolve("cache/search-indexes/churches")
+        val latest = publishedIndexes.resolve("latest.json")
+        val manifest = Json.decodeFromString<IndexManifest>(Files.readString(latest))
+        val temporaryCache = Files.createTempDirectory("crossmap-reloading-index")
+        val temporaryIndexes = temporaryCache.resolve("search-indexes/churches")
+        Files.createDirectories(temporaryIndexes)
+        val versionLink = temporaryIndexes.resolve(manifest.indexVersion)
+        Files.createSymbolicLink(versionLink, publishedIndexes.resolve(manifest.indexVersion).toAbsolutePath())
+        val port = ServerSocket(0).use { it.localPort }
+        val server = embeddedServer(Netty, port = port, host = "127.0.0.1") {
+            module(
+                searchEngine = null,
+                resourcesRoot = resources,
+                cacheRoot = temporaryCache,
+                webRoot = projectRoot.resolve("webclient"),
+                reloadSearchEngines = true,
+            )
+        }
+        server.start(wait = false)
+        try {
+            awaitHealthy(port)
+            val unavailable = URI("http://127.0.0.1:$port/api/v1/churches/search?q=%E3%83%90%E3%83%97%E3%83%86%E3%82%B9%E3%83%88")
+                .toURL().openConnection() as HttpURLConnection
+            try {
+                assertEquals(503, unavailable.responseCode)
+            } finally {
+                unavailable.disconnect()
+            }
+
+            Files.copy(latest, temporaryIndexes.resolve("latest.json"))
+            val recovered = apiSearch(
+                port,
+                "バプテスト",
+                readTimeoutMillis = 15_000,
+            ).response
+            assertTrue(recovered.total > 0)
+            assertTrue(recovered.hits.isNotEmpty())
+        } finally {
+            server.stop(1_000, 3_000)
+            Files.deleteIfExists(versionLink)
+            temporaryCache.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun browserSearchUsesTheDetectedAnalyzerForAllSupportedLanguages() {
         if (System.getenv("CROSSMAP_LIGHTPANDA_E2E") != "1") return
         val projectRoot = Path.of(requireNotNull(System.getProperty("crossmap.project.root")))

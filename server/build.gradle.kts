@@ -48,11 +48,13 @@ val lightpandaE2eTest by tasks.registering(Test::class) {
 
 tasks.register<JavaExec>("generateChurchPages") {
     group = "crossmap"
-    description = "Generate static English-name church detail pages"
+    description = "Generate localized static pages from the current canonical church catalog"
     classpath = sourceSets.main.get().runtimeClasspath
     mainClass = "jp.co.crossmap.StaticSiteGeneratorCli"
     workingDir = rootProject.projectDir
-    dependsOn(":crawl:dataCleanup", ":crawl:prepareGeoNameCache")
+    // Static rendering is deliberately read-only. Running dataCleanup here used to rewrite
+    // churches.json after an index had been published, which made runCurrentIndex reject it.
+    dependsOn(":crawl:prepareGeoNameCache")
     val churchCatalog = providers.gradleProperty("churchCatalog").orElse("resources/catalog/churches.json")
     val denominationEnglishNames = providers.gradleProperty("denominationEnglishNames").orElse("resources/catalog/denomination-en-names.json")
     val churchPageOutput = providers.gradleProperty("churchPageOutput").orElse("webclient")

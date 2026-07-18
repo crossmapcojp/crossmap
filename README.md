@@ -109,7 +109,7 @@ df -h /media/joel/llms
 
 Remove `--dry-run` to atomically update `resources/catalog/churches.json`. `--programmatic-only` is available for an Ollama-free completeness check.
 
-The production cleanup entry point is `./gradlew :crawl:dataCleanup`. Every invocation writes a unique `logs/YYYY-MM-DD-HH-mm-data-cleanup-stat.log` report with deterministic/LLM counts, unresolved count, errors, LLM timeouts, duration, and throughput. `:server:generateChurchPages` depends on this cleanup gate.
+The production cleanup entry point is `./gradlew :crawl:dataCleanup`. Every invocation writes a unique `logs/YYYY-MM-DD-HH-mm-data-cleanup-stat.log` report with deterministic/LLM counts, unresolved count, errors, LLM timeouts, duration, and throughput. Static page generation is intentionally read-only and consumes the current canonical catalog without invoking this cleanup gate.
 
 ## Build an index snapshot
 
@@ -156,11 +156,10 @@ It rebuilds the latest snapshot and generated pages, starts Netty, exercises all
 Generate the complete portable site with:
 
 ```sh
-./gradlew :server:generateChurchPages \
-  -PcrossmapSiteBaseUrl=https://www.crossmap.co.jp
+./gradlew :server:generateChurchPages
 ```
 
-The output is the `webclient/` directory. Ktor serves this directory unchanged in development. For production, publish the same directory as the Cloudflare Pages asset directory; no server-side template runtime is required. Navigation and assets are origin-relative, while canonical, hreflang, Open Graph, JSON-LD, and sitemap URLs use `crossmapSiteBaseUrl`. The JSON search API must remain available on the same origin at `/api/v1/` (for example through a Cloudflare route/proxy to Ktor). Generation fails if a required church name, denomination name, or collision-disambiguating location is missing.
+The output is the `webclient/` directory. Ktor serves this directory unchanged in development. For production, publish the same directory as the Cloudflare Pages asset directory; no server-side template runtime is required. Navigation, API requests, and assets are origin-relative, so generation and local serving do not require a domain argument. Canonical, hreflang, Open Graph, JSON-LD, and sitemap metadata default to `https://www.crossmap.co.jp`; `-PcrossmapSiteBaseUrl=...` is an optional SEO override, not a runtime dependency. On localhost, Ktor serves both the static files and `/api/v1/`. On Cloudflare Pages, route or proxy the same-origin `/api/v1/` path to Ktor; Ktor's CORS response also permits direct API requests from the production domain, `*.pages.dev` previews, and localhost development origins. Generation fails if a required church name, denomination name, or collision-disambiguating location is missing.
 
 ## Mobile
 
@@ -225,8 +224,8 @@ The `Module(s)` column names every module that a task directly operates or orche
 | Module(s) | Command | What it does | Dependencies and side effects | Output |
 | --- | --- | --- | --- | --- |
 | `server`, `core`, `webclient` | `./gradlew :server:runCurrentIndex` | Starts Ktor with the latest already-built compatible snapshot and serves the vanilla-JavaScript client. | Does not crawl, invoke Ollama, rebuild the index, or regenerate static pages. Best choice for local search iteration and benchmarks. | HTTP server on the configured host/port and request/query timing logs. |
-| `server`, `core`, `crawl`, `resources`, `webclient` | `./gradlew :server:run` | Rebuilds data-dependent artifacts and then starts the complete web application. | Depends on `:crawl:buildSearchSnapshot` and `generateChurchPages`; the latter depends on cleanup and can invoke Ollama or update catalog data. | Current snapshot, generated church pages, logs, and running HTTP server. |
-| `server`, `crawl`, `resources`, `webclient` | `./gradlew :server:generateChurchPages` | Generates the root chooser plus every localized index, result, church-detail page, manifest, and sitemap. | Depends on church cleanup and geoname preparation; set `crossmapSiteBaseUrl` for canonical production URLs. | Deployable `webclient/` tree with generated `ja/en/ko/pt/id` directories. |
+| `server`, `core`, `crawl`, `resources`, `webclient` | `./gradlew :server:run` | Rebuilds data-dependent artifacts and then starts the complete web application. | Depends on `:crawl:buildSearchSnapshot` and the read-only `generateChurchPages` task. | Current snapshot, generated church pages, logs, and running HTTP server. |
+| `server`, `crawl`, `resources`, `webclient` | `./gradlew :server:generateChurchPages` | Generates the root chooser plus every localized index, result, church-detail page, manifest, and sitemap. | Reads the canonical catalog without running cleanup or invalidating the current snapshot; the site origin has a production default and is only an optional SEO override. | Deployable `webclient/` tree with generated `ja/en/ko/pt/id` directories. |
 | `server`, `core` | `./gradlew :server:test` | Runs API, startup-safety, snapshot, static-site, and server integration tests. | Does not opt into the external Lightpanda flow. | `server/build/reports/tests`. |
 | `server`, `core`, `crawl`, `resources`, `webclient` | `./gradlew :server:lightpandaE2eTest` | Runs the real index-to-JSON-to-results-to-static-detail browser flow. | Rebuilds the snapshot/pages and inherits their cleanup side effects; requires Lightpanda. | E2E test report under `server/build/reports/tests`. |
 

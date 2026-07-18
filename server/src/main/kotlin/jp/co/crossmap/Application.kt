@@ -67,7 +67,7 @@ fun main() {
         module = {
             module(
                 searchEngine = null,
-                searchEngines = loadSearchEngines(),
+                reloadSearchEngines = true,
             )
         },
     ).start(wait = true)
@@ -81,6 +81,7 @@ fun Application.module(
         System.getenv("CROSSMAP_CACHE") ?: resourcesRoot.toAbsolutePath().normalize().parent.resolve("cache").toString(),
     ),
     webRoot: Path = Path.of(System.getenv("CROSSMAP_WEB_DIR") ?: "webclient"),
+    reloadSearchEngines: Boolean = false,
 ) {
     val excludedDomainsFile = resourcesRoot.resolve("catalog/excludedChurchListingDomains.txt")
     val websitePolicy = ChurchWebsitePolicy(
@@ -90,15 +91,29 @@ fun Application.module(
             emptySet()
         },
     )
-    val availableSearchEngines = buildMap {
+    val initialSearchEngines = buildMap {
         searchEngine?.let { put("ja", it) }
         putAll(searchEngines)
     }
-    availableSearchEngines.values.distinct().forEach(ChurchSearchEngine::warmUp)
+    val searchEngineRegistry = ReloadingSearchEngineRegistry(
+        initial = initialSearchEngines,
+        fingerprint = if (reloadSearchEngines) {
+            { searchIndexFingerprint(resourcesRoot, cacheRoot) }
+        } else {
+            null
+        },
+        loader = if (reloadSearchEngines) {
+            { loadSearchEngines(resourcesRoot, cacheRoot, webRoot) }
+        } else {
+            null
+        },
+        onReload = { languages -> log.info("Reloaded latest search engines: [${languages.joinToString()}]") },
+    )
+    val startupSearchEngines = searchEngineRegistry.current()
     monitor.subscribe(ApplicationStopped) {
-        availableSearchEngines.values.distinct().forEach(ChurchSearchEngine::close)
+        searchEngineRegistry.close()
     }
-    log.info("Available search engines: [${availableSearchEngines.keys.joinToString()}]")
+    log.info("Available search engines: [${startupSearchEngines.keys.joinToString()}]")
     val churchIndexes = cacheRoot.resolve("search-indexes/churches")
     install(ContentNegotiation) { json(wireJson) }
     install(CORS) { anyHost() }
@@ -113,6 +128,7 @@ fun Application.module(
     }
     routing {
         get("/api/v1/health") {
+            val availableSearchEngines = searchEngineRegistry.current()
             call.respond(mapOf("status" to if (availableSearchEngines.isEmpty()) "not_ready" else "ok"))
         }
         get("/api/v1/churches/search") {
@@ -131,6 +147,7 @@ fun Application.module(
             val queryLanguage = QueryLanguageDetector.detect(query, displayLanguage)
             finishStep("language.detect")
             call.application.environment.log.debug("search-request: query='$query', displayLang=$displayLanguage, detectedLang=$queryLanguage")
+            val availableSearchEngines = searchEngineRegistry.current()
             val engine = availableSearchEngines[queryLanguage]
                 ?: availableSearchEngines[displayLanguage]
                 ?: availableSearchEngines["ja"]
@@ -158,6 +175,7 @@ fun Application.module(
             call.application.environment.log.info(renderHttpSearchTiming(timings, total))
         }
         get("/api/v1/churches/{id}") {
+            val availableSearchEngines = searchEngineRegistry.current()
             val engine = availableSearchEngines["ja"] ?: availableSearchEngines.values.firstOrNull() ?: return@get call.respond(
                 HttpStatusCode.ServiceUnavailable,
                 ApiError("index_unavailable", "Church index is not configured"),
@@ -218,17 +236,76 @@ private suspend fun io.ktor.server.application.ApplicationCall.respondWebFile(pa
     respondText(Files.readString(path), type)
 }
 
-private fun loadSearchEngines(): Map<String, ChurchSearchEngine> =
+private class ReloadingSearchEngineRegistry(
+    initial: Map<String, ChurchSearchEngine>,
+    private val fingerprint: (() -> String)? = null,
+    private val loader: (() -> Map<String, ChurchSearchEngine>)? = null,
+    private val onReload: (Set<String>) -> Unit = {},
+) {
+    @Volatile
+    private var engines = initial
+    @Volatile
+    private var loadedFingerprint = if (loader == null) "fixed" else "unchecked"
+    private val retiredEngines = mutableListOf<ChurchSearchEngine>()
+
+    init {
+        initial.values.distinct().forEach(ChurchSearchEngine::warmUp)
+    }
+
+    fun current(): Map<String, ChurchSearchEngine> {
+        val load = loader ?: return engines
+        val currentFingerprint = requireNotNull(fingerprint).invoke()
+        if (loadedFingerprint == currentFingerprint) return engines
+        return synchronized(this) {
+            val refreshedFingerprint = requireNotNull(fingerprint).invoke()
+            if (loadedFingerprint != refreshedFingerprint) {
+                val replacement = load()
+                replacement.values.distinct().forEach(ChurchSearchEngine::warmUp)
+                retiredEngines += engines.values.distinct()
+                engines = replacement
+                loadedFingerprint = refreshedFingerprint
+                if (replacement.isNotEmpty()) onReload(replacement.keys)
+            }
+            engines
+        }
+    }
+
+    fun close() = synchronized(this) {
+        (retiredEngines + engines.values).distinct().forEach(ChurchSearchEngine::close)
+        retiredEngines.clear()
+        engines = emptyMap()
+    }
+}
+
+private fun searchIndexFingerprint(resourcesRoot: Path, cacheRoot: Path): String =
+    listOf(
+        cacheRoot.resolve("search-indexes/churches/latest.json"),
+        resourcesRoot.resolve("catalog/churches.json"),
+    ).joinToString("|") { path ->
+        if (Files.isRegularFile(path)) {
+            "${Files.getLastModifiedTime(path).toMillis()}:${Files.size(path)}"
+        } else {
+            "missing"
+        }
+    }
+
+private fun loadSearchEngines(
+    resourcesRoot: Path,
+    cacheRoot: Path,
+    webRoot: Path,
+): Map<String, ChurchSearchEngine> =
     Language.entries.mapNotNull { language ->
-        loadSearchEngine(language.code)?.let { language.code to it }
+        loadSearchEngine(language.code, resourcesRoot, cacheRoot, webRoot)?.let { language.code to it }
     }.toMap()
 
-private fun loadSearchEngine(languageCode: String): ChurchSearchEngine? = runCatching {
-    val resourcesRoot = Path.of(System.getenv("CROSSMAP_RESOURCES") ?: "resources")
-    val cacheRoot = Path.of(
+private fun loadSearchEngine(
+    languageCode: String,
+    resourcesRoot: Path = Path.of(System.getenv("CROSSMAP_RESOURCES") ?: "resources"),
+    cacheRoot: Path = Path.of(
         System.getenv("CROSSMAP_CACHE") ?: resourcesRoot.toAbsolutePath().normalize().parent.resolve("cache").toString(),
-    )
-    val webRoot = Path.of(System.getenv("CROSSMAP_WEB_DIR") ?: "webclient")
+    ),
+    webRoot: Path = Path.of(System.getenv("CROSSMAP_WEB_DIR") ?: "webclient"),
+): ChurchSearchEngine? = runCatching {
     val japaneseIndex = resolveServerIndex(resourcesRoot, System.getenv("CROSSMAP_INDEX_DIR"), cacheRoot) ?: return null
     val index = if (languageCode == "ja") japaneseIndex else japaneseIndex.parent.resolve(languageCode)
     val geonamesFile = Path.of(System.getenv("CROSSMAP_GEONAMES") ?: resourcesRoot.resolve("geonames/japan.json").toString())

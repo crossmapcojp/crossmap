@@ -172,6 +172,7 @@
 - [x] Sanitize website URLs again at snapshot, API, and static-page boundaries so stale indexes/catalogs cannot expose excluded listing domains; cover search, detail, generated pages, and the real Lightpanda flow with regression tests.
 - [x] Validate and open the configured index at server startup and return structured JSON errors.
 - [x] Make `:server:run` rebuild the development snapshot, validate latest-index schema and canonical-catalog SHA-256, and cover `布佐キリスト教会` results/detail with a real Lightpanda E2E test.
+- [x] Keep static page generation read-only, reload a newly published compatible snapshot without restarting Ktor, and verify localhost plus Cloudflare Pages API origins.
 - [x] Serve the vanilla HTML/JavaScript client from Ktor.
 - [x] Implement query, loading, error, empty, result, distance, snippet, link, and pagination UI states.
 - [x] Push pagination offsets into browser history and restore the matching result page on browser Back/Forward navigation.

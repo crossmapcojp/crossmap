@@ -1,7 +1,9 @@
 package jp.co.crossmap
 
 import io.ktor.client.request.get
+import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.testApplication
 import java.nio.file.Files
@@ -101,6 +103,23 @@ class ApplicationTest {
         val response = client.get("/api/v1/health")
         assertEquals(HttpStatusCode.OK, response.status)
         assertTrue(response.bodyAsText().contains("not_ready"))
+    }
+
+    @Test
+    fun apiAcceptsCloudflarePagesAndLocalhostBrowserOrigins() = testApplication {
+        application { module(searchEngine = null) }
+        listOf(
+            "https://www.crossmap.co.jp",
+            "https://crossmap.pages.dev",
+            "http://localhost:8080",
+            "http://127.0.0.1:8080",
+        ).forEach { origin ->
+            val response = client.get("/api/v1/health") {
+                header(HttpHeaders.Origin, origin)
+            }
+            assertEquals(HttpStatusCode.OK, response.status, origin)
+            assertEquals("*", response.headers[HttpHeaders.AccessControlAllowOrigin], origin)
+        }
     }
 
     @Test
