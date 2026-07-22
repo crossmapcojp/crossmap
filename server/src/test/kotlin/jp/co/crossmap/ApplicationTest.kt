@@ -13,6 +13,7 @@ import java.security.MessageDigest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertContains
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.serialization.decodeFromString
@@ -157,7 +158,8 @@ class ApplicationTest {
 
                 val index = client.get("/")
                 assertEquals(HttpStatusCode.OK, index.status)
-                assertTrue(index.bodyAsText().contains("id=\"language-chooser\""))
+                assertTrue(index.bodyAsText().contains("id=\"search-form\""))
+                assertFalse(index.bodyAsText().contains("id=\"language-chooser\""))
 
                 val japaneseIndex = client.get("/ja/")
                 assertEquals(HttpStatusCode.OK, japaneseIndex.status)
@@ -166,11 +168,14 @@ class ApplicationTest {
                 val results = client.get("/ja/result.html")
                 assertEquals(HttpStatusCode.OK, results.status)
                 assertTrue(results.bodyAsText().contains("id=\"results\""))
+                assertTrue(results.bodyAsText().contains("id=\"result-search-form\""))
+                assertFalse(results.bodyAsText().contains("id=\"language-chooser\""))
                 assertTrue(results.bodyAsText().contains("src=\"../app.js\""))
 
                 val churchPage = client.get(generated.churchPages.single { it.language == Language.JAPANESE }.pageUrl)
                 assertEquals(HttpStatusCode.OK, churchPage.status)
                 assertTrue(churchPage.bodyAsText().contains("class=\"church-detail\""))
+                assertFalse(churchPage.bodyAsText().contains("id=\"language-chooser\""))
 
                 val script = client.get("/app.js")
                 assertEquals(HttpStatusCode.OK, script.status)

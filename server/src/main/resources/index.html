@@ -15,15 +15,14 @@
   <meta property="og:locale" content="${ogLocale?html}">
   <link rel="stylesheet" href="<#if rootEntry>styles.css<#else>../styles.css</#if>">
 </head>
-<body>
-  <main>
-    <p class="eyebrow">${siteName?html}</p>
+<body class="home-page">
+  <main class="home-main">
+    <p class="wordmark">${siteName?html}</p>
     <h1>${heading?html}</h1>
-    <nav id="language-chooser" aria-label="${languagePickerAria?html}"><#list languageLinks as link><a lang="${link.languageCode?html}" hreflang="${link.languageCode?html}" href="${link.url?html}">${link.label?html}</a><#if link_has_next> · </#if></#list></nav>
-    <#if !rootEntry><form id="search-form" action="result.html" method="get">
+    <form id="search-form" class="search-form" action="<#if rootEntry>en/result.html<#else>result.html</#if>" method="get">
       <input id="query" name="q" type="search" required placeholder="${searchPlaceholder?html}">
       <button type="submit">${searchButton?html}</button>
-    </form></#if>
+    </form>
   </main>
   <script src="<#if rootEntry>app.js<#else>../app.js</#if>"></script>
 </body>

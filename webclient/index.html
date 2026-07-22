@@ -19,12 +19,14 @@
   <meta property="og:locale" content="en_US">
   <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-  <main>
-    <p class="eyebrow">Crossmap Church Search</p>
-    <h1>Choose a language</h1>
-    <nav id="language-chooser" aria-label="Choose the display language"><a lang="ja" hreflang="ja" href="ja/index.html">日本語</a> · <a lang="en" hreflang="en" href="en/index.html">English</a> · <a lang="ko" hreflang="ko" href="ko/index.html">한국어</a> · <a lang="pt" hreflang="pt" href="pt/index.html">Português</a> · <a lang="id" hreflang="id" href="id/index.html">Bahasa Indonesia</a></nav>
-    
+<body class="home-page">
+  <main class="home-main">
+    <p class="wordmark">Crossmap Church Search</p>
+    <h1>Find a church</h1>
+    <form id="search-form" class="search-form" action="en/result.html" method="get">
+      <input id="query" name="q" type="search" required placeholder="Church name, denomination, or location">
+      <button type="submit">Search</button>
+    </form>
   </main>
   <script src="app.js"></script>
 </body>

@@ -16,10 +16,12 @@
   <link rel="stylesheet" href="../styles.css">
   <script type="application/ld+json">${jsonLd}</script>
 </head>
-<body>
-  <main>
-    <a href="index.html">← ${backToSearch?html}</a>
-    <nav id="language-chooser" aria-label="${languagePickerAria?html}"><#list languageLinks as link><a lang="${link.languageCode?html}" hreflang="${link.languageCode?html}" href="${link.url?html}">${link.label?html}</a><#if link_has_next> · </#if></#list></nav>
+<body class="church-page">
+  <header class="detail-header">
+    <a class="wordmark" href="index.html">Crossmap</a>
+    <a class="back-link" href="index.html">← ${backToSearch?html}</a>
+  </header>
+  <main class="detail-main">
     <article class="church-detail">
       <p class="eyebrow">${churchLabel?html}</p>
       <h1>${churchName?html}</h1>

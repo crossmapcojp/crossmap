@@ -206,9 +206,7 @@ class LocalizedStaticSiteGenerator(
             "alternates" to alternateModels(fileName),
             "ogLocale" to ogLocale(language),
             "siteName" to messages.text(language, MessageKey.SITE_NAME),
-            "heading" to messages.text(language, if (rootEntry) MessageKey.CHOOSE_LANGUAGE else MessageKey.SEARCH_HEADING),
-            "languagePickerAria" to messages.text(language, MessageKey.LANGUAGE_PICKER_ARIA),
-            "languageLinks" to languageLinks(fileName, rootEntry),
+            "heading" to messages.text(language, MessageKey.SEARCH_HEADING),
             "searchPlaceholder" to messages.text(language, MessageKey.SEARCH_PLACEHOLDER),
             "searchButton" to messages.text(language, MessageKey.SEARCH_BUTTON),
         )
@@ -222,9 +220,8 @@ class LocalizedStaticSiteGenerator(
         "xDefaultUrl" to absolute("/"),
         "alternates" to alternateModels("result.html"),
         "siteName" to messages.text(language, MessageKey.SITE_NAME),
-        "languagePickerAria" to messages.text(language, MessageKey.LANGUAGE_PICKER_ARIA),
-        "languageLinks" to languageLinks("result.html", false),
-        "backToSearch" to messages.text(language, MessageKey.BACK_TO_SEARCH),
+        "searchPlaceholder" to messages.text(language, MessageKey.SEARCH_PLACEHOLDER),
+        "searchButton" to messages.text(language, MessageKey.SEARCH_BUTTON),
         "resultsTitle" to messages.text(language, MessageKey.RESULTS_TITLE),
         "loading" to messages.text(language, MessageKey.LOADING),
         "pageMessagesJson" to safeJson(
@@ -282,7 +279,6 @@ class LocalizedStaticSiteGenerator(
         }
         val website = websitePolicy.publicWebsiteUrl(church)
         val pageFile = "$slug.html"
-        val languageLinks = languageLinks(pageFile, false)
         val description = messages.text(language, MessageKey.CHURCH_PAGE_DESCRIPTION, churchName)
         val socialProfiles = church.socialProfiles.map {
             mapOf(
@@ -300,8 +296,6 @@ class LocalizedStaticSiteGenerator(
             "alternates" to alternateModels(pageFile),
             "ogLocale" to ogLocale(language),
             "backToSearch" to messages.text(language, MessageKey.BACK_TO_SEARCH),
-            "languagePickerAria" to messages.text(language, MessageKey.LANGUAGE_PICKER_ARIA),
-            "languageLinks" to languageLinks,
             "churchLabel" to messages.text(language, MessageKey.CHURCH_LABEL),
             "churchName" to churchName,
             "alternateNames" to alternateNames,
@@ -340,14 +334,6 @@ class LocalizedStaticSiteGenerator(
             church.socialProfiles.map(SocialProfile::url).distinct().forEach { add(it) }
         })
     })
-
-    private fun languageLinks(fileName: String, rootEntry: Boolean): List<Map<String, String>> = Language.entries.map {
-        mapOf(
-            "languageCode" to it.code,
-            "label" to it.displayName,
-            "url" to if (rootEntry) "${it.code}/index.html" else "../${it.code}/$fileName",
-        )
-    }
 
     private fun alternateModels(fileName: String): List<Map<String, String>> = Language.entries.map {
         mapOf("languageCode" to it.code, "url" to absolute("/${it.code}/$fileName"))

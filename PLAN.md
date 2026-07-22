@@ -159,7 +159,7 @@
 - [x] Reuse that catalog from Compose and the JVM static-site generator; keep query-language detection independent from UI language.
 - [x] Use only the canonical template names `index.html`, `result.html`, and `church.html`.
 - [x] Keep `app.js` language agnostic and place only one UI language in each generated HTML document.
-- [x] Redirect the root index by supported browser language first; otherwise use geolocation for Japan, Korea, Indonesia, Brazil, or Portugal, then fall back to English while retaining the chooser as a no-JavaScript fallback.
+- [x] Redirect the root index by supported browser language first; otherwise use geolocation for Japan, Korea, Indonesia, Brazil, or Portugal, then fall back to English without rendering a manual language chooser.
 - [x] Generate `/ja`, `/en`, `/ko`, `/pt`, and `/id` index, result, and church pages with stable language-independent English slugs.
 - [x] Server-render church name, denomination, address, website, social links, canonical URL, reciprocal hreflang links, JSON-LD, and sitemap content.
 - [x] Make `webclient/` a portable static artifact: Ktor serves it unchanged in development and Cloudflare Pages can publish it unchanged in production.
@@ -177,6 +177,7 @@
 - [x] Serve the vanilla HTML/JavaScript client from Ktor.
 - [x] Implement query, loading, error, empty, result, distance, snippet, link, and pagination UI states.
 - [x] Push pagination offsets into browser history and restore the matching result page on browser Back/Forward navigation.
+- [x] Replace visible language lists on index, result, and church pages with automatic locale selection; keep the active query in a search-first result header and apply a distinct Google/DuckDuckGo-inspired visual design.
 - [x] Implement the vanilla-JavaScript `index.html` -> JSON-backed `result.html` -> server-rendered `church.html` navigation flow.
 - [x] Add a persistent Japanese/English/Korean/Portuguese/Indonesian church-name selector to browser search results, API detail, and generated static detail pages.
 - [x] Render the denomination in the selected display language on JSON-backed and generated static church detail pages, with denomination ID only as a fallback.

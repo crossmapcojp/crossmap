@@ -10,11 +10,15 @@
   </#list><link rel="alternate" hreflang="x-default" href="${xDefaultUrl?html}">
   <link rel="stylesheet" href="../styles.css">
 </head>
-<body>
-  <main>
-    <a href="index.html">← ${backToSearch?html}</a>
-    <p class="eyebrow">${siteName?html}</p>
-    <nav id="language-chooser" aria-label="${languagePickerAria?html}"><#list languageLinks as link><a lang="${link.languageCode?html}" hreflang="${link.languageCode?html}" href="${link.url?html}">${link.label?html}</a><#if link_has_next> · </#if></#list></nav>
+<body class="results-page">
+  <header class="search-header">
+    <a class="wordmark" href="index.html">${siteName?html}</a>
+    <form id="result-search-form" class="search-form" action="result.html" method="get">
+      <input id="query" name="q" type="search" required placeholder="${searchPlaceholder?html}" autocomplete="off">
+      <button type="submit">${searchButton?html}</button>
+    </form>
+  </header>
+  <main class="results-main">
     <h1 id="result-heading">${resultsTitle?html}</h1>
     <p id="status" aria-live="polite">${loading?html}</p>
     <div id="results"></div>

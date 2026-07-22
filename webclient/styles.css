@@ -1,24 +1,126 @@
-:root { font-family: Inter, system-ui, sans-serif; color: #17231d; background: #f3f0e8; }
-body { margin: 0; }
-main { width: min(760px, calc(100% - 32px)); margin: 0 auto; padding: 64px 0; }
-.eyebrow { color: #32634a; font-size: .75rem; font-weight: 800; letter-spacing: .18em; }
-h1 { font-size: clamp(2rem, 8vw, 4.5rem); line-height: 1; margin: .25em 0; }
-form { display: flex; gap: 8px; margin: 40px 0 24px; }
-input { flex: 1; min-width: 0; padding: 14px 16px; border: 1px solid #96a298; border-radius: 8px; font: inherit; background: white; }
-button { padding: 12px 20px; border: 0; border-radius: 8px; color: white; background: #245b3e; font: inherit; font-weight: 700; cursor: pointer; }
-.result { padding: 22px 0; border-top: 1px solid #c9cec8; }
-.result h2 { margin: 0; }
-a { color: #174d34; }
-.snippet { color: #536057; line-height: 1.6; }
-#pagination { display: flex; gap: 8px; margin-top: 24px; }
-.language-picker {
-  display: flex;
-  align-items: center;
-  gap: .5rem;
-  margin: .75rem 0;
+:root {
+  color: #202124;
+  background: #fff;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-synthesis: none;
 }
 
-.language-picker select {
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; }
+a { color: #185abc; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.wordmark {
+  color: #176b4d;
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -.04em;
+  text-decoration: none;
+}
+
+.home-main {
+  width: min(680px, calc(100% - 32px));
+  margin: 0 auto;
+  padding-top: clamp(110px, 20vh, 210px);
+  text-align: center;
+}
+
+.home-main .wordmark { font-size: clamp(2.7rem, 9vw, 5rem); }
+.home-main h1 { margin: 14px 0 30px; color: #5f6368; font-size: 1.05rem; font-weight: 500; }
+
+.search-form {
+  display: flex;
+  width: 100%;
+  gap: 8px;
+}
+
+.search-form input {
+  min-width: 0;
+  flex: 1;
+  padding: 14px 20px;
+  border: 1px solid #dfe1e5;
+  border-radius: 999px;
+  outline: none;
+  background: #fff;
+  color: #202124;
   font: inherit;
-  padding: .35rem .5rem;
+  font-size: 1rem;
+}
+
+.search-form input:hover,
+.search-form input:focus {
+  border-color: transparent;
+  box-shadow: 0 1px 6px rgb(32 33 36 / 24%);
+}
+
+.search-form button,
+#pagination button {
+  border: 0;
+  border-radius: 999px;
+  background: #176b4d;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.search-form button { padding: 12px 22px; }
+.search-form button:hover,
+#pagination button:hover { background: #12583f; }
+
+.search-header {
+  position: sticky;
+  z-index: 10;
+  top: 0;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 18px max(24px, calc((100vw - 1120px) / 2));
+  border-bottom: 1px solid #ebedef;
+  background: rgb(255 255 255 / 96%);
+  backdrop-filter: blur(8px);
+}
+
+.search-header .wordmark { flex: 0 0 auto; }
+.search-header .search-form { max-width: 680px; }
+
+.results-main {
+  width: min(760px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 30px 0 64px;
+}
+
+.results-main h1 { margin: 0 0 6px; font-size: 1.25rem; font-weight: 500; }
+#status { margin: 0 0 22px; color: #70757a; font-size: .9rem; }
+.result { padding: 19px 0; }
+.result h2 { margin: 0 0 5px; font-size: 1.2rem; font-weight: 500; line-height: 1.35; }
+.result p { margin: 4px 0; color: #4d5156; font-size: .93rem; line-height: 1.55; }
+.result .snippet { color: #5f6368; }
+#pagination { display: flex; gap: 10px; margin-top: 28px; }
+#pagination button { padding: 10px 18px; }
+
+.detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px max(24px, calc((100vw - 900px) / 2));
+  border-bottom: 1px solid #ebedef;
+}
+
+.back-link { color: #4d5156; font-size: .94rem; }
+.detail-main { width: min(760px, calc(100% - 40px)); margin: 42px auto 80px; }
+.church-detail { padding: clamp(24px, 5vw, 48px); border: 1px solid #e1e5e3; border-radius: 18px; box-shadow: 0 4px 18px rgb(32 33 36 / 8%); }
+.eyebrow { margin: 0 0 10px; color: #176b4d; font-size: .75rem; font-weight: 800; letter-spacing: .16em; }
+.church-detail h1 { margin: 0 0 24px; font-size: clamp(1.8rem, 5vw, 3rem); line-height: 1.18; }
+.church-detail p { line-height: 1.65; }
+.alternate-names { padding-left: 1.25rem; color: #5f6368; }
+
+@media (max-width: 640px) {
+  .home-main { padding-top: 110px; }
+  .search-form button { padding-inline: 16px; }
+  .search-header { align-items: stretch; flex-direction: column; gap: 12px; padding: 14px 16px; }
+  .search-header .wordmark { align-self: flex-start; }
+  .results-main { width: calc(100% - 32px); padding-top: 24px; }
+  .detail-header { padding: 16px 20px; }
+  .church-detail { border: 0; padding: 4px 0; box-shadow: none; }
 }

@@ -13,17 +13,9 @@ const escapeHtml = (value = "") => String(value).replace(/[&<>'"]/g, character =
 })[character]);
 
 const uiLanguage = document.documentElement.lang.toLowerCase().split("-")[0] || "en";
-const languageLinks = [...document.querySelectorAll("a[hreflang]:not([hreflang='x-default'])")];
+const languageAlternates = [...document.querySelectorAll("link[rel='alternate'][hreflang]:not([hreflang='x-default'])")];
 const linkLanguage = link => (link.getAttribute("hreflang") || "").toLowerCase().split("-")[0];
-const supportedLanguages = languageLinks.map(linkLanguage).filter(Boolean);
-
-languageLinks.forEach(link => link.addEventListener("click", () => {
-  try {
-    localStorage.setItem("crossmap.language", linkLanguage(link));
-  } catch (_) {
-    // Language navigation still works when browser storage is unavailable.
-  }
-}));
+const supportedLanguages = languageAlternates.map(linkLanguage).filter(Boolean);
 
 const isInside = (latitude, longitude, south, west, north, east) =>
   latitude >= south && latitude <= north && longitude >= west && longitude <= east;
@@ -56,9 +48,8 @@ if (location.pathname === "/" || location.pathname === "/index.html") {
     .map(language => String(language).toLowerCase().split("-")[0])
     .find(language => supportedLanguages.includes(language));
   const redirectToLanguage = language => {
-    const destination = languageLinks.find(link => linkLanguage(link) === language)
-      || languageLinks.find(link => linkLanguage(link) === "en");
-    if (destination) location.replace(destination.href);
+    const destinationLanguage = supportedLanguages.includes(language) ? language : "en";
+    location.replace(`/${destinationLanguage}/index.html`);
   };
   if (detectedLanguage) {
     redirectToLanguage(detectedLanguage);
@@ -102,17 +93,13 @@ const results = $("#results");
 if (results) {
   const parameters = new URLSearchParams(location.search);
   const query = parameters.get("q") || "";
+  const searchInput = $("#query");
+  if (searchInput) searchInput.value = query;
   let offset = Math.max(0, Number(parameters.get("offset")) || 0);
   const limit = 20;
   let deviceLocation = null;
   const heading = $("#result-heading");
   heading.textContent = format(messages.searchResultsTitle, {query});
-  languageLinks.forEach(link => {
-    const target = new URL(link.href);
-    target.search = location.search;
-    link.href = target.pathname + target.search;
-  });
-
   const run = async () => {
     if (!query) {
       $("#status").textContent = messages.noResults || "";

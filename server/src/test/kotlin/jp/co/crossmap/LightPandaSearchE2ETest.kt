@@ -204,6 +204,8 @@ class LightPandaSearchE2ETest {
                 session.waitUntil {
                     session.evaluate("document.querySelectorAll('.result').length") != "0"
                 }
+                assertEquals("Baptist", session.evaluate("document.querySelector('#query').value"))
+                assertEquals("0", session.evaluate("document.querySelectorAll('#language-chooser').length"))
                 val visibleNames = Json.decodeFromString<List<String>>(
                     assertNotNull(
                         session.evaluate(
@@ -226,7 +228,7 @@ class LightPandaSearchE2ETest {
 
             val indexHtml = browser.fetchHtml("http://127.0.0.1:$port/ja/")
             assertTrue(indexHtml.contains("id=\"search-form\""), indexHtml.take(1_000))
-            assertTrue(indexHtml.contains("id=\"language-chooser\""), indexHtml.take(1_000))
+            assertFalse(indexHtml.contains("id=\"language-chooser\""), indexHtml.take(1_000))
 
             val queries = supportedLanguageCodes.associateWith { language ->
                 when (language) {
@@ -245,7 +247,8 @@ class LightPandaSearchE2ETest {
                 val html = browser.fetchHtml("http://127.0.0.1:$port/$language/result.html?q=$query")
                 assertTrue(html.contains("class=\"result\""), "$language: ${html.take(2_000)}")
                 assertTrue(html.contains(rawQuery), "$language: ${html.take(2_000)}")
-                assertTrue(html.contains("id=\"language-chooser\""), "$language: ${html.take(2_000)}")
+                assertTrue(html.contains("id=\"result-search-form\""), "$language: ${html.take(2_000)}")
+                assertFalse(html.contains("id=\"language-chooser\""), "$language: ${html.take(2_000)}")
                 assertFalse(html.contains("Field 'englishName' is required"), "$language: ${html.take(2_000)}")
                 assertFalse(html.contains("/church.html?id="), "$language: ${html.take(2_000)}")
                 html
@@ -292,7 +295,7 @@ class LightPandaSearchE2ETest {
             assertNotNull(detailPath, resultPages.getValue("en").take(2_000))
             val detailHtml = browser.fetchHtml("http://127.0.0.1:$port$detailPath")
             assertTrue(detailHtml.contains("Fusa Christ Church"), detailHtml.take(2_000))
-            assertTrue(detailHtml.contains("id=\"language-chooser\""), detailHtml.take(2_000))
+            assertFalse(detailHtml.contains("id=\"language-chooser\""), detailHtml.take(2_000))
             supportedLanguageCodes.forEach { language ->
                 val localizedPath = assertNotNull(pageUrlsByLanguage.getValue(language)[fusaChurch.id])
                 val localizedDetail = browser.fetchHtml("http://127.0.0.1:$port$localizedPath")

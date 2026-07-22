@@ -52,7 +52,7 @@ class LocalizedStaticSiteGeneratorTest {
             assertTrue(html.contains(church.websiteUrl))
             assertFalse(html.contains("id=\"localized-name-options\""))
             assertFalse(html.contains("navigator.language"))
-            assertTrue(html.contains("href=\"../${Language.JAPANESE.code}/$slug.html\""))
+            assertFalse(html.contains("id=\"language-chooser\""))
             val jsonLdText = Regex("""<script type="application/ld\+json">(.*?)</script>""", RegexOption.DOT_MATCHES_ALL)
                 .find(html)?.groupValues?.get(1) ?: error("JSON-LD missing")
             val jsonLd = json.parseToJsonElement(jsonLdText) as JsonObject
@@ -60,6 +60,11 @@ class LocalizedStaticSiteGeneratorTest {
         }
         assertTrue(Files.isRegularFile(output.resolve("ja/index.html")))
         assertTrue(Files.isRegularFile(output.resolve("en/result.html")))
+        assertTrue(Files.readString(output.resolve("ja/index.html")).contains("id=\"search-form\""))
+        val resultHtml = Files.readString(output.resolve("en/result.html"))
+        assertTrue(resultHtml.contains("id=\"result-search-form\""))
+        assertTrue(resultHtml.contains("id=\"query\""))
+        assertFalse(resultHtml.contains("id=\"language-chooser\""))
         assertTrue(Files.readString(output.resolve("sitemap.xml")).contains("xhtml:link"))
     }
 
