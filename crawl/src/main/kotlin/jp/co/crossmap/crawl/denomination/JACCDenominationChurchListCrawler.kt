@@ -2,7 +2,7 @@ package jp.co.crossmap.crawl.denomination
 
 import org.jsoup.Jsoup
 
-class JACCDenominationChurchListCrawler : DenominationChurchListCrawler {
+class JACCDenominationChurchListCrawler : SinglePageDenominationChurchListCrawler {
     override val denominationId: String = "JACC"
     override val denominationName: String = "日本同盟基督教団"
     override val sourceUrl: String = "https://db.jacc.info/database/db_list.php"

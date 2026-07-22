@@ -23,6 +23,7 @@ with invented coordinates or English names.
 - `JHCDenominationChurchListCrawler` parses the 8-column tables from `https://jhc.or.jp/churches/locations.html`.
 - `RCJDenominationChurchListCrawler` parses the `<section>` elements from `https://www.rcj.gr.jp/_church_list/result_keyword.php`.
 - `IGMDenominationChurchListCrawler` parses the `<table>` with `<th>/<td>` rows from `https://www.immanuel.or.jp/link.html`.
+- `JAGDenominationChurchListCrawler` aggregates the church cards from all 24 regional and paginated directory pages under `https://j-ag.org/church-info/`.
 - `CachedHttpDenominationChurchPageLoader` stores current HTML and fetch metadata under
   `cache/denomination-church-lists/<denomination>/`.
 - `DenominationChurchListCrawlerRunner` invalidates requested caches, loads a page, parses and validates rows, and
@@ -75,27 +76,59 @@ Run all dedicated crawlers fresh and reconcile the catalog with:
 ./gradlew :crawl:run --args='crawl-denomination-directories --force-refresh --dedicated-only'
 ```
 
-Denomination coverage progress:
+## Denomination coverage progress:
 
+### SinglePageDenominationChurchListCrawler
 - [x] UCCJ 日本基督教団
-- [ ] カトリック中央協議会
-- [ ] 日本聖公会
 - [x] JBC 日本バプテスト連盟
 - [x] JACC 日本同盟基督教団
-- [ ] 日本アッセンブリーズ・オブ・ゴッド教団
+- [x] JHC 日本ホーリネス教団
+- [x] RCJ 日本キリスト改革派教会
+- [x] JBBC 日本バプテスト・バイブル・フェローシップ
+- [x] IGM イムマヌエル綜合伝道団
+
+
+### MultiPageDenominationChurchListCrawler
+- [x] JAG 日本アッセンブリーズ・オブ・ゴッド教団
+- https://j-ag.org/church-info/hokkaido-kyoku/
+- https://j-ag.org/church-info/hokkaido-kyoku/page/2/
+- https://j-ag.org/church-info/tohoku-kyoku/
+- https://j-ag.org/church-info/tohoku-kyoku/page/2/
+- https://j-ag.org/church-info/kantohokuto-kyoku/
+- https://j-ag.org/church-info/kantohokuto-kyoku/page/2/
+- https://j-ag.org/church-info/kantohokuto-kyoku/page/3/
+- https://j-ag.org/church-info/kantohokuto-kyoku/page/4/
+- https://j-ag.org/church-info/kantonansei-kyoku/
+- https://j-ag.org/church-info/kantonansei-kyoku/page/2/
+- https://j-ag.org/church-info/kantonansei-kyoku/page/3/
+- https://j-ag.org/church-info/kantonansei-kyoku/page/4/
+- https://j-ag.org/church-info/tokai-kyoku/
+- https://j-ag.org/church-info/tokai-kyoku/page/2/
+- https://j-ag.org/church-info/hokuriku-kyoku/
+- https://j-ag.org/church-info/hokuriku-kyoku/page/2/
+- https://j-ag.org/church-info/kansai-kyoku/
+- https://j-ag.org/church-info/kansai-kyoku/page/2/
+- https://j-ag.org/church-info/kansai-kyoku/page/3/
+- https://j-ag.org/church-info/kansai-kyoku/page/4/
+- https://j-ag.org/church-info/chugoku-kyoku/
+- https://j-ag.org/church-info/kyushu-kyoku/
+- https://j-ag.org/church-info/kyushu-kyoku/page/2/
+- https://j-ag.org/church-info/okinawa-kyoku/
+
+
+### TODO list of denomination order by the church count
+- [ ] カトリック中央協議会
+- [ ] 日本聖公会
+
 - [ ] イエス之御霊教会教団
 - [ ] 日本福音キリスト教会連合
 - [ ] セブンスデー・アドベンチスト教団
-- [x] JHC 日本ホーリネス教団
-- [x] RCJ 日本キリスト改革派教会
 - [ ] 日本キリスト教会
 - [ ] 日本イエス・キリスト教団
 - [ ] 日本福音ルーテル教会
-- [x] IGM イムマヌエル綜合伝道団
 - [ ] The Light of Eternal Agape
 - [ ] 聖イエス会
 - [ ] 在日大韓基督教会
-- [x] JBBC 日本バプテスト・バイブル・フェローシップ
 - [ ] 日本フルゴスペル教団
 - [ ] 保守バプテスト同盟
 - [ ] 日本ナザレン教団

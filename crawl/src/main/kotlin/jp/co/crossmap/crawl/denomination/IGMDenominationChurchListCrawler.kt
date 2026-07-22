@@ -2,7 +2,7 @@ package jp.co.crossmap.crawl.denomination
 
 import org.jsoup.Jsoup
 
-class IGMDenominationChurchListCrawler : DenominationChurchListCrawler {
+class IGMDenominationChurchListCrawler : SinglePageDenominationChurchListCrawler {
     override val denominationId: String = "IGM"
     override val denominationName: String = "イムマヌエル綜合伝道団"
     override val sourceUrl: String = "https://www.immanuel.or.jp/link.html"

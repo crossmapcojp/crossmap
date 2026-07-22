@@ -611,6 +611,7 @@ private class CrawlDenominationDirectories : CrawlCommand("crawl-denomination-di
         audit.metric("jhc_churches", report.jhcChurches)
         audit.metric("rcj_churches", report.rcjChurches)
         audit.metric("igm_churches", report.igmChurches)
+        audit.metric("jag_churches", report.jagChurches)
         audit.metric("official_cache_hits", report.cacheHits)
         report.reconciliation?.let { reconciliation ->
             audit.metric("official_matches", reconciliation.matchedOfficialEntries)
@@ -627,11 +628,12 @@ private class CrawlDenominationDirectories : CrawlCommand("crawl-denomination-di
         audit.output("jhc_churches", root.resolve("crawl/jhc-churches.json").toAbsolutePath().normalize())
         audit.output("rcj_churches", root.resolve("crawl/rcj-churches.json").toAbsolutePath().normalize())
         audit.output("igm_churches", root.resolve("crawl/igm-churches.json").toAbsolutePath().normalize())
+        audit.output("jag_churches", root.resolve("crawl/jag-churches.json").toAbsolutePath().normalize())
         audit.output("catalog", paths.churchCatalog.toAbsolutePath().normalize())
         echo(
             "Crawled ${report.sources} denomination sources / ${report.pages} pages: ${report.candidates} candidates, " +
                 "UCCJ=${report.uccjChurches}, JBC=${report.jbcChurches}, JBBF=${report.jbbfChurches}, JACC=${report.jaccChurches}, " +
-                "JHC=${report.jhcChurches}, RCJ=${report.rcjChurches}, IGM=${report.igmChurches}, ${report.errors} errors; " +
+                "JHC=${report.jhcChurches}, RCJ=${report.rcjChurches}, IGM=${report.igmChurches}, JAG=${report.jagChurches}, ${report.errors} errors; " +
                 "removed=${report.reconciliation?.removedUnsupportedLabels ?: 0} unsupported labels",
         )
     }

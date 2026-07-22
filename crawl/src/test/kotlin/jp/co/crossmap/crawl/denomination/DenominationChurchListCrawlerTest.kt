@@ -301,6 +301,85 @@ class DenominationChurchListCrawlerTest {
     }
 
     @Test
+    fun existingDedicatedCrawlersAreSinglePageCrawlers() {
+        val crawlers: List<DenominationChurchListCrawler> = listOf(
+            UCCJDenominationChurchListCrawler(),
+            JBCDenominationChurchListCrawler(),
+            JBBFDenominationChurchListCrawler(),
+            JACCDenominationChurchListCrawler(),
+            JHCDenominationChurchListCrawler(),
+            RCJDenominationChurchListCrawler(),
+            IGMDenominationChurchListCrawler(),
+        )
+
+        assertTrue(crawlers.all { it is SinglePageDenominationChurchListCrawler })
+    }
+
+    @Test
+    fun jagParserReadsChurchCardsAndSkipsDioceseIntroduction() {
+        val html = """
+            <div class="church church-info-hokkaido-kyoku church-info-kyoku_introduction">
+              <div class="vk_post_imgOuter"><span class="vk_post_imgOuter_singleTermLabel">北海道教区 | Hokkaido Kyoku</span></div>
+              <div class="vk_post_body"><h5 class="vk_post_title"><a href="https://j-ag.org/church/hokkaido-kyoku/">北海道教区のご紹介</a></h5></div>
+            </div>
+            <div class="church church-info-hokkaido-kyoku">
+              <div class="vk_post_imgOuter"><span class="vk_post_imgOuter_singleTermLabel">北海道教区 | Hokkaido Kyoku</span></div>
+              <div class="vk_post_body">
+                <h5 class="vk_post_title"><a href="https://j-ag.org/church/takasu/">鷹栖キリスト教会</a></h5>
+                <p class="vk_post_excerpt">礼拝：毎週日曜日 牧師 藤田克裕 住所 〒071-1224 北海道上川郡鷹栖町北野東4条1丁目7-11 電話 0166-59-3530 FAX 0166-59-3530 […]</p>
+              </div>
+            </div>
+        """.trimIndent()
+
+        val churches = JAGDenominationChurchListCrawler().parse(html)
+
+        assertEquals(1, churches.size)
+        assertEquals("鷹栖キリスト教会", churches.single().name)
+        assertEquals("〒071-1224 北海道上川郡鷹栖町北野東4条1丁目7-11", churches.single().address)
+        assertEquals("北海道教区", churches.single().jurisdiction)
+        assertEquals("0166-59-3530", churches.single().phone)
+        assertEquals("0166-59-3530", churches.single().fax)
+        assertEquals("https://j-ag.org/church/takasu/", churches.single().websiteUrl)
+    }
+
+    @Test
+    fun runnerLoadsAndAggregatesEveryJagDirectoryPage() {
+        val root = Files.createTempDirectory("crossmap-jag-list")
+        try {
+            val crawler = JAGDenominationChurchListCrawler()
+            val loadedUrls = linkedSetOf<String>()
+            val runner = DenominationChurchListCrawlerRunner(
+                pageLoader = { url, _ ->
+                    loadedUrls += url
+                    val html = if (url == crawler.sourceUrls.first()) {
+                        """
+                            <div class="church church-info-hokkaido-kyoku">
+                              <div class="vk_post_imgOuter"><span class="vk_post_imgOuter_singleTermLabel">北海道教区 | Hokkaido Kyoku</span></div>
+                              <div class="vk_post_body">
+                                <h5 class="vk_post_title"><a href="https://j-ag.org/church/takasu/">鷹栖キリスト教会</a></h5>
+                                <p class="vk_post_excerpt">住所 〒071-1224 北海道上川郡鷹栖町北野東4条1丁目7-11 電話 0166-59-3530</p>
+                              </div>
+                            </div>
+                        """.trimIndent()
+                    } else {
+                        "<html></html>"
+                    }
+                    LoadedDenominationChurchPage(url, html, "2026-07-23T00:00:00Z", cacheHit = false)
+                },
+                json = json,
+            )
+
+            val result = runner.crawl(crawler, root, root.resolve("cache"))
+
+            assertEquals(crawler.sourceUrls, loadedUrls.toList())
+            assertEquals(24, result.pageCount)
+            assertEquals("鷹栖キリスト教会", result.list.churches.single().name)
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun runnerWritesJaccPerDenominationJson() {
         val root = Files.createTempDirectory("crossmap-jacc-list")
         try {

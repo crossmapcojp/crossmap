@@ -2,7 +2,7 @@ package jp.co.crossmap.crawl.denomination
 
 import org.jsoup.Jsoup
 
-class JBBFDenominationChurchListCrawler : DenominationChurchListCrawler {
+class JBBFDenominationChurchListCrawler : SinglePageDenominationChurchListCrawler {
     override val denominationId: String = "JBBF"
     override val denominationName: String = "日本バプテスト・バイブル・フェローシップ"
     override val sourceUrl: String = "https://jbbf.or.jp/%e4%bd%8f%e6%89%80%e9%8c%b2/"

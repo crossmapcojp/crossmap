@@ -2,7 +2,7 @@ package jp.co.crossmap.crawl.denomination
 
 import org.jsoup.Jsoup
 
-class UCCJDenominationChurchListCrawler : DenominationChurchListCrawler {
+class UCCJDenominationChurchListCrawler : SinglePageDenominationChurchListCrawler {
     override val denominationId: String = "UCCJ"
     override val denominationName: String = "日本基督教団"
     override val sourceUrl: String = "https://uccj.org/diocese"
