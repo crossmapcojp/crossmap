@@ -402,6 +402,7 @@ class ChurchSearchEngine(
     private fun nameSearchFields(): LinkedHashMap<String, Float> = linkedMapOf(
         ChurchIndex.FIELD_NAME to 8f,
         ChurchIndex.FIELD_NAME_READING to 7f,
+        ChurchIndex.FIELD_MINISTER to 6f,
     )
 
     private fun generalSearchFields(): LinkedHashMap<String, Float> = linkedMapOf(

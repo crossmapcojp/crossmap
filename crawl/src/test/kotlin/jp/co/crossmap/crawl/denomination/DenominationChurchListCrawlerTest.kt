@@ -73,6 +73,10 @@ class DenominationChurchListCrawlerTest {
         assertEquals("〒424-0832　静岡県静岡市清水区入江南町７－１１", churches.first().address)
         assertEquals("静岡県", churches.first().jurisdiction)
         assertEquals("http://www.shimizubbc.com/", churches.first().websiteUrl)
+        assertEquals("濱田 献", churches.first().ministers.single().name)
+        assertEquals("pastor", churches.first().ministers.single().roleId)
+        assertEquals("道下 義嗣", churches.last().ministers.single().name)
+        assertEquals("evangelist", churches.last().ministers.single().roleId)
         assertEquals("清水教会伝道所", churches.last().note)
     }
 
@@ -141,6 +145,7 @@ class DenominationChurchListCrawlerTest {
         assertEquals("011(892)5233", churches[0].phone)
         assertEquals("011(892)5274", churches[0].fax)
         assertEquals("https://kirisutonoai.org/", churches[0].websiteUrl)
+        assertEquals("朴 永基", churches[0].ministers.single().name)
 
         assertEquals("新札幌福音教会", churches[1].name)
         assertEquals("〒004-0001 北海道札幌市厚別区厚別東一条3丁目10-1", churches[1].address)
@@ -255,12 +260,12 @@ class DenominationChurchListCrawlerTest {
               <section>
                 <h3><a href="detail.php?id=1">札幌キリスト改革派教会</a></h3>
                 <h4>〒060-0061 北海道札幌市中央区北一条西4-1-2</h4>
-                <div class="comment_area"><p>1881年設立</p></div>
+                <div class="comment_area"><p>牧師は佐藤 太郎。2018年4月に辻幸宏牧師が着任しました。</p></div>
               </section>
               <section>
                 <h3><a href="detail.php?id=2">函館改革派教会</a></h3>
                 <h4>〒040-0082 北海道函館市昭和4-15-10</h4>
-                <div class="comment_area"><p></p></div>
+                <div class="comment_area"><p>代理牧師は大宮教会の辻幸宏(つじ ゆきひろ)です。</p></div>
               </section>
             </div>
         """.trimIndent()
@@ -270,9 +275,11 @@ class DenominationChurchListCrawlerTest {
         assertEquals(2, churches.size)
         assertEquals("札幌キリスト改革派教会", churches[0].name)
         assertEquals("〒060-0061 北海道札幌市中央区北一条西4-1-2", churches[0].address)
+        assertEquals(listOf("佐藤 太郎", "辻幸宏"), churches[0].ministers.map { it.name })
 
         assertEquals("函館改革派教会", churches[1].name)
         assertEquals("〒040-0082 北海道函館市昭和4-15-10", churches[1].address)
+        assertEquals(listOf("辻幸宏(つじ ゆきひろ)"), churches[1].ministers.map { it.name })
     }
 
     @Test
@@ -293,6 +300,8 @@ class DenominationChurchListCrawlerTest {
         assertEquals("https://example.com/tokyo", churches[0].websiteUrl)
         assertEquals("03-3368-1234", churches[0].phone)
         assertEquals("03-3368-1235", churches[0].fax)
+        assertEquals("田中 太郎", churches[0].ministers.single().name)
+        assertEquals(5, churches[0].ministers.single().localizedRoleNames.size)
 
         assertEquals("大江戸教会", churches[1].name)
         assertEquals("https://example.com/okosho", churches[1].websiteUrl)
@@ -363,6 +372,7 @@ class DenominationChurchListCrawlerTest {
             val detailHtml = """
                 <table>
                   <tr><td>住所</td><td>$expectedAddress　＊JR最寄駅から徒歩10分</td></tr>
+                  <tr><td>主任牧師</td><td>佐藤 太郎</td></tr>
                   <tr><td>ホームページ</td><td><a href="https://church.example/$name">公式サイト</a></td></tr>
                 </table>
             """.trimIndent()
@@ -371,8 +381,149 @@ class DenominationChurchListCrawlerTest {
 
             assertEquals(expectedAddress, detailed.address, name)
             assertEquals("https://church.example/$name", detailed.websiteUrl, name)
+            assertEquals("senior_pastor", detailed.ministers.single().roleId, name)
             assertEquals(listed.denominationChurchListDetailPage, detailed.denominationChurchListDetailPage)
         }
+    }
+
+    @Test
+    fun ministerRolesRetainNamesAndAllFiveLocalizedLabels() {
+        val ministers = ChurchMinisterParser.parse("主任牧師：山田 太郎　副牧師：佐藤 花子　伝道師：金 美愛　牧師（兼任）：李 民守")
+
+        assertEquals(listOf("senior_pastor", "associate_pastor", "evangelist", "concurrent_pastor"), ministers.map { it.roleId })
+        ministers.forEach { minister ->
+            assertEquals(setOf("ja", "en", "ko", "pt", "id"), minister.localizedRoleNames.map { it.languageCode }.toSet())
+            assertTrue(minister.localizedRoleNames.all { it.name.isNotBlank() })
+        }
+    }
+
+    @Test
+    fun ministerParserRejectsNarrativeRoleMentionsAndTrimsContactFields() {
+        assertTrue(ChurchMinisterParser.parse("牧師先生をお迎えして、月に一度礼拝を行っています").isEmpty())
+        assertTrue(ChurchMinisterParser.parse("当教会には牧師が不在です").isEmpty())
+        assertEquals("小菅香世子", ChurchMinisterParser.parse("牧師 小菅香世子（ 電話 090-1111-2222").single().name)
+        assertEquals(
+            listOf("小菅香世子", "小菅剛"),
+            ChurchMinisterParser.fromRoleAndNames("牧師", "小菅香世子（主管牧師）小菅剛").map { it.name },
+        )
+    }
+
+    @Test
+    fun jelcParserReadsChurchContactAndPastor() {
+        val churches = JELCDenominationChurchListCrawler().parse(
+            """<table><tr><td><a href='/church/tokyo'>東京教会</a></td><td>〒169-0072 東京都新宿区大久保1-1-1</td><td>主任牧師：山田 太郎</td><td>TEL 03-1111-2222</td></tr></table>""",
+        )
+
+        assertEquals("東京教会", churches.single().name)
+        assertEquals("〒169-0072 東京都新宿区大久保1-1-1", churches.single().address)
+        assertEquals("senior_pastor", churches.single().ministers.single().roleId)
+    }
+
+    @Test
+    fun jccParserUsesCanonicalCcjIdAndReadsLegacyTableRows() {
+        val crawler = JCCDenominationChurchListCrawler()
+        val churches = crawler.parse(
+            """<table><tr><td><b>日本キリスト教会帯広教会</b></td><td>〒080-0016 北海道帯広市西6条南22丁目1-9</td><td>牧師：鈴木 一郎</td><td>電話 0155-11-2222</td></tr></table>""",
+        )
+
+        assertEquals("CCJ", crawler.denominationId)
+        assertEquals("日本キリスト教会帯広教会", churches.single().name)
+        assertEquals("鈴木 一郎", churches.single().ministers.single().name)
+
+        val legacy = crawler.parse(
+            """<table><tr><td>函館相生教会</td><td>０４０−００１１</td><td>北海道函館市本町２９−８</td><td>0138-52-7035</td><td>0138-31-5181</td><td>粂 広国（担）<br>李 愛（伝）</td></tr></table>""",
+        ).single()
+        assertEquals("〒040-0011 北海道函館市本町29-8", legacy.address)
+        assertEquals(listOf("lead_pastor", "evangelist"), legacy.ministers.map { it.roleId })
+        assertEquals(listOf("粂 広国", "李 愛"), legacy.ministers.map { it.name })
+    }
+
+    @Test
+    fun sdaJpParserReadsWordPressChurchBlock() {
+        val churches = SDAJPDenominationChurchListCrawler().parse(
+            """<article><h3>東京中央教会</h3><p>〒150-0001 東京都渋谷区神宮前1-2-3</p><p>牧師：田中 健</p><p>TEL 03-2222-3333</p></article>""",
+        )
+
+        assertEquals("東京中央教会", churches.single().name)
+        assertEquals("pastor", churches.single().ministers.single().roleId)
+    }
+
+    @Test
+    fun tleaParserReadsPhoneAddressAndEvangelist() {
+        val churches = TLEADenominationChurchListCrawler().parse(
+            """<table><tr><td><strong>TLEA札幌教会</strong></td><td>〒060-0001 北海道札幌市中央区北1条西1-1</td><td>伝道師：佐々木 愛</td><td>電話 011-222-3333</td></tr></table>""",
+        )
+
+        assertEquals("TLEA札幌教会", churches.single().name)
+        assertEquals("evangelist", churches.single().ministers.single().roleId)
+    }
+
+    @Test
+    fun hejParserFindsDetailLinksAndEnrichesMinisterData() {
+        val crawler = HEJDenominationChurchListCrawler()
+        val listed = crawler.parse("""<a href='/branch/sagano'><img alt='嵯峨野教会'></a>""").single()
+        val detailed = crawler.parseDetailPage(
+            listed,
+            """<main><h1>嵯峨野教会</h1><p>〒616-0001 京都府京都市右京区嵯峨1-2-3</p><p>牧師：佐藤 恵</p><p>TEL 075-111-2222</p></main>""",
+        )
+
+        assertEquals("https://seiiesukai.org/branch/sagano", listed.denominationChurchListDetailPage)
+        assertEquals("佐藤 恵", detailed.ministers.single().name)
+        assertTrue(detailed.address.startsWith("〒616-0001"))
+    }
+
+    @Test
+    fun jecaParserMergesRegionalWebsiteAndContactRows() {
+        val crawler = JECADenominationChurchListCrawler()
+        val websiteRows = crawler.parse("""<table><tr><td>北見めぐみキリスト教会</td><td><a href='https://kitami.example/'>Home page</a></td></tr></table>""")
+        val contactRows = crawler.parse("""<table><tr><td>北見めぐみキリスト教会</td><td>〒090-0001 北海道北見市北1-2-3</td><td>牧師：金田 光</td><td>TEL 0157-11-2222</td></tr></table>""")
+        val merged = crawler.merge(websiteRows + contactRows).single()
+
+        assertEquals("https://kitami.example/", merged.websiteUrl)
+        assertTrue(merged.address.startsWith("〒090-0001"))
+        assertEquals("金田 光", merged.ministers.single().name)
+    }
+
+    @Test
+    fun jccjParserReadsLabelledChurchTableAndMultipleRoles() {
+        val churches = JCCJDenominationChurchListCrawler().parse(
+            """
+            <table class='table_localchurch'>
+              <tr><th>教会名</th><td>荻窪栄光教会</td></tr>
+              <tr><th>住所</th><td>〒167-0032 東京都杉並区天沼3-1-1</td></tr>
+              <tr><th>主任牧師</th><td>山本 真</td></tr>
+              <tr><th>伝道師</th><td>李 愛</td></tr>
+              <tr><th>電話</th><td>03-3333-4444</td></tr>
+            </table>
+            """.trimIndent(),
+        )
+
+        assertEquals("荻窪栄光教会", churches.single().name)
+        assertEquals(listOf("senior_pastor", "evangelist"), churches.single().ministers.map { it.roleId })
+
+        val liveLayout = JCCJDenominationChurchListCrawler().parse(
+            """<table class='table_localchurch'><tr><td><h5>札幌羊ヶ丘教会</h5><ul><LI>〒004-0846 <LI>北海道札幌市清田区清田六条1丁目1-23 <LI>TEL 011-883-3790 <LI>牧師　小菅香世子（主管牧師）<br>小菅剛 <LI>定期集会</ul></td></tr></table>""",
+        ).single()
+        assertEquals("〒004-0846 北海道札幌市清田区清田六条1丁目1-23", liveLayout.address)
+        assertEquals(listOf("senior_pastor", "pastor"), liveLayout.ministers.map { it.roleId })
+        assertEquals(listOf("小菅香世子", "小菅剛"), liveLayout.ministers.map { it.name })
+    }
+
+    @Test
+    fun kccjParserReadsPastorAndExcludesEveryNonChurchEntityCategory() {
+        val excluded = listOf("総会事務局", "在日韓国基督教会館", "桜本保育園", "在日総会神学校", "永生苑", "ケアハウスセットンの家")
+        val rows = buildString {
+            append("<table><tr><td>99</td><td><a href='church_view.php?id=99'>東京教会</a></td><td>担任牧師 金 太郎</td><td>03-1111-2222</td><td>〒169-0051 東京都新宿区西早稲田2-3-18</td></tr>")
+            excluded.forEachIndexed { index, name ->
+                append("<tr><td>$index</td><td>$name</td><td>牧師 誤登録</td><td>03-0000-0000</td><td>〒169-0051 東京都新宿区西早稲田2-3-18</td></tr>")
+            }
+            append("</table>")
+        }
+        val churches = KCCJDenominationChurchListCrawler().parse(rows)
+
+        assertEquals(listOf("東京教会"), churches.map { it.name })
+        assertEquals("lead_pastor", churches.single().ministers.single().roleId)
+        assertEquals("金 太郎", churches.single().ministers.single().name)
     }
 
     @Test

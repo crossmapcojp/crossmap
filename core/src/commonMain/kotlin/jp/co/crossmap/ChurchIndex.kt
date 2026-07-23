@@ -22,7 +22,7 @@ import org.gnit.lucenekmp.index.IndexWriterConfig
 import org.gnit.lucenekmp.store.FSDirectory
 
 object ChurchIndex {
-    const val SCHEMA_VERSION = 11
+    const val SCHEMA_VERSION = 12
     const val FIELD_ID = "id"
     const val FIELD_NAME = "name"
     const val FIELD_NAME_EXACT = "name_exact"
@@ -41,6 +41,7 @@ object ChurchIndex {
     const val FIELD_DENOMINATION = "denomination"
     const val FIELD_DENOMINATION_READING = "denomination_reading"
     const val FIELD_DENOMINATION_READING_EXACT = "denomination_reading_exact"
+    const val FIELD_MINISTER = "minister"
     const val FIELD_ADDRESS = "address"
     const val FIELD_ADDRESS_GEONAME_CODE = "address_geoname_code"
     const val FIELD_ADDRESS_PREFECTURE = "address_prefecture"
@@ -174,6 +175,13 @@ object ChurchIndex {
             .filter(String::isNotBlank)
             .distinct()
         denominationNames.forEach { add(TextField(FIELD_DENOMINATION, it, Field.Store.YES)) }
+        val ministerNames = ministers.flatMap { minister ->
+            val localized = minister.localizedNames
+                .filter { it.languageCode.substringBefore('-').lowercase() == languageCode }
+                .map { it.name }
+            if (languageCode == "ja") listOf(minister.name) + localized else localized
+        }.map(String::trim).filter(String::isNotBlank).distinct()
+        ministerNames.forEach { add(TextField(FIELD_MINISTER, it, Field.Store.YES)) }
         val nameReadings = if (languageCode == "ja") readingVariants(names) else emptyList()
         val denominationReadings = if (languageCode == "ja") readingVariants(denominationNames) else emptyList()
         val categoryReadings = if (languageCode == "ja") {
@@ -212,6 +220,7 @@ object ChurchIndex {
             addAll(names)
             addAll(cleanTranslatedGeoNames)
             addAll(denominationNames)
+            addAll(ministerNames)
             addAll(nameReadings)
             addAll(denominationReadings)
             addAll(categoryReadings)

@@ -13,7 +13,8 @@ with invented coordinates or English names.
 
 ## Classes and data flow
 
-- `DenominationChurchListCrawler` is the shared parser contract.
+- `DenominationChurchListCrawler` is the shared parser contract, specialized as
+  `SinglePageDenominationChurchListCrawler` and `MultiPageDenominationChurchListCrawler`.
 - `OfficialDenominationChurch`, `OfficialChurchMembershipStatus`, and `OfficialDenominationChurchList` are the
   serializable JSON model. A row marked as a pending applicant is retained for review but cannot establish membership.
 - `UCCJDenominationChurchListCrawler` parses the `table.kyokai` rows from `https://uccj.org/diocese`.
@@ -24,6 +25,11 @@ with invented coordinates or English names.
 - `RCJDenominationChurchListCrawler` parses the `<section>` elements from `https://www.rcj.gr.jp/_church_list/result_keyword.php`.
 - `IGMDenominationChurchListCrawler` parses the `<table>` with `<th>/<td>` rows from `https://www.immanuel.or.jp/link.html`.
 - `JAGDenominationChurchListCrawler` aggregates the church cards from all 24 regional and paginated directory pages under `https://j-ag.org/church-info/`.
+- `JELC`, `JCC` (`CCJ` catalog ID), `SDAJP`, `TLEA`, and `HEJ` parse their single-page official directories.
+- `JECA`, `JCCJ`, and `KCCJ` aggregate their regional or paginated official directories; KCCJ explicitly excludes
+  the non-church institutions published after its church rows.
+- `ChurchMinisterParser` records clergy names and structured roles with JA/EN/KO/PT/ID labels. The runner uses the
+  personal-name dictionaries to add localized readings and the shared romaji-to-Hangul converter before reconciliation.
 - `CachedHttpDenominationChurchPageLoader` stores current HTML and fetch metadata under
   `cache/denomination-church-lists/<denomination>/`.
 - `DenominationChurchListCrawlerRunner` invalidates requested caches, loads a page, parses and validates rows, and
@@ -86,12 +92,12 @@ Run all dedicated crawlers fresh and reconcile the catalog with:
 - [x] RCJ 日本キリスト改革派教会
 - [x] JBBC 日本バプテスト・バイブル・フェローシップ
 - [x] IGM イムマヌエル綜合伝道団
-- [ ] JELC 日本福音ルーテル教会 https://jelc.or.jp/all_churchs/
-- [ ] JCC 日本キリスト教会 http://www.nikki-church.org/data.htm
+- [x] JELC 日本福音ルーテル教会 https://jelc.or.jp/all_churchs/
+- [x] JCC 日本キリスト教会 http://www.nikki-church.org/data.htm
 
-- [ ] SDA_JP セブンスデー・アドベンチスト教団 https://adventist.jp/%E6%95%99%E4%BC%9A%E6%89%80%E5%9C%A8%E5%9C%B0/%E6%95%99%E4%BC%9A%E4%B8%80%E8%A6%A7/
-- [ ] TLEA The Light of Eternal Agape https://tlea.tokyoantioch.com/ourchurch/all-tlea-link/
-- [ ] HEJ 聖イエス会 https://seiiesukai.org/branch/
+- [x] SDA_JP セブンスデー・アドベンチスト教団 https://adventist.jp/%E6%95%99%E4%BC%9A%E6%89%80%E5%9C%A8%E5%9C%B0/%E6%95%99%E4%BC%9A%E4%B8%80%E8%A6%A7/
+- [x] TLEA The Light of Eternal Agape https://tlea.tokyoantioch.com/ourchurch/all-tlea-link/
+- [x] HEJ 聖イエス会 https://seiiesukai.org/branch/
 
 ### MultiPageDenominationChurchListCrawler
 - [x] JAG 日本アッセンブリーズ・オブ・ゴッド教団
@@ -120,7 +126,7 @@ Run all dedicated crawlers fresh and reconcile the catalog with:
 - https://j-ag.org/church-info/kyushu-kyoku/page/2/
 - https://j-ag.org/church-info/okinawa-kyoku/
 
-- [ ] JECA 日本福音キリスト教会連合
+- [x] JECA 日本福音キリスト教会連合
 - https://jeca.jp/church/church/hokkaido.html
 - https://jeca.jp/church/church/touhoku.html
 - https://jeca.jp/church/church/kitakanto.html
@@ -133,7 +139,7 @@ Run all dedicated crawlers fresh and reconcile the catalog with:
 - https://jeca.jp/church/code/nisinippon.html
 - https://jeca.jp/church/church/okinawa.html
 
-- [ ] JCCJ 日本イエス・キリスト教団
+- [x] JCCJ 日本イエス・キリスト教団
 - https://jccj.info/localchurch_tyokkatu.php
 - https://jccj.info/localchurch_touhoku.php
 - https://jccj.info/localchurch_kanto.php
@@ -145,7 +151,7 @@ Run all dedicated crawlers fresh and reconcile the catalog with:
 - https://jccj.info/localchurch_shikoku.php
 - https://jccj.info/localchurch_kyusyu.php
 
-- [ ] KCCJ 在日大韓基督教会
+- [x] KCCJ 在日大韓基督教会
 - https://kccj.jp/church_list.php
 - https://kccj.jp/church_list.php?page=2&chihokai=&keyfield=&key=
 - https://kccj.jp/church_list.php?page=3&chihokai=&keyfield=&key=

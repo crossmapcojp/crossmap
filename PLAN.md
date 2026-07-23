@@ -45,6 +45,10 @@
 - [x] Reconcile official UCCJ/JBC entries with the pending catalog: add official denomination evidence to matching churches and remove unsupported stale labels without overriding human decisions.
 - [x] Add real-name parser/reconciliation tests, including that イエス愛の教会 and 沼津キリストの教会 are not published as JBC churches.
 - [x] Invalidate any old UCCJ/JBC source-page cache, fetch both official lists fresh, rebuild `resources/catalog/churches.json`, and verify the generated list/catalog statistics.
+- [x] Split official-directory crawlers into single-page and multi-page contracts; add JELC, CCJ, SDA_JP, TLEA, HEJ, JECA, JCCJ, and KCCJ coverage with live-layout regression tests and KCCJ non-church exclusions.
+- [x] Extract clergy names and roles from list/detail pages, localize role labels and personal names into JA/EN/KO/PT/ID, and reconcile them into the church catalog.
+- [x] Share rule-based romaji-to-Hangul transliteration across geonames, church names, and clergy names, including long-vowel and Hepburn regression coverage.
+- [x] Index localized clergy names in every language-specific Lucene index and prove pastor-name lookup in all five languages.
 
 ## 3. Japanese geonames
 

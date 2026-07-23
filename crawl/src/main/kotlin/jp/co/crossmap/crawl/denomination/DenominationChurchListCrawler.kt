@@ -7,9 +7,11 @@ import java.net.http.HttpResponse
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
+import java.nio.charset.Charset
 import java.security.MessageDigest
 import java.time.Duration
 import java.time.Instant
+import jp.co.crossmap.ChurchMinister
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -25,6 +27,7 @@ data class OfficialDenominationChurch(
     val fax: String = "",
     val websiteUrl: String = "",
     val denominationChurchListDetailPage: String = "",
+    val ministers: List<ChurchMinister> = emptyList(),
     val membershipStatus: OfficialChurchMembershipStatus = OfficialChurchMembershipStatus.LISTED,
     val note: String = "",
 ) {
@@ -50,6 +53,14 @@ interface DenominationChurchListCrawler {
     val outputFileName: String
 
     fun parse(html: String): List<OfficialDenominationChurch>
+
+    fun merge(churches: List<OfficialDenominationChurch>): List<OfficialDenominationChurch> =
+        churches.distinctBy { Triple(it.name, it.address, it.jurisdiction) }
+
+    fun parseDetailPage(
+        church: OfficialDenominationChurch,
+        html: String,
+    ): OfficialDenominationChurch = church
 }
 
 /** An official church directory whose complete list is contained in one page. */
@@ -65,10 +76,6 @@ interface MultiPageDenominationChurchListCrawler : DenominationChurchListCrawler
     override val pageUrls: List<String>
         get() = sourceUrls
 
-    fun parseDetailPage(
-        church: OfficialDenominationChurch,
-        html: String,
-    ): OfficialDenominationChurch = church
 }
 
 data class LoadedDenominationChurchPage(
@@ -117,10 +124,10 @@ class CachedHttpDenominationChurchPageLoader(
             .header("User-Agent", "CrossmapCrawler/1.0 (+https://crossmap.jp)")
             .GET()
             .build()
-        val response = client.send(request, HttpResponse.BodyHandlers.ofString())
+        val response = client.send(request, HttpResponse.BodyHandlers.ofByteArray())
         require(response.statusCode() in 200..299) { "HTTP ${response.statusCode()} for $url" }
         val fetchedAt = Instant.now().toString()
-        val html = response.body()
+        val html = decodeHtml(response.body(), response.headers().firstValue("content-type").orElse(""))
         require(html.isNotBlank()) { "Official denomination directory returned an empty page: $url" }
         Files.createDirectories(cacheDirectory)
         atomicWrite(pageFile, html)
@@ -129,6 +136,17 @@ class CachedHttpDenominationChurchPageLoader(
             json.encodeToString(DenominationChurchPageCacheMetadata(url, fetchedAt, html.sha256())),
         )
         return LoadedDenominationChurchPage(response.uri().toString(), html, fetchedAt, cacheHit = false)
+    }
+
+    private fun decodeHtml(bytes: ByteArray, contentType: String): String {
+        val asciiHead = bytes.take(4096).toByteArray().toString(Charsets.ISO_8859_1)
+        val charsetName = Regex("charset\\s*=\\s*[\"']?([^\"';>\\s]+)", RegexOption.IGNORE_CASE)
+            .find(contentType)?.groupValues?.get(1)
+            ?: Regex("charset\\s*=\\s*[\"']?([^\"';>\\s]+)", RegexOption.IGNORE_CASE)
+                .find(asciiHead)?.groupValues?.get(1)
+            ?: "UTF-8"
+        val charset = runCatching { Charset.forName(charsetName) }.getOrDefault(Charsets.UTF_8)
+        return bytes.toString(charset)
     }
 
     private fun atomicWrite(path: Path, content: String) {
@@ -150,6 +168,8 @@ class DenominationChurchListCrawlerRunner(
     private val pageLoader: DenominationChurchPageLoader? = null,
     private val json: Json = Json { ignoreUnknownKeys = true; prettyPrint = true; encodeDefaults = true },
 ) {
+    private val personalNameTransliterators = mutableMapOf<Path, PersonalNameTransliterator>()
+
     fun crawl(
         crawler: DenominationChurchListCrawler,
         resourcesRoot: Path,
@@ -165,23 +185,25 @@ class DenominationChurchListCrawlerRunner(
             json = json,
         )
         val listPages = crawler.pageUrls.map { loader.load(it, forceRefresh) }
-        var churches = listPages.flatMap { crawler.parse(it.html) }
-            .distinctBy { Triple(it.name, it.address, it.jurisdiction) }
-        val detailPages = if (crawler is MultiPageDenominationChurchListCrawler) {
-            churches.mapNotNull { church ->
-                church.denominationChurchListDetailPage.takeIf(String::isNotBlank)?.let { url ->
-                    church to loader.load(url, forceRefresh)
-                }
+        var churches = crawler.merge(listPages.flatMap { crawler.parse(it.html) })
+        val detailPages = churches.mapNotNull { church ->
+            church.denominationChurchListDetailPage.takeIf(String::isNotBlank)?.let { url ->
+                church to loader.load(url, forceRefresh)
             }
-        } else {
-            emptyList()
         }
-        if (crawler is MultiPageDenominationChurchListCrawler) {
-            val detailsByUrl = detailPages.associate { (church, page) -> church.denominationChurchListDetailPage to page }
+        val detailsByUrl = detailPages.associate { (church, page) -> church.denominationChurchListDetailPage to page }
+        churches = churches.map { church ->
+            detailsByUrl[church.denominationChurchListDetailPage]
+                ?.let { crawler.parseDetailPage(church, it.html) }
+                ?: church
+        }
+        val personalNamesDirectory = resourcesRoot.resolve("personalnames").toAbsolutePath().normalize()
+        if (Files.isRegularFile(personalNamesDirectory.resolve("README.md"))) {
+            val transliterator = personalNameTransliterators.getOrPut(personalNamesDirectory) {
+                PersonalNameTransliterator.load(personalNamesDirectory)
+            }
             churches = churches.map { church ->
-                detailsByUrl[church.denominationChurchListDetailPage]
-                    ?.let { crawler.parseDetailPage(church, it.html) }
-                    ?: church
+                church.copy(ministers = church.ministers.map(transliterator::localize))
             }
         }
         val pages = listPages + detailPages.map { it.second }

@@ -72,6 +72,15 @@ data class LocalizedName(
 )
 
 @Serializable
+data class ChurchMinister(
+    val name: String,
+    val localizedNames: List<LocalizedName> = emptyList(),
+    val roleId: String,
+    val roleName: String,
+    val localizedRoleNames: List<LocalizedName>,
+)
+
+@Serializable
 data class ChurchRecord(
     val id: String,
     val googleCid: String? = null,
@@ -87,6 +96,7 @@ data class ChurchRecord(
     val websiteUrl: String,
     val pages: List<CrawledPage> = emptyList(),
     val socialProfiles: List<SocialProfile> = emptyList(),
+    val ministers: List<ChurchMinister> = emptyList(),
     val determinations: List<FieldDetermination> = emptyList(),
     val updatedAt: String = "",
 ) {

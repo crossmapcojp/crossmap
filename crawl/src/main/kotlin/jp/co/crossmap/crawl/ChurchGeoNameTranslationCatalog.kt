@@ -124,7 +124,7 @@ class ChurchGeoNameTranslationCatalog(
                         // transliteration from romaji; reviewed Hanja-style guesses are not reused.
                         val wasMissingFromOfficialSources = japanese in reviewed.getValue("ko")
                         if (get("ko") == null || wasMissingFromOfficialSources) {
-                            val transliterated = JapaneseRomajiToHangul.transliterate(get("en").orEmpty())
+                            val transliterated = romajiToHangul(get("en").orEmpty())
                             if (transliterated != null) {
                                 put("ko", transliterated)
                             } else if (reviewedTranslation != null) {

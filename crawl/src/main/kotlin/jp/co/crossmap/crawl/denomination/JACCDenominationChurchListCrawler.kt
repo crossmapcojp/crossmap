@@ -39,6 +39,7 @@ class JACCDenominationChurchListCrawler : SinglePageDenominationChurchListCrawle
             val addressCell = headerCells[2]
             val addressStrong = addressCell.selectFirst("strong")
             val address = addressStrong?.text()?.trim().orEmpty()
+            val pastorNames = headerCells[1].text().trim().takeUnless { it == "牧師" }.orEmpty()
 
             var jurisdiction = ""
             var phone = ""
@@ -78,6 +79,7 @@ class JACCDenominationChurchListCrawler : SinglePageDenominationChurchListCrawle
                 phone = phone,
                 fax = fax,
                 websiteUrl = websiteUrl,
+                ministers = ChurchMinisterParser.fromRoleAndNames("牧師", pastorNames),
             )
             i++
         }

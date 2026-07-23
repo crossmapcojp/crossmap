@@ -84,11 +84,16 @@ class JAGDenominationChurchListCrawler : MultiPageDenominationChurchListCrawler 
             ?.value?.select("th, td")?.getOrNull(1)?.text()?.trim().orEmpty()
         val fax = rows.entries.firstOrNull { (label, _) -> label == "FAX" }
             ?.value?.select("th, td")?.getOrNull(1)?.text()?.trim().orEmpty()
+        val ministers = rows.entries.flatMap { (label, row) ->
+            val value = row.select("th, td").getOrNull(1)?.text()?.trim().orEmpty()
+            ChurchMinisterParser.fromRoleAndNames(label, value)
+        }
         return church.copy(
             address = address.ifBlank { church.address },
             phone = phone.ifBlank { church.phone },
             fax = fax.ifBlank { church.fax },
             websiteUrl = website,
+            ministers = ministers.ifEmpty { ChurchMinisterParser.parse(document.text()) },
         )
     }
 

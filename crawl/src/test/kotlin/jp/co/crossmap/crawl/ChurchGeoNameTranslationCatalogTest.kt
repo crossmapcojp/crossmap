@@ -13,12 +13,12 @@ import kotlin.test.assertTrue
 class ChurchGeoNameTranslationCatalogTest {
     @Test
     fun derivesKoreanJapanesePronunciationFromEnglishRomaji() {
-        assertEquals("가누키", JapaneseRomajiToHangul.transliterate("Kanuki"))
-        assertEquals("가미카누키", JapaneseRomajiToHangul.transliterate("Kamikanuki"))
-        assertEquals("시모카누키", JapaneseRomajiToHangul.transliterate("Shimokanuki"))
-        assertEquals("세타가야", JapaneseRomajiToHangul.transliterate("Setagaya"))
-        assertEquals("도쿄", JapaneseRomajiToHangul.transliterate("Tokyo"))
-        assertEquals("젠카이미나미마치", JapaneseRomajiToHangul.transliterate("Zenkaiminamimachi"))
+        assertEquals("가누키", romajiToHangul("Kanuki"))
+        assertEquals("가미카누키", romajiToHangul("Kamikanuki"))
+        assertEquals("시모카누키", romajiToHangul("Shimokanuki"))
+        assertEquals("세타가야", romajiToHangul("Setagaya"))
+        assertEquals("도쿄", romajiToHangul("Tokyo"))
+        assertEquals("젠카이미나미마치", romajiToHangul("Zenkaiminamimachi"))
         assertTrue(JapaneseRomajiToHangul.hasCompatibleInitial("Kamikanuki", "가미카누키"))
         assertTrue(JapaneseRomajiToHangul.hasCompatibleInitial("Kamikanuki", "카미카누키"))
         assertTrue(!JapaneseRomajiToHangul.hasCompatibleInitial("Kamikanuki", "상향관"))
@@ -123,7 +123,7 @@ class ChurchGeoNameTranslationCatalogTest {
             val romaji = entries.getValue(japanese).translations.getValue("en")
             assertTrue(korean.isNotBlank(), japanese)
             assertTrue(korean.none { it in 'A'..'Z' || it in 'a'..'z' }, "$japanese: $romaji -> $korean")
-            assertEquals(JapaneseRomajiToHangul.transliterate(romaji), korean, japanese)
+            assertEquals(romajiToHangul(romaji), korean, japanese)
             assertTrue(JapaneseRomajiToHangul.hasCompatibleInitial(romaji, korean), "$japanese: $romaji -> $korean")
         }
     }

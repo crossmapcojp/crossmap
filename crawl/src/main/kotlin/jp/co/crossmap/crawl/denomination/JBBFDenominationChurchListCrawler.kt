@@ -33,6 +33,7 @@ class JBBFDenominationChurchListCrawler : SinglePageDenominationChurchListCrawle
                 jurisdiction = prefecturePattern.find(postalAndAddress)?.value?.trim().orEmpty(),
                 phone = telephonePattern.find(text)?.groupValues?.get(1)?.trim().orEmpty(),
                 websiteUrl = websiteUrl,
+                ministers = ChurchMinisterParser.parse(text),
                 note = listedName.substringAfter('（', "").substringBeforeLast('）').trim(),
             )
         }

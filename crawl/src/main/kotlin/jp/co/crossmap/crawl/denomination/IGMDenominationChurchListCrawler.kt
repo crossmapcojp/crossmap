@@ -26,7 +26,7 @@ class IGMDenominationChurchListCrawler : SinglePageDenominationChurchListCrawler
                             else -> "https://$url"
                         }
                     }
-                val tdText = td.text()
+                val tdText = td.clone().apply { select("rt, rp").remove() }.text()
                 val address = addressPattern.find(tdText)?.value?.trim().orEmpty()
                 val phone = phonePattern.find(tdText)?.groupValues?.get(1)?.trim().orEmpty()
                 val fax = faxPattern.find(tdText)?.groupValues?.get(1)?.trim().orEmpty()
@@ -36,6 +36,7 @@ class IGMDenominationChurchListCrawler : SinglePageDenominationChurchListCrawler
                     phone = phone,
                     fax = fax,
                     websiteUrl = websiteUrl,
+                    ministers = ChurchMinisterParser.parse(tdText),
                 )
             }
         }

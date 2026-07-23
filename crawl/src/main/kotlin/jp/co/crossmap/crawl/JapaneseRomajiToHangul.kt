@@ -3,6 +3,12 @@ package jp.co.crossmap.crawl
 import com.ibm.icu.text.Transliterator
 import java.text.Normalizer
 
+/**
+ * Best-effort Japanese romaji to Korean transliteration shared by geonames,
+ * church names, and personal names.
+ */
+internal fun romajiToHangul(romaji: String): String? = JapaneseRomajiToHangul.transliterateInternal(romaji)
+
 /** Korean pronunciation fallback derived from the authoritative English romaji geoname. */
 internal object JapaneseRomajiToHangul {
     private val latinToHangul by lazy { Transliterator.getInstance("Latin-Hangul") }
@@ -21,15 +27,27 @@ internal object JapaneseRomajiToHangul {
     )
 
     @Synchronized
-    fun transliterate(romaji: String): String? {
+    fun transliterateInternal(romaji: String): String? {
         val normalized = Normalizer.normalize(romaji.trim(), Normalizer.Form.NFKD)
             .replace(combiningMark, "")
         if (normalized.isBlank() || !latinLetter.containsMatchIn(normalized)) return null
+        val words = normalized.split(Regex("""\s+"""))
+        if (words.size > 1) {
+            return words.map { transliterateInternal(it) ?: it }.joinToString(" ")
+                .takeIf { value -> value.any(::isHangul) && !latinLetter.containsMatchIn(value) }
+        }
         val hepburn = normalized.lowercase()
             .replace(Regex("""sh([auo])"""), "sy$1")
             .replace("shi", "si")
             .replace("fu", "hu")
+            .replace(Regex("""(?<!t)su"""), "seu")
+            .replace("zu", "jeu")
+            // Personal-name datasets commonly spell Japanese long vowels as ou/oo/uu.
+            .replace("ou", "o")
+            .replace("oo", "o")
+            .replace("uu", "u")
         var hangul = latinToHangul.transliterate(hepburn)
+            .replace("트수", "쓰")
             .replace("츠", "쓰")
             .replace(Regex("""\s+"""), " ")
             .trim()
@@ -41,6 +59,9 @@ internal object JapaneseRomajiToHangul {
         }
         return hangul.takeIf { value -> value.any(::isHangul) && !latinLetter.containsMatchIn(value) }
     }
+
+    @Deprecated("Use the shared romajiToHangul function")
+    fun transliterate(romaji: String): String? = romajiToHangul(romaji)
 
     fun hasCompatibleInitial(romaji: String, hangul: String): Boolean {
         val latinInitial = romaji.firstOrNull(Char::isLetter)?.uppercaseChar() ?: return false
@@ -81,7 +102,7 @@ internal object JapaneseRomajiToHangul {
         } else if (token.length > 1 && token.all(Char::isUpperCase)) {
             token.mapNotNull { koreanLetterNames[it] }.joinToString("")
         } else {
-            transliterate(token) ?: token
+            romajiToHangul(token) ?: token
         }
     }
 

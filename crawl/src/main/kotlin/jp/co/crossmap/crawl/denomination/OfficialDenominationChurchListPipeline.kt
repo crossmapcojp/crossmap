@@ -24,6 +24,14 @@ data class OfficialDenominationChurchListPipelineReport(
     val rcjChurches: Int,
     val igmChurches: Int,
     val jagChurches: Int,
+    val jelcChurches: Int,
+    val ccjChurches: Int,
+    val sdaJpChurches: Int,
+    val tleaChurches: Int,
+    val hejChurches: Int,
+    val jecaChurches: Int,
+    val jccjChurches: Int,
+    val kccjChurches: Int,
     val cacheHits: Int,
     val reconciliation: OfficialDenominationReconciliationReport?,
 )
@@ -43,6 +51,14 @@ class OfficialDenominationChurchListPipeline(
         RCJDenominationChurchListCrawler(),
         IGMDenominationChurchListCrawler(),
         JAGDenominationChurchListCrawler(),
+        JELCDenominationChurchListCrawler(),
+        JCCDenominationChurchListCrawler(),
+        SDAJPDenominationChurchListCrawler(),
+        TLEADenominationChurchListCrawler(),
+        HEJDenominationChurchListCrawler(),
+        JECADenominationChurchListCrawler(),
+        JCCJDenominationChurchListCrawler(),
+        KCCJDenominationChurchListCrawler(),
     )
 
     fun run(
@@ -73,6 +89,14 @@ class OfficialDenominationChurchListPipeline(
         val rcj = lists.single { it.denominationId == "RCJ" }
         val igm = lists.single { it.denominationId == "IGM" }
         val jag = lists.single { it.denominationId == "JAG" }
+        val jelc = lists.single { it.denominationId == "JELC" }
+        val ccj = lists.single { it.denominationId == "CCJ" }
+        val sdaJp = lists.single { it.denominationId == "SDA_JP" }
+        val tlea = lists.single { it.denominationId == "TLEA" }
+        val hej = lists.single { it.denominationId == "HEJ" }
+        val jeca = lists.single { it.denominationId == "JECA" }
+        val jccj = lists.single { it.denominationId == "JCCJ" }
+        val kccj = lists.single { it.denominationId == "KCCJ" }
         return OfficialDenominationChurchListPipelineReport(
             sources = generic.sources + results.size,
             pages = generic.pages + results.sumOf(DenominationChurchListCrawlResult::pageCount),
@@ -87,6 +111,14 @@ class OfficialDenominationChurchListPipeline(
             rcjChurches = rcj.churches.size,
             igmChurches = igm.churches.size,
             jagChurches = jag.churches.size,
+            jelcChurches = jelc.churches.size,
+            ccjChurches = ccj.churches.size,
+            sdaJpChurches = sdaJp.churches.size,
+            tleaChurches = tlea.churches.size,
+            hejChurches = hej.churches.size,
+            jecaChurches = jeca.churches.size,
+            jccjChurches = jccj.churches.size,
+            kccjChurches = kccj.churches.size,
             cacheHits = results.count(DenominationChurchListCrawlResult::cacheHit),
             reconciliation = reconciliation,
         )
@@ -122,6 +154,14 @@ class OfficialDenominationChurchListPipeline(
             "RCJ" to 100,
             "IGM" to 50,
             "JAG" to 100,
+            "JELC" to 100,
+            "CCJ" to 70,
+            "SDA_JP" to 150,
+            "TLEA" to 100,
+            "HEJ" to 90,
+            "JECA" to 200,
+            "JCCJ" to 120,
+            "KCCJ" to 80,
         )
         lists.forEach { list ->
             require(list.churches.size >= minimums.getValue(list.denominationId)) {

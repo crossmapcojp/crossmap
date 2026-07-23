@@ -189,7 +189,10 @@ class OfficialDenominationChurchListReconciler(
             if (human != null) {
                 if (current in authoritative && officialAssignment == null) humanPreserved++
                 unchanged++
-                return@mapIndexed church
+                return@mapIndexed officialAssignment?.first
+                    ?.takeIf { it.list.denominationId == current }
+                    ?.let { church.withOfficialMinisters(it.church, timestamp) }
+                    ?: church
             }
 
             if (current in authoritative) {
@@ -363,9 +366,19 @@ class OfficialDenominationChurchListReconciler(
         )
         return copy(
             denominationId = denominationId,
+            ministers = entry.church.ministers,
             determinations = determinations.filterNot { it.field == "denominationId" } + determination,
             updatedAt = timestamp,
         )
+    }
+
+    private fun ChurchRecord.withOfficialMinisters(
+        officialChurch: OfficialDenominationChurch,
+        timestamp: String,
+    ): ChurchRecord = if (officialChurch.ministers.isEmpty()) {
+        this
+    } else {
+        copy(ministers = officialChurch.ministers, updatedAt = timestamp)
     }
 
     private fun ChurchRecord.withUnsupportedDenominationRemoved(

@@ -13,6 +13,59 @@ import okio.Path.Companion.toPath
 
 class ChurchSearchEngineTest {
     @Test
+    fun localizedPastorNamesFindTheChurchInEveryLanguageIndex() {
+        val root = Files.createTempDirectory("crossmap-minister-index")
+        try {
+            val church = ChurchRecord(
+                id = "fixture:minister-search",
+                name = "東京希望教会",
+                englishName = "Tokyo Hope Church",
+                localizedNames = listOf(
+                    LocalizedName("ja", "東京希望教会"),
+                    LocalizedName("en", "Tokyo Hope Church"),
+                    LocalizedName("ko", "도쿄 희망 교회"),
+                    LocalizedName("pt", "Igreja Esperança de Tóquio"),
+                    LocalizedName("id", "Gereja Harapan Tokyo"),
+                ),
+                address = "東京都新宿区",
+                location = GeoPoint(35.69, 139.70),
+                websiteUrl = "https://example.com/hope",
+                ministers = listOf(
+                    ChurchMinister(
+                        name = "佐藤 太郎",
+                        localizedNames = listOf(
+                            LocalizedName("ja", "佐藤 太郎"),
+                            LocalizedName("ja", "さとう たろう"),
+                            LocalizedName("en", "Tarou Satou"),
+                            LocalizedName("ko", "사토 다로"),
+                            LocalizedName("pt", "Tarou Satou"),
+                            LocalizedName("id", "Tarou Satou"),
+                        ),
+                        roleId = "pastor",
+                        roleName = "牧師",
+                        localizedRoleNames = emptyList(),
+                    ),
+                ),
+            )
+            val queries = mapOf("ja" to "佐藤 太郎", "en" to "Tarou Satou", "ko" to "사토 다로", "pt" to "Tarou Satou", "id" to "Tarou Satou")
+            queries.forEach { (language, query) ->
+                val index = root.resolve("index-$language")
+                ChurchIndex.build(index.toString().toPath(), listOf(church), languageCode = language)
+                val engine = ChurchSearchEngine(index.toString().toPath(), emptyList(), languageCode = language)
+                try {
+                    val result = engine.search(ChurchSearchRequest(query))
+                    assertEquals(1, result.total, "$language query must find the church by pastor name")
+                    assertEquals(church.id, result.hits.single().churchId)
+                } finally {
+                    engine.close()
+                }
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun rendersSearchStepDurationsAndPercentages() {
         val output = renderSearchTiming(
             linkedMapOf(
