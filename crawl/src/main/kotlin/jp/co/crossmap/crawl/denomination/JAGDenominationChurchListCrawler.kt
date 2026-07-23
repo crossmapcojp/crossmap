@@ -1,5 +1,6 @@
 package jp.co.crossmap.crawl.denomination
 
+import jp.co.crossmap.JapaneseAddressNormalizer
 import org.jsoup.Jsoup
 
 class JAGDenominationChurchListCrawler : MultiPageDenominationChurchListCrawler {
@@ -53,9 +54,51 @@ class JAGDenominationChurchListCrawler : MultiPageDenominationChurchListCrawler 
                     jurisdiction = jurisdiction,
                     phone = phonePattern.find(excerpt)?.groupValues?.get(1)?.trim().orEmpty(),
                     fax = faxPattern.find(excerpt)?.groupValues?.get(1)?.trim().orEmpty(),
-                    websiteUrl = title.selectFirst("a[href]")?.absUrl("href")?.trim().orEmpty(),
+                    denominationChurchListDetailPage = title.selectFirst("a[href]")?.absUrl("href")?.trim().orEmpty(),
                 )
             }
+
+    override fun parseDetailPage(
+        church: OfficialDenominationChurch,
+        html: String,
+    ): OfficialDenominationChurch {
+        val document = Jsoup.parse(html, church.denominationChurchListDetailPage)
+        val rows = document.select("tr").associateBy { row ->
+            row.select("th, td").firstOrNull()?.text()?.replace(Regex("\\s+"), "")?.trim().orEmpty()
+        }
+        val address = rows.entries.firstOrNull { (label, _) -> label == "住所" }
+            ?.value
+            ?.select("th, td")
+            ?.getOrNull(1)
+            ?.text()
+            ?.let(::normalizeAddress)
+            .orEmpty()
+        val website = rows.entries.firstOrNull { (label, _) -> "ホームページ" in label || "ウェブサイト" in label }
+            ?.value
+            ?.selectFirst("a[href]")
+            ?.absUrl("href")
+            ?.trim()
+            ?.takeUnless { it.startsWith("https://j-ag.org/") }
+            .orEmpty()
+        val phone = rows.entries.firstOrNull { (label, _) -> label == "電話" || label == "TEL" }
+            ?.value?.select("th, td")?.getOrNull(1)?.text()?.trim().orEmpty()
+        val fax = rows.entries.firstOrNull { (label, _) -> label == "FAX" }
+            ?.value?.select("th, td")?.getOrNull(1)?.text()?.trim().orEmpty()
+        return church.copy(
+            address = address.ifBlank { church.address },
+            phone = phone.ifBlank { church.phone },
+            fax = fax.ifBlank { church.fax },
+            websiteUrl = website,
+        )
+    }
+
+    private fun normalizeAddress(value: String): String {
+        val addressOnly = value.split(
+            Regex("""\s*(?:[＊※]|徒歩|最寄り?駅|アクセス)"""),
+            limit = 2,
+        ).first().trim()
+        return JapaneseAddressNormalizer.normalize(addressOnly).normalized
+    }
 
     private companion object {
         val addressPattern = Regex(

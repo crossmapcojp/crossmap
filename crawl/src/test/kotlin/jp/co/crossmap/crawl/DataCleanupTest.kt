@@ -93,6 +93,86 @@ class DataCleanupTest {
         assertEquals(null, matcher.match(ambiguous, rules, emptyList()))
     }
 
+    @Test
+    fun sharedSocialHostIsNotDenominationWebsiteEvidence() {
+        val rules = listOf(
+            DenominationRule(
+                "JBC",
+                "日本バプテスト連盟",
+                websiteComponents = listOf("bapren.jp", "facebook.com"),
+                source = "JBC rule",
+            ),
+        )
+        val matcher = ProgrammaticDenominationMatcher()
+        val unrelatedFacebookChurch = church(
+            "google:10009540859480007974",
+            "イエス愛の教会",
+        ).copy(websiteUrl = "https://www.facebook.com/fujijesuslove/")
+        val officialDomainChurch = church(
+            "google:906297735827744432",
+            "地域教会",
+        ).copy(websiteUrl = "https://bapren.jp/church/example")
+
+        assertEquals(null, matcher.match(unrelatedFacebookChurch, rules, emptyList()))
+        assertEquals("JBC", matcher.match(officialDomainChurch, rules, emptyList())?.denominationId)
+    }
+
+    @Test
+    fun explicitDenominationPrefixCorrectsPriorProgrammaticMisassignment() = runBlocking {
+        val root = Files.createTempDirectory("crossmap-explicit-denomination-prefix")
+        val cache = root.resolve("cache")
+        try {
+            Files.createDirectories(root.resolve("catalog"))
+            Files.createDirectories(root.resolve("cleanup"))
+            Files.createDirectories(cache.resolve("cleanup"))
+            val obihiro = ChurchRecord(
+                id = "google:11549556222669181947",
+                googleCid = "11549556222669181947",
+                name = "日本キリスト教会帯広教会",
+                englishName = "CCJ Obihiro Church",
+                denominationId = "JAG",
+                address = "〒080-0016 北海道帯広市西６条南２２丁目１−９",
+                location = GeoPoint(42.9125, 143.1958),
+                websiteUrl = "https://www.google.com/maps/contrib/101113984239077744878?hl=ja",
+                determinations = listOf(
+                    jp.co.crossmap.FieldDetermination(
+                        "denominationId",
+                        "JAG",
+                        DeterminationSource.PROGRAMMATIC,
+                        0.9,
+                    ),
+                ),
+            )
+            Files.writeString(root.resolve("catalog/churches.json"), json.encodeToString(listOf(obihiro)))
+            Files.writeString(cache.resolve("cleanup/denomination-candidates.json"), "[]")
+            Files.writeString(
+                root.resolve("cleanup/denomination-rules.json"),
+                json.encodeToString(
+                    listOf(
+                        DenominationRule(
+                            denominationId = "CCJ",
+                            name = "日本キリスト教会",
+                            websiteComponents = listOf("nikki-church.org"),
+                            source = "crossmap:denomination-seed/Ccj",
+                        ),
+                    ),
+                ),
+            )
+            Files.writeString(root.resolve("cleanup/human-overrides.json"), "[]")
+
+            PostCrawlCleanup(
+                matcher = EntityMatcher { EntityMatchDecision(null, 0.0, reasoning = "not used") },
+            ).run(root, enableLlm = false, cacheRoot = cache)
+
+            val updated = json.decodeFromString<List<ChurchRecord>>(
+                Files.readString(root.resolve("catalog/churches.json")),
+            ).single()
+            assertEquals("CCJ", updated.denominationId)
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
     @Suppress("DEPRECATION")
     @Test
     fun attachmentEnglishNameFunctionsDelegateToDeterministicAndLlmResolver() {

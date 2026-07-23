@@ -24,6 +24,7 @@ data class OfficialDenominationChurch(
     val phone: String = "",
     val fax: String = "",
     val websiteUrl: String = "",
+    val denominationChurchListDetailPage: String = "",
     val membershipStatus: OfficialChurchMembershipStatus = OfficialChurchMembershipStatus.LISTED,
     val note: String = "",
 ) {
@@ -63,6 +64,11 @@ interface MultiPageDenominationChurchListCrawler : DenominationChurchListCrawler
 
     override val pageUrls: List<String>
         get() = sourceUrls
+
+    fun parseDetailPage(
+        church: OfficialDenominationChurch,
+        html: String,
+    ): OfficialDenominationChurch = church
 }
 
 data class LoadedDenominationChurchPage(
@@ -158,9 +164,27 @@ class DenominationChurchListCrawlerRunner(
             cacheRoot.resolve("denomination-church-lists/${crawler.denominationId.lowercase()}"),
             json = json,
         )
-        val pages = crawler.pageUrls.map { loader.load(it, forceRefresh) }
-        val churches = pages.flatMap { crawler.parse(it.html) }
+        val listPages = crawler.pageUrls.map { loader.load(it, forceRefresh) }
+        var churches = listPages.flatMap { crawler.parse(it.html) }
             .distinctBy { Triple(it.name, it.address, it.jurisdiction) }
+        val detailPages = if (crawler is MultiPageDenominationChurchListCrawler) {
+            churches.mapNotNull { church ->
+                church.denominationChurchListDetailPage.takeIf(String::isNotBlank)?.let { url ->
+                    church to loader.load(url, forceRefresh)
+                }
+            }
+        } else {
+            emptyList()
+        }
+        if (crawler is MultiPageDenominationChurchListCrawler) {
+            val detailsByUrl = detailPages.associate { (church, page) -> church.denominationChurchListDetailPage to page }
+            churches = churches.map { church ->
+                detailsByUrl[church.denominationChurchListDetailPage]
+                    ?.let { crawler.parseDetailPage(church, it.html) }
+                    ?: church
+            }
+        }
+        val pages = listPages + detailPages.map { it.second }
         require(churches.isNotEmpty()) { "${crawler.denominationId} official directory contained no church rows" }
         val list = OfficialDenominationChurchList(
             denominationId = crawler.denominationId,

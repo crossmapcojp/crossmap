@@ -91,15 +91,19 @@ object JapaneseEntityNormalizer {
         .trim('-')
 
     fun deterministicAddressScore(left: String, right: String): Float {
-        val a = address(left)
-        val b = address(right)
+        return deterministicNormalizedAddressScore(address(left), address(right))
+    }
+
+    fun deterministicNormalizedAddressScore(a: String, b: String): Float {
         if (a.isBlank() || b.isBlank()) return 0f
         if (a == b) return 1f
         if (a.contains(b) || b.contains(a)) return 0.92f
         return fuzzyScore(a, b).coerceAtMost(0.90f)
     }
 
-    fun deterministicNameScore(left: String, right: String): Float = fuzzyScore(name(left), name(right))
+    fun deterministicNameScore(left: String, right: String): Float = deterministicNormalizedNameScore(name(left), name(right))
+
+    fun deterministicNormalizedNameScore(left: String, right: String): Float = fuzzyScore(left, right)
 
     fun isExactOrContainingName(left: String, right: String): Boolean {
         val normalizedLeft = name(left)
@@ -116,6 +120,10 @@ object JapaneseEntityNormalizer {
     ): Float {
         val nameScore = deterministicNameScore(leftName, rightName)
         val addressScore = deterministicAddressScore(leftAddress, rightAddress)
+        return deterministicEntityScore(nameScore, addressScore)
+    }
+
+    fun deterministicEntityScore(nameScore: Float, addressScore: Float): Float {
         if (nameScore < 0.25f || addressScore < 0.25f) return minOf(nameScore, addressScore)
         return nameScore * 0.55f + addressScore * 0.45f
     }

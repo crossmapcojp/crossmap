@@ -309,7 +309,6 @@
             "pt": "Ino"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -342,7 +341,6 @@
             "ko": "이와"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -782,7 +780,6 @@
             "ko": "사이타마"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -883,7 +880,6 @@
             "ko": "사가 시"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -894,7 +890,6 @@
             "ko": "사가미노"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -1150,7 +1145,6 @@
             "ko": "그"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -1265,7 +1259,6 @@
             "pt": "Tsukuba"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -1312,7 +1305,6 @@
             "ko": "쓰레기"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -1862,7 +1854,6 @@
             "ko": "미타마"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -1873,7 +1864,6 @@
             "ko": "미토"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -2048,7 +2038,6 @@
             "ko": "무사"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -2336,7 +2325,6 @@
             "ko": "가장"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -2649,7 +2637,6 @@
             "ko": "미츠 경계"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -2948,7 +2935,6 @@
             "pt": "povoado de Mishima"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -3362,7 +3348,6 @@
             "ko": "미쓰"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -3506,7 +3491,6 @@
             "pt": "Mikasa"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -3815,7 +3799,6 @@
             "pt": "Mitaka"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -4682,7 +4665,6 @@
             "ko": "상판 다리"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -6455,7 +6437,6 @@
             "ko": "불로 마을"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -6912,7 +6893,6 @@
             "ko": "나카교 쿠"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -7302,16 +7282,6 @@
             "id": "Nakajima",
             "ko": "나카지마",
             "pt": "povoado de Nakajima"
-        },
-        "sources": [
-            "ADDRESS"
-        ]
-    },
-    {
-        "ja": "中島公園",
-        "translations": {
-            "en": "Nakajimakoen",
-            "ko": "나카지마쾬"
         },
         "sources": [
             "ADDRESS"
@@ -8036,7 +8006,6 @@
             "ko": "추부"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -9282,7 +9251,6 @@
             "ko": "가메노코"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -9343,7 +9311,6 @@
             "ko": "후탙수바시초"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -9652,7 +9619,6 @@
             "ko": "고탄"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -9955,7 +9921,6 @@
             "ko": "고코"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -11040,7 +11005,6 @@
             "pt": "Sendai, distrito de Izumi"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -11094,7 +11058,6 @@
             "ko": "다이칸'야마초"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -11865,16 +11828,6 @@
         ]
     },
     {
-        "ja": "会所",
-        "translations": {
-            "en": "Kaishomachi",
-            "ko": "가이쇼마치"
-        },
-        "sources": [
-            "ADDRESS"
-        ]
-    },
-    {
         "ja": "会津坂下",
         "translations": {
             "en": "Aizubange",
@@ -12114,7 +12067,6 @@
             "pt": "Sasebo"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -12845,7 +12797,6 @@
             "pt": "Kurashiki"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -13589,7 +13540,6 @@
             "pt": "Yao"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -13735,7 +13685,6 @@
             "pt": "Hachinohe"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -13864,7 +13813,6 @@
             "pt": "Yashio"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -14438,7 +14386,6 @@
             "pt": "Hyōgo"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -14725,7 +14672,6 @@
             "ko": "마루야마초"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -15271,7 +15217,6 @@
             "pt": "Maebashi"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -16054,7 +15999,6 @@
             "ko": "기타이치조"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -16135,7 +16079,6 @@
             "pt": "Kitakyushu"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -16257,7 +16200,6 @@
             "ko": "기타센초"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -16300,7 +16242,6 @@
             "pt": "Kitanagoya"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -16566,7 +16507,6 @@
             "ko": "호쿠토 시"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -17357,7 +17297,6 @@
             "ko": "주몬지타이"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -18306,7 +18245,6 @@
             "ko": "난코초"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -18606,7 +18544,6 @@
             "ko": "미나미오구라"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -19308,7 +19245,6 @@
             "ko": "난부"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -19571,7 +19507,6 @@
             "ko": "하카타"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -19704,7 +19639,6 @@
             "pt": "Atsugi"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -20703,7 +20637,6 @@
             "ko": "기쑈지마치"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -20898,7 +20831,6 @@
             "pt": "Nagoya, distrito de Naka"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -20923,7 +20855,6 @@
             "pt": "Nagoya, distrito de Minami"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -21108,7 +21039,6 @@
             "pt": "Nagoya, distrito de Higashi"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -21133,7 +21063,6 @@
             "pt": "Nagoya, distrito de Nishi"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -21298,7 +21227,6 @@
             "ko": "묘다니초"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -21456,7 +21384,6 @@
             "ko": "무카이가와라마치"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -21545,7 +21472,6 @@
             "pt": "Suita"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -21880,7 +21806,6 @@
             "pt": "Wakayama"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -22473,16 +22398,6 @@
         "translations": {
             "en": "Kamara",
             "ko": "가마라"
-        },
-        "sources": [
-            "ADDRESS"
-        ]
-    },
-    {
-        "ja": "四ッ谷",
-        "translations": {
-            "en": "Yotsuya",
-            "ko": "욭수야"
         },
         "sources": [
             "ADDRESS"
@@ -23552,16 +23467,6 @@
             "id": "kota Sakaki",
             "ko": "사카키 정",
             "pt": "bairro de Sakaki"
-        },
-        "sources": [
-            "ADDRESS"
-        ]
-    },
-    {
-        "ja": "坂市",
-        "translations": {
-            "en": "Sakaichi",
-            "ko": "사카이치"
         },
         "sources": [
             "ADDRESS"
@@ -24669,7 +24574,6 @@
             "ko": "교난초"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -25573,7 +25477,6 @@
             "pt": "Oita"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -26228,7 +26131,6 @@
             "ko": "오오카야마"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -26736,7 +26638,6 @@
             "ko": "오모리초"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -27486,7 +27387,6 @@
             "ko": "오이시"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -29696,7 +29596,6 @@
             "pt": "Usa"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -29975,7 +29874,6 @@
             "pt": "Utsunomiya"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -30235,7 +30133,6 @@
             "ko": "야수오카초"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -30476,7 +30373,6 @@
             "ko": "안교"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -30675,7 +30571,6 @@
             "pt": "Takarazuka"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -31571,7 +31466,6 @@
             "ko": "슈쿠가와라"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -32179,7 +32073,6 @@
             "pt": "Sagae"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -32969,7 +32862,6 @@
             "pt": "Kodaira"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -33607,7 +33499,6 @@
             "pt": "Kotake"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -34188,7 +34079,6 @@
             "pt": "Amagasaki"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -34340,7 +34230,6 @@
             "pt": "Onomichi"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -34814,7 +34703,6 @@
             "pt": "povoado de Yamagata"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -34925,7 +34813,6 @@
             "pt": "Yamanashi"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -37131,7 +37018,6 @@
             "pt": "Kawagoe"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -37966,7 +37852,6 @@
             "pt": "Hiratsuka"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -38327,7 +38212,6 @@
             "ko": "히라바리"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -38508,7 +38392,6 @@
             "pt": "Hiroshima, distrito de Minami"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -39284,7 +39167,6 @@
             "pt": "Hikone"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -39466,7 +39348,6 @@
             "ko": "미소노"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -39964,7 +39845,6 @@
             "ko": "도쿠다"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -40063,7 +39943,6 @@
             "pt": "Shiki"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -40912,7 +40791,6 @@
             "ko": "도바타"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -40933,7 +40811,6 @@
             "ko": "도베초"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -41207,7 +41084,6 @@
             "ko": "하이지마초"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -41906,7 +41782,6 @@
             "ko": "신코야수"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -42461,7 +42336,6 @@
             "pt": "Niigata"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -42910,7 +42784,6 @@
             "ko": "히노모토"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -43806,7 +43679,6 @@
             "pt": "Akashi"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -44015,7 +43887,6 @@
             "pt": "Kasugai"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -44331,7 +44202,6 @@
             "ko": "고세이"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -45734,7 +45604,6 @@
             "pt": "Sapporo, bairro de Chuo"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -45747,7 +45616,6 @@
             "pt": "Sapporo, bairro de Kita"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -45896,7 +45764,6 @@
             "pt": "Sapporo, distrito de Higashi"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -45964,7 +45831,6 @@
             "pt": "Suginami"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -46375,7 +46241,6 @@
             "pt": "Tóquio, bairro de Chuo"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -46400,7 +46265,6 @@
             "pt": "Tóquio, bairro de Sumida"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -46510,7 +46374,6 @@
             "ko": "히가시수미요시"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -46645,7 +46508,6 @@
             "pt": "Tohoku"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -47337,7 +47199,6 @@
             "ko": "히가시나리 쿠"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -47958,7 +47819,6 @@
             "ko": "히가시나다 쿠"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -47979,7 +47839,6 @@
             "ko": "히가시다초"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -48222,7 +48081,6 @@
             "ko": "히가시토요나카초"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -49142,7 +49000,6 @@
             "ko": "맡수사와초"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -49459,7 +49316,6 @@
             "pt": "Hirakata"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -50177,7 +50033,6 @@
             "ko": "구리히라"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -51198,7 +51053,6 @@
             "ko": "모리쇼지"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -51239,7 +51093,6 @@
             "ko": "모리바야시"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -51364,7 +51217,6 @@
             "ko": "게미가와초"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -51782,7 +51634,6 @@
             "pt": "Yokohama, distrito de Naka"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -51795,7 +51646,6 @@
             "pt": "Yokohama, distrito de Minami"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -52013,7 +51863,6 @@
             "pt": "Yokohama, distrito de Izumi"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -52026,7 +51875,6 @@
             "pt": "Yokohama, distrito de Konan"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -52039,7 +51887,6 @@
             "pt": "Yokohama, distrito de Isogo"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -52561,7 +52408,6 @@
             "ko": "무사시가오카"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -52866,7 +52712,6 @@
             "pt": "Minamata"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -53017,7 +52862,6 @@
             "pt": "Mito"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -54393,7 +54237,6 @@
             "pt": "Numazu"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -54465,16 +54308,6 @@
         ]
     },
     {
-        "ja": "泉ヶ丘",
-        "translations": {
-            "en": "Izumigaoka",
-            "ko": "이수미가오카"
-        },
-        "sources": [
-            "ADDRESS"
-        ]
-    },
-    {
         "ja": "泉中央",
         "translations": {
             "en": "Izumichuo",
@@ -54516,7 +54349,6 @@
             "ko": "이수미키타"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -54630,7 +54462,6 @@
             "ko": "센싀"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -54790,7 +54621,6 @@
             "ko": "트수킈잍초메"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -55731,7 +55561,6 @@
             "ko": "우라와"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -55754,7 +55583,6 @@
             "pt": "Urayasu"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -55910,7 +55738,6 @@
             "ko": "우라가"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -55987,7 +55814,6 @@
             "ko": "나니와마치"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -56130,7 +55956,6 @@
             "pt": "Ebina"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -56623,7 +56448,6 @@
             "ko": "시미수가오카"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -56667,7 +56491,6 @@
             "pt": "Kiyose"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -57102,16 +56925,6 @@
         ]
     },
     {
-        "ja": "湯の川",
-        "translations": {
-            "en": "Yunokawa",
-            "ko": "유노카와"
-        },
-        "sources": [
-            "ADDRESS"
-        ]
-    },
-    {
         "ja": "湯山",
         "translations": {
             "en": "Yuyama",
@@ -57181,7 +56994,6 @@
             "ko": "유모토"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -57326,7 +57138,6 @@
             "ko": "미소노구치"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -57337,7 +57148,6 @@
             "ko": "미소노쿠치"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -57832,7 +57642,6 @@
             "ko": "세노"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -58200,7 +58009,6 @@
             "pt": "Kumagaya"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -58284,7 +58092,6 @@
             "ko": "앝수타"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -59280,7 +59087,6 @@
             "pt": "Mizuho"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -59470,7 +59276,6 @@
             "ko": "구미노"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -59955,7 +59760,6 @@
             "ko": "다우라"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -60108,7 +59912,6 @@
             "ko": "다구마"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -60521,7 +60324,6 @@
             "pt": "Machida"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -60801,16 +60603,6 @@
         "translations": {
             "en": "Toyomamachi-teraike",
             "ko": "도요마마치테라이케"
-        },
-        "sources": [
-            "ADDRESS"
-        ]
-    },
-    {
-        "ja": "登美が丘",
-        "translations": {
-            "en": "Tomigaoka",
-            "ko": "도미가오카"
         },
         "sources": [
             "ADDRESS"
@@ -61203,7 +60995,6 @@
             "ko": "시라가네"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -61484,7 +61275,6 @@
             "pt": "Morioka"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -61757,7 +61547,6 @@
             "pt": "Sagamihara, distrito de Minami"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -62500,7 +62289,6 @@
             "ko": "이시와"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -62566,7 +62354,6 @@
             "ko": "이시야마"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -63399,7 +63186,6 @@
             "pt": "Kobe, distrito de Chuo"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -63412,7 +63198,6 @@
             "pt": "Kobe, distrito de Kita"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -63894,7 +63679,6 @@
             "pt": "Fukui"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -64020,7 +63804,6 @@
             "pt": "Fukuoka, distrito de Chuo"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -64150,7 +63933,6 @@
             "pt": "Fukuoka, distrito de Nishi"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -64804,7 +64586,6 @@
             "ko": "이나게카이간"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -64859,7 +64640,6 @@
             "ko": "이나다"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -65643,7 +65423,6 @@
             "pt": "Chikushino"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -67493,7 +67272,6 @@
             "pt": "Gunma"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -67865,7 +67643,6 @@
             "pt": "Narashino"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -68236,7 +68013,6 @@
             "ko": "지유가오카"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -69715,7 +69491,6 @@
             "pt": "Ibaraki"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -70616,7 +70391,6 @@
             "ko": "캍수시카쿠"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -70798,7 +70572,6 @@
             "pt": "Hasuda"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -71322,7 +71095,6 @@
             "ko": "니지가오카"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -72115,7 +71887,6 @@
             "pt": "Nishinomiya"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -72337,7 +72108,6 @@
             "ko": "니시카와구치"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -72432,7 +72202,6 @@
             "ko": "니시아라이"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -72581,7 +72350,6 @@
             "pt": "Nishitokyo"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -72925,7 +72693,6 @@
             "ko": "니시후나하시"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -73110,7 +72877,6 @@
             "ko": "니시카마쿠라"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -73716,16 +73482,6 @@
         ]
     },
     {
-        "ja": "豊ケ丘",
-        "translations": {
-            "en": "Toyogaoka",
-            "ko": "도요가오카"
-        },
-        "sources": [
-            "ADDRESS"
-        ]
-    },
-    {
         "ja": "豊丘",
         "translations": {
             "en": "Toyooka",
@@ -73746,7 +73502,6 @@
             "pt": "Toyonaka"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -73846,7 +73601,6 @@
             "pt": "Toyoyama"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -74071,7 +73825,6 @@
             "pt": "Toyohashi"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -74988,7 +74741,6 @@
             "pt": "Adachi"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -76020,7 +75772,6 @@
             "ko": "트수오카초"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -77361,7 +77112,6 @@
             "ko": "구로가네초"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -77591,7 +77341,6 @@
             "pt": "Kamakura"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -77954,7 +77703,6 @@
             "pt": "Nagaokakyo"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -78276,7 +78024,6 @@
             "ko": "나가세초"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -78544,7 +78291,6 @@
             "ko": "모지쿠"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -78587,7 +78333,6 @@
             "pt": "Kadoma"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -78807,7 +78552,6 @@
             "pt": "Hannan"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -78920,7 +78664,6 @@
             "ko": "아사가야미나미"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -79353,16 +79096,6 @@
         ]
     },
     {
-        "ja": "霞ヶ丘",
-        "translations": {
-            "en": "Kasumigaoka",
-            "ko": "가수미가오카"
-        },
-        "sources": [
-            "ADDRESS"
-        ]
-    },
-    {
         "ja": "霧が丘",
         "translations": {
             "en": "Kirigaoka",
@@ -79548,7 +79281,6 @@
             "pt": "Aomori"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -79670,7 +79402,6 @@
             "pt": "Shizuoka"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -80107,7 +79838,6 @@
             "ko": "이이사카마치"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -80200,7 +79930,6 @@
             "pt": "Iijima"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -80667,7 +80396,6 @@
             "pt": "Kashiba"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -80841,7 +80569,6 @@
             "ko": "마고메"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -81406,7 +81133,6 @@
             "ko": "다카미네"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -81465,7 +81191,6 @@
             "pt": "Takasaki"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },
@@ -81980,7 +81705,6 @@
             "pt": "Kochi"
         },
         "sources": [
-            "ADDRESS",
             "TITLE"
         ]
     },

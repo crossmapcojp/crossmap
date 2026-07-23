@@ -21,7 +21,84 @@ data class OfficialDenominationReconciliationReport(
     val unchanged: Int,
     val humanOverridesPreserved: Int,
     val unmatchedOfficialEntries: Int,
+    val assignedEntries: List<OfficialDenominationReconciliationAuditEntry> = emptyList(),
+    val removedUnsupportedLabelEntries: List<OfficialDenominationReconciliationAuditEntry> = emptyList(),
+    val unmatchedOfficialEntryDetails: List<OfficialDenominationReconciliationAuditEntry> = emptyList(),
+) {
+    fun toHumanReadableAuditLog(): String = buildString {
+        appendAuditGroup("denominations_assigned", assignedEntries)
+        appendLine()
+        appendAuditGroup("unsupported_labels_removed", removedUnsupportedLabelEntries)
+        appendLine()
+        appendAuditGroup("unmatched_official_entries", unmatchedOfficialEntryDetails)
+    }.trimEnd()
+}
+
+data class OfficialDenominationReconciliationAuditEntry(
+    val googleMapsSavedPlace: GoogleMapsSavedPlaceAuditData?,
+    val denominationCrawler: DenominationCrawlerChurchAuditData,
 )
+
+data class GoogleMapsSavedPlaceAuditData(
+    val churchId: String,
+    val googlePlaceTitle: String,
+    val namesByLanguage: Map<String, List<String>>,
+    val address: String,
+    val website: String,
+    val detectedDenomination: String,
+)
+
+data class DenominationCrawlerChurchAuditData(
+    val denominationName: String,
+    val churchName: String?,
+    val address: String?,
+    val website: String?,
+)
+
+private fun StringBuilder.appendAuditGroup(
+    name: String,
+    entries: List<OfficialDenominationReconciliationAuditEntry>,
+) {
+    appendLine("$name (${entries.size})")
+    entries.forEach { entry ->
+        appendLine("church {")
+        appendLine("  performed opperation: $name")
+        entry.googleMapsSavedPlace?.let { google ->
+            appendLine("  data from google map saved place {")
+            appendLine("    church id: ${google.churchId.auditValue()}")
+            appendLine("    google place title: ${google.googlePlaceTitle.auditValue("(not available in saved-place cache)")}")
+            appendLine("    church names in all languages:")
+            google.namesByLanguage.forEach { (language, names) ->
+                appendLine("      ${language.auditValue()}: ${names.joinToString(" | ").auditValue()}")
+            }
+            appendLine("    church address: ${google.address.auditValue()}")
+            appendLine("    church website: ${google.website.auditValue()}")
+            appendLine("    detected denomination: ${google.detectedDenomination.auditValue()}")
+            appendLine("  }")
+        } ?: appendLine("  data from google map saved place: no matching church")
+
+        val official = entry.denominationCrawler
+        if (official.churchName == null) {
+            appendLine("  data from denomination crawler: no matching official church")
+            appendLine("    denomination name: ${official.denominationName.auditValue()}")
+        } else {
+            appendLine("  data from denomination crawler {")
+            appendLine("    denomination name: ${official.denominationName.auditValue()}")
+            appendLine("    church name: ${official.churchName.auditValue()}")
+            appendLine("    church address: ${official.address.auditValue()}")
+            appendLine("    church website: ${official.website.auditValue()}")
+            appendLine("  }")
+        }
+        appendLine("}")
+    }
+}
+
+private fun String?.auditValue(emptyValue: String = "(none)"): String = this
+    ?.replace('\n', ' ')
+    ?.replace('\r', ' ')
+    ?.trim()
+    ?.takeIf(String::isNotBlank)
+    ?: emptyValue
 
 /**
  * Makes a fresh official list authoritative for denomination membership while preserving human review.
@@ -35,6 +112,7 @@ class OfficialDenominationChurchListReconciler(
     fun reconcile(
         catalogFile: Path,
         lists: List<OfficialDenominationChurchList>,
+        googlePlaceTitlesByChurchId: Map<String, String> = emptyMap(),
     ): OfficialDenominationReconciliationReport {
         val churches = json.decodeFromString<List<ChurchRecord>>(Files.readString(catalogFile))
         val authoritative = lists.associateBy(OfficialDenominationChurchList::denominationId)
@@ -58,6 +136,8 @@ class OfficialDenominationChurchListReconciler(
         var removed = 0
         var unchanged = 0
         var humanPreserved = 0
+        val assignedEntries = mutableListOf<OfficialDenominationReconciliationAuditEntry>()
+        val removedEntries = mutableListOf<OfficialDenominationReconciliationAuditEntry>()
         val timestamp = now()
 
         val matchesByChurch = churches.map { church ->
@@ -120,14 +200,18 @@ class OfficialDenominationChurchListReconciler(
                 }
                 if (officialAssignment != null) {
                     assigned++
+                    assignedEntries += auditEntry(church, officialAssignment.first, googlePlaceTitlesByChurchId)
                     return@mapIndexed church.withOfficialDenomination(officialAssignment.first, officialAssignment.second, timestamp)
                 }
                 removed++
-                return@mapIndexed church.withUnsupportedDenominationRemoved(authoritative.getValue(current!!), timestamp)
+                val authoritativeList = authoritative.getValue(current!!)
+                removedEntries += auditEntry(church, authoritativeList, googlePlaceTitlesByChurchId)
+                return@mapIndexed church.withUnsupportedDenominationRemoved(authoritativeList, timestamp)
             }
 
             if (officialAssignment != null) {
                 assigned++
+                assignedEntries += auditEntry(church, officialAssignment.first, googlePlaceTitlesByChurchId)
                 return@mapIndexed church.withOfficialDenomination(officialAssignment.first, officialAssignment.second, timestamp)
             }
             unchanged++
@@ -144,40 +228,77 @@ class OfficialDenominationChurchListReconciler(
             unchanged = unchanged,
             humanOverridesPreserved = humanPreserved,
             unmatchedOfficialEntries = eligible.size - matchedKeys.size,
+            assignedEntries = assignedEntries,
+            removedUnsupportedLabelEntries = removedEntries,
+            unmatchedOfficialEntryDetails = eligible.filterNot { it.key in matchedKeys }.map { entry ->
+                OfficialDenominationReconciliationAuditEntry(
+                    googleMapsSavedPlace = null,
+                    denominationCrawler = entry.toAuditData(),
+                )
+            },
         )
     }
 
-    private fun match(church: ChurchRecord, entry: OfficialEntry): Double? {
-        val churchName = comparableName(church.name, entry.list.denominationId)
-        val officialName = comparableName(entry.church.name, entry.list.denominationId)
-        val churchStem = comparisonStem(church.name, entry.list.denominationId)
-        val officialStem = comparisonStem(entry.church.name, entry.list.denominationId)
-        val stemScore = when {
-            churchStem.isBlank() || officialStem.isBlank() -> 0.0
-            churchStem == officialStem -> 1.0
-            minOf(churchStem.length, officialStem.length) >= 2 &&
-                (churchStem.contains(officialStem) || officialStem.contains(churchStem)) -> 0.95
-            else -> JapaneseEntityNormalizer.deterministicNameScore(churchStem, officialStem).toDouble()
+    private fun auditEntry(
+        church: ChurchRecord,
+        entry: OfficialEntry,
+        googlePlaceTitlesByChurchId: Map<String, String>,
+    ) = OfficialDenominationReconciliationAuditEntry(
+        googleMapsSavedPlace = church.toAuditData(googlePlaceTitlesByChurchId),
+        denominationCrawler = entry.toAuditData(),
+    )
+
+    private fun auditEntry(
+        church: ChurchRecord,
+        list: OfficialDenominationChurchList,
+        googlePlaceTitlesByChurchId: Map<String, String>,
+    ) = OfficialDenominationReconciliationAuditEntry(
+        googleMapsSavedPlace = church.toAuditData(googlePlaceTitlesByChurchId),
+        denominationCrawler = DenominationCrawlerChurchAuditData(
+            denominationName = list.denominationName,
+            churchName = null,
+            address = null,
+            website = null,
+        ),
+    )
+
+    private fun ChurchRecord.toAuditData(googlePlaceTitlesByChurchId: Map<String, String>): GoogleMapsSavedPlaceAuditData {
+        val names = linkedMapOf<String, MutableList<String>>()
+        fun addName(language: String, value: String) {
+            value.takeIf(String::isNotBlank)?.let { names.getOrPut(language) { mutableListOf() } += it }
         }
-        val nameScore = maxOf(
-            JapaneseEntityNormalizer.deterministicNameScore(churchName, officialName).toDouble(),
-            stemScore,
+        addName("ja", name)
+        addName("en", englishName)
+        localizedNames.forEach { addName(it.languageCode, it.name) }
+        return GoogleMapsSavedPlaceAuditData(
+            churchId = id,
+            googlePlaceTitle = googlePlaceTitlesByChurchId[id].orEmpty(),
+            namesByLanguage = names.mapValues { (_, values) -> values.distinct() },
+            address = address,
+            website = websiteUrl,
+            detectedDenomination = denominationId ?: NOT_DETERMINED,
         )
-        val exactName = JapaneseEntityNormalizer.name(churchName) == JapaneseEntityNormalizer.name(officialName)
-        val addressScore = JapaneseEntityNormalizer.deterministicAddressScore(church.address, entry.church.address).toDouble()
-        val samePostalCode = postalCode(church.address)?.let { it == postalCode(entry.church.address) } == true
-        val sameMunicipality = municipality(church.address)?.let { it == municipality(entry.church.address) } == true
-        return when {
-            exactName && entry.church.address.isBlank() -> 0.90
-            exactName && samePostalCode -> 0.99
-            exactName && sameMunicipality -> 0.96
-            exactName && addressScore >= 0.70 -> 0.72 + addressScore * 0.28
-            samePostalCode && stemScore >= 0.70 -> 0.78 + nameScore * 0.20
-            sameMunicipality && stemScore >= 0.92 -> 0.90 + stemScore * 0.08
-            nameScore >= 0.82 && addressScore >= 0.82 -> nameScore * 0.55 + addressScore * 0.45
-            addressScore >= 0.96 && nameScore >= 0.65 -> nameScore * 0.45 + addressScore * 0.55
-            else -> null
-        }
+    }
+
+    private fun OfficialEntry.toAuditData() = DenominationCrawlerChurchAuditData(
+        denominationName = list.denominationName,
+        churchName = church.name,
+        address = church.address,
+        website = church.websiteUrl,
+    )
+
+    private fun match(church: ChurchRecord, entry: OfficialEntry): Double? {
+        return ChurchIdentity(
+            name = comparableName(church.name, entry.list.denominationId),
+            address = church.address,
+            websiteUrl = church.websiteUrl,
+        ).matchConfidence(
+            ChurchIdentity(
+                name = comparableName(entry.church.name, entry.list.denominationId),
+                address = entry.church.address,
+                websiteUrl = entry.church.websiteUrl,
+            ),
+        )
     }
 
     private fun comparableName(value: String, denominationId: String): String {

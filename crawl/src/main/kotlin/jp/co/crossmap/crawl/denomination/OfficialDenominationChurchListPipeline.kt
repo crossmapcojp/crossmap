@@ -6,6 +6,7 @@ import java.nio.file.StandardCopyOption
 import jp.co.crossmap.crawl.CrossmapPaths
 import jp.co.crossmap.crawl.DenominationCandidate
 import jp.co.crossmap.crawl.DirectoryCrawlReport
+import jp.co.crossmap.crawl.GoogleSavedPlaceSeed
 import jp.co.crossmap.crawl.OfficialDirectoryCrawler
 import kotlinx.serialization.json.Json
 
@@ -60,7 +61,10 @@ class OfficialDenominationChurchListPipeline(
             DirectoryCrawlReport(0, 0, 0, 0, 0)
         }
         val lists = results.map(DenominationChurchListCrawlResult::list)
-        val reconciliation = catalogFile?.takeIf(Files::isRegularFile)?.let { reconciler.reconcile(it, lists) }
+        val googlePlaceTitles = loadGooglePlaceTitles(cacheRoot)
+        val reconciliation = catalogFile?.takeIf(Files::isRegularFile)?.let {
+            reconciler.reconcile(it, lists, googlePlaceTitles)
+        }
         val uccj = lists.single { it.denominationId == "UCCJ" }
         val jbc = lists.single { it.denominationId == "JBC" }
         val jbbf = lists.single { it.denominationId == "JBBF" }
@@ -94,7 +98,18 @@ class OfficialDenominationChurchListPipeline(
             require(Files.isRegularFile(file)) { "Missing generated official list: $file" }
             json.decodeFromString<OfficialDenominationChurchList>(Files.readString(file))
         }
-        return reconciler.reconcile(catalogFile, lists)
+        return reconciler.reconcile(
+            catalogFile,
+            lists,
+            loadGooglePlaceTitles(CrossmapPaths.defaultCacheRoot(resourcesRoot)),
+        )
+    }
+
+    private fun loadGooglePlaceTitles(cacheRoot: Path): Map<String, String> {
+        val file = cacheRoot.resolve("google-saved-places/seeds.json")
+        if (!Files.isRegularFile(file)) return emptyMap()
+        return json.decodeFromString<List<GoogleSavedPlaceSeed>>(Files.readString(file))
+            .associate { it.id to it.title }
     }
 
     private fun validateProductionLists(lists: List<OfficialDenominationChurchList>) {

@@ -59,6 +59,7 @@ internal class CrawlCommandAudit(private val report: CrawlReport) {
     private val metrics = linkedMapOf<String, String>()
     private val outputs = linkedMapOf<String, String>()
     private val details = mutableListOf<Pair<String, String>>()
+    private val blocks = mutableListOf<String>()
 
     fun input(name: String, value: Any?) = put(inputs, name, value)
     fun setting(name: String, value: Any?) = put(settings, name, value)
@@ -66,6 +67,9 @@ internal class CrawlCommandAudit(private val report: CrawlReport) {
     fun output(name: String, value: Any?) = put(outputs, name, value)
     fun detail(name: String, value: Any?) {
         details += name.logKey() to value.logValue()
+    }
+    fun block(value: String) {
+        value.trim().takeIf(String::isNotBlank)?.let(blocks::add)
     }
 
     internal fun finish(status: String, error: Throwable? = null): Path {
@@ -86,6 +90,10 @@ internal class CrawlCommandAudit(private val report: CrawlReport) {
             error?.let {
                 appendLine("error.type=${it::class.qualifiedName.orEmpty().logValue()}")
                 appendLine("error.message=${it.message.orEmpty().logValue()}")
+            }
+            blocks.forEach { block ->
+                appendLine()
+                appendLine(block)
             }
         }
         return CrawlReportLogging.log(report, content)

@@ -56,6 +56,60 @@ class GoogleSavedPlacesCleanupWorkflowTest {
     }
 
     @Test
+    fun promotionNormalizesChurchNameSuffixesFromPreviouslyResolvedGoogleCandidates() = runBlocking {
+        val root = Files.createTempDirectory("crossmap-google-address-cleanup")
+        try {
+            Files.createDirectories(root.resolve("cache/google-saved-places"))
+            Files.createDirectories(root.resolve("catalog"))
+            val candidates = listOf(
+                candidate(
+                    cid = "13583276807704248752",
+                    name = "インマヌエル 熊本キリスト教会",
+                    address = "〒862-0922 熊本県熊本市東区三郎２丁目２６−３ イムマヌエル綜合伝道団熊本キリスト教会",
+                    denomination = "IGM",
+                    latinName = "Immanuel Kumamoto Christ Church",
+                ),
+                candidate(
+                    cid = "14631960313286523139",
+                    name = "希望ヶ丘教会",
+                    address = "〒861-8003 熊本県熊本市北区楠８丁目１７−２２ 希望ヶ丘キリスト教会",
+                    denomination = null,
+                    latinName = "Kibogaoka Church",
+                ),
+            )
+            Files.writeString(
+                root.resolve("cache/google-saved-places/google-place-candidates.json"),
+                json.encodeToString(candidates),
+            )
+            val resolver = ChurchEnglishNameResolver(
+                translator = { error("The existing Latin names should be reused") },
+            )
+
+            GoogleSavedPlacesCleanupWorkflow(
+                postCrawlCleanup = PostCrawlCleanup(
+                    matcher = EntityMatcher { EntityMatchDecision(null, 0.0, reasoning = "LLM disabled") },
+                    englishNameResolver = resolver,
+                ),
+                englishNameResolver = resolver,
+            ).preparePendingCatalog(root, root.resolve("cache"))
+
+            val promoted = json.decodeFromString<List<ChurchRecord>>(
+                Files.readString(root.resolve("cache/cleanup/google-saved-places-pending.json")),
+            ).associateBy(ChurchRecord::id)
+            assertEquals(
+                "〒862-0922 熊本県熊本市東区三郎２丁目２６−３",
+                promoted.getValue(candidates[0].id).address,
+            )
+            assertEquals(
+                "〒861-8003 熊本県熊本市北区楠８丁目１７−２２",
+                promoted.getValue(candidates[1].id).address,
+            )
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun promotesResolvedCandidatesOnlyAfterExistingCleanupAndMandatoryEnglishNames() = runBlocking {
         val root = Files.createTempDirectory("crossmap-google-cleanup-workflow")
         try {

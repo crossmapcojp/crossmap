@@ -83,6 +83,12 @@ class CrawlReportLoggingTest {
                     audit.setting("mode", "offline")
                     audit.metric("records", 47)
                     audit.output("catalog", "geonames/japan.json")
+                    audit.block("""
+                        churches_assigned (1)
+                        church {
+                          google place title: Example Church
+                        }
+                    """.trimIndent())
                 }
             }.run()
 
@@ -93,6 +99,7 @@ class CrawlReportLoggingTest {
             assertTrue(success.contains("setting.mode=offline"))
             assertTrue(success.contains("metric.records=47"))
             assertTrue(success.contains("output.catalog=geonames/japan.json"))
+            assertTrue(success.endsWith("churches_assigned (1)\nchurch {\n  google place title: Example Church\n}\n"))
 
             assertFailsWith<IllegalStateException> {
                 object : CrawlCommand("failing-command", CrawlReport.REFRESH) {

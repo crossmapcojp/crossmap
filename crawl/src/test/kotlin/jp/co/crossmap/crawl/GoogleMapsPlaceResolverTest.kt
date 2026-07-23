@@ -44,6 +44,32 @@ class GoogleMapsPlaceResolverTest {
     }
 
     @Test
+    fun removesTrailingChurchNamesFromGooglePlaceAddresses() {
+        val cases = listOf(
+            Triple(
+                "インマヌエル 熊本キリスト教会",
+                "〒862-0922 熊本県熊本市東区三郎２丁目２６−３ イムマヌエル綜合伝道団熊本キリスト教会",
+                "〒862-0922 熊本県熊本市東区三郎２丁目２６−３",
+            ),
+            Triple(
+                "希望ヶ丘キリスト教会",
+                "〒861-8003 熊本県熊本市北区楠８丁目１７−２２ 希望ヶ丘キリスト教会",
+                "〒861-8003 熊本県熊本市北区楠８丁目１７−２２",
+            ),
+        )
+
+        cases.forEachIndexed { index, (name, dirtyAddress, expectedAddress) ->
+            val candidate = GoogleMapsPlaceParser().parse(
+                seed("dirty-address-$index", name, "教会"),
+                html(name, dirtyAddress, 32.8 + index, 130.7 + index),
+                now = "2026-07-23T00:00:00Z",
+            )
+
+            assertEquals(expectedAddress, candidate.address, name)
+        }
+    }
+
+    @Test
     fun thirdPartyChurchListingWebsiteFallsBackToTheGooglePlacePageDuringParsing() {
         val seed = seed("10158070367548216990", "錦キリスト教会", "教会")
         val page = html("錦キリスト教会", "熊本県球磨郡錦町", 32.20, 130.84)

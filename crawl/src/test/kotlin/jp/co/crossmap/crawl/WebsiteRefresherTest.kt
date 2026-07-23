@@ -4,6 +4,7 @@ import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpServer
 import java.net.InetSocketAddress
 import java.nio.file.Files
+import java.time.Duration
 import java.util.concurrent.atomic.AtomicInteger
 import jp.co.crossmap.ChurchRecord
 import jp.co.crossmap.GeoPoint
@@ -45,7 +46,8 @@ class WebsiteRefresherTest {
             assertEquals(setOf("岡山バプテスト教会", "教会案内"), church.pages.map { it.title }.toSet())
             assertTrue(church.pages.any { it.text.contains("バプテスト") })
 
-            val second = WebsiteRefresher(maxConcurrency = 1, hostDelayMillis = 0).refresh(root, cacheRoot = root.resolve("cache"))
+            val second = WebsiteRefresher(maxConcurrency = 1, hostDelayMillis = 0, cacheFreshness = Duration.ZERO)
+                .refresh(root, cacheRoot = root.resolve("cache"))
             assertEquals(2, second.unchanged)
             assertEquals(0, second.errors)
         } finally {
@@ -164,6 +166,50 @@ class WebsiteRefresherTest {
             assertTrue(church.pages.single().text.contains("ユーカリスト"))
             val manifest = json.decodeFromString<List<CrawlManifestEntry>>(Files.readString(root.resolve("cache/church-web-pages/manifest.json")))
             assertEquals("IMPORTED_CACHE", manifest.single().acquisition)
+        } finally {
+            server.stop(0)
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun fetchesAUrlOnlyOnceWhenMultipleChurchesShareIt() {
+        val requests = AtomicInteger()
+        val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
+        server.createContext("/robots.txt") { it.respond("User-agent: *\n") }
+        server.createContext("/") { exchange ->
+            requests.incrementAndGet()
+            exchange.htmlWithEtag("<html><head><title>共同サイト</title></head><body>礼拝案内</body></html>")
+        }
+        server.start()
+        val root = Files.createTempDirectory("crossmap-shared-url")
+        try {
+            val website = "http://127.0.0.1:${server.address.port}/"
+            Files.createDirectories(root.resolve("catalog"))
+            Files.createDirectories(root.resolve("cache/church-web-pages"))
+            Files.writeString(
+                root.resolve("catalog/churches.json"),
+                json.encodeToString(
+                    listOf(
+                        ChurchRecord("google:1", name = "第一教会", englishName = "First Church", address = "東京都", location = GeoPoint(35.0, 139.0), websiteUrl = website),
+                        ChurchRecord("google:2", name = "第二教会", englishName = "Second Church", address = "東京都", location = GeoPoint(35.1, 139.1), websiteUrl = website),
+                    ),
+                ),
+            )
+            Files.writeString(root.resolve("cache/church-web-pages/manifest.json"), "[]")
+
+            val report = WebsiteRefresher(maxConcurrency = 2, hostDelayMillis = 0)
+                .refresh(root, cacheRoot = root.resolve("cache"))
+
+            assertEquals(1, requests.get())
+            assertEquals(2, report.fetched)
+            val churches = json.decodeFromString<List<ChurchRecord>>(Files.readString(root.resolve("catalog/churches.json")))
+            assertTrue(churches.all { it.pages.single().title == "共同サイト" })
+
+            val cachedReport = WebsiteRefresher(maxConcurrency = 2, hostDelayMillis = 0)
+                .refresh(root, cacheRoot = root.resolve("cache"))
+            assertEquals(1, requests.get())
+            assertEquals(2, cachedReport.unchanged)
         } finally {
             server.stop(0)
             root.toFile().deleteRecursively()

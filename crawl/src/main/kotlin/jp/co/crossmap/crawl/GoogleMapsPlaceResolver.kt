@@ -11,6 +11,7 @@ import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.time.Duration
 import java.time.Instant
+import jp.co.crossmap.JapaneseAddressNormalizer
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 import jp.co.crossmap.GeoPoint
@@ -119,7 +120,9 @@ class GoogleMapsPlaceParser(
         val preview = PREVIEW_PLACE.find(html) ?: error("Google preview URL has no coordinates")
         val decodedPlacePath = URLDecoder.decode(preview.groupValues[1].replace("+", "%20"), Charsets.UTF_8)
         val addressFromPath = decodedPlacePath.removeSuffix(name).trim().trimEnd(',')
-        val address = titleParts.getOrNull(1)?.trim().orEmpty().ifBlank { addressFromPath }
+        val address = GooglePlaceAddressNormalizer.normalize(
+            titleParts.getOrNull(1)?.trim().orEmpty().ifBlank { addressFromPath },
+        )
         require(address.isNotBlank()) { "Google place address is blank" }
         val latitude = preview.groupValues[2].toDouble()
         val longitude = preview.groupValues[3].toDouble()
@@ -178,6 +181,33 @@ class GoogleMapsPlaceParser(
         private val ENCODED_WEBSITE = Regex(
             """/url\?q\\\\u003d(https?://.+?)\\\\u0026opi""",
         )
+    }
+}
+
+internal object GooglePlaceAddressNormalizer {
+    fun normalize(value: String): String {
+        val compact = value.replace(Regex("""\s+"""), " ").trim()
+        val parsed = JapaneseAddressNormalizer.normalize(compact)
+        val trailingPlaceName = parsed.building
+            ?.takeIf { Regex("(?:キリスト)?教会|チャペル|聖堂|集会").containsMatchIn(it) }
+        val addressOnly = if (trailingPlaceName == null) compact else {
+            parsed.normalized.removeSuffix(trailingPlaceName).trim()
+        }
+        return zenkakuStreetNumbers(addressOnly)
+    }
+
+    private fun zenkakuStreetNumbers(value: String): String {
+        val postalPrefix = Regex("""^〒\d{3}-\d{4}\s*""").find(value)?.value.orEmpty()
+        val streetAddress = value.removePrefix(postalPrefix)
+            .map { character ->
+                when (character) {
+                    in '0'..'9' -> '０' + (character - '0')
+                    '-' -> '−'
+                    else -> character
+                }
+            }
+            .joinToString("")
+        return postalPrefix + streetAddress
     }
 }
 

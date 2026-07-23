@@ -339,7 +339,84 @@ class DenominationChurchListCrawlerTest {
         assertEquals("北海道教区", churches.single().jurisdiction)
         assertEquals("0166-59-3530", churches.single().phone)
         assertEquals("0166-59-3530", churches.single().fax)
-        assertEquals("https://j-ag.org/church/takasu/", churches.single().websiteUrl)
+        assertEquals("", churches.single().websiteUrl)
+        assertEquals("https://j-ag.org/church/takasu/", churches.single().denominationChurchListDetailPage)
+    }
+
+    @Test
+    fun jagDetailPagesProvideCompleteNormalizedAddressesAndActualChurchWebsite() {
+        val crawler = JAGDenominationChurchListCrawler()
+        val cases = listOf(
+            "岸和田福音キリスト教会" to "〒596-0825 大阪府岸和田市土生町2-25-20",
+            "姫路神召キリスト教会" to "〒670-0965 兵庫県姫路市東延末2-73",
+            "武庫川純福音キリスト教会" to "〒660-0084 兵庫県尼崎市武庫川町3丁目32-1",
+            "御影神愛キリスト教会" to "〒658-0054 兵庫県神戸市東灘区御影中町1丁目7-15",
+            "横須賀キリスト教会" to "〒239-0807 神奈川県横須賀市根岸町4丁目39-7",
+            "福岡西部福音キリスト教会" to "〒819-0001 福岡県福岡市西区小戸3丁目54-52",
+        )
+
+        cases.forEach { (name, expectedAddress) ->
+            val listed = OfficialDenominationChurch(
+                name = name,
+                denominationChurchListDetailPage = "https://j-ag.org/church/detail/",
+            )
+            val detailHtml = """
+                <table>
+                  <tr><td>住所</td><td>$expectedAddress　＊JR最寄駅から徒歩10分</td></tr>
+                  <tr><td>ホームページ</td><td><a href="https://church.example/$name">公式サイト</a></td></tr>
+                </table>
+            """.trimIndent()
+
+            val detailed = crawler.parseDetailPage(listed, detailHtml)
+
+            assertEquals(expectedAddress, detailed.address, name)
+            assertEquals("https://church.example/$name", detailed.websiteUrl, name)
+            assertEquals(listed.denominationChurchListDetailPage, detailed.denominationChurchListDetailPage)
+        }
+    }
+
+    @Test
+    fun reconciliationRejectsRealSameCityNameContainmentFalsePositives() {
+        val root = Files.createTempDirectory("crossmap-denomination-identity")
+        try {
+            Files.createDirectories(root.resolve("catalog"))
+            val googleChurches = listOf(
+                church("google:11549556222669181947", "日本キリスト教会帯広教会", "〒080-0016 北海道帯広市西６条南２２丁目１−９", NOT_DETERMINED),
+                church("google:akita", "秋田キリスト教会", "〒010-1607 秋田県秋田市新屋南浜町８−１４", NOT_DETERMINED),
+                church("google:takatsuki", "日本キリスト教会高槻教会", "〒569-0802 大阪府高槻市北園町９−１７", NOT_DETERMINED),
+            )
+            val officialChurches = listOf(
+                OfficialDenominationChurch("帯広キリスト教会", "〒080-0838 北海道帯広市大空町4-6-6"),
+                OfficialDenominationChurch("秋田福音キリスト教会", "〒010-1436 秋田県秋田市大住3-9-7"),
+                OfficialDenominationChurch("高槻キリスト教会", "〒569-0818 大阪府高槻市桜ヶ丘南町22-3"),
+            )
+            googleChurches.zip(officialChurches).forEach { (google, official) ->
+                assertFalse(
+                    ChurchIdentity(google.name, google.address, google.websiteUrl)
+                        .matches(ChurchIdentity(official.name, official.address, official.websiteUrl)),
+                    "${google.name} must not match ${official.name}",
+                )
+            }
+            val catalogFile = root.resolve("catalog/churches.json")
+            Files.writeString(catalogFile, json.encodeToString(googleChurches))
+            val report = OfficialDenominationChurchListReconciler(json = json).reconcile(
+                catalogFile,
+                listOf(
+                    OfficialDenominationChurchList(
+                        denominationId = "JAG",
+                        denominationName = "日本アッセンブリーズ・オブ・ゴッド教団",
+                        sourceUrl = "https://j-ag.org/church-info/",
+                        fetchedAt = "2026-07-23T00:00:00Z",
+                        churches = officialChurches,
+                    ),
+                ),
+            )
+
+            assertEquals(0, report.assigned)
+            assertEquals(3, report.unmatchedOfficialEntries)
+        } finally {
+            root.toFile().deleteRecursively()
+        }
     }
 
     @Test
@@ -351,8 +428,8 @@ class DenominationChurchListCrawlerTest {
             val runner = DenominationChurchListCrawlerRunner(
                 pageLoader = { url, _ ->
                     loadedUrls += url
-                    val html = if (url == crawler.sourceUrls.first()) {
-                        """
+                    val html = when (url) {
+                        crawler.sourceUrls.first() -> """
                             <div class="church church-info-hokkaido-kyoku">
                               <div class="vk_post_imgOuter"><span class="vk_post_imgOuter_singleTermLabel">北海道教区 | Hokkaido Kyoku</span></div>
                               <div class="vk_post_body">
@@ -361,8 +438,12 @@ class DenominationChurchListCrawlerTest {
                               </div>
                             </div>
                         """.trimIndent()
-                    } else {
-                        "<html></html>"
+                        "https://j-ag.org/church/takasu/" -> """
+                            <table>
+                              <tr><td>住所</td><td>〒071-1224 北海道上川郡鷹栖町北野東4条1丁目7-11</td></tr>
+                            </table>
+                        """.trimIndent()
+                        else -> "<html></html>"
                     }
                     LoadedDenominationChurchPage(url, html, "2026-07-23T00:00:00Z", cacheHit = false)
                 },
@@ -371,8 +452,9 @@ class DenominationChurchListCrawlerTest {
 
             val result = runner.crawl(crawler, root, root.resolve("cache"))
 
-            assertEquals(crawler.sourceUrls, loadedUrls.toList())
-            assertEquals(24, result.pageCount)
+            assertEquals(crawler.sourceUrls, loadedUrls.take(crawler.sourceUrls.size))
+            assertEquals("https://j-ag.org/church/takasu/", loadedUrls.last())
+            assertEquals(25, result.pageCount)
             assertEquals("鷹栖キリスト教会", result.list.churches.single().name)
         } finally {
             root.toFile().deleteRecursively()
@@ -600,10 +682,22 @@ class DenominationChurchListCrawlerTest {
             Files.writeString(catalogFile, json.encodeToString(catalog))
             val lists = listOf(
                 officialList("JBC", listOf(OfficialDenominationChurch("岡山バプテスト教会", "〒700-0825 岡山県岡山市北区田町1丁目7-28"))),
-                officialList("UCCJ", listOf(OfficialDenominationChurch("八頭教会", "〒680-0463 鳥取県八頭郡八頭町宮谷222"))),
+                officialList(
+                    "UCCJ",
+                    listOf(
+                        OfficialDenominationChurch("八頭教会", "〒680-0463 鳥取県八頭郡八頭町宮谷222"),
+                        OfficialDenominationChurch("未登録公式教会", "〒100-0002 東京都千代田区皇居外苑1"),
+                    ),
+                ),
             )
 
-            val report = OfficialDenominationChurchListReconciler(json = json).reconcile(catalogFile, lists)
+            val report = OfficialDenominationChurchListReconciler(json = json).reconcile(
+                catalogFile,
+                lists,
+                googlePlaceTitlesByChurchId = mapOf(
+                    "google:10003118417314172796" to "Google Maps 日本基督教団 八頭教会",
+                ),
+            )
             val updated = json.decodeFromString<List<ChurchRecord>>(Files.readString(catalogFile)).associateBy(ChurchRecord::id)
 
             assertEquals("JBC", updated.getValue("google:906297735827744432").denominationId)
@@ -614,6 +708,16 @@ class DenominationChurchListCrawlerTest {
             assertEquals(1, report.assigned)
             assertEquals(2, report.removedUnsupportedLabels)
             assertEquals(1, report.humanOverridesPreserved)
+            assertEquals(1, report.unmatchedOfficialEntries)
+            val auditLog = report.toHumanReadableAuditLog()
+            assertTrue(auditLog.contains("denominations_assigned (1)"))
+            assertTrue(auditLog.contains("performed opperation: denominations_assigned"))
+            assertTrue(auditLog.contains("google place title: Google Maps 日本基督教団 八頭教会"))
+            assertTrue(auditLog.contains("unsupported_labels_removed (2)"))
+            assertTrue(auditLog.contains("data from denomination crawler: no matching official church"))
+            assertTrue(auditLog.contains("unmatched_official_entries (1)"))
+            assertTrue(auditLog.contains("church name: 未登録公式教会"))
+            assertTrue(auditLog.contains("data from google map saved place: no matching church"))
         } finally {
             root.toFile().deleteRecursively()
         }

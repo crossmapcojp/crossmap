@@ -13,6 +13,7 @@ import com.github.ajalt.clikt.parameters.types.double
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
+import java.time.Duration
 import java.time.Instant
 import jp.co.crossmap.ChurchRecord
 import jp.co.crossmap.GeoName as SearchGeoName
@@ -155,6 +156,10 @@ private class PromoteGoogleSavedPlaces : CrawlCommand("promote-google-saved-plac
     private val threshold by option("--confidence-threshold").double().default(0.80)
     private val limit by option("--limit", help = "Maximum unresolved denominations to send to Ollama").int().default(100)
     private val programmaticOnly by option("--programmatic-only", help = "Disable every Ollama fallback").flag()
+    private val websiteCacheHours by option(
+        "--website-cache-hours",
+        help = "Reuse website crawl results younger than this many hours; 0 forces revalidation",
+    ).int().default(24)
     private val skipWebsiteRefresh by option("--skip-website-refresh").flag()
     private val skipDirectoryCrawl by option("--skip-directory-crawl").flag()
     private val skipDenominationCleanup by option(
@@ -175,10 +180,12 @@ private class PromoteGoogleSavedPlaces : CrawlCommand("promote-google-saved-plac
         audit.setting("llm_limit", limit)
         audit.setting("programmatic_only", programmaticOnly)
         audit.setting("refresh_websites", !skipWebsiteRefresh)
+        audit.setting("website_cache_hours", websiteCacheHours)
         audit.setting("crawl_directories", !skipDirectoryCrawl)
         audit.setting("cleanup_denominations", !skipDenominationCleanup)
         audit.setting("dry_run", dryRun)
         require(limit > 0) { "limit must be positive" }
+        require(websiteCacheHours >= 0) { "website-cache-hours must not be negative" }
         if (!programmaticOnly) checkOllamaDiskSpace()
         val denominations = json.decodeFromString<List<Denomination>>(
             Files.readString(root.resolve("catalog/denominations.json")),
@@ -243,6 +250,7 @@ private class PromoteGoogleSavedPlaces : CrawlCommand("promote-google-saved-plac
                 englishNameResolver = englishResolver,
             ),
             englishNameResolver = englishResolver,
+            websiteRefresher = WebsiteRefresher(cacheFreshness = Duration.ofHours(websiteCacheHours.toLong())),
         ).run(
             resourcesRoot = root,
             llmLimit = limit,
@@ -268,6 +276,9 @@ private class PromoteGoogleSavedPlaces : CrawlCommand("promote-google-saved-plac
         audit.metric("english_names_llm", report.englishNamesLlm)
         audit.metric("final_churches", report.finalChurches)
         audit.metric("promoted", report.promoted)
+        report.stageDurationsSeconds.forEach { (stage, seconds) ->
+            audit.metric("duration_${stage}_seconds", "%.3f".format(java.util.Locale.ROOT, seconds))
+        }
         audit.output("catalog", paths.churchCatalog.toAbsolutePath().normalize())
         audit.output("pending_catalog", paths.cleanup.resolve("google-saved-places-pending.json").toAbsolutePath().normalize())
         writeDataCleanupStat(
@@ -619,6 +630,7 @@ private class CrawlDenominationDirectories : CrawlCommand("crawl-denomination-di
             audit.metric("unsupported_labels_removed", reconciliation.removedUnsupportedLabels)
             audit.metric("human_overrides_preserved", reconciliation.humanOverridesPreserved)
             audit.metric("unmatched_official_entries", reconciliation.unmatchedOfficialEntries)
+            audit.block(reconciliation.toHumanReadableAuditLog())
         }
         audit.output("candidates", paths.cleanup.resolve("denomination-candidates.json").toAbsolutePath().normalize())
         audit.output("uccj_churches", root.resolve("crawl/uccj-churches.json").toAbsolutePath().normalize())

@@ -188,6 +188,13 @@
 - [x] Render static language shells and church pages in a bounded processor-sized worker pool, with a Gradle parallelism override and full-output concurrency test.
 - [x] Add Ktor API tests and a Lightpanda browser smoke test against `./gradlew :server:run`, covering index -> search JSON -> rendered result page -> church detail JSON/page.
 
+### Crawl pipeline performance
+
+- [x] Measure promotion stages with `TimeSource.Monotonic` and emit a console heartbeat with the active stage every minute.
+- [x] Reuse normalized denomination candidate values and pair scores without changing the deterministic matching formula.
+- [x] Deduplicate same-URL website requests, retain per-host throttling, and add a configurable website-cache freshness window with a forced-refresh mode.
+- [x] Run the full cached programmatic data pipeline and a forced LightPanda E2E test, retaining timestamped performance logs.
+
 ## 7. Android and iOS app
 
 - [x] Implement the shared Compose search screen and state/view-model layer.

@@ -10,6 +10,7 @@ import java.nio.file.StandardCopyOption
 import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.Callable
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import jp.co.crossmap.ChurchRecord
@@ -24,9 +25,10 @@ import org.jsoup.Jsoup
 data class RefreshReport(val churches: Int, val fetched: Int, val unchanged: Int, val errors: Int)
 
 class WebsiteRefresher(
-    private val maxConcurrency: Int = 6,
+    private val maxConcurrency: Int = 16,
     private val hostDelayMillis: Long = 250,
     private val maxAttempts: Int = 3,
+    private val cacheFreshness: Duration = Duration.ofHours(24),
     private val json: Json = Json { ignoreUnknownKeys = true; prettyPrint = true; encodeDefaults = true },
     private val client: HttpClient = HttpClient.newBuilder()
         .connectTimeout(Duration.ofSeconds(15))
@@ -36,6 +38,7 @@ class WebsiteRefresher(
     private val hostLocks = ConcurrentHashMap<String, Any>()
     private val hostLastRequest = ConcurrentHashMap<String, Long>()
     private val robots = ConcurrentHashMap<String, List<String>>()
+    private val fetches = ConcurrentHashMap<String, CompletableFuture<FetchResult>>()
     private var urlCache: Map<String, String> = emptyMap()
 
     fun refresh(
@@ -44,6 +47,8 @@ class WebsiteRefresher(
         cacheRoot: Path = CrossmapPaths.defaultCacheRoot(resourcesRoot),
     ): RefreshReport {
         require(maxConcurrency in 1..32) { "maxConcurrency must be between 1 and 32" }
+        require(!cacheFreshness.isNegative) { "cacheFreshness must not be negative" }
+        fetches.clear()
         val webCache = CrossmapPaths(resourcesRoot, cacheRoot).churchWebPages
         val manifestFile = webCache.resolve("manifest.json")
         val urlCacheFile = webCache.resolve("url-cache-map.json")
@@ -109,8 +114,9 @@ class WebsiteRefresher(
         while (queue.isNotEmpty() && visited.size < 6) {
             val url = queue.removeFirst()
             if (!visited.add(url)) continue
-            if (url.sha1() !in urlCache && !allowed(url)) continue
-            val result = fetch(church.id, url, previous[church.id to url], webCache)
+            val previousEntry = previous[church.id to url]
+            if (url.sha1() !in urlCache && previousEntry?.let(::isFresh) != true && !allowed(url)) continue
+            val result = fetch(church.id, url, previousEntry, webCache)
             entries += result.entry
             result.page?.let { page ->
                 pages += page
@@ -135,6 +141,45 @@ class WebsiteRefresher(
     private data class FetchResult(val entry: CrawlManifestEntry, val page: CrawledPage?, val html: String?)
 
     private fun fetch(churchId: String, url: String, previous: CrawlManifestEntry?, webCache: Path): FetchResult {
+        val pending = CompletableFuture<FetchResult>()
+        val existing = fetches.putIfAbsent(url, pending)
+        val result = if (existing != null) {
+            existing.join()
+        } else {
+            try {
+                fetchDirect(churchId, url, previous, webCache).also(pending::complete)
+            } catch (error: Throwable) {
+                pending.completeExceptionally(error)
+                fetches.remove(url, pending)
+                throw error
+            }
+        }
+        val cachedContent = if (result.page == null && previous == null) {
+            cachedContent(
+                url,
+                result.entry.finalUrl,
+                result.entry.cachePath,
+                result.entry.contentHash,
+                result.entry.fetchedAt,
+                webCache,
+            )
+        } else {
+            null
+        }
+        return result.copy(
+            entry = result.entry.copy(churchId = churchId),
+            page = cachedContent?.first ?: result.page,
+            html = cachedContent?.second ?: result.html,
+        )
+    }
+
+    private fun fetchDirect(churchId: String, url: String, previous: CrawlManifestEntry?, webCache: Path): FetchResult {
+        previous?.takeIf(::isFresh)?.let { entry ->
+            if (entry.cachePath.isNotBlank() && Files.isRegularFile(webCache.resolve(entry.cachePath))) {
+                return FetchResult(entry.copy(status = 304), null, null)
+            }
+            if (entry.error != null) return FetchResult(entry, null, null)
+        }
         if (previous == null) cached(churchId, url, webCache)?.let { return it }
         return runCatching {
             throttle(URI(url).host.orEmpty())
@@ -145,7 +190,8 @@ class WebsiteRefresher(
             previous?.lastModified?.let { builder.header("If-Modified-Since", it) }
             val response = sendWithRetry(builder.build())
             if (response.statusCode() == 304 && previous != null) {
-                return FetchResult(previous.copy(status = 304, fetchedAt = Instant.now().toString()), null, null)
+                val now = Instant.now().toString()
+                return FetchResult(previous.copy(status = 304, fetchedAt = now), null, null)
             }
             require(response.statusCode() in 200..299) { "HTTP ${response.statusCode()}" }
             val contentType = response.headers().firstValue("content-type").orElse("")
@@ -225,6 +271,39 @@ class WebsiteRefresher(
             ),
             html,
         )
+    }
+
+    private fun cachedContent(
+        url: String,
+        finalUrl: String,
+        cachePath: String,
+        contentHash: String,
+        fetchedAt: String,
+        webCache: Path,
+    ): Pair<CrawledPage, String>? {
+        if (cachePath.isBlank()) return null
+        val file = webCache.resolve(cachePath)
+        if (!Files.isRegularFile(file)) return null
+        val html = Files.readAllBytes(file).toString(Charsets.UTF_8)
+        val document = Jsoup.parse(html, finalUrl.ifBlank { url })
+        document.select("script,style,noscript,template").remove()
+        return CrawledPage(
+            url = url,
+            finalUrl = finalUrl.ifBlank { url },
+            title = document.title(),
+            text = document.body()?.text().orEmpty(),
+            fetchedAt = fetchedAt,
+            contentHash = contentHash,
+            status = 200,
+            contentType = CrawledContentType.WEBSITE_PAGE,
+        ) to html
+    }
+
+    private fun isFresh(entry: CrawlManifestEntry): Boolean {
+        if (cacheFreshness.isZero) return false
+        val fetchedAt = runCatching { Instant.parse(entry.fetchedAt) }.getOrNull() ?: return false
+        val age = Duration.between(fetchedAt, Instant.now())
+        return !age.isNegative && age < cacheFreshness
     }
 
     private fun sendWithRetry(request: HttpRequest): HttpResponse<ByteArray> {

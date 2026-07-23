@@ -106,6 +106,19 @@ data class ProgrammaticDecision(
 )
 
 class ProgrammaticDenominationMatcher {
+    fun matchChurchName(
+        churchName: String,
+        rules: List<DenominationRule>,
+    ): ProgrammaticDecision? = uniqueRuleMatch(churchName, rules) { listOf(it.name) + it.churchNameComponents }
+        ?.let { (rule, term) ->
+            ProgrammaticDecision(
+                rule.denominationId,
+                0.95,
+                listOf(rule.source, term),
+                "Church name contains a unique denomination name or alias",
+            )
+        }
+
     fun match(
         church: ChurchRecord,
         rules: List<DenominationRule>,
@@ -113,9 +126,7 @@ class ProgrammaticDenominationMatcher {
     ): ProgrammaticDecision? {
         val normalizedName = normalize(church.name)
         val normalizedAddress = normalize(church.address)
-        uniqueRuleMatch(church.name, rules) { listOf(it.name) + it.churchNameComponents }?.let { (rule, term) ->
-            return ProgrammaticDecision(rule.denominationId, 0.95, listOf(rule.source, term), "Church name contains a unique denomination name or alias")
-        }
+        matchChurchName(church.name, rules)?.let { return it }
 
         church.pages.sortedBy(::pagePriority).forEach { page ->
             uniqueRuleMatch("${page.title}\n${page.text}", rules) { listOf(it.name) + it.churchNameComponents }?.let { (rule, term) ->
@@ -148,10 +159,17 @@ class ProgrammaticDenominationMatcher {
             )
         }
 
-        uniqueRuleMatch(church.websiteUrl, rules) { it.websiteComponents }?.let { (rule, component) ->
+        uniqueRuleMatch(church.websiteUrl, rules) { rule ->
+            rule.websiteComponents.filterNot(::isSharedWebsiteHost)
+        }?.let { (rule, component) ->
             return ProgrammaticDecision(rule.denominationId, 0.92, listOf(rule.source, component), "Church website URL matches a unique denomination domain rule")
         }
         return null
+    }
+
+    private fun isSharedWebsiteHost(value: String): Boolean {
+        val component = normalize(value).removePrefix("www.")
+        return sharedWebsiteHosts.any { component == it || component.startsWith("$it/") }
     }
 
     private fun uniqueRuleMatch(
@@ -179,6 +197,17 @@ class ProgrammaticDenominationMatcher {
     }
 
     private fun normalize(value: String) = value.lowercase().replace(Regex("[\\s　・･()（）\\-]"), "")
+
+    private companion object {
+        val sharedWebsiteHosts = setOf(
+            "facebook.com",
+            "instagram.com",
+            "youtube.com",
+            "youtu.be",
+            "x.com",
+            "twitter.com",
+        )
+    }
 }
 
 fun interface EntityMatcher {
@@ -243,6 +272,7 @@ class PostCrawlCleanup(
         Files.createDirectories(cleanupDir)
         val churches = json.decodeFromString<List<ChurchRecord>>(Files.readString(catalogFile))
         val candidates = readList<DenominationCandidate>(cleanupDir.resolve("denomination-candidates.json"))
+        val normalizedCandidates = candidates.map(::NormalizedDenominationCandidate)
         val rules = readList<DenominationRule>(paths.denominationRules)
         val overrides = readList<HumanOverride>(paths.humanOverrides)
         ensureReviewFiles(cleanupDir, paths.humanOverrides)
@@ -260,14 +290,34 @@ class PostCrawlCleanup(
                 return@map original.withDenomination(override.value, audit.last().toDetermination())
             }
             val current = original.denominationId
+            val existingHumanDetermination = original.determinations.lastOrNull {
+                it.field == "denominationId" && it.source == DeterminationSource.HUMAN
+            }
             if (!current.isNullOrBlank() && current != NOT_DETERMINED) {
+                if (existingHumanDetermination != null) return@map original
+                val explicitNameDecision = programmaticMatcher.matchChurchName(original.name, rules)
+                if (explicitNameDecision != null && explicitNameDecision.denominationId != current) {
+                    val entry = CleanupAuditEntry(
+                        original.id,
+                        current,
+                        explicitNameDecision.denominationId,
+                        explicitNameDecision.confidence,
+                        true,
+                        DeterminationSource.PROGRAMMATIC,
+                        explicitNameDecision.evidence,
+                        reasoning = "Explicit denomination prefix corrected stale programmatic denomination: ${explicitNameDecision.reasoning}",
+                        determinedAt = now,
+                    )
+                    audit += entry
+                    return@map original.withDenomination(explicitNameDecision.denominationId, entry.toDetermination())
+                }
                 val existing = original.determinations.any { it.field == "denominationId" && it.value == current }
                 return@map if (existing) original else original.withDenomination(
                     current,
                     FieldDetermination("denominationId", current, DeterminationSource.PROGRAMMATIC, 1.0, listOf("Imported crawler result"), determinedAt = now),
                 )
             }
-            val officialCandidates = candidatesFor(original, candidates)
+            val officialCandidates = candidatesFor(original, normalizedCandidates)
             val programmatic = programmaticMatcher.match(original, rules, officialCandidates)
             if (programmatic != null) {
                 val entry = CleanupAuditEntry(
@@ -363,18 +413,27 @@ class PostCrawlCleanup(
             .getOrElse { Files.move(part, path, StandardCopyOption.REPLACE_EXISTING) }
     }
 
-    private fun candidatesFor(church: ChurchRecord, candidates: List<DenominationCandidate>): List<DenominationCandidate> =
-        candidates.map {
-            val nameScore = JapaneseEntityNormalizer.deterministicNameScore(church.name, it.churchName)
-            val addressScore = JapaneseEntityNormalizer.deterministicAddressScore(church.address, it.address)
-            val entityScore = JapaneseEntityNormalizer.deterministicEntityScore(church.name, church.address, it.churchName, it.address)
-            it.copy(nameSimilarity = nameScore, addressSimilarity = addressScore, entitySimilarity = entityScore) to entityScore
+    private data class NormalizedDenominationCandidate(
+        val candidate: DenominationCandidate,
+        val name: String = JapaneseEntityNormalizer.name(candidate.churchName),
+        val address: String = JapaneseEntityNormalizer.address(candidate.address),
+    )
+
+    private fun candidatesFor(church: ChurchRecord, candidates: List<NormalizedDenominationCandidate>): List<DenominationCandidate> {
+        val churchName = JapaneseEntityNormalizer.name(church.name)
+        val churchAddress = JapaneseEntityNormalizer.address(church.address)
+        return candidates.map {
+            val nameScore = JapaneseEntityNormalizer.deterministicNormalizedNameScore(churchName, it.name)
+            val addressScore = JapaneseEntityNormalizer.deterministicNormalizedAddressScore(churchAddress, it.address)
+            val entityScore = JapaneseEntityNormalizer.deterministicEntityScore(nameScore, addressScore)
+            it.candidate.copy(nameSimilarity = nameScore, addressSimilarity = addressScore, entitySimilarity = entityScore) to entityScore
         }
             .filter { (candidate, score) ->
-                score >= 0.35f || JapaneseEntityNormalizer.deterministicNameScore(church.name, candidate.churchName) >= 0.60f
+                score >= 0.35f || candidate.nameSimilarity!! >= 0.60f
             }
             .sortedByDescending { it.second }
             .map { it.first }
+    }
 
     private fun normalize(value: String) = value.lowercase().replace(Regex("[\\s　・･()（）\\-]"), "")
 

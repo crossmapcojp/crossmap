@@ -28,4 +28,27 @@ class LlmEntitySimilarityTest {
         assertTrue(address > 0.70f)
         assertTrue(entity > 0.55f)
     }
+
+    @Test
+    fun precomputedNormalizedScoresAreEquivalentToDirectScores() {
+        val leftName = "日本聖公会東京聖アンデレ教会"
+        val rightName = "東京聖アンドレ教会"
+        val leftAddress = "〒105-0011 東京都港区芝公園３丁目６−１８"
+        val rightAddress = "港区芝公園3-6-18"
+        val nameScore = JapaneseEntityNormalizer.deterministicNormalizedNameScore(
+            JapaneseEntityNormalizer.name(leftName),
+            JapaneseEntityNormalizer.name(rightName),
+        )
+        val addressScore = JapaneseEntityNormalizer.deterministicNormalizedAddressScore(
+            JapaneseEntityNormalizer.address(leftAddress),
+            JapaneseEntityNormalizer.address(rightAddress),
+        )
+
+        assertEquals(JapaneseEntityNormalizer.deterministicNameScore(leftName, rightName), nameScore)
+        assertEquals(JapaneseEntityNormalizer.deterministicAddressScore(leftAddress, rightAddress), addressScore)
+        assertEquals(
+            JapaneseEntityNormalizer.deterministicEntityScore(leftName, leftAddress, rightName, rightAddress),
+            JapaneseEntityNormalizer.deterministicEntityScore(nameScore, addressScore),
+        )
+    }
 }
