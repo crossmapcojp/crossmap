@@ -23,7 +23,7 @@ internal object ChurchMinisterParser {
         Role("supervising_pastor", "主管者", "Supervising Pastor", "주관 목사", "Pastor supervisor", "Pendeta pengawas", listOf("主管者")),
         Role("pastor_emeritus", "名誉牧師", "Pastor Emeritus", "원로목사", "Pastor emérito", "Pendeta emeritus", listOf("名誉牧師", "隠退牧師")),
         Role("concurrent_pastor", "兼任牧師", "Concurrent Pastor", "겸임 목사", "Pastor em acumulação", "Pendeta rangkap", listOf("兼任牧師", "牧師（兼任）", "牧師(兼任)", "兼牧")),
-        Role("pastor", "牧師", "Pastor", "목사", "Pastor", "Pendeta", listOf("牧師", "正教師")),
+        Role("pastor", "牧師", "Pastor", "목사", "Pastor", "Pendeta", listOf("小隊士官（牧師）", "小隊士官(牧師)", "牧師", "正教師")),
         Role("evangelist", "伝道師", "Evangelist", "전도사", "Evangelista", "Penginjil", listOf("伝道師", "伝道者")),
         Role("missionary", "宣教師", "Missionary", "선교사", "Missionário", "Misionaris", listOf("宣教師")),
         Role("priest", "司祭", "Priest", "사제", "Sacerdote", "Imam", listOf("司祭", "司牧")),
@@ -32,13 +32,23 @@ internal object ChurchMinisterParser {
     private val aliases = roles.flatMap { role -> role.aliases.map { it to role } }.sortedByDescending { it.first.length }
     private val rolePattern = aliases.joinToString("|") { Regex.escape(it.first) }
     private val inline = Regex(
-        "($rolePattern)(?:\\s*[：:]\\s*|\\s+)(.+?)(?=\\s*(?:(?:$rolePattern)(?:\\s*[：:]|\\s+)|TEL|Tel|電話|FAX|Fax|MAIL|E-mail|Email|HOMEPAGE|https?://|〒|$))",
+        "($rolePattern)(?:\\s*[：:・]\\s*|\\s+)(.+?)(?=\\s*(?:(?:$rolePattern)(?:\\s*[：:・]|\\s+)|TEL|Tel|電話|FAX|Fax|MAIL|E-mail|Email|HOMEPAGE|https?://|〒|[0-9０-９]{3}[-ー－‐][0-9０-９]{4}|$))",
+    )
+    private val suffix = Regex(
+        "([\\p{L}][\\p{L} ・･]{1,29})\\s+($rolePattern)(?=\\s*(?:TEL|Tel|電話|FAX|Fax|MAIL|E-mail|Email|HOMEPAGE|https?://|〒|[0-9０-９]{3}[-ー－‐][0-9０-９]{4}|$))",
     )
     private val trailingNoise = Regex("(?:TEL|Tel|tel|電話|FAX|Fax|fax|〒|メール|E-mail|Email).*$")
 
-    fun parse(text: String): List<ChurchMinister> = inline.findAll(normalize(text)).flatMap { match ->
-        fromRoleAndNames(match.groupValues[1], match.groupValues[2]).asSequence()
-    }.distinctBy { it.roleId to it.name }.toList()
+    fun parse(text: String): List<ChurchMinister> {
+        val normalized = normalize(text)
+        return (
+            inline.findAll(normalized).flatMap { match ->
+                fromRoleAndNames(match.groupValues[1], match.groupValues[2]).asSequence()
+            } + suffix.findAll(normalized).flatMap { match ->
+                fromRoleAndNames(match.groupValues[2], match.groupValues[1]).asSequence()
+            }
+        ).distinctBy { it.roleId to it.name }.toList()
+    }
 
     fun fromRoleAndNames(roleText: String, namesText: String): List<ChurchMinister> {
         val normalizedRole = normalize(roleText)
@@ -55,7 +65,9 @@ internal object ChurchMinisterParser {
                 val annotatedRole = aliases.firstOrNull { (alias) ->
                     Regex("[（(][^）)]*${Regex.escape(alias)}[^）)]*[）)]").containsMatchIn(rawName)
                 }?.second
-                val name = rawName.replace(Regex("[（(][^）)]*(?:$rolePattern)[^）)]*[）)]"), "").trim()
+                val name = rawName.replace(Regex("[（(][^）)]*(?:$rolePattern)[^）)]*[）)]"), "")
+                    .replace(Regex("^(?:大尉|中尉|少尉|少佐|中佐|大佐|曹長)\\s*"), "")
+                    .trim()
                 name.takeIf(::isPersonName)?.let { it to (annotatedRole ?: role) }
             }
             .map { (name, effectiveRole) ->

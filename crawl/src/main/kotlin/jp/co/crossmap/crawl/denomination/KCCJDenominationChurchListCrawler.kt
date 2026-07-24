@@ -24,14 +24,17 @@ class KCCJDenominationChurchListCrawler : MultiPageDenominationChurchListCrawler
             if (nameIndex < 0) return@mapNotNull null
             val name = cells[nameIndex].text().trim()
             if (name in excludedEntities) return@mapNotNull null
-            val parsed = DirectoryCrawlerSupport.churchFromBlock(row, "kccj.jp")
             val detail = cells[nameIndex].selectFirst("a[href]")?.absUrl("href")?.trim().orEmpty()
             val staffText = cells.getOrNull(nameIndex + 1)?.text().orEmpty()
+            val text = row.text()
+            val links = row.select("a[href]")
             OfficialDenominationChurch(
                 name = name,
-                address = parsed?.address ?: DirectoryCrawlerSupport.normalizeAddress(cells[addressIndex].text()),
-                phone = parsed?.phone.orEmpty(),
-                fax = parsed?.fax.orEmpty(),
+                address = DirectoryCrawlerSupport.normalizeAddress(cells[addressIndex].text()),
+                phone = DirectoryCrawlerSupport.phoneFromText(text),
+                fax = DirectoryCrawlerSupport.faxFromText(text),
+                email = DirectoryCrawlerSupport.extractEmail(text, links.map { it.attr("href") }),
+                socialProfiles = DirectoryCrawlerSupport.socialProfiles(links),
                 denominationChurchListDetailPage = detail,
                 ministers = ChurchMinisterParser.parse(staffText),
             )

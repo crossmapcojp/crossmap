@@ -11,8 +11,11 @@ class HEJDenominationChurchListCrawler : SinglePageDenominationChurchListCrawler
 
     override fun parse(html: String): List<OfficialDenominationChurch> {
         val document = Jsoup.parse(html, sourceUrl)
-        val withAddresses = DirectoryCrawlerSupport.blocks(document, "tr, article, li, .wp-block-group, .elementor-widget-container")
-            .mapNotNull { DirectoryCrawlerSupport.churchFromBlock(it, "seiiesukai.org") }
+        val selectors = "tr, article, li, .wp-block-group, .elementor-widget-container"
+        val withAddresses = document.select(selectors)
+            .filter { postal.containsMatchIn(it.text()) }
+            .filter { element -> element.select(selectors).none { it !== element && postal.containsMatchIn(it.text()) } }
+            .mapNotNull(::parseBranchBlock)
         val detailOnly = document.select("a[href]").mapNotNull { link ->
             val name = link.selectFirst("img[alt]")?.attr("alt")?.trim().orEmpty().ifBlank { link.text().trim() }
             val href = link.absUrl("href")
@@ -31,9 +34,12 @@ class HEJDenominationChurchListCrawler : SinglePageDenominationChurchListCrawler
 
     override fun parseDetailPage(church: OfficialDenominationChurch, html: String): OfficialDenominationChurch {
         val document = Jsoup.parse(html, church.denominationChurchListDetailPage)
-        val block = DirectoryCrawlerSupport.blocks(document, "tr, article, main, .entry-content, .wp-block-group").firstOrNull()
+        val selectors = "tr, article, main, .entry-content, .wp-block-group"
+        val block = document.select(selectors)
+            .filter { postal.containsMatchIn(it.text()) }
+            .firstOrNull { element -> element.select(selectors).none { it !== element && postal.containsMatchIn(it.text()) } }
             ?: return church.copy(ministers = ChurchMinisterParser.parse(document.text()))
-        val parsed = DirectoryCrawlerSupport.churchFromBlock(block, "seiiesukai.org")
+        val parsed = parseBranchBlock(block)
         return church.copy(
             address = parsed?.address.orEmpty().ifBlank { church.address },
             phone = parsed?.phone.orEmpty().ifBlank { church.phone },
@@ -42,4 +48,32 @@ class HEJDenominationChurchListCrawler : SinglePageDenominationChurchListCrawler
             ministers = parsed?.ministers.orEmpty().ifEmpty { ChurchMinisterParser.parse(document.text()) },
         )
     }
+
+    private fun parseBranchBlock(block: org.jsoup.nodes.Element): OfficialDenominationChurch? {
+        val text = block.text().trim()
+        val address = DirectoryCrawlerSupport.addressFromText(text)
+        if (address.isBlank()) return null
+        val name = block.select("h1,h2,h3,h4,h5,h6,strong,b,a,th,td")
+            .map { it.ownText().ifBlank { it.text() }.trim() }
+            .firstOrNull { Regex("教会|伝道所|チャペル").containsMatchIn(it) && !postal.containsMatchIn(it) && it.length <= 80 }
+            .orEmpty()
+        if (name.isBlank()) return null
+        val links = block.select("a[href]")
+        val detail = links.firstOrNull { link ->
+            runCatching { URI(link.absUrl("href")).host == "seiiesukai.org" }.getOrDefault(false)
+        }?.absUrl("href").orEmpty()
+        return OfficialDenominationChurch(
+            name = name,
+            address = address,
+            phone = DirectoryCrawlerSupport.phoneFromText(text),
+            fax = DirectoryCrawlerSupport.faxFromText(text),
+            websiteUrl = DirectoryCrawlerSupport.externalWebsite(links, "seiiesukai.org"),
+            email = DirectoryCrawlerSupport.extractEmail(text, links.map { it.attr("href") }),
+            socialProfiles = DirectoryCrawlerSupport.socialProfiles(links),
+            denominationChurchListDetailPage = detail,
+            ministers = ChurchMinisterParser.parse(text),
+        )
+    }
+
+    private val postal = Regex("〒?\\s*[0-9０-９]{3}[-ー－‐]?[0-9０-９]{4}")
 }

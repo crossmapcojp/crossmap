@@ -31,8 +31,31 @@ class JCCDenominationChurchListCrawler : SinglePageDenominationChurchListCrawler
                 ministers = parsePastorRoster(pastorRoster),
             )
         }
-        val genericRows = DirectoryCrawlerSupport.blocks(document, "tr, table, p, li")
-            .mapNotNull { DirectoryCrawlerSupport.churchFromBlock(it, "www.nikki-church.org") }
+        val selectors = "tr, table, p, li"
+        val postalPattern = Regex("〒?\\s*[0-9０-９]{3}[-ー－‐]?[0-9０-９]{4}")
+        val genericRows = document.select(selectors)
+            .filter { postalPattern.containsMatchIn(it.text()) }
+            .filter { element -> element.select(selectors).none { it !== element && postalPattern.containsMatchIn(it.text()) } }
+            .mapNotNull { row ->
+                val text = row.text().trim()
+                val address = DirectoryCrawlerSupport.addressFromText(text)
+                val name = row.select("strong,b,a,th,td")
+                    .map { it.ownText().ifBlank { it.text() }.trim() }
+                    .firstOrNull { Regex("教会|伝道所").containsMatchIn(it) && !postalPattern.containsMatchIn(it) && it.length <= 80 }
+                    .orEmpty()
+                if (name.isBlank() || address.isBlank()) return@mapNotNull null
+                val links = row.select("a[href]")
+                OfficialDenominationChurch(
+                    name = name,
+                    address = address,
+                    phone = DirectoryCrawlerSupport.phoneFromText(text),
+                    fax = DirectoryCrawlerSupport.faxFromText(text),
+                    websiteUrl = DirectoryCrawlerSupport.externalWebsite(links, "www.nikki-church.org"),
+                    email = DirectoryCrawlerSupport.extractEmail(text, links.map { it.attr("href") }),
+                    socialProfiles = DirectoryCrawlerSupport.socialProfiles(links),
+                    ministers = ChurchMinisterParser.parse(text),
+                )
+            }
         return (legacyRows.ifEmpty { genericRows }).distinctBy { it.name to it.address }
     }
 

@@ -2,57 +2,58 @@ package jp.co.crossmap.crawl.denomination
 
 import java.net.URI
 import jp.co.crossmap.JapaneseAddressNormalizer
-import org.jsoup.nodes.Document
+import jp.co.crossmap.SocialProfile
+import jp.co.crossmap.crawl.SocialUrlNormalizer
 import org.jsoup.nodes.Element
 
 internal object DirectoryCrawlerSupport {
-    private val postal = Regex("〒?\\s*[0-9０-９]{3}[-ー－‐]?[0-9０-９]{4}")
-    private val address = Regex(
+    private val addressPattern = Regex(
         "〒?\\s*[0-9０-９]{3}[-ー－‐]?[0-9０-９]{4}\\s*[^|｜\\n]*?(?=\\s*(?:TEL|Tel|電話|FAX|Fax|主任牧師|担任牧師|副牧師|牧師|伝道師|宣教師|司祭|教職|$))",
     )
     private val phone = Regex("(?:TEL|Tel|電話)\\s*[:：]?\\s*([0-9０-９()（）+\\-ー－‐/\\s]{8,})")
     private val fax = Regex("(?:FAX|Fax)\\s*[:：]?\\s*([0-9０-９()（）+\\-ー－‐/\\s]{8,})")
-    private val churchName = Regex("教会|伝道所|チャペル|センター|集会|キリストの群れ|聖堂")
+    private val email = Regex("[A-Z0-9._%+\\-]+(?:@|＠|\\s*(?:\\[at]|\\(at\\)|※)\\s*)[A-Z0-9.\\-]+\\.[A-Z]{2,}", RegexOption.IGNORE_CASE)
+    fun normalizeAddress(value: String): String = toZenkakuAddressBody(JapaneseAddressNormalizer.normalize(
+        value.replace(Regex("\\s*(?:TEL|Tel|電話|FAX|Fax).*$"), "").trim(),
+    ).normalized)
 
-    fun blocks(document: Document, selectors: String): List<Element> = document.select(selectors)
-        .filter { postal.containsMatchIn(it.text()) }
-        .filter { element -> element.select(selectors).none { it !== element && postal.containsMatchIn(it.text()) } }
-        .distinctBy { it.text() }
-
-    fun churchFromBlock(
-        block: Element,
-        denominationHost: String,
-        jurisdiction: String = "",
-    ): OfficialDenominationChurch? {
-        val text = block.text().trim()
-        val parsedAddress = address.find(text)?.value?.trim()?.let(::normalizeAddress).orEmpty()
-        if (parsedAddress.isBlank()) return null
-        val nameElement = block.select("h1,h2,h3,h4,h5,h6,strong,b,a,th,td").firstOrNull { candidate ->
-            val value = candidate.ownText().ifBlank { candidate.text() }.trim()
-            churchName.containsMatchIn(value) && !postal.containsMatchIn(value) && value.length <= 80
-        } ?: return null
-        val name = nameElement.ownText().ifBlank { nameElement.text() }.trim()
-        val links = block.select("a[href]")
-        val officialDetail = links.firstOrNull { link ->
-            runCatching { URI(link.absUrl("href")).host == denominationHost }.getOrDefault(false)
-        }?.absUrl("href").orEmpty()
-        val website = links.firstOrNull { link ->
-            val href = link.absUrl("href")
-            href.startsWith("http") && runCatching { URI(href).host != denominationHost }.getOrDefault(false)
-        }?.absUrl("href").orEmpty()
-        return OfficialDenominationChurch(
-            name = name,
-            address = parsedAddress,
-            jurisdiction = jurisdiction,
-            phone = phone.find(text)?.groupValues?.get(1)?.trim().orEmpty(),
-            fax = fax.find(text)?.groupValues?.get(1)?.trim().orEmpty(),
-            websiteUrl = website,
-            denominationChurchListDetailPage = officialDetail,
-            ministers = ChurchMinisterParser.parse(text),
-        )
+    private fun toZenkakuAddressBody(value: String): String {
+        val postalEnd = Regex("^〒?\\d{3}-\\d{4}").find(value)?.range?.last?.plus(1) ?: 0
+        return buildString(value.length) {
+            value.forEachIndexed { index, character ->
+                append(
+                    when {
+                        index < postalEnd -> character
+                        character in '0'..'9' -> (character.code + 0xFEE0).toChar()
+                        character == '-' -> '−'
+                        else -> character
+                    },
+                )
+            }
+        }
     }
 
-    fun normalizeAddress(value: String): String = JapaneseAddressNormalizer.normalize(
-        value.replace(Regex("\\s*(?:TEL|Tel|電話|FAX|Fax).*$"), "").trim(),
-    ).normalized
+    fun addressFromText(text: String): String = addressPattern.find(text)?.value?.trim()?.let(::normalizeAddress).orEmpty()
+
+    fun phoneFromText(text: String): String = phone.find(text)?.groupValues?.get(1)?.trim().orEmpty()
+
+    fun faxFromText(text: String): String = fax.find(text)?.groupValues?.get(1)?.trim().orEmpty()
+
+    fun socialProfiles(links: Iterable<Element>): List<SocialProfile> = links.mapNotNull { link ->
+        val href = link.absUrl("href")
+        val platform = SocialUrlNormalizer.platform(href) ?: return@mapNotNull null
+        SocialProfile(platform, SocialUrlNormalizer.canonical(href, platform), SocialUrlNormalizer.handle(href))
+    }.distinctBy { it.platform to it.url }
+
+    fun externalWebsite(links: Iterable<Element>, denominationHost: String): String = links.firstOrNull { link ->
+        val href = link.absUrl("href")
+        href.startsWith("http") && SocialUrlNormalizer.platform(href) == null &&
+            runCatching { URI(href).host != denominationHost }.getOrDefault(false)
+    }?.absUrl("href").orEmpty()
+
+    fun extractEmail(text: String, hrefs: List<String> = emptyList()): String =
+        (hrefs.firstOrNull { it.startsWith("mailto:", ignoreCase = true) }?.substringAfter(':')
+            ?: email.find(text)?.value.orEmpty())
+            .replace(Regex("\\s*(?:\\[at]|\\(at\\)|※|＠)\\s*", RegexOption.IGNORE_CASE), "@")
+            .trim()
 }

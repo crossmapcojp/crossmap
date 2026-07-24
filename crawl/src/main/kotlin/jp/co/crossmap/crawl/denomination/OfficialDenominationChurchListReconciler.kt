@@ -367,6 +367,9 @@ class OfficialDenominationChurchListReconciler(
         return copy(
             denominationId = denominationId,
             ministers = entry.church.ministers,
+            websiteUrl = websiteUrl.ifBlank { entry.church.websiteUrl },
+            email = email ?: entry.church.email.ifBlank { null },
+            socialProfiles = (socialProfiles + entry.church.socialProfiles).distinctBy { it.platform to it.url },
             determinations = determinations.filterNot { it.field == "denominationId" } + determination,
             updatedAt = timestamp,
         )

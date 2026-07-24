@@ -8,6 +8,7 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.flag
+import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.double
 import java.nio.file.Files
@@ -598,39 +599,29 @@ private class CrawlDenominationDirectories : CrawlCommand("crawl-denomination-di
     private val resources by option("--resources").default("resources")
     private val forceRefresh by option("--force-refresh", help = "Invalidate dedicated official-list HTML caches and fetch them now").flag()
     private val dedicatedOnly by option("--dedicated-only", help = "Run only the authoritative UCCJ/JBC/JBBF/JACC crawlers").flag()
+    private val denominationIds by option("--denomination", help = "Run one dedicated denomination crawler by id; repeat for multiple ids").multiple()
     override fun execute(audit: CrawlCommandAudit) {
         val root = Path.of(resources)
         val paths = CrossmapPaths(root)
         audit.input("sources", root.resolve("sources/denominations.json").toAbsolutePath().normalize())
         audit.setting("force_refresh", forceRefresh)
         audit.setting("dedicated_only", dedicatedOnly)
+        audit.setting("denominations", denominationIds.joinToString(",").ifBlank { "all" })
         val report = OfficialDenominationChurchListPipeline().run(
             root,
             paths.cacheRoot,
             forceRefresh = forceRefresh,
-            crawlGenericDirectories = !dedicatedOnly,
+            crawlGenericDirectories = !dedicatedOnly && denominationIds.isEmpty(),
+            denominationIds = denominationIds.mapTo(linkedSetOf()) { it.uppercase() }.takeIf { it.isNotEmpty() },
         )
         audit.metric("sources", report.sources)
         audit.metric("pages", report.pages)
         audit.metric("candidates", report.candidates)
         audit.metric("errors", report.errors)
         audit.metric("excluded_urls", report.excludedUrls)
-        audit.metric("uccj_churches", report.uccjChurches)
-        audit.metric("jbc_churches", report.jbcChurches)
-        audit.metric("jbbf_churches", report.jbbfChurches)
-        audit.metric("jacc_churches", report.jaccChurches)
-        audit.metric("jhc_churches", report.jhcChurches)
-        audit.metric("rcj_churches", report.rcjChurches)
-        audit.metric("igm_churches", report.igmChurches)
-        audit.metric("jag_churches", report.jagChurches)
-        audit.metric("jelc_churches", report.jelcChurches)
-        audit.metric("ccj_churches", report.ccjChurches)
-        audit.metric("sda_jp_churches", report.sdaJpChurches)
-        audit.metric("tlea_churches", report.tleaChurches)
-        audit.metric("hej_churches", report.hejChurches)
-        audit.metric("jeca_churches", report.jecaChurches)
-        audit.metric("jccj_churches", report.jccjChurches)
-        audit.metric("kccj_churches", report.kccjChurches)
+        report.churchesByDenomination.toSortedMap().forEach { (id, count) ->
+            audit.metric("${id.lowercase()}_churches", count)
+        }
         audit.metric("official_cache_hits", report.cacheHits)
         report.reconciliation?.let { reconciliation ->
             audit.metric("official_matches", reconciliation.matchedOfficialEntries)
@@ -652,10 +643,7 @@ private class CrawlDenominationDirectories : CrawlCommand("crawl-denomination-di
         audit.output("catalog", paths.churchCatalog.toAbsolutePath().normalize())
         echo(
             "Crawled ${report.sources} denomination sources / ${report.pages} pages: ${report.candidates} candidates, " +
-                "UCCJ=${report.uccjChurches}, JBC=${report.jbcChurches}, JBBF=${report.jbbfChurches}, JACC=${report.jaccChurches}, " +
-                "JHC=${report.jhcChurches}, RCJ=${report.rcjChurches}, IGM=${report.igmChurches}, JAG=${report.jagChurches}, " +
-                "JELC=${report.jelcChurches}, CCJ=${report.ccjChurches}, SDA_JP=${report.sdaJpChurches}, TLEA=${report.tleaChurches}, " +
-                "HEJ=${report.hejChurches}, JECA=${report.jecaChurches}, JCCJ=${report.jccjChurches}, KCCJ=${report.kccjChurches}, ${report.errors} errors; " +
+                report.churchesByDenomination.entries.joinToString { "${it.key}=${it.value}" } + ", ${report.errors} errors; " +
                 "removed=${report.reconciliation?.removedUnsupportedLabels ?: 0} unsupported labels",
         )
     }
@@ -799,6 +787,40 @@ private class LinkSocial : CrawlCommand("link-social", CrawlReport.LINK_SOCIAL) 
         echo(
             "Social accounts: ${report.accountsProcessed} processed; ${report.directLinksAccepted} webpage links, " +
                 "${report.nameLinksAccepted} exact/containing names, ${report.llmLinksAccepted} LLM, ${report.unmatched} unmatched"
+        )
+    }
+}
+
+private class MergeSocialExports : CrawlCommand("merge-social-exports", CrawlReport.LINK_SOCIAL) {
+    private val resources by option("--resources").default("resources")
+    private val dryRun by option("--dry-run", help = "Parse, reconcile, and audit without changing churches.json").flag()
+
+    override fun execute(audit: CrawlCommandAudit) {
+        val root = Path.of(resources)
+        val inputs = SocialExportInputs.load()
+        audit.input("catalog", root.resolve("catalog/churches.json").toAbsolutePath().normalize())
+        inputs.youtubeSubscribedChannelsCsv?.let { audit.input("youtube_subscriptions", it) }
+        inputs.instagramFollowingJson?.let { audit.input("instagram_following", it) }
+        inputs.facebookFollowingRawHtml?.let { audit.input("facebook_following_html", it) }
+        inputs.facebookFollowingJson?.let { audit.input("facebook_following_json", it) }
+        inputs.twitterListMembersJson?.let { audit.input("x_list_members", it) }
+        audit.setting("dry_run", dryRun)
+        val report = GoogleSocialDataMergePipeline().run(root, inputs, applyChanges = !dryRun)
+        audit.metric("google_saved_places", report.googleSavedPlaces)
+        audit.metric("social_website_urls_migrated", report.socialWebsiteUrlsMigrated)
+        audit.metric("accounts_parsed", report.accountsParsed)
+        audit.metric("exact_matches", report.exactMatches)
+        audit.metric("estimated_matches", report.estimatedMatches)
+        audit.metric("not_matched", report.notMatched)
+        audit.metric("excluded", report.excluded)
+        audit.output("audit_log", report.auditLog.toAbsolutePath().normalize())
+        audit.output("social_candidates", root.resolve("evidence/social-accounts.json").toAbsolutePath().normalize())
+        audit.output("social_decisions", root.resolve("cleanup/social-merge-decisions.json").toAbsolutePath().normalize())
+        audit.output("catalog", root.resolve("catalog/churches.json").toAbsolutePath().normalize())
+        echo(
+            "Social exports: ${report.accountsParsed} parsed; ${report.exactMatches} exact, " +
+                "${report.estimatedMatches} estimated, ${report.notMatched} unmatched, ${report.excluded} excluded; " +
+                "${report.socialWebsiteUrlsMigrated} Google website URLs migrated to social profiles"
         )
     }
 }
@@ -1238,6 +1260,6 @@ private class PopulateDenominationEnglishNames : CrawlCommand("denomination-engl
 }
 
 fun main(args: Array<String>) = Crawl().subcommands(
-    ReadGoogleSavedPlaces(), ResolveGoogleSavedPlaces(), PromoteGoogleSavedPlaces(), Refresh(), CrawlDenominationDirectories(), BuildGeonames(), CleanupLlm(), OverrideDenomination(), LinkSocial(),
+    ReadGoogleSavedPlaces(), ResolveGoogleSavedPlaces(), PromoteGoogleSavedPlaces(), Refresh(), CrawlDenominationDirectories(), BuildGeonames(), CleanupLlm(), OverrideDenomination(), MergeSocialExports(), LinkSocial(),
     PopulateEnglishNames(), AnalyzeEnglishNames(), PopulateDenominationEnglishNames(), PrepareGeoNameCache(), BuildChurchGeonames(), NormalizeAddresses(), BuildSnapshot(),
 ).main(args)

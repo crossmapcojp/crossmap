@@ -94,10 +94,31 @@ Run all dedicated crawlers fresh and reconcile the catalog with:
 - [x] IGM イムマヌエル綜合伝道団
 - [x] JELC 日本福音ルーテル教会 https://jelc.or.jp/all_churchs/
 - [x] JCC 日本キリスト教会 http://www.nikki-church.org/data.htm
-
 - [x] SDA_JP セブンスデー・アドベンチスト教団 https://adventist.jp/%E6%95%99%E4%BC%9A%E6%89%80%E5%9C%A8%E5%9C%B0/%E6%95%99%E4%BC%9A%E4%B8%80%E8%A6%A7/
 - [x] TLEA The Light of Eternal Agape https://tlea.tokyoantioch.com/ourchurch/all-tlea-link/
 - [x] HEJ 聖イエス会 https://seiiesukai.org/branch/
+
+- [x] 日本フルゴスペル教団 https://www.fgja.jp/sanctuary-church.html
+but excluding:
+  東ロシア地方会	フルゴスペルウラジオストック教会	李 ミラン 牧師	ShilKinskaya Street 15-457
+  Vladivostok,690066 Rep. of Russia
+  Tel:7-914-662-5538
+  東ロシア地方会	フルゴスペルハバロフスク教会	アンドレイ バトル牧師	PereulokBlagodatnui 37-A
+  Khabarovsk, 680014 Rep. of Russia
+  Tel:7-4212-35-1406
+  東ロシア地方会	フルゴスペルサハリン教会	崔 ジンヒョック 牧師	Sakhalinskaya 198 Yuzhno-Sakhalinsk,
+  Sakhalin Oblast 693000 Rep. of Russia
+  Tel:7-4242-77-2357
+  東ロシア地方会	フルゴスペルパルチザンスク教会	マカイ　ヤニカ 牧師	Zamaraeva, 17.
+  Primorsky kray Partizansk, 692864 Rep. of Russia
+  Tel:7-9147-37-6736
+
+- [x] 日本ナザレン教団 https://www.nazarene.or.jp/cm/index.html
+- [x] 日本バプテスト同盟 http://www.jbu.or.jp/chs/
+- [x] 単立ペンテコステ教会フェローシップ https://tpkf.org/localch_group.html
+- [x] 基督兄弟団 https://kyodaidan.org/church/
+- [x] 日本バプテスト教会連合 https://rengo.ne.jp/chruch-list/
+- [x] 救世軍 https://www.salvationarmy.or.jp/about-org/chapel/
 
 ### MultiPageDenominationChurchListCrawler
 - [x] JAG 日本アッセンブリーズ・オブ・ゴッド教団
@@ -180,21 +201,29 @@ but exclude following none-church entities:
 2	 ケアハウスセットンの家		072−272−8338	〒590-0142 大阪府堺市南区檜尾 3360−10
 1	 精神障害碍者支援に取り組む「社会福祉法人サワリ」
 
+- [x] 保守バプテスト同盟
+- https://doumei.holy.jp/churches/%e9%9d%92%e6%a3%ae%e7%9c%8c%e3%83%bb%e5%b2%a9%e6%89%8b%e7%9c%8c%e3%83%bb%e7%a7%8b%e7%94%b0%e7%9c%8c/
+- https://doumei.holy.jp/churches/%e5%ae%ae%e5%9f%8e%e7%9c%8c/
+- https://doumei.holy.jp/churches/%e5%b1%b1%e5%bd%a2%e7%9c%8c/
+- https://doumei.holy.jp/churches/%e7%a6%8f%e5%b3%b6%e7%9c%8c%e5%8c%97%e9%96%a2%e6%9d%b1/
+- https://doumei.holy.jp/churches/%e9%a6%96%e9%83%bd%e5%9c%8f%e9%95%b7%e5%b4%8e%e7%9c%8c/
+The church list includes social links. so reconcile with the data from exported google saved places/youtube/facebook/instagram/x.com
+
+- [x] 日本長老教会 https://chorokyokai.jp/churches/
+each "church detail webpage of denomination official website" needs to be crawled to get more detail chruch info such as pastor name, email, address, website, etc.
+
+- [x] 日本福音自由教会協議会 https://efcj.org/churchlist
+  each "church detail webpage of denomination official website" needs to be crawled to get more detail chruch info such as pastor name, email, address, website, etc.
+
+- [x] 福音伝道教団
+- https://fdk.fukuindendou.org/gunma/
+- https://fdk.fukuindendou.org/saitama/
+- https://fdk.fukuindendou.org/tochigi/
+- https://fdk.fukuindendou.org/tokyo-kanagawa/
 
 
 ### backlog of denomination order by the church count
 - [ ] カトリック中央協議会
 - [ ] 日本聖公会
-- [ ] イエス之御霊教会教団
-- [ ] 日本フルゴスペル教団
-- [ ] 保守バプテスト同盟
-- [ ] 日本ナザレン教団
-- [ ] 日本バプテスト同盟
-- [ ] 日本長老教会
-- [ ] 単立ペンテコステ教会フェローシップ
-- [ ] 日本福音自由教会協議会
-- [ ] 基督兄弟団
-- [ ] 日本バプテスト教会連合
 - [ ] 日本ハリストス正教会教団
-- [ ] 福音伝道教団
-- [ ] 救世軍
+- [SKIPPED] イエス之御霊教会教団

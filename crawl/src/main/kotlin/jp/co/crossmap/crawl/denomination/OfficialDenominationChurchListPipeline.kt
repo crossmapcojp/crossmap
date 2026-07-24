@@ -16,22 +16,7 @@ data class OfficialDenominationChurchListPipelineReport(
     val candidates: Int,
     val errors: Int,
     val excludedUrls: Int,
-    val uccjChurches: Int,
-    val jbcChurches: Int,
-    val jbbfChurches: Int,
-    val jaccChurches: Int,
-    val jhcChurches: Int,
-    val rcjChurches: Int,
-    val igmChurches: Int,
-    val jagChurches: Int,
-    val jelcChurches: Int,
-    val ccjChurches: Int,
-    val sdaJpChurches: Int,
-    val tleaChurches: Int,
-    val hejChurches: Int,
-    val jecaChurches: Int,
-    val jccjChurches: Int,
-    val kccjChurches: Int,
+    val churchesByDenomination: Map<String, Int>,
     val cacheHits: Int,
     val reconciliation: OfficialDenominationReconciliationReport?,
 )
@@ -59,6 +44,17 @@ class OfficialDenominationChurchListPipeline(
         JECADenominationChurchListCrawler(),
         JCCJDenominationChurchListCrawler(),
         KCCJDenominationChurchListCrawler(),
+        FGJADenominationChurchListCrawler(),
+        COTNJPDenominationChurchListCrawler(),
+        JBUDenominationChurchListCrawler(),
+        TPKFDenominationChurchListCrawler(),
+        BCCDenominationChurchListCrawler(),
+        BGCJPDenominationChurchListCrawler(),
+        SAJPDenominationChurchListCrawler(),
+        JCBADenominationChurchListCrawler(),
+        PCJDenominationChurchListCrawler(),
+        EFCJPDenominationChurchListCrawler(),
+        GECDenominationChurchListCrawler(),
     )
 
     fun run(
@@ -67,8 +63,16 @@ class OfficialDenominationChurchListPipeline(
         catalogFile: Path? = resourcesRoot.resolve("catalog/churches.json").takeIf(Files::isRegularFile),
         forceRefresh: Boolean = false,
         crawlGenericDirectories: Boolean = true,
+        denominationIds: Set<String>? = null,
     ): OfficialDenominationChurchListPipelineReport {
-        val results = dedicatedCrawlers.map { runner.crawl(it, resourcesRoot, cacheRoot, forceRefresh) }
+        val selectedCrawlers = denominationIds?.let { ids ->
+            val selected = dedicatedCrawlers.filter { it.denominationId in ids }
+            require(selected.mapTo(linkedSetOf()) { it.denominationId } == ids) {
+                "Unknown denomination crawler ids: ${ids - selected.mapTo(linkedSetOf()) { it.denominationId }}"
+            }
+            selected
+        } ?: dedicatedCrawlers
+        val results = selectedCrawlers.map { runner.crawl(it, resourcesRoot, cacheRoot, forceRefresh) }
         validateProductionLists(results.map(DenominationChurchListCrawlResult::list))
         replaceDedicatedCandidates(cacheRoot, results.map(DenominationChurchListCrawlResult::list))
         val generic = if (crawlGenericDirectories) {
@@ -78,47 +82,16 @@ class OfficialDenominationChurchListPipeline(
         }
         val lists = results.map(DenominationChurchListCrawlResult::list)
         val googlePlaceTitles = loadGooglePlaceTitles(cacheRoot)
-        val reconciliation = catalogFile?.takeIf(Files::isRegularFile)?.let {
+        val reconciliation = catalogFile?.takeIf(Files::isRegularFile)?.takeIf { denominationIds == null }?.let {
             reconciler.reconcile(it, lists, googlePlaceTitles)
         }
-        val uccj = lists.single { it.denominationId == "UCCJ" }
-        val jbc = lists.single { it.denominationId == "JBC" }
-        val jbbf = lists.single { it.denominationId == "JBBF" }
-        val jacc = lists.single { it.denominationId == "JACC" }
-        val jhc = lists.single { it.denominationId == "JHC" }
-        val rcj = lists.single { it.denominationId == "RCJ" }
-        val igm = lists.single { it.denominationId == "IGM" }
-        val jag = lists.single { it.denominationId == "JAG" }
-        val jelc = lists.single { it.denominationId == "JELC" }
-        val ccj = lists.single { it.denominationId == "CCJ" }
-        val sdaJp = lists.single { it.denominationId == "SDA_JP" }
-        val tlea = lists.single { it.denominationId == "TLEA" }
-        val hej = lists.single { it.denominationId == "HEJ" }
-        val jeca = lists.single { it.denominationId == "JECA" }
-        val jccj = lists.single { it.denominationId == "JCCJ" }
-        val kccj = lists.single { it.denominationId == "KCCJ" }
         return OfficialDenominationChurchListPipelineReport(
             sources = generic.sources + results.size,
             pages = generic.pages + results.sumOf(DenominationChurchListCrawlResult::pageCount),
             candidates = generic.candidates + lists.sumOf { list -> list.churches.count(OfficialDenominationChurch::eligibleForDenominationEvidence) },
             errors = generic.errors,
             excludedUrls = generic.excludedUrls,
-            uccjChurches = uccj.churches.size,
-            jbcChurches = jbc.churches.size,
-            jbbfChurches = jbbf.churches.size,
-            jaccChurches = jacc.churches.size,
-            jhcChurches = jhc.churches.size,
-            rcjChurches = rcj.churches.size,
-            igmChurches = igm.churches.size,
-            jagChurches = jag.churches.size,
-            jelcChurches = jelc.churches.size,
-            ccjChurches = ccj.churches.size,
-            sdaJpChurches = sdaJp.churches.size,
-            tleaChurches = tlea.churches.size,
-            hejChurches = hej.churches.size,
-            jecaChurches = jeca.churches.size,
-            jccjChurches = jccj.churches.size,
-            kccjChurches = kccj.churches.size,
+            churchesByDenomination = lists.associate { it.denominationId to it.churches.size },
             cacheHits = results.count(DenominationChurchListCrawlResult::cacheHit),
             reconciliation = reconciliation,
         )
@@ -162,6 +135,17 @@ class OfficialDenominationChurchListPipeline(
             "JECA" to 200,
             "JCCJ" to 120,
             "KCCJ" to 80,
+            "FGJA" to 70,
+            "COTN_JP" to 60,
+            "JBU" to 60,
+            "TPKF" to 50,
+            "BCC" to 50,
+            "BGC_JP" to 50,
+            "SA_JP" to 30,
+            "JCBA" to 70,
+            "PCJ" to 60,
+            "EFC_JP" to 80,
+            "GEC" to 25,
         )
         lists.forEach { list ->
             require(list.churches.size >= minimums.getValue(list.denominationId)) {

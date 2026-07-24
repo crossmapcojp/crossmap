@@ -3,6 +3,13 @@ package jp.co.crossmap
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.nullable
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 @Serializable
 data class GeoPoint(val latitude: Double, val longitude: Double)
@@ -93,7 +100,9 @@ data class ChurchRecord(
     val category: String? = null,
     val address: String,
     val location: GeoPoint,
+    @Serializable(with = BlankWebsiteAsNullSerializer::class)
     val websiteUrl: String,
+    val email: String? = null,
     val pages: List<CrawledPage> = emptyList(),
     val socialProfiles: List<SocialProfile> = emptyList(),
     val ministers: List<ChurchMinister> = emptyList(),
@@ -102,6 +111,23 @@ data class ChurchRecord(
 ) {
     init {
         require(englishName.isNotBlank()) { "ChurchRecord.englishName must not be blank" }
+    }
+}
+
+/** Keeps the Kotlin model's convenient non-null string while emitting semantic JSON null for a missing website. */
+@OptIn(ExperimentalSerializationApi::class)
+object BlankWebsiteAsNullSerializer : KSerializer<String> {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("BlankWebsiteAsNull", PrimitiveKind.STRING).nullable
+
+    override fun serialize(encoder: Encoder, value: String) {
+        if (value.isBlank()) encoder.encodeNull() else encoder.encodeString(value)
+    }
+
+    override fun deserialize(decoder: Decoder): String = if (decoder.decodeNotNullMark()) {
+        decoder.decodeString()
+    } else {
+        decoder.decodeNull()
+        ""
     }
 }
 

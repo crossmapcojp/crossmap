@@ -12,6 +12,7 @@ import java.security.MessageDigest
 import java.time.Duration
 import java.time.Instant
 import jp.co.crossmap.ChurchMinister
+import jp.co.crossmap.SocialProfile
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -26,6 +27,8 @@ data class OfficialDenominationChurch(
     val phone: String = "",
     val fax: String = "",
     val websiteUrl: String = "",
+    val email: String = "",
+    val socialProfiles: List<SocialProfile> = emptyList(),
     val denominationChurchListDetailPage: String = "",
     val ministers: List<ChurchMinister> = emptyList(),
     val membershipStatus: OfficialChurchMembershipStatus = OfficialChurchMembershipStatus.LISTED,
@@ -53,6 +56,8 @@ interface DenominationChurchListCrawler {
     val outputFileName: String
 
     fun parse(html: String): List<OfficialDenominationChurch>
+
+    fun parsePage(url: String, html: String): List<OfficialDenominationChurch> = parse(html)
 
     fun merge(churches: List<OfficialDenominationChurch>): List<OfficialDenominationChurch> =
         churches.distinctBy { Triple(it.name, it.address, it.jurisdiction) }
@@ -185,7 +190,7 @@ class DenominationChurchListCrawlerRunner(
             json = json,
         )
         val listPages = crawler.pageUrls.map { loader.load(it, forceRefresh) }
-        var churches = crawler.merge(listPages.flatMap { crawler.parse(it.html) })
+        var churches = crawler.merge(listPages.flatMap { crawler.parsePage(it.url, it.html) })
         val detailPages = churches.mapNotNull { church ->
             church.denominationChurchListDetailPage.takeIf(String::isNotBlank)?.let { url ->
                 church to loader.load(url, forceRefresh)

@@ -415,7 +415,7 @@ class DenominationChurchListCrawlerTest {
         )
 
         assertEquals("東京教会", churches.single().name)
-        assertEquals("〒169-0072 東京都新宿区大久保1-1-1", churches.single().address)
+        assertEquals("〒169-0072 東京都新宿区大久保１−１−１", churches.single().address)
         assertEquals("senior_pastor", churches.single().ministers.single().roleId)
     }
 
@@ -433,7 +433,7 @@ class DenominationChurchListCrawlerTest {
         val legacy = crawler.parse(
             """<table><tr><td>函館相生教会</td><td>０４０−００１１</td><td>北海道函館市本町２９−８</td><td>0138-52-7035</td><td>0138-31-5181</td><td>粂 広国（担）<br>李 愛（伝）</td></tr></table>""",
         ).single()
-        assertEquals("〒040-0011 北海道函館市本町29-8", legacy.address)
+        assertEquals("〒040-0011 北海道函館市本町２９−８", legacy.address)
         assertEquals(listOf("lead_pastor", "evangelist"), legacy.ministers.map { it.roleId })
         assertEquals(listOf("粂 広国", "李 愛"), legacy.ministers.map { it.name })
     }
@@ -504,7 +504,7 @@ class DenominationChurchListCrawlerTest {
         val liveLayout = JCCJDenominationChurchListCrawler().parse(
             """<table class='table_localchurch'><tr><td><h5>札幌羊ヶ丘教会</h5><ul><LI>〒004-0846 <LI>北海道札幌市清田区清田六条1丁目1-23 <LI>TEL 011-883-3790 <LI>牧師　小菅香世子（主管牧師）<br>小菅剛 <LI>定期集会</ul></td></tr></table>""",
         ).single()
-        assertEquals("〒004-0846 北海道札幌市清田区清田六条1丁目1-23", liveLayout.address)
+        assertEquals("〒004-0846 北海道札幌市清田区清田六条１丁目１−２３", liveLayout.address)
         assertEquals(listOf("senior_pastor", "pastor"), liveLayout.ministers.map { it.roleId })
         assertEquals(listOf("小菅香世子", "小菅剛"), liveLayout.ministers.map { it.name })
     }

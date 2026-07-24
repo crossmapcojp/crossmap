@@ -117,15 +117,18 @@ class ChurchGeoNameTranslationCatalogTest {
         }
 
         assertTrue(rows.isNotEmpty())
+        val pronunciationMismatches = mutableListOf<String>()
         rows.forEach { row ->
             val japanese = row.substringBefore(',')
             val korean = row.substringAfter(',').trim()
             val romaji = entries.getValue(japanese).translations.getValue("en")
             assertTrue(korean.isNotBlank(), japanese)
             assertTrue(korean.none { it in 'A'..'Z' || it in 'a'..'z' }, "$japanese: $romaji -> $korean")
-            assertEquals(romajiToHangul(romaji), korean, japanese)
+            val expected = romajiToHangul(romaji)
+            if (expected != korean) pronunciationMismatches += "$japanese,$expected (was $korean)"
             assertTrue(JapaneseRomajiToHangul.hasCompatibleInitial(romaji, korean), "$japanese: $romaji -> $korean")
         }
+        assertEquals(emptyList(), pronunciationMismatches)
     }
 
     @Test

@@ -40,7 +40,7 @@ internal object JapaneseRomajiToHangul {
             .replace(Regex("""sh([auo])"""), "sy$1")
             .replace("shi", "si")
             .replace("fu", "hu")
-            .replace(Regex("""(?<!t)su"""), "seu")
+            .replace(Regex("""(?<!t)su"""), "-seu-")
             .replace("zu", "jeu")
             // Personal-name datasets commonly spell Japanese long vowels as ou/oo/uu.
             .replace("ou", "o")
@@ -49,6 +49,7 @@ internal object JapaneseRomajiToHangul {
         var hangul = latinToHangul.transliterate(hepburn)
             .replace("트수", "쓰")
             .replace("츠", "쓰")
+            .replace("-", "")
             .replace(Regex("""\s+"""), " ")
             .trim()
         initialJapaneseVoicing.entries.firstOrNull { hangul.startsWith(it.key) }?.let { (from, to) ->
@@ -72,13 +73,13 @@ internal object JapaneseRomajiToHangul {
             'K', 'Q' -> setOf(0, 15) // ㄱ or ㅋ
             'N' -> setOf(2) // ㄴ
             'D' -> setOf(3) // ㄷ
-            'T' -> setOf(3, 16) // ㄷ or ㅌ
+            'T' -> setOf(3, 10, 16) // ㄷ, ㅆ for tsu, or ㅌ
             'R', 'L' -> setOf(5) // ㄹ
             'M' -> setOf(6) // ㅁ
             'B', 'V' -> setOf(7) // ㅂ
             'P' -> setOf(17) // ㅍ
             'F' -> setOf(17, 18) // ㅍ, or ㅎ for Japanese fu -> hu
-            'S' -> setOf(9) // ㅅ
+            'S' -> setOf(9, 10) // ㅅ or ㅆ
             'J', 'Z' -> setOf(12) // ㅈ
             'C' -> setOf(12, 14) // ㅈ or ㅊ
             'H' -> setOf(18) // ㅎ

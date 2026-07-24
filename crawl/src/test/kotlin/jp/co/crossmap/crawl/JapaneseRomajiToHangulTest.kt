@@ -3,6 +3,7 @@ package jp.co.crossmap.crawl
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class JapaneseRomajiToHangulTest {
     @Test
@@ -20,6 +21,9 @@ class JapaneseRomajiToHangulTest {
             "Tsukuba" to "쓰쿠바",
             "Fuji" to "후지",
             "Ryukyu" to "류큐",
+            "Asuka" to "아스카",
+            "Kasuga" to "가스가",
+            "Susukino" to "스스키노",
         ).forEach { (romaji, expected) -> assertEquals(expected, romajiToHangul(romaji), romaji) }
     }
 
@@ -43,6 +47,12 @@ class JapaneseRomajiToHangulTest {
     fun normalizesCaseDiacriticsAndWhitespace() {
         assertEquals("도쿄", romajiToHangul("  Tōkyō  "))
         assertEquals("사토 다로", romajiToHangul("SATOU   TAROU"))
+    }
+
+    @Test
+    fun acceptsTenseSsangSiotForJapaneseSuAndTsu() {
+        assertTrue(JapaneseRomajiToHangul.hasCompatibleInitial("Susukino", "스스키노"))
+        assertTrue(JapaneseRomajiToHangul.hasCompatibleInitial("Tsukunocho", "쓰쿠노초"))
     }
 
     @Test

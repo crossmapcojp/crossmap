@@ -10,8 +10,11 @@ class SDAJPDenominationChurchListCrawler : SinglePageDenominationChurchListCrawl
 
     override fun parse(html: String): List<OfficialDenominationChurch> {
         val document = Jsoup.parse(html, sourceUrl)
-        val structured = DirectoryCrawlerSupport.blocks(document, "tr, article, li, .wp-block-group, .elementor-widget-container")
-            .mapNotNull { DirectoryCrawlerSupport.churchFromBlock(it, "adventist.jp") }
+        val selectors = "tr, article, li, .wp-block-group, .elementor-widget-container"
+        val structured = document.select(selectors)
+            .filter { postal.containsMatchIn(it.text()) }
+            .filter { element -> element.select(selectors).none { it !== element && postal.containsMatchIn(it.text()) } }
+            .mapNotNull(::parseDirectoryBlock)
         val cards = document.select(".rmc-item").mapNotNull { card ->
             val heading = card.selectFirst(".rmc-product-name,h2,h3,h4")?.text()?.trim().orEmpty()
             val name = Regex("^(.+?(?:キリスト教会|教会|集会所|伝道所))").find(heading)?.groupValues?.get(1).orEmpty()
@@ -34,7 +37,7 @@ class SDAJPDenominationChurchListCrawler : SinglePageDenominationChurchListCrawl
         val document = Jsoup.parse(html, church.denominationChurchListDetailPage)
         val relevant = document.select("article,main,.entry-content,.site-content")
             .firstOrNull { it.text().contains(church.name.removeSuffix("キリスト教会").removeSuffix("教会")) }
-        val parsed = relevant?.let { DirectoryCrawlerSupport.churchFromBlock(it, "adventist.jp") }
+        val parsed = relevant?.let(::parseDirectoryBlock)
         return church.copy(
             address = parsed?.address.orEmpty().ifBlank { church.address },
             phone = parsed?.phone.orEmpty().ifBlank { church.phone },
@@ -43,5 +46,30 @@ class SDAJPDenominationChurchListCrawler : SinglePageDenominationChurchListCrawl
         )
     }
 
+    private fun parseDirectoryBlock(block: org.jsoup.nodes.Element): OfficialDenominationChurch? {
+        val text = block.text().trim()
+        val address = DirectoryCrawlerSupport.addressFromText(text)
+        if (address.isBlank()) return null
+        val name = block.select("h1,h2,h3,h4,h5,h6,strong,b,a,th,td")
+            .map { it.ownText().ifBlank { it.text() }.trim() }
+            .firstOrNull { Regex("キリスト教会|教会|集会所|伝道所").containsMatchIn(it) && !postal.containsMatchIn(it) && it.length <= 80 }
+            .orEmpty()
+        if (name.isBlank()) return null
+        val links = block.select("a[href]")
+        return OfficialDenominationChurch(
+            name = name,
+            address = address,
+            phone = DirectoryCrawlerSupport.phoneFromText(text),
+            fax = DirectoryCrawlerSupport.faxFromText(text),
+            websiteUrl = DirectoryCrawlerSupport.externalWebsite(links, "adventist.jp"),
+            email = DirectoryCrawlerSupport.extractEmail(text, links.map { it.attr("href") }),
+            socialProfiles = DirectoryCrawlerSupport.socialProfiles(links),
+            denominationChurchListDetailPage = links.firstOrNull { it.absUrl("href").contains("adventist.jp/") }
+                ?.absUrl("href").orEmpty(),
+            ministers = ChurchMinisterParser.parse(text),
+        )
+    }
+
     private val phone = Regex("[0-9０-９]{2,4}[-ー－‐][0-9０-９]{2,4}[-ー－‐][0-9０-９]{3,4}")
+    private val postal = Regex("〒?\\s*[0-9０-９]{3}[-ー－‐]?[0-9０-９]{4}")
 }

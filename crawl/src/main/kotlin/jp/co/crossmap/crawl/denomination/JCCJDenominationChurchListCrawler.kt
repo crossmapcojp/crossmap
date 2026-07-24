@@ -94,7 +94,35 @@ class JCCJDenominationChurchListCrawler : MultiPageDenominationChurchListCrawler
                 ),
             )
         }
-        return table.select("tr").mapNotNull { row -> DirectoryCrawlerSupport.churchFromBlock(row, "jccj.info") }
+        return table.select("tr").mapNotNull { row ->
+            val text = row.text().trim()
+            val address = DirectoryCrawlerSupport.addressFromText(text)
+            if (address.isBlank()) return@mapNotNull null
+            val name = row.select("strong,b,a,th,td")
+                .map { it.ownText().ifBlank { it.text() }.trim() }
+                .firstOrNull {
+                    Regex("教会|伝道所").containsMatchIn(it) &&
+                        !Regex("〒?\\s*[0-9０-９]{3}[-ー－‐]?[0-9０-９]{4}").containsMatchIn(it) &&
+                        it.length <= 80
+                }
+                .orEmpty()
+            if (name.isBlank()) return@mapNotNull null
+            val links = row.select("a[href]")
+            val internalDetail = links.firstOrNull { link ->
+                runCatching { URI(link.absUrl("href")).host == "jccj.info" }.getOrDefault(false)
+            }?.absUrl("href").orEmpty()
+            OfficialDenominationChurch(
+                name = name,
+                address = address,
+                phone = DirectoryCrawlerSupport.phoneFromText(text),
+                fax = DirectoryCrawlerSupport.faxFromText(text),
+                websiteUrl = DirectoryCrawlerSupport.externalWebsite(links, "jccj.info"),
+                email = DirectoryCrawlerSupport.extractEmail(text, links.map { it.attr("href") }),
+                socialProfiles = DirectoryCrawlerSupport.socialProfiles(links),
+                denominationChurchListDetailPage = internalDetail,
+                ministers = ChurchMinisterParser.parse(text),
+            )
+        }
     }
 
     private val aliases = listOf("主任牧師", "主管牧師", "副牧師", "牧師", "伝道師", "宣教師")

@@ -29,14 +29,16 @@ class JECADenominationChurchListCrawler : MultiPageDenominationChurchListCrawler
             val name = nameCell.text().trim()
             if (name.length > 80) return@mapNotNull null
             val text = row.text()
-            val parsed = DirectoryCrawlerSupport.churchFromBlock(row, "jeca.jp")
             val link = row.selectFirst("a[href]")?.absUrl("href")?.trim().orEmpty()
+            val links = row.select("a[href]")
             OfficialDenominationChurch(
                 name = name,
-                address = parsed?.address.orEmpty(),
-                phone = parsed?.phone.orEmpty(),
-                fax = parsed?.fax.orEmpty(),
+                address = DirectoryCrawlerSupport.addressFromText(text),
+                phone = DirectoryCrawlerSupport.phoneFromText(text),
+                fax = DirectoryCrawlerSupport.faxFromText(text),
                 websiteUrl = link.takeUnless { it.contains("jeca.jp/church/") }.orEmpty(),
+                email = DirectoryCrawlerSupport.extractEmail(text, links.map { it.attr("href") }),
+                socialProfiles = DirectoryCrawlerSupport.socialProfiles(links),
                 denominationChurchListDetailPage = link.takeIf { it.contains("jeca.jp/church/") }.orEmpty(),
                 ministers = ChurchMinisterParser.parse(text),
             )
