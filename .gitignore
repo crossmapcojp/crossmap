@@ -44,6 +44,10 @@ resources/crawl
 # special case, becasue https://japanmissionassociation.org/%e6%89%80%e5%b1%9e%e6%95%99%e4%bc%9a/ is image file and I fed that image to ChatGPT and let it geenrate jma-churches.csv so this file needs to be commited.
 !resources/crawl/jma-churches.csv
 
+# as of 2026-07-24, the website https://whchurch.jimdo.com/ is down. so I got web archive data from https://web.archive.org/web/20240725121250/https://whchurch.jimdo.com/%E6%95%99%E4%BC%9A%E7%B4%B9%E4%BB%8B/
+# but it takes long time to load, so having cache html here as git commited file.
+!resources/crawl/whcj-churches.html
+
 resources/raw
 !resources/raw/README.md
 
