@@ -20,13 +20,21 @@ internal object ChurchMinisterParser {
         Role("associate_pastor", "副牧師", "Associate Pastor", "부목사", "Pastor associado", "Pendeta pendamping", listOf("副牧師", "補教師")),
         Role("cooperating_pastor", "協力牧師", "Cooperating Pastor", "협력 목사", "Pastor cooperante", "Pendeta mitra", listOf("協力牧師")),
         Role("acting_pastor", "代理牧師", "Acting Pastor", "대리 목사", "Pastor interino", "Pendeta pelaksana", listOf("代理牧師")),
+        Role("dispatched_pastor", "派遣牧師", "Dispatched Pastor", "파견 목사", "Pastor enviado", "Pendeta utusan", listOf("派遣牧師")),
+        Role("youth_pastor", "ユースパスター", "Youth Pastor", "청소년 목사", "Pastor de jovens", "Pendeta pemuda", listOf("ユースパスター")),
+        Role("advisor_pastor", "顧問牧師", "Advisory Pastor", "고문 목사", "Pastor conselheiro", "Pendeta penasihat", listOf("アドバイザー牧師", "顧問牧師")),
+        Role("church_planting_pastor", "開拓担当牧師", "Church Planting Pastor", "개척 담당 목사", "Pastor de implantação de igrejas", "Pendeta perintis gereja", listOf("開拓担当牧師")),
         Role("supervising_pastor", "主管者", "Supervising Pastor", "주관 목사", "Pastor supervisor", "Pendeta pengawas", listOf("主管者")),
         Role("pastor_emeritus", "名誉牧師", "Pastor Emeritus", "원로목사", "Pastor emérito", "Pendeta emeritus", listOf("名誉牧師", "隠退牧師")),
         Role("concurrent_pastor", "兼任牧師", "Concurrent Pastor", "겸임 목사", "Pastor em acumulação", "Pendeta rangkap", listOf("兼任牧師", "牧師（兼任）", "牧師(兼任)", "兼牧")),
         Role("pastor", "牧師", "Pastor", "목사", "Pastor", "Pendeta", listOf("小隊士官（牧師）", "小隊士官(牧師)", "牧師", "正教師")),
         Role("evangelist", "伝道師", "Evangelist", "전도사", "Evangelista", "Penginjil", listOf("伝道師", "伝道者")),
         Role("missionary", "宣教師", "Missionary", "선교사", "Missionário", "Misionaris", listOf("宣教師")),
+        Role("lifework_missionary", "ライフワーク宣教師", "Life-work Missionary", "라이프워크 선교사", "Missionário de carreira", "Misionaris pelayanan hidup", listOf("ライフワーク宣教師")),
+        Role("missionary_doctor", "宣教医", "Missionary Doctor", "선교 의사", "Médico missionário", "Dokter misionaris", listOf("宣教医")),
         Role("priest", "司祭", "Priest", "사제", "Sacerdote", "Imam", listOf("司祭", "司牧")),
+        Role("retired_cooperating_minister", "引退協力教師", "Retired Cooperating Minister", "은퇴 협력 교역자", "Ministro cooperador aposentado", "Pelayan gereja mitra emeritus", listOf("引退協力教師")),
+        Role("elder", "長老", "Elder", "장로", "Presbítero", "Penatua", listOf("長老")),
         Role("minister", "教職", "Minister", "교역자", "Ministro", "Pelayan gereja", listOf("教職", "教師")),
     )
     private val aliases = roles.flatMap { role -> role.aliases.map { it to role } }.sortedByDescending { it.first.length }
@@ -57,8 +65,9 @@ internal object ChurchMinisterParser {
             .replace(trailingNoise, "")
             .replace(Regex("^(?:は|が)?[：:・\\s]*|[。;；\\s]+$"), "")
             .replace(Regex("[（(]\\s*$"), "")
-            // Some legacy directories concatenate the next name immediately after a role/reading annotation.
-            .replace(Regex("([）)])(?=\\p{L})"), "$1、")
+            // Some legacy directories concatenate the next name immediately after a role annotation.
+            // A plain reading annotation can be followed by the remainder of the same name, e.g. 韓（ハン）ビョンソブ.
+            .replace(Regex("([（(][^）)]*(?:$rolePattern)[^）)]*[）)])(?=\\p{L})"), "$1、")
             .split(Regex("\\s*(?:、|,|，|／|/)\\s*"))
             .map { it.replace(Regex("^(?:氏名|名前)\\s*[：:]?\\s*"), "").trim() }
             .mapNotNull { rawName ->
@@ -94,5 +103,5 @@ internal object ChurchMinisterParser {
 
     private fun isPersonName(value: String): Boolean = value.length in 2..30 &&
         value.none { it.isDigit() } &&
-        !Regex("[。！？!?|]|教会|伝道所|電話|住所|不在|募集中|未定|礼拝|聖書|奉仕|皆様|毎週|月に|先生を|ています|ました|します|ください|おります|です|ます|して|され|こと|ため|によって|では").containsMatchIn(value)
+        !Regex("[{}\\\"：:。！？!?|]|facebook|instagram|youtube|Presbyterian|Church in|教会|伝道所|地区担当|電話|住所|不在|募集中|未定|礼拝|聖書|奉仕|皆様|毎週|月に|先生を|ています|ました|します|ください|おります|です|ます|して|され|こと|ため|によって|では", RegexOption.IGNORE_CASE).containsMatchIn(value)
 }

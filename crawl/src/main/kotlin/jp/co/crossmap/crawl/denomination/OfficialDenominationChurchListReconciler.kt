@@ -131,6 +131,8 @@ class OfficialDenominationChurchListReconciler(
         val entriesByNameSignal = eligible.flatMap { entry ->
             nameSignals(entry.church.name, entry.list.denominationId).map { signal -> signal to entry }
         }.groupBy({ it.first }, { it.second })
+        val officialIdentities = eligible.associate { entry -> entry.key to entry.toIdentity() }
+        val churchIdentities = Array(churches.size) { mutableMapOf<String, ChurchIdentity>() }
         val matchedKeys = linkedSetOf<String>()
         var assigned = 0
         var removed = 0
@@ -140,7 +142,7 @@ class OfficialDenominationChurchListReconciler(
         val removedEntries = mutableListOf<OfficialDenominationReconciliationAuditEntry>()
         val timestamp = now()
 
-        val matchesByChurch = churches.map { church ->
+        val matchesByChurch = churches.mapIndexed { churchIndex, church ->
             val candidates = linkedSetOf<OfficialEntry>().apply {
                 authoritative.keys.forEach { denominationId ->
                     addAll(entriesByName[denominationId to comparableNameKey(church.name, denominationId)].orEmpty())
@@ -149,7 +151,12 @@ class OfficialDenominationChurchListReconciler(
                 postalCode(church.address)?.let { addAll(entriesByPostalCode[it].orEmpty()) }
                 addressTail(church.address)?.let { addAll(entriesByAddressTail[it].orEmpty()) }
             }
-            candidates.mapNotNull { entry -> match(church, entry)?.let { entry to it } }
+            candidates.mapNotNull { entry ->
+                val churchIdentity = churchIdentities[churchIndex].getOrPut(entry.list.denominationId) {
+                    church.toIdentity(entry.list.denominationId)
+                }
+                churchIdentity.matchConfidence(officialIdentities.getValue(entry.key))?.let { entry to it }
+            }
                 .sortedByDescending(Pair<OfficialEntry, Double>::second)
         }
         val assignedByChurch = mutableMapOf<Int, Pair<OfficialEntry, Double>>()
@@ -290,19 +297,17 @@ class OfficialDenominationChurchListReconciler(
         website = church.websiteUrl,
     )
 
-    private fun match(church: ChurchRecord, entry: OfficialEntry): Double? {
-        return ChurchIdentity(
-            name = comparableName(church.name, entry.list.denominationId),
-            address = church.address,
-            websiteUrl = church.websiteUrl,
-        ).matchConfidence(
-            ChurchIdentity(
-                name = comparableName(entry.church.name, entry.list.denominationId),
-                address = entry.church.address,
-                websiteUrl = entry.church.websiteUrl,
-            ),
-        )
-    }
+    private fun ChurchRecord.toIdentity(denominationId: String) = ChurchIdentity(
+        name = comparableName(name, denominationId),
+        address = address,
+        websiteUrl = websiteUrl,
+    )
+
+    private fun OfficialEntry.toIdentity() = ChurchIdentity(
+        name = comparableName(church.name, list.denominationId),
+        address = church.address,
+        websiteUrl = church.websiteUrl,
+    )
 
     private fun comparableName(value: String, denominationId: String): String {
         var result = Normalizer.normalize(value, Normalizer.Form.NFKC)

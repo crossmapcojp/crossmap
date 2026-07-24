@@ -1,7 +1,10 @@
 package jp.co.crossmap.crawl.denomination
 
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
+import jp.co.crossmap.SocialProfile
+import jp.co.crossmap.crawl.SocialUrlNormalizer
 import org.jsoup.Jsoup
-import org.jsoup.nodes.Element
 
 class JBUDenominationChurchListCrawler : SinglePageDenominationChurchListCrawler {
     override val denominationId = "JBU"
@@ -10,35 +13,88 @@ class JBUDenominationChurchListCrawler : SinglePageDenominationChurchListCrawler
     override val outputFileName = "jbu-churches.json"
     override fun parse(html: String): List<OfficialDenominationChurch> {
         val document = Jsoup.parse(html, sourceUrl)
-        return document.select("tr,li,article,div[class*=church],dl")
-            .mapNotNull { churchFromElement(it) }
-            .distinctBy { it.name to it.address }
+        return document.select("a[href*=churchdital.php]")
+            .groupBy { it.absUrl("href") }
+            .mapNotNull { (detailPage, links) ->
+                if (detailPage.isBlank()) return@mapNotNull null
+                val name = links.map { it.text().trim() }.filter { it.isNotBlank() }.distinct().joinToString("")
+                if (name.isBlank()) null else OfficialDenominationChurch(
+                    name = name,
+                    denominationChurchListDetailPage = detailPage,
+                )
+            }
+            .distinctBy { it.denominationChurchListDetailPage }
     }
 
     override fun parseDetailPage(church: OfficialDenominationChurch, html: String): OfficialDenominationChurch {
         val document = Jsoup.parse(html, church.denominationChurchListDetailPage)
-        return churchFromElement(document.selectFirst("main,article,#contents") ?: document.body(), church.name)
-            ?.copy(denominationChurchListDetailPage = church.denominationChurchListDetailPage)
-            ?: church
-    }
-
-    private fun churchFromElement(element: Element, forcedName: String? = null): OfficialDenominationChurch? {
-        val text = element.text()
-        val address = DirectoryCrawlerSupport.addressFromText(text)
-        if (address.isBlank()) return null
-        val name = forcedName ?: element.select("h1,h2,h3,h4,strong,b,a").firstOrNull { it.text().contains("教会") }?.text()?.trim()
-            ?: return null
-        val links = element.select("a[href]")
-        return OfficialDenominationChurch(
-            name = name,
-            address = address,
+        val rows = document.select("table tr")
+        val addressParts = mutableListOf<String>()
+        var readingAddress = false
+        rows.forEach { row ->
+            val cells = row.children().filter { it.tagName() == "td" }
+            if (cells.size < 2) return@forEach
+            val label = cells[0].text().replace(Regex("[\\s　]+"), "")
+            when {
+                label == "所在地" -> {
+                    readingAddress = true
+                    addressParts += cells[1].text()
+                }
+                readingAddress && label.isBlank() -> addressParts += cells[1].text()
+                readingAddress -> readingAddress = false
+            }
+        }
+        val text = document.text().replace(Regex("牧[\\s　]+師"), "牧師")
+        val websiteLinks = rows.firstOrNull { row ->
+            row.children().firstOrNull()?.text()?.replace(Regex("[\\s　]+"), "") == "Webサイト"
+        }?.select("a[href]").orEmpty()
+        val externalUrl = websiteLinks.firstOrNull()?.let { link ->
+            link.text().trim().takeIf { it.startsWith("http") }
+                ?: URLDecoder.decode(link.attr("href"), StandardCharsets.UTF_8)
+                    .substringAfter("&url=", "")
+                    .takeIf { it.startsWith("http") }
+        }.orEmpty()
+        val platform = SocialUrlNormalizer.platform(externalUrl)
+        val socialProfiles = if (platform == null) emptyList() else listOf(
+            SocialProfile(platform, SocialUrlNormalizer.canonical(externalUrl, platform), SocialUrlNormalizer.handle(externalUrl)),
+        )
+        val labeledMinisters = rows.flatMap { row ->
+            val cells = row.children().filter { it.tagName() == "td" }
+            if (cells.size < 2) return@flatMap emptyList()
+            val role = cells[0].text().replace(Regex("[\\s　]+"), "")
+            if (!role.contains(Regex("牧師|副牧師|伝道師|宣教師|協力牧師"))) emptyList()
+            else parseMinisterNames(role, cells[1].text())
+        }
+        return church.copy(
+            name = document.title().trim().ifBlank { church.name },
+            address = DirectoryCrawlerSupport.normalizeAddress(addressParts.joinToString(" "))
+                .let { if (it.matches(Regex("^\\d{3}-\\d{4}.*"))) "〒$it" else it }
+                .replace(Regex("(?<=[丁目南北東西])\\s+(?=[０-９])"), ""),
             phone = DirectoryCrawlerSupport.phoneFromText(text),
             fax = DirectoryCrawlerSupport.faxFromText(text),
-            websiteUrl = DirectoryCrawlerSupport.externalWebsite(links, "www.jbu.or.jp"),
-            email = DirectoryCrawlerSupport.extractEmail(text, links.map { it.attr("href") }),
-            socialProfiles = DirectoryCrawlerSupport.socialProfiles(links),
-            denominationChurchListDetailPage = links.firstOrNull { it.absUrl("href").contains("jbu.or.jp") }?.absUrl("href").orEmpty(),
-            ministers = ChurchMinisterParser.parse(text),
+            websiteUrl = externalUrl.takeIf { platform == null }.orEmpty(),
+            email = DirectoryCrawlerSupport.extractEmail(text, document.select("a[href]").map { it.attr("href") }),
+            socialProfiles = socialProfiles,
+            ministers = labeledMinisters.ifEmpty { ChurchMinisterParser.parse(text) }
+                .distinctBy { it.roleId to it.name },
         )
     }
+
+    private fun parseMinisterNames(defaultRole: String, value: String) = value
+        .replace(Regex("\\s+[・･]\\s+([（(](?:伝|協|宣)[）)])\\s*$"), " $1")
+        .split(Regex("\\s+[・･]\\s+"))
+        .flatMap { rawName ->
+            val annotation = Regex("^[（(](伝|協|宣)[）)]|[（(](伝|協|宣)[）)]$").find(rawName)
+            val abbreviation = annotation?.groupValues?.drop(1)?.firstOrNull { it.isNotBlank() }
+            val role = when (abbreviation) {
+                "伝" -> "伝道師"
+                "協" -> "協力牧師"
+                "宣" -> "宣教師"
+                else -> defaultRole
+            }
+            val name = rawName
+                .replace(Regex("^[（(](?:伝|協|宣)[）)]\\s*|\\s*[（(](?:伝|協|宣)[）)]$"), "")
+                .trim()
+            ChurchMinisterParser.fromRoleAndNames(role, name)
+        }
 }

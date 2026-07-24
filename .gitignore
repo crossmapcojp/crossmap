@@ -41,6 +41,9 @@ resources/indexes/churches
 resources/crawl
 !resources/crawl/README.md
 
+# special case, becasue https://japanmissionassociation.org/%e6%89%80%e5%b1%9e%e6%95%99%e4%bc%9a/ is image file and I fed that image to ChatGPT and let it geenrate jma-churches.csv so this file needs to be commited.
+!resources/crawl/jma-churches.csv
+
 resources/raw
 !resources/raw/README.md
 

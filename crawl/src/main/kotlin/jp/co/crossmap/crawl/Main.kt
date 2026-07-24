@@ -160,7 +160,7 @@ private class PromoteGoogleSavedPlaces : CrawlCommand("promote-google-saved-plac
     private val websiteCacheHours by option(
         "--website-cache-hours",
         help = "Reuse website crawl results younger than this many hours; 0 forces revalidation",
-    ).int().default(24)
+    ).int().default(30 * 24)
     private val skipWebsiteRefresh by option("--skip-website-refresh").flag()
     private val skipDirectoryCrawl by option("--skip-directory-crawl").flag()
     private val skipDenominationCleanup by option(
@@ -173,8 +173,14 @@ private class PromoteGoogleSavedPlaces : CrawlCommand("promote-google-saved-plac
         val startedNanos = System.nanoTime()
         val root = Path.of(resources)
         val paths = CrossmapPaths(root)
+        val socialInputs = SocialExportInputs.load()
         audit.input("candidates", paths.googleSavedPlaces.resolve("google-place-candidates.json").toAbsolutePath().normalize())
         audit.input("catalog", paths.churchCatalog.toAbsolutePath().normalize())
+        socialInputs.youtubeSubscribedChannelsCsv?.let { audit.input("youtube_subscriptions", it) }
+        socialInputs.instagramFollowingJson?.let { audit.input("instagram_following", it) }
+        socialInputs.facebookFollowingRawHtml?.let { audit.input("facebook_following_html", it) }
+        socialInputs.facebookFollowingJson?.let { audit.input("facebook_following_json", it) }
+        socialInputs.twitterListMembersJson?.let { audit.input("x_list_members", it) }
         audit.setting("english_model", if (programmaticOnly) "disabled" else englishModel)
         audit.setting("denomination_model", if (programmaticOnly) "disabled" else denominationModel)
         audit.setting("confidence_threshold", threshold)
@@ -259,6 +265,7 @@ private class PromoteGoogleSavedPlaces : CrawlCommand("promote-google-saved-plac
             refreshWebsites = !skipWebsiteRefresh,
             crawlDirectories = !skipDirectoryCrawl,
             cleanupDenominations = !skipDenominationCleanup,
+            socialInputs = socialInputs,
             promote = !dryRun,
             cacheRoot = paths.cacheRoot,
         )
@@ -273,6 +280,12 @@ private class PromoteGoogleSavedPlaces : CrawlCommand("promote-google-saved-plac
         audit.metric("denomination_llm", report.denominationLlm)
         audit.metric("denomination_human", report.denominationHuman)
         audit.metric("denomination_uncertain", report.denominationUncertain)
+        audit.metric("social_accounts_parsed", report.socialAccountsParsed)
+        audit.metric("social_website_urls_migrated", report.socialWebsiteUrlsMigrated)
+        audit.metric("social_exact_matches", report.socialExactMatches)
+        audit.metric("social_estimated_matches", report.socialEstimatedMatches)
+        audit.metric("social_not_matched", report.socialNotMatched)
+        audit.metric("social_excluded", report.socialExcluded)
         audit.metric("english_names_programmatic", report.englishNamesProgrammatic)
         audit.metric("english_names_llm", report.englishNamesLlm)
         audit.metric("final_churches", report.finalChurches)

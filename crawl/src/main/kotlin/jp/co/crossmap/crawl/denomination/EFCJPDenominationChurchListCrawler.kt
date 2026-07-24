@@ -1,5 +1,6 @@
 package jp.co.crossmap.crawl.denomination
 
+import java.net.URI
 import org.jsoup.Jsoup
 
 class EFCJPDenominationChurchListCrawler : MultiPageDenominationChurchListCrawler {
@@ -14,7 +15,8 @@ class EFCJPDenominationChurchListCrawler : MultiPageDenominationChurchListCrawle
         .select("a[href]").mapNotNull { link ->
             val name = link.text().trim()
             val detail = link.absUrl("href")
-            if (!name.contains("教会") || name.contains(Regex("教会一覧|教会を探")) || !detail.contains("efcj.org")) null
+            val path = runCatching { URI(detail).path.orEmpty() }.getOrDefault("")
+            if (!name.contains("教会") || !Regex("^/posts/churchinfo/[^/]+/?$").matches(path)) null
             else OfficialDenominationChurch(name = name, denominationChurchListDetailPage = detail)
         }.distinctBy { it.name }
 

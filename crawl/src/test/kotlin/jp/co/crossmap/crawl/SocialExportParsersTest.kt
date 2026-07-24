@@ -95,5 +95,27 @@ class SocialExportParsersTest {
         assertEquals(SocialPlatform.X, SocialUrlNormalizer.platform("https://twitter.com/test"))
         assertEquals(SocialPlatform.YOUTUBE, SocialUrlNormalizer.platform("https://youtu.be/video"))
         assertEquals("https://x.com/test", SocialUrlNormalizer.canonical("http://www.twitter.com/test/", SocialPlatform.X))
+        assertEquals(
+            SocialUrlNormalizer.identityKey("https://facebook.com/FukuokaYayoiChurch", SocialPlatform.FACEBOOK),
+            SocialUrlNormalizer.identityKey("https://facebook.com/pg/FukuokaYayoiChurch", SocialPlatform.FACEBOOK),
+        )
+        assertEquals(
+            SocialUrlNormalizer.identityKey("https://facebook.com/nagaokacovenant", SocialPlatform.FACEBOOK),
+            SocialUrlNormalizer.identityKey("https://ja-jp.facebook.com/nagaokacovenant", SocialPlatform.FACEBOOK),
+        )
+        assertEquals(
+            SocialUrlNormalizer.identityKey("https://facebook.com/profile.php?id=100068760264839", SocialPlatform.FACEBOOK),
+            SocialUrlNormalizer.identityKey(
+                "https://facebook.com/people/日本福音ルーテル岐阜教会/100068760264839",
+                SocialPlatform.FACEBOOK,
+            ),
+        )
+        assertEquals(
+            "https://youtube.com/channel/UCQagVG78BWgieXWr4TNgr9w",
+            SocialUrlNormalizer.canonical(
+                "https://youtube.com/channel/UCQagVG78BWgieXWr4TNgr9w/featured",
+                SocialPlatform.YOUTUBE,
+            ),
+        )
     }
 }

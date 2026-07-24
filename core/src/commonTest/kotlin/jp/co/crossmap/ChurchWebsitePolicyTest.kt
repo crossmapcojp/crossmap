@@ -41,4 +41,22 @@ class ChurchWebsitePolicyTest {
             policy.publicWebsiteUrl("", null, "google:8998728770320543438"),
         )
     }
+
+    @Test
+    fun socialPlatformsAreNeverCrawledAsChurchWebsites() {
+        listOf(
+            "https://www.facebook.com/TKBCJapaneseSection/",
+            "https://m.facebook.com/tokyo.church",
+            "https://instagram.com/tokyo_church",
+            "https://twitter.com/tokyo_church",
+            "https://x.com/tokyo_church",
+            "https://youtube.com/channel/UC123",
+            "https://youtu.be/abc123",
+        ).forEach { url ->
+            assertTrue(policy.isSocialPlatform(url), url)
+            assertFalse(policy.isCrawlableChurchWebsite(url), url)
+        }
+        assertFalse(policy.isSocialPlatform("https://tokyo-church.example/"))
+        assertTrue(policy.isCrawlableChurchWebsite("https://tokyo-church.example/"))
+    }
 }

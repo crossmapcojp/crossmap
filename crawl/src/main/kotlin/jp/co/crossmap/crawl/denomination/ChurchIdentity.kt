@@ -1,7 +1,6 @@
 package jp.co.crossmap.crawl.denomination
 
 import java.net.URI
-import java.text.Normalizer
 import jp.co.crossmap.crawl.JapaneseEntityNormalizer
 
 /** Comparable identity evidence shared by catalog and official-directory church records. */
@@ -10,43 +9,49 @@ data class ChurchIdentity(
     val address: String,
     val websiteUrl: String,
 ) {
+    private val normalizedWebsite = comparableWebsite(websiteUrl)
+    private val normalizedPostalCode = postalCode(address)
+    private val normalizedName = JapaneseEntityNormalizer.name(name)
+    private val normalizedStem = comparisonStem(normalizedName)
+    private val normalizedAddress = JapaneseEntityNormalizer.address(address)
+
     fun matches(other: ChurchIdentity): Boolean = matchConfidence(other) != null
 
     fun matchConfidence(other: ChurchIdentity): Double? {
-        val websiteMatches = comparableWebsite(websiteUrl)?.let { it == comparableWebsite(other.websiteUrl) } == true
+        val websiteMatches = normalizedWebsite?.let { it == other.normalizedWebsite } == true
         if (websiteMatches) return 1.0
 
-        val leftPostalCode = postalCode(address)
-        val rightPostalCode = postalCode(other.address)
+        val leftPostalCode = normalizedPostalCode
+        val rightPostalCode = other.normalizedPostalCode
         if (leftPostalCode != null && rightPostalCode != null && leftPostalCode != rightPostalCode) return null
 
-        val leftName = JapaneseEntityNormalizer.name(name)
-        val rightName = JapaneseEntityNormalizer.name(other.name)
+        val leftName = normalizedName
+        val rightName = other.normalizedName
         val exactName = leftName.isNotBlank() && leftName == rightName
-        val leftStem = comparisonStem(leftName)
-        val rightStem = comparisonStem(rightName)
+        val leftStem = normalizedStem
+        val rightStem = other.normalizedStem
         val stemScore = when {
             leftStem.isBlank() || rightStem.isBlank() -> 0.0
             leftStem == rightStem -> 1.0
             minOf(leftStem.length, rightStem.length) >= 2 &&
                 (leftStem.contains(rightStem) || rightStem.contains(leftStem)) -> 0.95
-            else -> JapaneseEntityNormalizer.deterministicNameScore(leftStem, rightStem).toDouble()
+            else -> JapaneseEntityNormalizer.deterministicNormalizedNameScore(leftStem, rightStem).toDouble()
         }
         val nameScore = maxOf(
-            JapaneseEntityNormalizer.deterministicNameScore(name, other.name).toDouble(),
+            JapaneseEntityNormalizer.deterministicNormalizedNameScore(leftName, rightName).toDouble(),
             stemScore,
         )
-        val addressScore = JapaneseEntityNormalizer.deterministicAddressScore(address, other.address).toDouble()
+        val addressScore = JapaneseEntityNormalizer.deterministicNormalizedAddressScore(
+            normalizedAddress,
+            other.normalizedAddress,
+        ).toDouble()
         val samePostalCode = leftPostalCode != null && leftPostalCode == rightPostalCode
-        val sameMunicipality = municipality(address)?.let { it == municipality(other.address) } == true
 
         return when {
             exactName && other.address.isBlank() -> 0.90
             exactName && samePostalCode -> 0.99
-            exactName && sameMunicipality -> 0.96
             exactName && addressScore >= 0.70 -> 0.72 + addressScore * 0.28
-            samePostalCode && stemScore >= 0.70 -> 0.78 + stemScore * 0.20
-            sameMunicipality && stemScore >= 0.92 -> 0.76 + stemScore * 0.20
+            samePostalCode && stemScore >= 0.70 && addressScore >= 0.70 -> 0.58 + stemScore * 0.20 + addressScore * 0.20
             nameScore >= 0.82 && addressScore >= 0.82 -> nameScore * 0.55 + addressScore * 0.45
             addressScore >= 0.96 && nameScore >= 0.65 -> nameScore * 0.45 + addressScore * 0.55
             else -> null
@@ -70,11 +75,4 @@ data class ChurchIdentity(
     private fun comparisonStem(value: String): String =
         value.replace(Regex("(?:キリスト)?教会|伝道所|チャペル|礼拝堂"), "")
 
-    private fun municipality(value: String): String? {
-        val normalized = Normalizer.normalize(value, Normalizer.Form.NFKC)
-            .replace(Regex("〒?\\d{3}-?\\d{4}"), "")
-            .replace(Regex("^.*?[都道府県]"), "")
-            .replace(Regex("\\s+"), "")
-        return Regex("^.{1,16}?[市区町村]").find(normalized)?.value
-    }
 }

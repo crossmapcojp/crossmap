@@ -21,6 +21,7 @@ class RCJDenominationChurchListCrawler : SinglePageDenominationChurchListCrawler
             val sectionText = section.text()
             val roleFirst = roleBeforeName.findAll(sectionText).flatMap { match ->
                 val names = match.groupValues[2].substringAfterLast("教会の")
+                    .replace(Regex("(?:です|でした)$"), "")
                 ChurchMinisterParser.fromRoleAndNames(match.groupValues[1], names).asSequence()
             }
             val nameFirst = nameBeforeRole.findAll(sectionText).flatMap { match ->

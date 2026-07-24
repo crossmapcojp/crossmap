@@ -5,8 +5,10 @@ import com.sun.net.httpserver.HttpServer
 import java.net.InetSocketAddress
 import java.nio.file.Files
 import java.time.Duration
+import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
 import jp.co.crossmap.ChurchRecord
+import jp.co.crossmap.CrawledPage
 import jp.co.crossmap.GeoPoint
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -50,6 +52,61 @@ class WebsiteRefresherTest {
                 .refresh(root, cacheRoot = root.resolve("cache"))
             assertEquals(2, second.unchanged)
             assertEquals(0, second.errors)
+        } finally {
+            server.stop(0)
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun defaultCacheFreshnessReusesWebsitePagesForThirtyDays() {
+        val requests = AtomicInteger()
+        val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
+        server.createContext("/robots.txt") { it.respond("User-agent: *\n") }
+        server.createContext("/") { exchange ->
+            requests.incrementAndGet()
+            exchange.htmlWithEtag("<html><head><title>長期キャッシュ教会</title></head><body>礼拝案内</body></html>")
+        }
+        server.start()
+        val root = Files.createTempDirectory("crossmap-thirty-day-cache")
+        try {
+            val website = "http://127.0.0.1:${server.address.port}/"
+            Files.createDirectories(root.resolve("catalog"))
+            Files.createDirectories(root.resolve("cache/church-web-pages"))
+            Files.writeString(root.resolve("catalog/excludedChurchListingDomains.txt"), "")
+            Files.writeString(
+                root.resolve("catalog/churches.json"),
+                json.encodeToString(
+                    listOf(
+                        ChurchRecord(
+                            id = "google:30",
+                            googleCid = "30",
+                            name = "長期キャッシュ教会",
+                            englishName = "Long Cache Church",
+                            address = "東京都",
+                            location = GeoPoint(35.0, 139.0),
+                            websiteUrl = website,
+                        ),
+                    ),
+                ),
+            )
+            Files.writeString(root.resolve("cache/church-web-pages/manifest.json"), "[]")
+            WebsiteRefresher(maxConcurrency = 1, hostDelayMillis = 0).refresh(root, cacheRoot = root.resolve("cache"))
+            val manifest = root.resolve("cache/church-web-pages/manifest.json")
+            Files.writeString(
+                manifest,
+                Files.readString(manifest).replace(
+                    Regex("\\\"fetchedAt\\\": \\\"[^\\\"]+\\\""),
+                    "\\\"fetchedAt\\\": \\\"${Instant.now().minus(Duration.ofDays(29))}\\\"",
+                ),
+            )
+
+            val cached = WebsiteRefresher(maxConcurrency = 1, hostDelayMillis = 0)
+                .refresh(root, cacheRoot = root.resolve("cache"))
+
+            assertEquals(1, requests.get())
+            assertEquals(1, cached.unchanged)
+            assertEquals(0, cached.fetched)
         } finally {
             server.stop(0)
             root.toFile().deleteRecursively()
@@ -132,6 +189,52 @@ class WebsiteRefresherTest {
             assertEquals(0, report.fetched)
             assertEquals("https://www.google.com/maps?cid=10158070367548216990", church.websiteUrl)
             assertTrue(church.pages.isEmpty())
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun socialPlatformsAreNotRequestedAndStaleSocialPagesAreRemoved() {
+        val root = Files.createTempDirectory("crossmap-social-websites")
+        try {
+            Files.createDirectories(root.resolve("catalog"))
+            Files.createDirectories(root.resolve("cache/church-web-pages"))
+            Files.writeString(root.resolve("catalog/excludedChurchListingDomains.txt"), "")
+            val socialUrls = listOf(
+                "https://www.facebook.com/TKBCJapaneseSection/",
+                "https://instagram.com/tokyo_church",
+                "https://twitter.com/tokyo_church",
+                "https://x.com/tokyo_church",
+                "https://youtube.com/channel/UC123",
+                "https://youtu.be/abc123",
+            )
+            Files.writeString(
+                root.resolve("catalog/churches.json"),
+                json.encodeToString(
+                    socialUrls.mapIndexed { index, url ->
+                        ChurchRecord(
+                            id = "google:$index",
+                            googleCid = index.toString(),
+                            name = "ソーシャル教会$index",
+                            englishName = "Social Church $index",
+                            address = "東京都",
+                            location = GeoPoint(35.0, 139.0),
+                            websiteUrl = url,
+                            pages = listOf(CrawledPage(url = url, title = "Login")),
+                        )
+                    },
+                ),
+            )
+            Files.writeString(root.resolve("cache/church-web-pages/manifest.json"), "[]")
+
+            val report = WebsiteRefresher(maxConcurrency = 2, hostDelayMillis = 0)
+                .refresh(root, cacheRoot = root.resolve("cache"))
+            val churches = json.decodeFromString<List<ChurchRecord>>(Files.readString(root.resolve("catalog/churches.json")))
+
+            assertEquals(0, report.fetched)
+            assertEquals(0, report.errors)
+            assertTrue(churches.all { it.pages.isEmpty() })
         } finally {
             root.toFile().deleteRecursively()
         }

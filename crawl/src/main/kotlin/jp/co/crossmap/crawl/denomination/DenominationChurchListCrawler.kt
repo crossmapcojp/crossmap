@@ -101,6 +101,14 @@ private data class DenominationChurchPageCacheMetadata(
     val contentSha256: String,
 )
 
+internal object DenominationDirectoryCachePolicy {
+    val maxAge: Duration = Duration.ofDays(30)
+
+    fun isFresh(fetchedAt: String, now: Instant = Instant.now()): Boolean = runCatching {
+        !Instant.parse(fetchedAt).isBefore(now.minus(maxAge))
+    }.getOrDefault(false)
+}
+
 class CachedHttpDenominationChurchPageLoader(
     private val cacheDirectory: Path,
     private val client: HttpClient = HttpClient.newBuilder()
@@ -108,6 +116,7 @@ class CachedHttpDenominationChurchPageLoader(
         .followRedirects(HttpClient.Redirect.NORMAL)
         .build(),
     private val json: Json = Json { ignoreUnknownKeys = true; prettyPrint = true; encodeDefaults = true },
+    private val now: () -> Instant = Instant::now,
 ) : DenominationChurchPageLoader {
     override fun load(url: String, forceRefresh: Boolean): LoadedDenominationChurchPage {
         val cacheKey = url.sha256()
@@ -119,7 +128,7 @@ class CachedHttpDenominationChurchPageLoader(
         }
         if (Files.isRegularFile(pageFile) && Files.isRegularFile(metadataFile)) {
             val metadata = json.decodeFromString<DenominationChurchPageCacheMetadata>(Files.readString(metadataFile))
-            if (metadata.sourceUrl == url) {
+            if (metadata.sourceUrl == url && DenominationDirectoryCachePolicy.isFresh(metadata.fetchedAt, now())) {
                 return LoadedDenominationChurchPage(url, Files.readString(pageFile), metadata.fetchedAt, cacheHit = true)
             }
         }
@@ -131,7 +140,7 @@ class CachedHttpDenominationChurchPageLoader(
             .build()
         val response = client.send(request, HttpResponse.BodyHandlers.ofByteArray())
         require(response.statusCode() in 200..299) { "HTTP ${response.statusCode()} for $url" }
-        val fetchedAt = Instant.now().toString()
+        val fetchedAt = now().toString()
         val html = decodeHtml(response.body(), response.headers().firstValue("content-type").orElse(""))
         require(html.isNotBlank()) { "Official denomination directory returned an empty page: $url" }
         Files.createDirectories(cacheDirectory)

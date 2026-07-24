@@ -128,9 +128,10 @@ tasks.register<JavaExec>("promoteGoogleSavedPlaces") {
         "--limit",
         providers.gradleProperty("denominationLlmLimit").orElse("100").get(),
         "--website-cache-hours",
-        providers.gradleProperty("websiteCacheHours").orElse("24").get(),
+        providers.gradleProperty("websiteCacheHours").orElse((30 * 24).toString()).get(),
     )
     if (providers.gradleProperty("programmaticOnly").orElse("false").get().toBoolean()) args("--programmatic-only")
+    if (providers.gradleProperty("skipDirectoryCrawl").orElse("false").get().toBoolean()) args("--skip-directory-crawl")
 }
 
 tasks.named("promoteGoogleSavedPlaces").configure { mustRunAfter("googleSavedPlacesSource") }

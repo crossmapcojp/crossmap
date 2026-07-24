@@ -180,16 +180,46 @@ object SocialUrlNormalizer {
         val unwrapped = if (platform == SocialPlatform.FACEBOOK) unwrapFacebookRedirect(url) else url
         return runCatching {
             val uri = URI(unwrapped.trim().replace("http://", "https://"))
-            val host = uri.host?.lowercase()?.removePrefix("www.") ?: return@runCatching unwrapped.trim()
+            var host = uri.host?.lowercase()?.removePrefix("www.") ?: return@runCatching unwrapped.trim()
+            if (platform == SocialPlatform.FACEBOOK && host.endsWith(".facebook.com")) host = "facebook.com"
             var path = uri.path.orEmpty().replace(Regex("/+"), "/").trimEnd('/')
             if (platform == SocialPlatform.INSTAGRAM) path = path.removePrefix("/_u")
+            var facebookProfileId: String? = null
+            if (platform == SocialPlatform.FACEBOOK) {
+                path = path.removePrefix("/pg")
+                val peopleSegments = path.trim('/').split('/')
+                if (peopleSegments.firstOrNull() == "people" && peopleSegments.size >= 3) {
+                    facebookProfileId = peopleSegments.last()
+                    path = "/profile.php"
+                } else {
+                    path = path.replace(Regex("/(?:about|videos|photos|posts)$", RegexOption.IGNORE_CASE), "")
+                }
+            }
+            if (platform == SocialPlatform.YOUTUBE) {
+                path = path.replace(
+                    Regex("^(/(?:channel/[^/]+|@[^/]+))/(?:featured|videos|shorts|streams|about)$", RegexOption.IGNORE_CASE),
+                    "$1",
+                )
+            }
             val query = if (platform == SocialPlatform.FACEBOOK && path == "/profile.php") {
-                uri.rawQuery?.split('&')?.firstOrNull { it.startsWith("id=") }?.let { "?$it" }.orEmpty()
+                facebookProfileId?.let { "?id=$it" }
+                    ?: uri.rawQuery?.split('&')?.firstOrNull { it.startsWith("id=") }?.let { "?$it" }.orEmpty()
             } else ""
             "https://$host$path$query"
                 .replace("https://twitter.com/", "https://x.com/")
                 .replace("https://m.facebook.com/", "https://facebook.com/")
         }.getOrElse { unwrapped.trim().substringBefore('#').substringBefore('?').trimEnd('/') }
+    }
+
+    fun identityKey(url: String, platform: SocialPlatform? = platform(url)): String {
+        val canonical = canonical(url, platform)
+        return when (platform) {
+            SocialPlatform.FACEBOOK,
+            SocialPlatform.INSTAGRAM,
+            SocialPlatform.X,
+            -> canonical.lowercase()
+            else -> canonical
+        }
     }
 
     fun handle(url: String): String = runCatching {

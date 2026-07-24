@@ -15,11 +15,16 @@ class ChurchWebsitePolicy(excludedDomains: Collection<String>) {
     }
 
     fun isCrawlableChurchWebsite(url: String): Boolean {
-        if (!(url.startsWith("http://") || url.startsWith("https://")) || isExcluded(url)) return false
+        if (!(url.startsWith("http://") || url.startsWith("https://")) || isExcluded(url) || isSocialPlatform(url)) return false
         val host = urlHost(url) ?: return false
         return !(host == "google.com" || host.endsWith(".google.com") ||
             host == "google.co.jp" || host.endsWith(".google.co.jp")) ||
             !url.substringAfter("://").substringAfter('/').startsWith("maps")
+    }
+
+    fun isSocialPlatform(url: String): Boolean {
+        val host = urlHost(url) ?: return false
+        return socialPlatformDomains.any { domain -> host == domain || host.endsWith(".$domain") }
     }
 
     fun publicWebsiteUrl(url: String?, googleCid: String?, churchId: String? = null): String {
@@ -34,6 +39,15 @@ class ChurchWebsitePolicy(excludedDomains: Collection<String>) {
         publicWebsiteUrl(church.websiteUrl, church.googleCid, church.id)
 
     companion object {
+        private val socialPlatformDomains = setOf(
+            "facebook.com",
+            "instagram.com",
+            "twitter.com",
+            "x.com",
+            "youtube.com",
+            "youtu.be",
+        )
+
         fun parse(text: String): Set<String> = text.lineSequence()
             .map { it.substringBefore('#').trim() }
             .filter(String::isNotBlank)

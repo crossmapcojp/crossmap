@@ -32,6 +32,12 @@ data class GoogleSavedPlacesPromotionReport(
     val denominationLlm: Int,
     val denominationHuman: Int,
     val denominationUncertain: Int,
+    val socialAccountsParsed: Int,
+    val socialWebsiteUrlsMigrated: Int,
+    val socialExactMatches: Int,
+    val socialEstimatedMatches: Int,
+    val socialNotMatched: Int,
+    val socialExcluded: Int,
     val finalChurches: Int,
     val englishNamesProgrammatic: Int,
     val englishNamesLlm: Int,
@@ -58,6 +64,7 @@ class GoogleSavedPlacesCleanupWorkflow(
         refreshWebsites: Boolean = true,
         crawlDirectories: Boolean = true,
         cleanupDenominations: Boolean = true,
+        socialInputs: SocialExportInputPaths? = null,
         promote: Boolean = true,
         cacheRoot: Path = CrossmapPaths.defaultCacheRoot(resourcesRoot),
     ): GoogleSavedPlacesPromotionReport {
@@ -77,7 +84,8 @@ class GoogleSavedPlacesCleanupWorkflow(
         stageMark = TimeSource.Monotonic.markNow()
         progress.start("directory_crawl")
         val directory = if (crawlDirectories) {
-            directoryCrawler.run(resourcesRoot, cacheRoot, catalogFile = staging)
+            // Crawl/cache official inputs here, then reconcile exactly once after denomination cleanup below.
+            directoryCrawler.run(resourcesRoot, cacheRoot, catalogFile = null)
         } else {
             null
         }
@@ -101,6 +109,17 @@ class GoogleSavedPlacesCleanupWorkflow(
         progress.start("directory_reconcile")
         if (directory != null) directoryCrawler.reconcileGeneratedLists(staging, resourcesRoot)
         stageDurations["directory_reconcile"] = stageMark.elapsedNow().toDouble(DurationUnit.SECONDS)
+        stageMark = TimeSource.Monotonic.markNow()
+        progress.start("social_merge")
+        val social = socialInputs?.let { inputs ->
+            GoogleSocialDataMergePipeline(json).run(
+                resourcesRoot = resourcesRoot,
+                inputs = inputs,
+                applyChanges = true,
+                catalogFile = staging,
+            )
+        }
+        stageDurations["social_merge"] = stageMark.elapsedNow().toDouble(DurationUnit.SECONDS)
         stageMark = TimeSource.Monotonic.markNow()
         progress.start("validate_pending")
         val completed = json.decodeFromString<List<ChurchRecord>>(Files.readString(staging))
@@ -127,6 +146,12 @@ class GoogleSavedPlacesCleanupWorkflow(
             denominationLlm = cleanup?.llmAccepted ?: 0,
             denominationHuman = cleanup?.humanOverrides ?: 0,
             denominationUncertain = cleanup?.uncertain ?: 0,
+            socialAccountsParsed = social?.accountsParsed ?: 0,
+            socialWebsiteUrlsMigrated = social?.socialWebsiteUrlsMigrated ?: 0,
+            socialExactMatches = social?.exactMatches ?: 0,
+            socialEstimatedMatches = social?.estimatedMatches ?: 0,
+            socialNotMatched = social?.notMatched ?: 0,
+            socialExcluded = social?.excluded ?: 0,
             finalChurches = completed.size,
             englishNamesProgrammatic = prepared.englishNamesProgrammatic,
             englishNamesLlm = prepared.englishNamesLlm,
@@ -176,17 +201,17 @@ class GoogleSavedPlacesCleanupWorkflow(
         onStage("normalize_candidates")
         val normalized = rawCandidates.map { candidate ->
             candidate.copy(
-                name = normalizeChurchName(candidate.name),
+                name = GooglePlaceChurchNameNormalizer.normalize(candidate.name),
                 localizedNames = (
                     candidate.localizedNames + reviewedNameReadings[candidate.id].orEmpty()
                         .map { LocalizedName("ja", it) }
                     ).map { localizedName ->
-                    localizedName.copy(name = normalizeChurchName(localizedName.name))
+                    localizedName.copy(name = GooglePlaceChurchNameNormalizer.normalize(localizedName.name))
                 }.filter { it.name.isNotBlank() }.distinctBy { it.languageCode to it.name },
                 address = GooglePlaceAddressNormalizer.normalize(candidate.address),
                 websiteUrl = websitePolicy.publicWebsiteUrl(candidate.websiteUrl, candidate.googleCid, candidate.id),
             )
-        }
+        }.filter { GooglePlaceChurchCandidatePolicy.isUsableChurchName(it.name) }
         stageDurations["normalize_candidates"] = stageMark.elapsedNow().toDouble(DurationUnit.SECONDS)
         stageMark = TimeSource.Monotonic.markNow()
         onStage("merge_duplicates")
@@ -323,8 +348,6 @@ class GoogleSavedPlacesCleanupWorkflow(
 
     private fun pendingCatalog(resourcesRoot: Path, cacheRoot: Path): Path =
         CrossmapPaths(resourcesRoot, cacheRoot).cleanup.resolve("google-saved-places-pending.json")
-
-    private fun normalizeChurchName(value: String): String = ChurchPublicNameNormalizer.normalize(value)
 
     private fun exactEntityKey(name: String, address: String): String =
         JapaneseEntityNormalizer.name(name) + "|" + JapaneseEntityNormalizer.address(address)

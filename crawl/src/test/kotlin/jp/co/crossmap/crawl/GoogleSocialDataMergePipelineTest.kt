@@ -70,6 +70,21 @@ class GoogleSocialDataMergePipelineTest {
     }
 
     @Test
+    fun explicitInstitutionAccountCannotBecomeExactByDroppingChurchSuffix() {
+        val matcher = SocialChurchAccountMatcher(listOf(church("google:1", "東京聖書学院教会")))
+
+        val institution = matcher.match(
+            account("youtube:school", SocialPlatform.YOUTUBE, "東京聖書学院", "https://youtube.com/channel/school"),
+        )
+        val congregation = matcher.match(
+            account("youtube:church", SocialPlatform.YOUTUBE, "東京聖書学院教会", "https://youtube.com/channel/church"),
+        )
+
+        assertEquals(SocialMergeStatus.EXCLUDED, institution.status)
+        assertEquals(SocialMergeStatus.EXACT_MATCH, congregation.status)
+    }
+
+    @Test
     fun pipelineMigratesGoogleSocialWebsiteAndWritesHumanReadableNonExactAudit() {
         val root = Files.createTempDirectory("crossmap-google-social")
         val resources = root.resolve("resources")
@@ -104,6 +119,34 @@ class GoogleSocialDataMergePipelineTest {
         assertTrue(log.contains("performed operation: excluded"))
         assertTrue(log.contains("account name: 個人の日記"))
         assertTrue(Files.isRegularFile(resources.resolve("evidence/social-accounts.json")))
+    }
+
+    @Test
+    fun pipelineIsIdempotentAndDeduplicatesCaseInsensitiveSocialHandles() {
+        val root = Files.createTempDirectory("crossmap-google-social-idempotent")
+        val resources = root.resolve("resources")
+        Files.createDirectories(resources.resolve("catalog"))
+        Files.writeString(resources.resolve("catalog/churches.json"), json.encodeToString(listOf(church("google:1", "トナラチャーチ"))))
+        val facebook = root.resolve("facebook.html")
+        Files.writeString(
+            facebook,
+            """<a href="https://www.facebook.com/Tonarachurch">トナラチャーチ</a>
+                |<a href="https://www.facebook.com/TonaraChurch">Tonara Church</a>""".trimMargin(),
+        )
+        val inputs = SocialExportInputPaths(null, null, facebook, null, null)
+
+        repeat(2) {
+            GoogleSocialDataMergePipeline(json).run(
+                resourcesRoot = resources,
+                inputs = inputs,
+                applyChanges = true,
+                auditLog = root.resolve("social-merge-$it.log"),
+            )
+        }
+
+        val updated = json.decodeFromString<List<ChurchRecord>>(Files.readString(resources.resolve("catalog/churches.json"))).single()
+        assertEquals(1, updated.socialProfiles.size)
+        assertEquals(1, updated.determinations.count { it.field == "socialProfiles.facebook" })
     }
 
     private fun church(id: String, name: String) = ChurchRecord(

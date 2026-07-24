@@ -9,6 +9,7 @@ import java.net.http.HttpResponse
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
+import java.text.Normalizer
 import java.time.Duration
 import java.time.Instant
 import jp.co.crossmap.JapaneseAddressNormalizer
@@ -187,11 +188,24 @@ class GoogleMapsPlaceParser(
 internal object GooglePlaceAddressNormalizer {
     fun normalize(value: String): String {
         val compact = value.replace(Regex("""\s+"""), " ").trim()
+        val inlineTrailingPlace = INLINE_TRAILING_PLACE.matchEntire(compact)
+            ?.takeIf { CHURCH_ENTITY_NAME.containsMatchIn(it.groupValues[2]) }
+        if (inlineTrailingPlace != null) return zenkakuStreetNumbers(inlineTrailingPlace.groupValues[1])
         val parsed = JapaneseAddressNormalizer.normalize(compact)
-        val trailingPlaceName = parsed.building
-            ?.takeIf { Regex("(?:キリスト)?教会|チャペル|聖堂|集会").containsMatchIn(it) }
-        val addressOnly = if (trailingPlaceName == null) compact else {
-            parsed.normalized.removeSuffix(trailingPlaceName).trim()
+        val building = parsed.building
+        val trailingPlaceName = building
+            ?.takeIf { CHURCH_ENTITY_NAME.containsMatchIn(it) }
+        val routeFreeBuilding = building?.replace(
+            Regex("""^.*?(?:駅から)?徒歩[０-９0-9]+分\s*"""),
+            "",
+        )?.trim()
+        val addressOnly = when {
+            trailingPlaceName != null -> parsed.normalized.removeSuffix(building).trim()
+            building != null && routeFreeBuilding != building -> listOf(
+                parsed.normalized.removeSuffix(building).trim(),
+                routeFreeBuilding,
+            ).filterNotNull().filter(String::isNotBlank).joinToString(" ")
+            else -> compact
         }
         return zenkakuStreetNumbers(addressOnly)
     }
@@ -209,6 +223,25 @@ internal object GooglePlaceAddressNormalizer {
             .joinToString("")
         return postalPrefix + streetAddress
     }
+
+    private val CHURCH_ENTITY_NAME = Regex(
+        "(?:キリスト|基督)?教(?:会|會)|基督会|チャペル|チャ[-ー]チ|聖堂|集会|小隊|伝[道導]所|聖公会",
+    )
+    private val INLINE_TRAILING_PLACE = Regex(
+        """^((?:〒[０-９0-9]{3}-[０-９0-9]{4}\s*)?.*?(?:東京都|北海道|大阪府|京都府|.{2,3}県).+?[０-９0-9]+(?:丁目)?[０-９0-9−ー―‐‑–—ｰ-]*(?:番地?|番|号)?)\s+(.+)$""",
+    )
+}
+
+internal object GooglePlaceChurchCandidatePolicy {
+    fun isUsableChurchName(value: String): Boolean {
+        val normalized = Normalizer.normalize(value, Normalizer.Form.NFKC).trim()
+        return normalized.isNotBlank() && !Regex("""^〒?\d{3}-?\d{4}(?:\s|$)""").containsMatchIn(normalized)
+    }
+}
+
+internal object GooglePlaceChurchNameNormalizer {
+    fun normalize(value: String): String = ChurchPublicNameNormalizer.normalize(value)
+        .replace("伝導所", "伝道所")
 }
 
 class GoogleMapsPlaceResolver(

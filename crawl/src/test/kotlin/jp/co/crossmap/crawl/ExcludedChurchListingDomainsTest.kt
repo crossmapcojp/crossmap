@@ -31,7 +31,10 @@ class ExcludedChurchListingDomainsTest {
                 "${church.name} retains an excluded crawled page",
             )
             if (church.googleCid != null) {
-                assertTrue(church.websiteUrl.isNotBlank(), "${church.name} must have a church or Google Maps URL")
+                assertTrue(
+                    church.websiteUrl.isNotBlank() || church.socialProfiles.isNotEmpty(),
+                    "${church.name} must have a church website, social profile, or Google Maps reference",
+                )
             }
         }
     }

@@ -33,12 +33,36 @@ class JCBADenominationChurchListCrawler : MultiPageDenominationChurchListCrawler
                 websiteUrl = DirectoryCrawlerSupport.externalWebsite(links, "doumei.holy.jp"),
                 email = DirectoryCrawlerSupport.extractEmail(text, links.map { it.attr("href") }),
                 socialProfiles = DirectoryCrawlerSupport.socialProfiles(links),
-                ministers = ChurchMinisterParser.parse(text),
+                ministers = parseMinisters(text),
             )
         }.distinctBy { it.name to it.address }
     }
 
     override fun parseDetailPage(church: OfficialDenominationChurch, html: String): OfficialDenominationChurch {
         return church
+    }
+
+    private fun parseMinisters(text: String): List<jp.co.crossmap.ChurchMinister> {
+        val postalStart = Regex("(?:〒?\\s*)?[0-9０-９]{3}[-ー－‐][0-9０-９]{4}")
+            .find(text)?.range?.first ?: text.length
+        val ministerText = text.substring(0, postalStart)
+        val matches = ministerRoles.findAll(ministerText).toList()
+        return matches.flatMapIndexed { index, match ->
+            val end = matches.getOrNull(index + 1)?.range?.first ?: ministerText.length
+            var names = ministerText.substring(match.range.last + 1, end)
+                .replace(Regex("^[\\s　：:・/]+"), "")
+                .trim()
+            if (names.matches(Regex("[一-龠々〆ヵヶぁ-ん]{2,}・[一-龠々〆ヵヶぁ-ん]{2,}"))) {
+                names = names.replace('・', '、')
+            }
+            ChurchMinisterParser.fromRoleAndNames(match.value, names)
+        }.distinctBy { it.roleId to it.name }
+    }
+
+    private companion object {
+        val ministerRoles = Regex(
+            "ライフワーク宣教師|ユースパスター|アドバイザー牧師|開拓担当牧師|顧問牧師|" +
+                "主任牧師|担任牧師|副牧師|協力牧師|牧師|伝道師|宣教師|宣教医",
+        )
     }
 }

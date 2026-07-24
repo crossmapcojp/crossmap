@@ -12,7 +12,9 @@ import java.time.Instant
 import java.util.concurrent.Callable
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicInteger
 import jp.co.crossmap.ChurchRecord
 import jp.co.crossmap.ChurchWebsitePolicy
 import jp.co.crossmap.CrawledContentType
@@ -25,10 +27,10 @@ import org.jsoup.Jsoup
 data class RefreshReport(val churches: Int, val fetched: Int, val unchanged: Int, val errors: Int)
 
 class WebsiteRefresher(
-    private val maxConcurrency: Int = 16,
+    private val maxConcurrency: Int = 32,
     private val hostDelayMillis: Long = 250,
     private val maxAttempts: Int = 3,
-    private val cacheFreshness: Duration = Duration.ofHours(24),
+    private val cacheFreshness: Duration = Duration.ofDays(30),
     private val json: Json = Json { ignoreUnknownKeys = true; prettyPrint = true; encodeDefaults = true },
     private val client: HttpClient = HttpClient.newBuilder()
         .connectTimeout(Duration.ofSeconds(15))
@@ -59,10 +61,55 @@ class WebsiteRefresher(
             json.decodeFromString<List<CrawlManifestEntry>>(Files.readString(manifestFile))
         } else emptyList()
         val manifestByUrl = oldManifest.associateBy { it.churchId to it.requestedUrl }
+        val orderedChurches = hostFairOrder(churches, websitePolicy)
+        val crawlableHomes = churches.mapNotNull { church ->
+            websitePolicy.publicWebsiteUrl(church).takeIf(websitePolicy::isCrawlableChurchWebsite)?.let { church to it }
+        }
+        val freshHomes = crawlableHomes.count { (church, url) -> manifestByUrl[church.id to url]?.let(::isFresh) == true }
+        val missingHomes = crawlableHomes.count { (church, url) -> church.id to url !in manifestByUrl }
+        val socialHomes = churches.count { websitePolicy.isSocialPlatform(it.websiteUrl) }
+        val uniqueHosts = crawlableHomes.mapNotNull { (_, url) -> runCatching { URI(url).host }.getOrNull() }.distinct().size
+        println(
+            "website_refresh event=start churches=${churches.size} crawlable_homes=${crawlableHomes.size} " +
+                "fresh_homes=$freshHomes stale_homes=${crawlableHomes.size - freshHomes - missingHomes} " +
+                "missing_homes=$missingHomes social_homes_skipped=$socialHomes unique_hosts=$uniqueHosts " +
+                "concurrency=$maxConcurrency cache_freshness_hours=${cacheFreshness.toHours()}",
+        )
+        val startedAt = System.nanoTime()
+        val completed = AtomicInteger()
+        val totalFetched = AtomicInteger()
+        val totalUnchanged = AtomicInteger()
+        val totalErrors = AtomicInteger()
+        val timings = ConcurrentLinkedQueue<ChurchTiming>()
         val executor = Executors.newFixedThreadPool(maxConcurrency)
         val results = try {
-            executor.invokeAll(churches.map { church ->
-                Callable { refreshChurch(church, webCache, manifestByUrl, websitePolicy) }
+            executor.invokeAll(orderedChurches.map { church ->
+                Callable {
+                    val churchStartedAt = System.nanoTime()
+                    refreshChurch(church, webCache, manifestByUrl, websitePolicy).also { result ->
+                        val elapsedMillis = (System.nanoTime() - churchStartedAt) / 1_000_000
+                        totalFetched.addAndGet(result.fetched)
+                        totalUnchanged.addAndGet(result.unchanged)
+                        totalErrors.addAndGet(result.errors)
+                        val host = crawlHost(church, websitePolicy).orEmpty()
+                        timings += ChurchTiming(host, elapsedMillis, result.fetched + result.unchanged + result.errors)
+                        if (elapsedMillis >= 10_000) {
+                            println(
+                                "website_refresh event=slow_church church_id=${church.id} host=$host " +
+                                    "duration_ms=$elapsedMillis fetched=${result.fetched} unchanged=${result.unchanged} errors=${result.errors}",
+                            )
+                        }
+                        val done = completed.incrementAndGet()
+                        if (done % 250 == 0 || done == churches.size) {
+                            val elapsedSeconds = (System.nanoTime() - startedAt) / 1_000_000_000.0
+                            println(
+                                "website_refresh event=progress completed=$done total=${churches.size} " +
+                                    "elapsed_seconds=${"%.3f".format(java.util.Locale.ROOT, elapsedSeconds)} " +
+                                    "fetched=${totalFetched.get()} unchanged=${totalUnchanged.get()} errors=${totalErrors.get()}",
+                            )
+                        }
+                    }
+                }
             })
                 .map { it.get() }
         } finally {
@@ -71,12 +118,45 @@ class WebsiteRefresher(
         atomicWrite(catalogFile, json.encodeToString(results.map { it.church }.sortedBy { it.id }))
         val retained = oldManifest.filter { old -> results.none { result -> result.entries.any { it.churchId == old.churchId && it.requestedUrl == old.requestedUrl } } }
         atomicWrite(manifestFile, json.encodeToString((retained + results.flatMap { it.entries }).sortedWith(compareBy({ it.churchId }, { it.requestedUrl }))))
+        timings.groupBy(ChurchTiming::host)
+            .map { (host, values) -> HostTiming(host, values.sumOf(ChurchTiming::elapsedMillis), values.sumOf(ChurchTiming::requests), values.size) }
+            .sortedByDescending(HostTiming::elapsedMillis)
+            .take(20)
+            .forEach { timing ->
+                println(
+                    "website_refresh event=slow_host host=${timing.host} aggregate_duration_ms=${timing.elapsedMillis} " +
+                        "churches=${timing.churches} requests=${timing.requests}",
+                )
+            }
         return RefreshReport(
             churches = churches.size,
             fetched = results.sumOf { it.fetched },
             unchanged = results.sumOf { it.unchanged },
             errors = results.sumOf { it.errors },
         )
+    }
+
+    private data class ChurchTiming(val host: String, val elapsedMillis: Long, val requests: Int)
+
+    private data class HostTiming(val host: String, val elapsedMillis: Long, val requests: Int, val churches: Int)
+
+    private fun hostFairOrder(churches: List<ChurchRecord>, websitePolicy: ChurchWebsitePolicy): List<ChurchRecord> {
+        val byHost = linkedMapOf<String, MutableList<ChurchRecord>>()
+        churches.forEach { church ->
+            val host = crawlHost(church, websitePolicy) ?: "non-crawlable:${church.id}"
+            byHost.getOrPut(host, ::mutableListOf) += church
+        }
+        val largestGroup = byHost.values.maxOfOrNull(List<ChurchRecord>::size) ?: 0
+        return buildList(churches.size) {
+            repeat(largestGroup) { index ->
+                byHost.values.forEach { group -> group.getOrNull(index)?.let(::add) }
+            }
+        }
+    }
+
+    private fun crawlHost(church: ChurchRecord, websitePolicy: ChurchWebsitePolicy): String? {
+        val url = websitePolicy.publicWebsiteUrl(church).takeIf(websitePolicy::isCrawlableChurchWebsite) ?: return null
+        return runCatching { URI(url).host?.lowercase() }.getOrNull()
     }
 
     private data class ChurchRefresh(
@@ -95,7 +175,7 @@ class WebsiteRefresher(
     ): ChurchRefresh {
         val sanitizedChurch = church.copy(
             websiteUrl = websitePolicy.publicWebsiteUrl(church),
-            pages = church.pages.filterNot { websitePolicy.isExcluded(it.url) },
+            pages = church.pages.filter { websitePolicy.isCrawlableChurchWebsite(it.url) },
         )
         val home = sanitizedChurch.websiteUrl.takeIf(websitePolicy::isCrawlableChurchWebsite)
             ?: return ChurchRefresh(sanitizedChurch, emptyList(), 0, 0, 0)

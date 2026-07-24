@@ -6,6 +6,7 @@ import jp.co.crossmap.DeterminationSource
 import jp.co.crossmap.FieldDetermination
 import jp.co.crossmap.GeoPoint
 import jp.co.crossmap.LocalizedName
+import jp.co.crossmap.SocialPlatform
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -245,6 +246,12 @@ class GoogleSavedPlacesCleanupWorkflowTest {
             val resolver = ChurchEnglishNameResolver(
                 translator = { error("The resolved candidate English name must be deterministic") },
             )
+            val youtube = root.resolve("youtube.csv")
+            Files.writeString(
+                youtube,
+                "Channel Id,Channel Url,Channel Title\n" +
+                    "UC_SHIMIZU,https://youtube.com/channel/UC_SHIMIZU,清水聖書バプテスト教会\n",
+            )
 
             val report = GoogleSavedPlacesCleanupWorkflow(
                 postCrawlCleanup = PostCrawlCleanup(
@@ -258,6 +265,7 @@ class GoogleSavedPlacesCleanupWorkflowTest {
                 refreshWebsites = false,
                 crawlDirectories = false,
                 cleanupDenominations = false,
+                socialInputs = SocialExportInputPaths(youtube, null, null, null, null),
                 cacheRoot = root.resolve("cache"),
             )
             val promoted = json.decodeFromString<List<ChurchRecord>>(
@@ -268,6 +276,9 @@ class GoogleSavedPlacesCleanupWorkflowTest {
             assertEquals("JBBF", promoted.denominationId)
             assertEquals("Shimizu Bible Baptist Church", promoted.englishName)
             assertEquals("Shimizu Bible Baptist Church", promoted.localizedNames.single { it.languageCode == "en" }.name)
+            assertEquals(1, report.socialAccountsParsed)
+            assertEquals(1, report.socialExactMatches)
+            assertEquals(SocialPlatform.YOUTUBE, promoted.socialProfiles.single().platform)
         } finally {
             root.toFile().deleteRecursively()
         }

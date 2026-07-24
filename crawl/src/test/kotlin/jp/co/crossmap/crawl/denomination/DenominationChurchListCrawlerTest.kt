@@ -1,6 +1,8 @@
 package jp.co.crossmap.crawl.denomination
 
 import java.nio.file.Files
+import java.time.Duration
+import java.time.Instant
 import jp.co.crossmap.ChurchRecord
 import jp.co.crossmap.DeterminationSource
 import jp.co.crossmap.FieldDetermination
@@ -15,6 +17,21 @@ import kotlinx.serialization.json.Json
 
 class DenominationChurchListCrawlerTest {
     private val json = Json { ignoreUnknownKeys = true; prettyPrint = true; encodeDefaults = true }
+
+    @Test
+    fun denominationDirectoryCacheIsReusableForThirtyDays() {
+        val fetchedAt = Instant.parse("2026-07-01T00:00:00Z")
+
+        assertTrue(DenominationDirectoryCachePolicy.isFresh(fetchedAt.toString(), fetchedAt.plus(Duration.ofDays(29))))
+        assertTrue(DenominationDirectoryCachePolicy.isFresh(fetchedAt.toString(), fetchedAt.plus(Duration.ofDays(30))))
+        assertFalse(
+            DenominationDirectoryCachePolicy.isFresh(
+                fetchedAt.toString(),
+                fetchedAt.plus(Duration.ofDays(30)).plusSeconds(1),
+            ),
+        )
+        assertFalse(DenominationDirectoryCachePolicy.isFresh("invalid", fetchedAt))
+    }
 
     @Test
     fun uccjParserReadsRealChurchRowsAndSkipsDioceseHeadings() {
@@ -535,11 +552,17 @@ class DenominationChurchListCrawlerTest {
                 church("google:11549556222669181947", "日本キリスト教会帯広教会", "〒080-0016 北海道帯広市西６条南２２丁目１−９", NOT_DETERMINED),
                 church("google:akita", "秋田キリスト教会", "〒010-1607 秋田県秋田市新屋南浜町８−１４", NOT_DETERMINED),
                 church("google:takatsuki", "日本キリスト教会高槻教会", "〒569-0802 大阪府高槻市北園町９−１７", NOT_DETERMINED),
+                church("google:urawa", "日本キリスト教会浦和教会", "〒330-0062 埼玉県さいたま市浦和区仲町４丁目８−２", NOT_DETERMINED),
+                church("google:shibukawa", "日本キリスト教団渋川教会", "〒377-0008 群馬県渋川市渋川２２２０", NOT_DETERMINED),
+                church("google:hachinohe", "八戸聖書キリスト教会", "〒039-1166 青森県八戸市根城大久保５５−４４", NOT_DETERMINED),
             )
             val officialChurches = listOf(
                 OfficialDenominationChurch("帯広キリスト教会", "〒080-0838 北海道帯広市大空町4-6-6"),
                 OfficialDenominationChurch("秋田福音キリスト教会", "〒010-1436 秋田県秋田市大住3-9-7"),
                 OfficialDenominationChurch("高槻キリスト教会", "〒569-0818 大阪府高槻市桜ヶ丘南町22-3"),
+                OfficialDenominationChurch("浦和キリスト教会", "埼玉県さいたま市浦和区高砂3-10-4"),
+                OfficialDenominationChurch("渋川キリスト教会", "群馬県渋川市渋川928-3"),
+                OfficialDenominationChurch("八戸キリスト教会", "〒039-1166 青森県八戸市根城 ９−７−６"),
             )
             googleChurches.zip(officialChurches).forEach { (google, official) ->
                 assertFalse(
@@ -564,7 +587,7 @@ class DenominationChurchListCrawlerTest {
             )
 
             assertEquals(0, report.assigned)
-            assertEquals(3, report.unmatchedOfficialEntries)
+            assertEquals(6, report.unmatchedOfficialEntries)
         } finally {
             root.toFile().deleteRecursively()
         }
@@ -902,10 +925,14 @@ class DenominationChurchListCrawlerTest {
         val resources = sequenceOf(java.nio.file.Path.of("resources"), java.nio.file.Path.of("../resources"))
             .first { Files.isRegularFile(it.resolve("catalog/churches.json")) }
         val churches = json.decodeFromString<List<ChurchRecord>>(Files.readString(resources.resolve("catalog/churches.json")))
-        val byWebsite = churches.associateBy(ChurchRecord::websiteUrl)
+        val byWebPresence = churches.flatMap { church ->
+            (listOf(church.websiteUrl) + church.socialProfiles.map { it.url })
+                .filter(String::isNotBlank)
+                .map { it to church }
+        }.toMap()
 
-        assertNotEquals("JBC", byWebsite.getValue("https://www.facebook.com/fujijesuslove/").denominationId)
-        assertNotEquals("JBC", byWebsite.getValue("https://www.facebook.com/profile.php?id=100064332113625").denominationId)
+        assertNotEquals("JBC", byWebPresence.getValue("https://facebook.com/fujijesuslove").denominationId)
+        assertNotEquals("JBC", byWebPresence.getValue("https://facebook.com/profile.php?id=100064332113625").denominationId)
     }
 
     private fun officialList(id: String, churches: List<OfficialDenominationChurch>) = OfficialDenominationChurchList(

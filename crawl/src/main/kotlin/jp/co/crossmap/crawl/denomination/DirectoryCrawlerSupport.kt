@@ -10,11 +10,18 @@ internal object DirectoryCrawlerSupport {
     private val addressPattern = Regex(
         "〒?\\s*[0-9０-９]{3}[-ー－‐]?[0-9０-９]{4}\\s*[^|｜\\n]*?(?=\\s*(?:TEL|Tel|電話|FAX|Fax|主任牧師|担任牧師|副牧師|牧師|伝道師|宣教師|司祭|教職|$))",
     )
-    private val phone = Regex("(?:TEL|Tel|電話)\\s*[:：]?\\s*([0-9０-９()（）+\\-ー－‐/\\s]{8,})")
-    private val fax = Regex("(?:FAX|Fax)\\s*[:：]?\\s*([0-9０-９()（）+\\-ー－‐/\\s]{8,})")
+    private val phone = Regex("(?:TEL|Tel|電話)[\\s　]*[:：]?[\\s　]*([0-9０-９()（）+\\-ー－‐/\\s　]{8,})")
+    private val fax = Regex("(?:FAX|Fax)[\\s　]*[:：]?[\\s　]*([0-9０-９()（）+\\-ー－‐/\\s　]{8,})")
     private val email = Regex("[A-Z0-9._%+\\-]+(?:@|＠|\\s*(?:\\[at]|\\(at\\)|※)\\s*)[A-Z0-9.\\-]+\\.[A-Z]{2,}", RegexOption.IGNORE_CASE)
+    private val addressTrailingInstructions = Regex(
+        "\\s*(?:Google\\s*マップ(?:の地図に行く)?|Web\\s*ペ[ー−―‐-]?ジ(?:は)?).*$",
+        RegexOption.IGNORE_CASE,
+    )
     fun normalizeAddress(value: String): String = toZenkakuAddressBody(JapaneseAddressNormalizer.normalize(
-        value.replace(Regex("\\s*(?:TEL|Tel|電話|FAX|Fax).*$"), "").trim(),
+        value
+            .replace(Regex("\\s*(?:TEL|Tel|電話|FAX|Fax).*$"), "")
+            .replace(addressTrailingInstructions, "")
+            .trim(),
     ).normalized)
 
     private fun toZenkakuAddressBody(value: String): String {

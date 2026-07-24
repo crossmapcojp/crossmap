@@ -6,6 +6,7 @@ import jp.co.crossmap.GeoPoint
 import jp.co.crossmap.ChurchWebsitePolicy
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -56,6 +57,76 @@ class GoogleMapsPlaceResolverTest {
                 "〒861-8003 熊本県熊本市北区楠８丁目１７−２２ 希望ヶ丘キリスト教会",
                 "〒861-8003 熊本県熊本市北区楠８丁目１７−２２",
             ),
+            Triple(
+                "救世軍西成小隊",
+                "〒557-0014 大阪府大阪市西成区天下茶屋１丁目１６−８ 救世軍 西成小隊",
+                "〒557-0014 大阪府大阪市西成区天下茶屋１丁目１６−８",
+            ),
+            Triple(
+                "名古屋リバイバル・チャーチ",
+                "〒451-0042 愛知県名古屋市西区那古野２丁目２０−１９ 名古屋リバイバルチャーチ",
+                "〒451-0042 愛知県名古屋市西区那古野２丁目２０−１９",
+            ),
+            Triple(
+                "東京陽光基督教會",
+                "〒116-0011 東京都荒川区西尾久７丁目５７ 東京陽光 基督教會",
+                "〒116-0011 東京都荒川区西尾久７丁目５７",
+            ),
+            Triple(
+                "日本基督教団江東伝導所",
+                "〒124-0003 東京都葛飾区お花茶屋１丁目４−８ 日本基督教団江東伝導所",
+                "〒124-0003 東京都葛飾区お花茶屋１丁目４−８",
+            ),
+            Triple(
+                "京都シャロームチャーチ",
+                "〒615-8191 京都府京都市西京区川島有栖川町７−１ 阪急桂駅から徒歩２分 サムソンビル ４F",
+                "〒615-8191 京都府京都市西京区川島有栖川町７−１ サムソンビル ４F",
+            ),
+            Triple(
+                "弓町本郷教会",
+                "〒113-0033 東京都文京区本郷２丁目３５−１４ 日本キリスト教団弓町本郷教会",
+                "〒113-0033 東京都文京区本郷２丁目３５−１４",
+            ),
+            Triple(
+                "麻布霞町教会",
+                "〒106-0031 東京都港区西麻布４丁目１１−１４ 霞町教会",
+                "〒106-0031 東京都港区西麻布４丁目１１−１４",
+            ),
+            Triple(
+                "日本基督教団野方町教会",
+                "〒165-0027 東京都中野区野方６丁目２６−９ 日本キリスト教団野方町教会",
+                "〒165-0027 東京都中野区野方６丁目２６−９",
+            ),
+            Triple(
+                "日本基督教団 桜新町教会",
+                "〒158-0081 東京都世田谷区深沢８丁目９−１６ 桜新町教会",
+                "〒158-0081 東京都世田谷区深沢８丁目９−１６",
+            ),
+            Triple(
+                "日本基督教団郡山教会",
+                "〒963-8005 福島県郡山市清水台２丁目６−４ 日本基督教団郡山教会",
+                "〒963-8005 福島県郡山市清水台２丁目６−４",
+            ),
+            Triple(
+                "セブンスデー・アドベンチスト郡山教会",
+                "〒963-8851 福島県郡山市開成３丁目２４−２４ セブンスデーアドベンチスト郡山教会",
+                "〒963-8851 福島県郡山市開成３丁目２４−２４",
+            ),
+            Triple(
+                "郡山ルーテルキリスト教会",
+                "〒963-8861 福島県郡山市鶴見坦３丁目３−５ 日本ルーテル教団郡山ルーテルキリスト教会",
+                "〒963-8861 福島県郡山市鶴見坦３丁目３−５",
+            ),
+            Triple(
+                "小金井聖公会",
+                "〒184-0003 東京都小金井市緑町４丁目１３−４ 日本聖公会東京教区小金井聖公会",
+                "〒184-0003 東京都小金井市緑町４丁目１３−４",
+            ),
+            Triple(
+                "インマヌエル郡山キリスト教会",
+                "〒963-8013 福島県郡山市神明町１４−１０ インマヌエル郡山教会",
+                "〒963-8013 福島県郡山市神明町１４−１０",
+            ),
         )
 
         cases.forEachIndexed { index, (name, dirtyAddress, expectedAddress) ->
@@ -65,8 +136,25 @@ class GoogleMapsPlaceResolverTest {
                 now = "2026-07-23T00:00:00Z",
             )
 
-            assertEquals(expectedAddress, candidate.address, name)
+            assertEquals(
+                expectedAddress,
+                candidate.address,
+                "$name: ${jp.co.crossmap.JapaneseAddressNormalizer.normalize(dirtyAddress)}",
+            )
         }
+    }
+
+    @Test
+    fun rejectsAddressOnlyGooglePlaceTitlesAsChurchNames() {
+        assertFalse(GooglePlaceChurchCandidatePolicy.isUsableChurchName("〒169-0073 東京都新宿区百人町1丁目22−1"))
+        assertFalse(GooglePlaceChurchCandidatePolicy.isUsableChurchName("〒115-0045 東京都北区赤羽3丁目8−10"))
+        assertTrue(GooglePlaceChurchCandidatePolicy.isUsableChurchName("日本基督教団江東伝導所"))
+    }
+
+    @Test
+    fun correctsDendoushoTypoInGooglePlaceChurchNames() {
+        assertEquals("日本基督教団江東伝道所", GooglePlaceChurchNameNormalizer.normalize("日本基督教団江東伝導所"))
+        assertEquals("江東伝道所", GooglePlaceChurchNameNormalizer.normalize("江東伝道所"))
     }
 
     @Test

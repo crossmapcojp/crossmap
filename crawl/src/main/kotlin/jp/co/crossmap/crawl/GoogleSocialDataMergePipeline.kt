@@ -51,8 +51,8 @@ class GoogleSocialDataMergePipeline(
         inputs: SocialExportInputPaths = SocialExportInputs.load(),
         applyChanges: Boolean = true,
         auditLog: Path = Path.of("logs/2026-07-23-19-04-google-social-data-merge.log"),
+        catalogFile: Path = resourcesRoot.resolve("catalog/churches.json"),
     ): GoogleSocialDataMergeReport {
-        val catalogFile = resourcesRoot.resolve("catalog/churches.json")
         require(Files.isRegularFile(catalogFile)) { "Missing church catalog: $catalogFile" }
         val originalChurches = json.decodeFromString<List<ChurchRecord>>(Files.readString(catalogFile))
         val migrated = originalChurches.map(::migrateSocialWebsite)
@@ -76,8 +76,8 @@ class GoogleSocialDataMergePipeline(
             }
             if (accepted.isEmpty()) church else church.copy(
                 socialProfiles = (church.socialProfiles + accepted.map { (account) -> account.toProfile(now) })
-                    .distinctBy { it.platform to SocialUrlNormalizer.canonical(it.url, it.platform) },
-                determinations = church.determinations + accepted.map { (account, decision) ->
+                    .distinctBy { it.platform to SocialUrlNormalizer.identityKey(it.url, it.platform) },
+                determinations = (church.determinations + accepted.map { (account, decision) ->
                     FieldDetermination(
                         field = "socialProfiles.${account.platform.name.lowercase()}",
                         value = account.url,
@@ -86,6 +86,12 @@ class GoogleSocialDataMergePipeline(
                         evidence = listOf(account.sourceUrl, account.accountName, decision.reasoning),
                         determinedAt = now,
                     )
+                }).distinctBy { determination ->
+                    if (determination.field.startsWith("socialProfiles.")) {
+                        determination.field to SocialUrlNormalizer.identityKey(determination.value)
+                    } else {
+                        determination
+                    }
                 },
                 updatedAt = now,
             )
@@ -124,7 +130,7 @@ class GoogleSocialDataMergePipeline(
         return church.copy(
             websiteUrl = "",
             socialProfiles = (church.socialProfiles + profile)
-                .distinctBy { it.platform to SocialUrlNormalizer.canonical(it.url, it.platform) },
+                .distinctBy { it.platform to SocialUrlNormalizer.identityKey(it.url, it.platform) },
         )
     }
 
@@ -171,6 +177,9 @@ internal class SocialChurchAccountMatcher(churches: List<ChurchRecord>) {
         val canonicalUrl = SocialUrlNormalizer.canonical(account.url, account.platform)
         directUrls[canonicalUrl].orEmpty().singleOrNull()?.let { direct ->
             return decision(account, SocialMergeStatus.EXACT_MATCH, direct, 1f, "Social URL is already published by the church or denomination directory")
+        }
+        SocialChurchAccountClassifier.explicitNonChurchReason(account)?.let { reason ->
+            return SocialMergeDecision(account.id, account.platform, account.accountName, account.url, SocialMergeStatus.EXCLUDED, reasoning = reason)
         }
         val accountNames = SocialChurchNameNormalizer.variants(account)
         val exact = accountNames.flatMap { exactNames[it].orEmpty() }.distinctBy { it.church.id }
@@ -296,7 +305,7 @@ internal object SocialChurchAccountClassifier {
         "(?i)教会|伝道所|チャペル|礼拝堂|聖堂|church|chapel|parish|congregation|igreja|교회|성당|gereja|(?:^|[._-])ch(?:$|[._-])",
     )
     private val nonChurchOrganization = Regex(
-        "(?i)神学校|保育園|幼稚園|学校|大学|キャンプ|聖書協会|放送|出版社|書店|ミニストリー|ministry|seminary|school|camp|association|music|musician|singer|artist",
+        "(?i)神学校|学院|保育園|幼稚園|学校|大学|キャンプ|聖書協会|放送|出版社|書店|ミニストリー|ministry|seminary|school|camp|association|music|musician|singer|artist",
     )
     private val japanSignal = Regex(
         "(?i)[ぁ-んァ-ヶ一-龯]|japan|japanese|tokyo|osaka|kyoto|kobe|nagoya|yokohama|sapporo|fukuoka|okinawa|日本|東京|大阪|京都|神戸|名古屋|横浜|札幌|福岡|沖縄",
@@ -304,10 +313,19 @@ internal object SocialChurchAccountClassifier {
 
     fun exclusionReason(account: SocialAccountCandidate): String? {
         val text = "${account.accountName} ${account.description}"
-        if (nonChurchOrganization.containsMatchIn(text)) return "Excluded non-church Christian organization or individual/media account"
+        explicitNonChurchReason(account)?.let { return it }
         if (!churchSignal.containsMatchIn(text)) return "Excluded account without church/congregation identity evidence"
         if (!japanSignal.containsMatchIn(text)) return "Excluded non-Japanese church account"
         return null
+    }
+
+    fun explicitNonChurchReason(account: SocialAccountCandidate): String? {
+        val text = "${account.accountName} ${account.description}"
+        return if (nonChurchOrganization.containsMatchIn(text) && !churchSignal.containsMatchIn(text)) {
+            "Excluded non-church Christian organization or individual/media account"
+        } else {
+            null
+        }
     }
 }
 
