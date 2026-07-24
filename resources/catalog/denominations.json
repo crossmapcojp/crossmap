@@ -398,7 +398,10 @@
     {
         "id": "ELCMC",
         "name": "東洋ローア・キリスト伝道教会",
-        "aliases": [],
+        "aliases": [
+            "東洋ローア・キリスト伝道教会",
+            "東洋ローア"
+        ],
         "officialWebsite": "",
         "proposed": false
     },
@@ -413,7 +416,8 @@
         "id": "WHCJ",
         "name": "ウェスレアン・ホーリネス教団",
         "aliases": [
-            "ウェスレアン・ホーリネス"
+            "ウェスレアン・ホーリネス",
+            "ウェスレアン"
         ],
         "officialWebsite": "https://whchurch.jimdo.com/",
         "proposed": false
@@ -421,7 +425,10 @@
     {
         "id": "NCG",
         "name": "無教会主義集会",
-        "aliases": [],
+        "aliases": [
+            "無教会主義集会",
+            "無教会"
+        ],
         "officialWebsite": "",
         "proposed": false
     },
@@ -429,7 +436,8 @@
         "id": "JFGC",
         "name": "日本フォースクエア福音教団",
         "aliases": [
-            "フォースクエア福音"
+            "フォースクエア福音",
+            "フォースクエア"
         ],
         "officialWebsite": "https://www.japan-foursquare.jp/",
         "proposed": false
@@ -437,7 +445,12 @@
     {
         "id": "OBC",
         "name": "沖縄バプテスト連盟",
-        "aliases": [],
+        "aliases": [
+            "沖縄バプテスト連盟",
+            "沖バプ連盟",
+            "沖バプ連",
+            "沖バプ"
+        ],
         "officialWebsite": "http://okinawabaptist.com/",
         "proposed": false
     },
