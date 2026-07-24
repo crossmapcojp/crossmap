@@ -780,6 +780,71 @@ class ChurchSearchEngineTest {
     }
 
     @Test
+    fun exactChurchNameRanksFirstRegardlessOfDeviceLocation() {
+        val root = Files.createTempDirectory("crossmap-exact-name-global-search")
+        try {
+            val churches = listOf(
+                ChurchRecord(
+                    id = "yodobashi",
+                    name = "淀橋教会",
+                    englishName = "Yodobashi Church",
+                    address = "東京都新宿区百人町１丁目１７−８",
+                    location = GeoPoint(35.7012, 139.6986),
+                    websiteUrl = "https://www.yodobashi-church.com/",
+                ),
+                ChurchRecord(
+                    id = "izu-yodobashi-fellowship",
+                    name = "伊豆淀橋教会フェローシップ",
+                    englishName = "Izu Yodobashi Church Fellowship",
+                    address = "静岡県伊豆市",
+                    location = GeoPoint(34.9766, 138.9467),
+                    websiteUrl = "https://example.invalid/izu-yodobashi",
+                ),
+            )
+            val geonames = listOf(
+                GeoName(
+                    code = "222224",
+                    name = "伊豆市",
+                    aliases = listOf("伊豆"),
+                    type = GeoNameType.MUNICIPALITY,
+                    prefectureCode = "22",
+                    center = GeoPoint(34.976591, 138.946715),
+                    coveringRadiusKm = 30.0,
+                    translations = mapOf("en" to "Izu City"),
+                ),
+            )
+            val index = root.resolve("index")
+            ChurchIndex.build(index.toString().toPath(), churches, geonames = geonames)
+            val engine = ChurchSearchEngine(index.toString().toPath(), geonames, languageCode = "ja")
+
+            val result = engine.search(
+                ChurchSearchRequest(
+                    query = "淀橋教会",
+                    userLocation = GeoPoint(34.87544654121299, 138.92825706221615),
+                )
+            )
+
+            assertEquals("伊豆市", result.resolvedLocations.single().name)
+            assertEquals("yodobashi", result.hits.first().churchId)
+            assertTrue(requireNotNull(result.hits.first().distanceKm) > ChurchSearchEngine.DEFAULT_DEVICE_RADIUS_KM)
+            val plan = engine.explainQuery(
+                ChurchSearchRequest(
+                    query = "淀橋教会",
+                    userLocation = GeoPoint(34.87544654121299, 138.92825706221615),
+                )
+            )
+            assertContains(plan, "user-intention.location=IMPLICIT_DEVICE_LOCATION")
+            assertContains(plan, "user-intention.text=CHURCH_TEXT remainder=淀橋教会")
+            assertContains(plan, "user-intention.ranking=GLOBAL_EXACT_NAME_THEN_NEARBY_DISTANCE")
+            assertContains(plan, "tier.1.type=EXACT_NAME_OR_READING boost=1000000.0")
+            assertContains(plan, "term=淀橋教会 geoFilter=false")
+            engine.close()
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun denominationSearchNearIzuUsesDeviceRadiusAndOrdersNearbyChurchesByDistance() {
         val root = Files.createTempDirectory("crossmap-izu-device-search")
         try {

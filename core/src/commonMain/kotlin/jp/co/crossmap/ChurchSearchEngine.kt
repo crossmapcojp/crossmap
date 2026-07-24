@@ -125,9 +125,14 @@ class ChurchSearchEngine(
                     buildQueries(request.query, resolved, request.titleLanguages, analysis)
                 }
                 val requestedHits = maxOf(1, request.offset + request.limit)
+                val deviceLocation = resolved.locations.singleOrNull()?.takeIf { it.type == GeoNameType.DEVICE }
                 val mergedQuery = measured("query.mergeTiers") {
                     BooleanQuery.Builder().apply {
-                        add(BoostQuery(queries[0], EXACT_NAME_STAGE_BOOST), BooleanClause.Occur.SHOULD)
+                        if (deviceLocation == null) {
+                            add(BoostQuery(queries[0], EXACT_NAME_STAGE_BOOST), BooleanClause.Occur.SHOULD)
+                        } else {
+                            add(queries[0], BooleanClause.Occur.MUST_NOT)
+                        }
                         add(BoostQuery(queries[1], ALL_NAME_TOKENS_STAGE_BOOST), BooleanClause.Occur.SHOULD)
                         add(queries[2], BooleanClause.Occur.SHOULD)
                         setMinimumNumberShouldMatch(1)
@@ -143,7 +148,6 @@ class ChurchSearchEngine(
                             "  merged=$mergedQuery"
                     }
                 }
-                val deviceLocation = resolved.locations.singleOrNull()?.takeIf { it.type == GeoNameType.DEVICE }
                 val deviceDistanceSort = deviceLocation?.let {
                     Sort(LatLonDocValuesField.newDistanceSort(ChurchIndex.FIELD_LOCATION, it.center.latitude, it.center.longitude))
                 }
@@ -159,6 +163,7 @@ class ChurchSearchEngine(
                         BooleanQuery.Builder().apply {
                             add(mergedQuery, BooleanClause.Occur.SHOULD)
                             add(queries[3], BooleanClause.Occur.SHOULD)
+                            if (deviceLocation != null) add(queries[0], BooleanClause.Occur.MUST_NOT)
                             setMinimumNumberShouldMatch(1)
                         }.build()
                     }
@@ -166,10 +171,18 @@ class ChurchSearchEngine(
                 } else {
                     fastDocs
                 }
-                val totalHits = finalDocs.totalHits.value
+                val exactDocs = deviceLocation?.let {
+                    measured("lucene.collect.globalExactName") { searcher.search(queries[0], requestedHits) }
+                }
+                val orderedScoreDocs = if (exactDocs == null) {
+                    finalDocs.scoreDocs.toList()
+                } else {
+                    exactDocs.scoreDocs.toList() + finalDocs.scoreDocs.toList()
+                }
+                val totalHits = (exactDocs?.totalHits?.value ?: 0L) + finalDocs.totalHits.value
                 val storedFields = searcher.storedFields()
                 val hits = measured("results.decode") {
-                    finalDocs.scoreDocs.drop(request.offset).take(request.limit).map { scoreDoc ->
+                    orderedScoreDocs.drop(request.offset).take(request.limit).map { scoreDoc ->
                         val recordJson = requireNotNull(storedFields.document(scoreDoc.doc).get(ChurchIndex.FIELD_RECORD))
                         val record = json.decodeFromString<ChurchRecord>(recordJson)
                         val distance = resolved.locations.minOfOrNull {
@@ -298,6 +311,7 @@ class ChurchSearchEngine(
         titleLanguages: List<String>,
     ): Query {
         val term = ChurchIndex.normalizeExactName(fullQuery)
+        val includeClassificationReadings = resolved.locations.singleOrNull()?.type != GeoNameType.DEVICE
         val exact = BooleanQuery.Builder().apply {
             add(
                 BoostQuery(TermQuery(Term(ChurchIndex.FIELD_NAME_EXACT, term)), EXACT_NAME_FIELD_BOOST),
@@ -308,21 +322,28 @@ class ChurchSearchEngine(
                     BoostQuery(TermQuery(Term(ChurchIndex.FIELD_NAME_READING_EXACT, term)), EXACT_NAME_READING_BOOST),
                     BooleanClause.Occur.SHOULD,
                 )
-                add(
-                    BoostQuery(
-                        TermQuery(Term(ChurchIndex.FIELD_DENOMINATION_READING_EXACT, term)),
-                        EXACT_DENOMINATION_READING_BOOST,
-                    ),
-                    BooleanClause.Occur.SHOULD,
-                )
-                add(
-                    BoostQuery(TermQuery(Term(ChurchIndex.FIELD_CATEGORY_READING_EXACT, term)), EXACT_CATEGORY_READING_BOOST),
-                    BooleanClause.Occur.SHOULD,
-                )
+                if (includeClassificationReadings) {
+                    add(
+                        BoostQuery(
+                            TermQuery(Term(ChurchIndex.FIELD_DENOMINATION_READING_EXACT, term)),
+                            EXACT_DENOMINATION_READING_BOOST,
+                        ),
+                        BooleanClause.Occur.SHOULD,
+                    )
+                    add(
+                        BoostQuery(TermQuery(Term(ChurchIndex.FIELD_CATEGORY_READING_EXACT, term)), EXACT_CATEGORY_READING_BOOST),
+                        BooleanClause.Occur.SHOULD,
+                    )
+                }
             }
             setMinimumNumberShouldMatch(1)
         }.build()
-        return withAuthoritativeGeonameFilter(withTitleLanguageFilter(exact, titleLanguages), resolved)
+        val titleFiltered = withTitleLanguageFilter(exact, titleLanguages)
+        return if (resolved.locations.singleOrNull()?.type == GeoNameType.DEVICE) {
+            titleFiltered
+        } else {
+            withAuthoritativeGeonameFilter(titleFiltered, resolved)
+        }
     }
 
     private fun buildAllNameTokensQuery(
@@ -449,29 +470,51 @@ class ChurchSearchEngine(
             .filter(String::isNotBlank)
             .distinct()
             .ifEmpty { listOf("none") }
+        val locationIntent = when {
+            resolved.locations.singleOrNull()?.type == GeoNameType.DEVICE -> "IMPLICIT_DEVICE_LOCATION"
+            resolved.locations.isNotEmpty() -> "EXPLICIT_QUERY_LOCATION"
+            else -> "NONE"
+        }
+        val textIntent = if (resolved.textQuery.isBlank()) "LOCATION_ONLY" else "CHURCH_TEXT"
+        val rankingIntent = if (resolved.locations.singleOrNull()?.type == GeoNameType.DEVICE) {
+            "GLOBAL_EXACT_NAME_THEN_NEARBY_DISTANCE"
+        } else {
+            "RELEVANCE_WITH_QUERY_LOCATION"
+        }
         return buildString {
             appendLine("search-query-plan:")
             appendLine("  input.original=${request.query.replace(Regex("""\s+"""), " ").trim()}")
             appendLine("  input.language=$normalizedLanguage analyzer=${analyzerDisplayName()}")
             appendLine("  input.pagination=offset:${request.offset},limit:${request.limit} titleLanguageFilter=$titleFilter")
+            appendLine("  user-intention.location=$locationIntent")
+            appendLine("  user-intention.text=$textIntent remainder=${resolved.textQuery.ifBlank { "<empty>" }}")
+            appendLine("  user-intention.ranking=$rankingIntent")
             appendLine("  analysis.tokens=$tokens operator=AND")
             appendLine("  analysis.geonameRemainder=${resolved.textQuery.ifBlank { "<empty>" }}")
             appendLine("  analysis.geonameCandidates=$candidates")
             appendLine("  analysis.geonameSelection=${resolved.selectionReason}")
             appendLine("  analysis.explicitAdministrativeName=${resolved.explicitAdministrativeName}")
             appendLine("  analysis.locations=$locations")
-            val topTierGeoFilter = resolved.explicitAdministrativeName || resolved.textQuery.isBlank() ||
-                resolved.locations.singleOrNull()?.type == GeoNameType.DEVICE
+            val exactTierGeoFilter = resolved.locations.singleOrNull()?.type != GeoNameType.DEVICE &&
+                (resolved.explicitAdministrativeName || resolved.textQuery.isBlank())
+            val allNameTokensGeoFilter = resolved.locations.isNotEmpty() &&
+                (resolved.locations.singleOrNull()?.type == GeoNameType.DEVICE ||
+                    resolved.explicitAdministrativeName || resolved.textQuery.isBlank())
             appendLine(
                 "  tier.1.type=EXACT_NAME_OR_READING boost=$EXACT_NAME_STAGE_BOOST " +
-                    "fields=[${ChurchIndex.FIELD_NAME_EXACT}^$EXACT_NAME_FIELD_BOOST, " +
-                    "${ChurchIndex.FIELD_NAME_READING_EXACT}^$EXACT_NAME_READING_BOOST, " +
-                    "${ChurchIndex.FIELD_DENOMINATION_READING_EXACT}^$EXACT_DENOMINATION_READING_BOOST, " +
-                    "${ChurchIndex.FIELD_CATEGORY_READING_EXACT}^$EXACT_CATEGORY_READING_BOOST] " +
-                    "term=${ChurchIndex.normalizeExactName(request.query)} geoFilter=$topTierGeoFilter",
+                    "fields=" + if (resolved.locations.singleOrNull()?.type == GeoNameType.DEVICE) {
+                        "[${ChurchIndex.FIELD_NAME_EXACT}^$EXACT_NAME_FIELD_BOOST, " +
+                            "${ChurchIndex.FIELD_NAME_READING_EXACT}^$EXACT_NAME_READING_BOOST] "
+                    } else {
+                        "[${ChurchIndex.FIELD_NAME_EXACT}^$EXACT_NAME_FIELD_BOOST, " +
+                            "${ChurchIndex.FIELD_NAME_READING_EXACT}^$EXACT_NAME_READING_BOOST, " +
+                            "${ChurchIndex.FIELD_DENOMINATION_READING_EXACT}^$EXACT_DENOMINATION_READING_BOOST, " +
+                            "${ChurchIndex.FIELD_CATEGORY_READING_EXACT}^$EXACT_CATEGORY_READING_BOOST] "
+                    } +
+                    "term=${ChurchIndex.normalizeExactName(request.query)} geoFilter=$exactTierGeoFilter",
             )
             appendLine("  tier.2.type=ALL_NAME_TOKENS boost=$ALL_NAME_TOKENS_STAGE_BOOST enabled=$allTokenTierEnabled " +
-                "tokens=$tokens fields=${formatFields(nameSearchFields())} geoFilter=$topTierGeoFilter" +
+                "tokens=$tokens fields=${formatFields(nameSearchFields())} geoFilter=$allNameTokensGeoFilter" +
                 if (allTokenTierEnabled) "" else " reason=generic-or-geoname-only-query")
             val namedLocation = resolved.locations.isNotEmpty() && resolved.locations.none { it.type == GeoNameType.DEVICE }
             val tier3Tokens = when {
