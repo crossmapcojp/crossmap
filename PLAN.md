@@ -19,7 +19,7 @@
 - [x] Replace Optimaize short-name detection with the vendored Cybozu/Shuyo detector and short-text profiles; classify Japanese/Hangul scripts deterministically and retain canonical `ja`/`en` localized-name entries.
 - [x] Treat `カトリック教会.csv` membership as authoritative programmatic `CATHOLIC_JP` denomination evidence throughout parsing and promotion, including reuse of older candidate caches, while preserving human overrides.
 - [x] Resolve raw Saved Places seeds through copied CID HTML cache first, plain HTTP second, and lightweight Lightpanda rendering last; parse name, coordinates, address, website, and category into raw church candidates with an audit report.
-- [x] Apply exclusion lists and Catholic-list non-church filtering from gmap, normalize candidate names during resolution, and perform entity-level deduplication before promotion.
+- [x] Apply durable Google-place CID exclusions and Catholic-list non-church filtering from gmap, normalize candidate names during resolution, and perform entity-level deduplication before promotion.
 - [x] Treat `resources/catalog/excludedChurchListingDomains.txt` as the shared website boundary: reject listing/search/map aggregators before page acquisition or cleanup, remove their cached page evidence, and replace missing/excluded public website URLs with the church's Google Maps CID URL.
 - [x] Feed resolved candidates into the existing Crossmap deterministic → official-directory/page evidence → LLM → human-override cleanup workflow; do not create a parallel cleanup implementation.
 - [x] Produce timestamped source/crawl/cleanup completeness reports and promote only complete records into the canonical catalog.

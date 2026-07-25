@@ -15,6 +15,34 @@ class MultilingualChurchNameLocalizerTest {
     private val congregationTerms = CongregationTermDictionary.load(resourcesRoot)
 
     @Test
+    fun catholicChurchNameOmitsRedundantJapanQualifierInEveryLanguage() {
+        val catholic = Denomination(
+            id = "CATHOLIC_JP",
+            name = "カトリック中央協議会",
+            aliases = listOf("カトリック教会"),
+        )
+        val denominationNames = mapOf(
+            Language.JAPANESE to mapOf("CATHOLIC_JP" to "カトリック"),
+            Language.ENGLISH to mapOf("CATHOLIC_JP" to "Catholic Church in Japan"),
+            Language.KOREAN to mapOf("CATHOLIC_JP" to "일본 가톨릭교회"),
+            Language.PORTUGUESE to mapOf("CATHOLIC_JP" to "Igreja Católica no Japão"),
+            Language.INDONESIAN to mapOf("CATHOLIC_JP" to "Gereja Katolik di Jepang"),
+        )
+        val result = localizer(
+            geonames = mapOf("萩" to "Hagi"),
+            denominations = listOf(catholic),
+            denominationNames = denominationNames,
+            multilingualGeonames = mapOf("萩" to mapOf("ko" to "하기", "pt" to "Hagi", "id" to "Hagi")),
+        ).localize("萩カトリック教会")
+
+        assertEquals("萩カトリック教会", result.localizedNames.single { it.languageCode == "ja" }.name)
+        assertEquals("Hagi Catholic Church", result.localizedNames.single { it.languageCode == "en" }.name)
+        assertEquals("하기 가톨릭교회", result.localizedNames.single { it.languageCode == "ko" }.name)
+        assertEquals("Igreja Católica Hagi", result.localizedNames.single { it.languageCode == "pt" }.name)
+        assertEquals("Gereja Katolik Hagi", result.localizedNames.single { it.languageCode == "id" }.name)
+    }
+
+    @Test
     fun composesUccjAkabaneIntoEnglishAndKoreanProgrammatically() {
         val localizer = localizer(
             geonames = mapOf("赤羽" to "Akabane"),

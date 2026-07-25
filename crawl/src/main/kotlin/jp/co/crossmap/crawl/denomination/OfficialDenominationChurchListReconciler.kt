@@ -11,6 +11,7 @@ import jp.co.crossmap.FieldDetermination
 import jp.co.crossmap.LocalizedName
 import jp.co.crossmap.crawl.JapaneseEntityNormalizer
 import jp.co.crossmap.crawl.NOT_DETERMINED
+import jp.co.crossmap.crawl.CatholicChurchNameNormalizer
 import kotlinx.serialization.json.Json
 
 data class OfficialDenominationReconciliationReport(
@@ -239,7 +240,7 @@ class OfficialDenominationChurchListReconciler(
             church
         }
 
-        atomicWrite(catalogFile, json.encodeToString(updated))
+        atomicWrite(catalogFile, json.encodeToString(updated.map(CatholicChurchNameNormalizer::normalize)))
         return OfficialDenominationReconciliationReport(
             churches = churches.size,
             officialEntries = eligible.size,

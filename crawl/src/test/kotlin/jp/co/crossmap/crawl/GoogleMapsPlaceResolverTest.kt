@@ -291,6 +291,38 @@ class GoogleMapsPlaceResolverTest {
         }
     }
 
+    @Test
+    fun excludesConfiguredGooglePlaceBeforeLoadingItsPage() {
+        val root = Files.createTempDirectory("crossmap-google-place-exclusion")
+        try {
+            val raw = Files.createDirectories(root.resolve("cache/google-saved-places"))
+            Files.createDirectories(root.resolve("catalog"))
+            Files.writeString(
+                root.resolve("catalog/excludedGooglePlaces.txt"),
+                "1885579487859421798 | Catholic cemetery; not a church\n",
+            )
+            Files.writeString(
+                raw.resolve("seeds.json"),
+                json.encodeToString(listOf(seed("1885579487859421798", "カトリック教会", "カトリック教会"))),
+            )
+
+            val report = GoogleMapsPlaceResolver(
+                pageSource = GoogleMapsPageSource { error("An excluded place must not be loaded") },
+            ).resolve(root, root.resolve("cache"))
+            val candidates = json.decodeFromString<List<GooglePlaceChurchCandidate>>(
+                Files.readString(raw.resolve("google-place-candidates.json")),
+            )
+
+            assertEquals(1, report.seeds)
+            assertEquals(0, report.candidates)
+            assertEquals(1, report.catholicNonChurchesFiltered)
+            assertTrue(report.errors.isEmpty())
+            assertTrue(candidates.isEmpty())
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
     private fun seed(cid: String, title: String, list: String) = GoogleSavedPlaceSeed(
         id = "google:$cid",
         googleCid = cid,

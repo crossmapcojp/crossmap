@@ -43,7 +43,7 @@ data class ChurchRecordDraft(
         socialProfiles = socialProfiles,
     )
 
-    fun toChurchRecord(resolution: ResolvedChurchEnglishName, determinedAt: String): ChurchRecord = ChurchRecord(
+    fun toChurchRecord(resolution: ResolvedChurchEnglishName, determinedAt: String): ChurchRecord = CatholicChurchNameNormalizer.normalize(ChurchRecord(
         id = id,
         googleCid = googleCid,
         name = name,
@@ -67,5 +67,5 @@ data class ChurchRecordDraft(
             determinedAt = determinedAt,
         ),
         updatedAt = updatedAt,
-    )
+    ))
 }

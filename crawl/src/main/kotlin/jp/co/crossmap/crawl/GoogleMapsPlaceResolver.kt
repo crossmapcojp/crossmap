@@ -254,9 +254,18 @@ class GoogleMapsPlaceResolver(
         require(maxConcurrency in 1..32)
         val raw = CrossmapPaths(resourcesRoot, cacheRoot).googleSavedPlaces
         val seeds = json.decodeFromString<List<GoogleSavedPlaceSeed>>(Files.readString(raw.resolve("seeds.json")))
+        val excludedGooglePlaces = ExcludedGooglePlaces.load(resourcesRoot)
         val executor = Executors.newFixedThreadPool(maxConcurrency)
         val results = try {
-            executor.invokeAll(seeds.map { seed -> Callable { resolveOne(seed) } }).map { it.get() }
+            executor.invokeAll(seeds.map { seed ->
+                Callable {
+                    if (ExcludedGooglePlaces.contains(excludedGooglePlaces, seed.id, seed.googleCid)) {
+                        Result(filtered = true)
+                    } else {
+                        resolveOne(seed)
+                    }
+                }
+            }).map { it.get() }
         } finally {
             executor.shutdown()
         }

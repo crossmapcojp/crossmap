@@ -182,7 +182,9 @@ class GoogleSavedPlacesCleanupWorkflow(
         val websitePolicy = ExcludedChurchListingDomains.policy(resourcesRoot)
         val candidatesFile = CrossmapPaths(resourcesRoot, cacheRoot).googleSavedPlaces.resolve("google-place-candidates.json")
         require(Files.isRegularFile(candidatesFile)) { "Google place candidates do not exist: $candidatesFile" }
+        val excludedGooglePlaces = ExcludedGooglePlaces.load(resourcesRoot)
         val rawCandidates = json.decodeFromString<List<GooglePlaceChurchCandidate>>(Files.readString(candidatesFile))
+            .filterNot { ExcludedGooglePlaces.contains(excludedGooglePlaces, it.id, it.googleCid) }
         val reviewedNameReadingsFile = resourcesRoot.resolve("catalog/church-name-readings.json")
         val reviewedNameReadings = if (Files.isRegularFile(reviewedNameReadingsFile)) {
             json.decodeFromString<Map<String, List<String>>>(Files.readString(reviewedNameReadingsFile))
@@ -191,7 +193,9 @@ class GoogleSavedPlacesCleanupWorkflow(
         }
         val catalog = resourcesRoot.resolve("catalog/churches.json")
         val existing = if (Files.isRegularFile(catalog)) {
-            json.decodeFromString<List<ChurchRecord>>(Files.readString(catalog))
+            json.decodeFromString<List<ChurchRecord>>(Files.readString(catalog)).filterNot { church ->
+                ExcludedGooglePlaces.contains(excludedGooglePlaces, church.id, church.googleCid)
+            }
         } else {
             emptyList()
         }

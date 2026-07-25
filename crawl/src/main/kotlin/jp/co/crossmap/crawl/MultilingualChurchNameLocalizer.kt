@@ -291,9 +291,12 @@ class MultilingualChurchNameLocalizer(
         } else {
             components
         }
+        val terminalTranslation = withoutLocationConnector.lastOrNull()?.translations?.get(targetLanguage).orEmpty()
+        val terminalChurchPrefix = targetLanguage in setOf("pt", "id") &&
+            (terminalTranslation.startsWith("Igreja ") || terminalTranslation.startsWith("Gereja "))
         val orderedComponents = if (
             targetLanguage in setOf("pt", "id") &&
-            withoutLocationConnector.lastOrNull()?.role == MultilingualNameComponentRole.CONGREGATION
+            (withoutLocationConnector.lastOrNull()?.role == MultilingualNameComponentRole.CONGREGATION || terminalChurchPrefix)
         ) {
             listOf(withoutLocationConnector.last()) + withoutLocationConnector.dropLast(1)
         } else {
@@ -343,7 +346,11 @@ class MultilingualChurchNameLocalizer(
                 supportedTargets.forEach { languageCode ->
                     val language = requireNotNull(Language.fromCode(languageCode))
                     val catalogName = denominationNames[language]?.get(denomination.id)
-                    val namePart = catalogName?.let { denominationNamePart(it, language) }
+                    val namePart = if (denomination.id == "CATHOLIC_JP" && alias.endsWith("教会")) {
+                        catholicChurchName(language)
+                    } else {
+                        catalogName?.let { denominationNamePart(it, language) }
+                    }
                     val acronym = denomination.id.takeIf {
                         language == Language.ENGLISH && it.matches(Regex("[A-Z][A-Z0-9]{1,8}"))
                     }
@@ -391,6 +398,14 @@ class MultilingualChurchNameLocalizer(
 
     private fun isJapaneseCharacter(value: Char): Boolean =
         value in '\u3040'..'\u30ff' || value in '\u3400'..'\u9fff'
+
+    private fun catholicChurchName(language: Language): String = when (language) {
+        Language.JAPANESE -> "カトリック教会"
+        Language.ENGLISH -> "Catholic Church"
+        Language.KOREAN -> "가톨릭교회"
+        Language.PORTUGUESE -> "Igreja Católica"
+        Language.INDONESIAN -> "Gereja Katolik"
+    }
 
     private fun String.removeEnglishAdministrativeSuffix(): String =
         replace(Regex("(?i)(?:[- ](?:ku|shi|cho|machi|mura)| (?:ward|city|town|village))$"), "").trim()

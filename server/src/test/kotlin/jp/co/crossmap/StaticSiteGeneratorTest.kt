@@ -20,6 +20,22 @@ class StaticSiteGeneratorTest {
     }
 
     @Test
+    fun catholicChurchOmitsObviousDenominationPrefix() {
+        assertEquals(
+            "taman-ra-catholic-church",
+            StaticSiteGenerator().pageSlug("Catholic Church in Japan", "Catholic Taman-ra Church"),
+        )
+    }
+
+    @Test
+    fun legacyCatholicEnglishNameAlsoDropsJapanPrefix() {
+        assertEquals(
+            "yamashina-catholic-church",
+            StaticSiteGenerator().pageSlug("Catholic Church in Japan", "Catholic Church in Japan Yamashina Church"),
+        )
+    }
+
+    @Test
     fun independentChristianAssemblyKeepsAssemblyAndOmitsDenomination() {
         assertEquals("kyodo-christian-assembly", StaticSiteGenerator().pageSlug(null, "Kyodo Christian Assembly"))
     }
