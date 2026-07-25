@@ -49,6 +49,15 @@ data class DenominationDirectorySource(
     val jurisdictionList: List<DenominationJurisdictionSource> = emptyList(),
 )
 
+fun loadDenominationDirectorySources(
+    resourcesRoot: Path,
+    json: Json = Json { ignoreUnknownKeys = true },
+): List<DenominationDirectorySource> {
+    val sourceFile = resourcesRoot.resolve("sources/denominations.json")
+    require(Files.isRegularFile(sourceFile)) { "Missing standalone denomination source catalog: $sourceFile" }
+    return json.decodeFromString(Files.readString(sourceFile))
+}
+
 data class LoadedDirectoryPage(val url: String, val html: String, val fetchedAt: String = Instant.now().toString())
 
 fun interface DirectoryPageLoader {
@@ -105,9 +114,7 @@ class OfficialDirectoryCrawler(
         excludedDenominationIds: Set<String> = emptySet(),
     ): DirectoryCrawlReport {
         val paths = CrossmapPaths(resourcesRoot, cacheRoot)
-        val sourceFile = resourcesRoot.resolve("sources/denominations.json")
-        require(Files.isRegularFile(sourceFile)) { "Missing standalone denomination source catalog: $sourceFile" }
-        val sources = json.decodeFromString<List<DenominationDirectorySource>>(Files.readString(sourceFile))
+        val sources = loadDenominationDirectorySources(resourcesRoot, json)
             .filterNot { it.denominationId in excludedDenominationIds }
         val pageLoader = loader ?: CachedDirectoryPageLoader(paths.churchWebPages, json = json)
         val websitePolicy = ExcludedChurchListingDomains.policy(resourcesRoot)

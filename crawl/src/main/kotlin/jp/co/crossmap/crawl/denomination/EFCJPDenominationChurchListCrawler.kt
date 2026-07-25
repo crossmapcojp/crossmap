@@ -24,9 +24,11 @@ class EFCJPDenominationChurchListCrawler : MultiPageDenominationChurchListCrawle
         val document = Jsoup.parse(html, church.denominationChurchListDetailPage)
         val table = document.select("table").firstOrNull { candidate -> candidate.text().contains("所在地") }
             ?: return church
-        val values = table.select("tr").associate { row ->
-            row.selectFirst("td:first-child")?.text()?.trim().orEmpty() to row.select("td").getOrNull(1)
-        }
+        val values = table.select("tr").mapNotNull { row ->
+            val cells = row.select("td")
+            val label = cells.firstOrNull()?.text()?.trim().orEmpty()
+            label.takeIf(String::isNotBlank)?.let { cells.getOrNull(1)?.let { value -> it to value } }
+        }.toMap()
         val websiteCell = values["ウェブサイト"]
         val websiteLinks = websiteCell?.select("a[href]").orEmpty()
         val website = DirectoryCrawlerSupport.externalWebsite(websiteLinks, "efcj.org")

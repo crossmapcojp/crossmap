@@ -288,6 +288,189 @@ class NewDenominationChurchListCrawlerTest {
         assertEquals(listOf("佐藤太郎", "鈴木花子"), church.ministers.map { it.name })
     }
 
+    @Test
+    fun orthodoxJpCombinesThreeJurisdictionsAndEnrichesOfficialDetailContacts() {
+        val crawler = OrthodoxJpDenominationChurchListCrawler()
+        val church = crawler.parsePage(crawler.sourceUrls[1], """
+            <main><a href='annai/image/sendaiin.jpg'><img alt='仙台ハリストス正教会'></a>
+            <a href='annai/h-sendai.html'><strong>仙台ハリストス正教会</strong></a>
+            <a href='annai/h-sendai.html'>仙台ハリストス正教会</a></main>
+        """).single()
+        assertEquals("仙台ハリストス正教会", church.name)
+        assertEquals("東日本主教々区", church.jurisdiction)
+        assertEquals("https://www.orthodoxjapan.jp/annai/h-sendai.html", church.denominationChurchListDetailPage)
+
+        val detailed = crawler.parseDetailPage(church, """
+            <h1>仙台ハリストス正教会・生神女福音聖堂</h1>
+            <table class='tcontact'><caption>所在地・問合せ</caption><tbody>
+              <tr><th>住所</th></tr><tr><td>〒980-0021<br>宮城県仙台市青葉区中央3丁目4-20<br><a href='https://maps.example/'>所在地マップ</a></td></tr>
+              <tr><th>TEL/FAX</th></tr><tr><td>022-225-2744/022-224-3080</td></tr>
+              <tr><th>管轄</th></tr><tr><td>司祭ルカ　田畑隆平</td></tr>
+              <tr><th>E-mail</th></tr><tr><td><a href='mailto:orthodox@example.jp'>orthodox@example.jp</a></td></tr>
+              <tr><th>URL</th></tr><tr><td><a href='https://sendai-orthodox.example/'>公式</a></td></tr>
+            </tbody></table>
+        """)
+        assertEquals("〒980-0021 宮城県仙台市青葉区中央３丁目４−２０", detailed.address)
+        assertEquals("022-225-2744", detailed.phone)
+        assertEquals("022-224-3080", detailed.fax)
+        assertEquals("orthodox@example.jp", detailed.email)
+        assertEquals("https://sendai-orthodox.example/", detailed.websiteUrl)
+        assertEquals("田畑隆平", detailed.ministers.single().name)
+        assertEquals("priest", detailed.ministers.single().roleId)
+    }
+
+    @Test
+    fun anglicanJpParsesTheNationalPdfTextByDioceseAndExcludesOfficesAndSchools() {
+        val crawler = AnglicanJpDenominationChurchListCrawler()
+        val churches = crawler.parseExtractedText("""
+            ＋北海道教区 // 北海道
+            北海道教区事務所 北海道札幌市北区北15条西5-1-12 011-111-1111
+            札幌キリスト教会（主教座聖堂） 北海道札幌市北区北8条西6-2-18 011-747-7339
+            香蘭女学校礼拝堂 東京都品川区旗の台6-22-21 03-1111-1111
+            ＋東京教区 // 東京都
+            三光教会 東京都品川区旗の台6-22-24 03-3781-2554
+        """.trimIndent())
+
+        assertEquals(listOf("札幌キリスト教会（主教座聖堂）", "三光教会"), churches.map { it.name })
+        assertEquals(listOf("北海道教区", "東京教区"), churches.map { it.jurisdiction })
+        assertEquals("北海道札幌市北区北８条西６−２−１８", churches.first().address)
+        assertEquals("011-747-7339", churches.first().phone)
+    }
+
+    @Test
+    fun catholicIndexDiscoversCurrentCbcjDiocesesBeforeResolvingOfficialSites() {
+        val dioceses = CatholicJpDioceseIndex.parseIndex("""
+            <a href='/japan/diocese/sapporo/'>■ カトリック札幌教区（北海道）</a>
+            <a href='/japan/diocese/ostk/'>■ カトリック大阪高松大司教区</a>
+            <a href='/japan/diocese/sapporo/'>duplicate</a>
+            <a href='/japan/statistics/'>統計</a>
+        """)
+        assertEquals(listOf("sapporo", "ostk"), dioceses.map { it.slug })
+        val resolved = CatholicJpDioceseIndex.resolveOfficialWebsite(dioceses.first(), """
+            <a href='https://www.csd.or.jp'>https://www.csd.or.jp</a>
+            <a href='https://www.catholic-education.jp/'>学校教育委員会</a>
+        """)
+        assertEquals("https://www.csd.or.jp", resolved.officialWebsiteUrl)
+    }
+
+    @Test
+    fun catholicSapporoParsesItsDistrictTablesUsingConfiguredUrls() {
+        val crawler = CatholicSapporoDioceseChurchListCrawler(listOf("https://www.csd.or.jp/sapporo"))
+        val churches = crawler.parse("""
+            <div class='row'><div><h4 id='ttl-iwamizawa'></h4></div></div>
+            <div class='row'><div><table class='table table-underline'>
+              <tr><th>小教区</th><td>カトリック岩見沢教会</td></tr>
+              <tr><th>住所</th><td>〒068-0024 北海道岩見沢市4条西3丁目</td></tr>
+              <tr><th>TEL・FAX</th><td>0126-22-1111 / 0126-22-2222</td></tr>
+              <tr><th>主任司祭</th><td>佐藤 太郎</td></tr>
+              <tr><th>E-mail</th><td><a href='mailto:church@example.jp'>church@example.jp</a></td></tr>
+              <tr><th>ホームページ</th><td><a href='https://iwamizawa.example/'>公式</a></td></tr>
+            </table></div></div>
+        """)
+        val church = churches.single()
+        assertEquals("札幌地区", church.jurisdiction)
+        assertEquals("〒068-0024 北海道岩見沢市４条西３丁目", church.address)
+        assertEquals("0126-22-1111", church.phone)
+        assertEquals("0126-22-2222", church.fax)
+        assertEquals("church@example.jp", church.email)
+        assertEquals("https://iwamizawa.example/", church.websiteUrl)
+        assertEquals("佐藤 太郎", church.ministers.single().name)
+    }
+
+    @Test
+    fun catholicJpDispatcherReusesJurisdictionUrlsFromTheSourceCatalog() {
+        val names = listOf(
+            "札幌教区", "仙台教区", "新潟教区", "さいたま教区", "東京大司教区", "横浜教区", "名古屋教区", "京都教区",
+            "大阪高松大司教区", "広島教区", "福岡教区", "長崎大司教区", "大分教区", "鹿児島教区", "那覇教区",
+        )
+        val source = jp.co.crossmap.crawl.DenominationDirectorySource(
+            id = "catholic_jp",
+            denominationId = "CATHOLIC_JP",
+            denominationName = "カトリック中央協議会",
+            jurisdictionList = names.mapIndexed { index, name ->
+                jp.co.crossmap.crawl.DenominationJurisdictionSource(
+                    id = index.toString(), name = name, kind = jp.co.crossmap.crawl.JurisdictionKind.DIOCESE,
+                    churchListUrlList = listOf("https://example.test/$index"),
+                )
+            },
+        )
+        val crawler = CatholicJpDenominationChurchListCrawler(source)
+
+        assertEquals(names.indices.map { "https://example.test/$it" }, crawler.sourceUrls)
+    }
+
+    @Test
+    fun catholicSendaiUsesTheDistrictInEachParishDetailUrl() {
+        val crawler = CatholicSendaiDioceseChurchListCrawler(
+            listOf("https://sendai.catholic.jp/diocese/parishes/"),
+        )
+        val listed = crawler.parse("""
+            <h2>第1地区（青森・岩手）</h2><ul>
+              <li><a href='/diocese/parishes/d1/namiuchi/'>カトリック浪打教会</a></li>
+            </ul>
+        """).single()
+        val church = crawler.parseDetailPage(listed, """
+            <main><ul class='church__access'>
+              <li>〒030-0961 青森県青森市浪打1-20-6</li>
+              <li>TEL：017-741-5903</li><li>FAX：017-718-8215</li>
+            </ul></main>
+        """)
+
+        assertEquals("仙台教区・第1地区", church.jurisdiction)
+        assertEquals("〒030-0961 青森県青森市浪打１−２０−６", church.address)
+        assertEquals("017-741-5903", church.phone)
+        assertEquals("017-718-8215", church.fax)
+    }
+
+    @Test
+    fun catholicNiigataReadsDistrictNavigationAndParishDetails() {
+        val crawler = CatholicNiigataDioceseChurchListCrawler(
+            listOf("http://www.catholic-niigata.net/churches"),
+        )
+        val listed = crawler.parse("""
+            <li class='menu-item'><a href='/churches/akitadist'>秋田地区</a><ul class='sub-menu'>
+              <li class='menu-item'><a href='/akita'>カトリック秋田教会</a></li>
+            </ul></li>
+        """).single()
+        val church = crawler.parseDetailPage(listed, """
+            <div class='entry-content'>
+              <p><strong>主任司祭：</strong>飯野耕太郎神父</p>
+              <p><strong>住所：</strong>〒010-0875 秋田市千秋明徳町1-48</p>
+              <p><strong>電話：</strong>018-832-3254 <strong>FAX：</strong>018-833-7035</p>
+              <p><a href='http://akita-cath.example/'>公式</a></p>
+            </div>
+        """)
+
+        assertEquals("新潟教区・秋田地区", church.jurisdiction)
+        assertEquals("〒010-0875 秋田市千秋明徳町１−４８", church.address)
+        assertEquals("018-832-3254", church.phone)
+        assertEquals("018-833-7035", church.fax)
+        assertEquals("飯野耕太郎", church.ministers.single().name)
+    }
+
+    @Test
+    fun catholicTokyoParsesDirectoryLinksAndDetailContactFields() {
+        val crawler = CatholicTokyoArchdioceseChurchListCrawler(
+            listOf("https://tokyo.catholic.jp/archdiocese/parishes/tokyo/"),
+        )
+        val listed = crawler.parse("""
+            <ul><li class='info__item'><a href='/archdiocese/parishes/tokyo/akabane/'>
+              <span class='info__detail'>カトリック赤羽教会</span></a></li></ul>
+        """).single()
+        val church = crawler.parseDetailPage(listed, """
+            <main><p>住所・連絡先 〒115-0045 東京都北区赤羽2-1-12 電話：03-3901-2902 Fax：03-3902-3508</p>
+              <p><a href='https://akabane.example/'>ホームページ</a></p>
+              <h3>主任司祭</h3><p>平 孝之</p>
+            </main>
+        """)
+
+        assertEquals("〒115-0045 東京都北区赤羽２−１−１２", church.address)
+        assertEquals("03-3901-2902", church.phone)
+        assertEquals("03-3902-3508", church.fax)
+        assertEquals("https://akabane.example/", church.websiteUrl)
+        assertEquals("平 孝之", church.ministers.single().name)
+    }
+
     private fun row(area: String, name: String, minister: String, href: String) =
         "<tr><td>$area</td><td>$name</td><td>$minister</td><td><a href='$href'>詳細はこちらから</a></td></tr>"
 

@@ -17,7 +17,8 @@ application {
 
 tasks.named<JavaExec>("run") {
     workingDir = rootProject.projectDir
-    dependsOn(":crawl:buildSearchSnapshot", "generateChurchPages")
+    // Ktor serves the materialized snapshot/static output and never requires a live Neo4j connection.
+    dependsOn(":crawl:buildSearchSnapshot")
 }
 
 tasks.register<JavaExec>("runCurrentIndex") {
@@ -48,14 +49,13 @@ val lightpandaE2eTest by tasks.registering(Test::class) {
 
 tasks.register<JavaExec>("generateChurchPages") {
     group = "crossmap"
-    description = "Generate localized static pages from the current canonical church catalog"
+    description = "Generate localized static pages from bounded Neo4j church-detail projections"
     classpath = sourceSets.main.get().runtimeClasspath
     mainClass = "jp.co.crossmap.StaticSiteGeneratorCli"
     workingDir = rootProject.projectDir
     // Static rendering is deliberately read-only. Running dataCleanup here used to rewrite
     // churches.json after an index had been published, which made runCurrentIndex reject it.
     dependsOn(":crawl:prepareGeoNameCache")
-    val churchCatalog = providers.gradleProperty("churchCatalog").orElse("resources/catalog/churches.json")
     val denominationEnglishNames = providers.gradleProperty("denominationEnglishNames").orElse("resources/catalog/denomination-en-names.json")
     val churchPageOutput = providers.gradleProperty("churchPageOutput").orElse("webclient")
     val geonameEnglishLexicon = providers.gradleProperty("geonameEnglishLexicon").orElse("cache/geoname/japan/church-name-lexicon.json")
@@ -63,15 +63,14 @@ tasks.register<JavaExec>("generateChurchPages") {
     val siteBaseUrl = providers.gradleProperty("crossmapSiteBaseUrl").orElse("https://www.crossmap.co.jp")
     val staticSiteParallelism = providers.gradleProperty("crossmapStaticSiteParallelism")
         .orElse(Runtime.getRuntime().availableProcessors().coerceAtLeast(1).toString())
-    inputs.file(rootProject.layout.projectDirectory.file(churchCatalog.get()))
     inputs.files(rootProject.fileTree("resources/catalog") { include("denomination-*-names.json") })
     inputs.dir(rootProject.layout.projectDirectory.dir(i18nDirectory.get()))
     inputs.files(rootProject.fileTree("server/src/main/resources") { include("index.html", "result.html", "church.html") })
     inputs.property("siteBaseUrl", siteBaseUrl)
     inputs.property("parallelism", staticSiteParallelism)
     outputs.dir(rootProject.layout.projectDirectory.dir(churchPageOutput.get()))
+    outputs.upToDateWhen { false }
     args(
-        churchCatalog.get(),
         denominationEnglishNames.get(),
         churchPageOutput.get(),
         geonameEnglishLexicon.get(),
@@ -94,6 +93,8 @@ tasks.register<JavaExec>("validateI18n") {
 
 dependencies {
     api(projects.core)
+    // Used by the build-time StaticSiteGeneratorCli only; Application.module does not open Neo4j.
+    implementation(projects.catalog)
     implementation(libs.logback)
     implementation(libs.ktor.serverCore)
     implementation(libs.ktor.serverNetty)

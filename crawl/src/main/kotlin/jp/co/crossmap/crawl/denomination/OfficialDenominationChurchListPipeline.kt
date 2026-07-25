@@ -5,9 +5,11 @@ import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import jp.co.crossmap.crawl.CrossmapPaths
 import jp.co.crossmap.crawl.DenominationCandidate
+import jp.co.crossmap.crawl.DenominationDirectorySource
 import jp.co.crossmap.crawl.DirectoryCrawlReport
 import jp.co.crossmap.crawl.GoogleSavedPlaceSeed
 import jp.co.crossmap.crawl.OfficialDirectoryCrawler
+import jp.co.crossmap.crawl.loadDenominationDirectorySources
 import kotlinx.serialization.json.Json
 
 data class OfficialDenominationChurchListPipelineReport(
@@ -27,7 +29,7 @@ class OfficialDenominationChurchListPipeline(
     private val reconciler: OfficialDenominationChurchListReconciler = OfficialDenominationChurchListReconciler(),
     private val json: Json = Json { ignoreUnknownKeys = true; prettyPrint = true; encodeDefaults = true },
 ) {
-    private val dedicatedCrawlers = listOf(
+    private val baseDedicatedCrawlers = listOf(
         UCCJDenominationChurchListCrawler(),
         JBCDenominationChurchListCrawler(),
         JBBFDenominationChurchListCrawler(),
@@ -55,6 +57,10 @@ class OfficialDenominationChurchListPipeline(
         PCJDenominationChurchListCrawler(),
         EFCJPDenominationChurchListCrawler(),
         GECDenominationChurchListCrawler(),
+        OrthodoxJpDenominationChurchListCrawler(),
+        AnglicanJpDenominationChurchListCrawler(),
+        JMADenominationChurchListCrawler(),
+        WHCJDenominationChurchListCrawler(),
     )
 
     fun run(
@@ -65,6 +71,7 @@ class OfficialDenominationChurchListPipeline(
         crawlGenericDirectories: Boolean = true,
         denominationIds: Set<String>? = null,
     ): OfficialDenominationChurchListPipelineReport {
+        val dedicatedCrawlers = dedicatedCrawlers(resourcesRoot)
         val selectedCrawlers = denominationIds?.let { ids ->
             val selected = dedicatedCrawlers.filter { it.denominationId in ids }
             require(selected.mapTo(linkedSetOf()) { it.denominationId } == ids) {
@@ -89,7 +96,7 @@ class OfficialDenominationChurchListPipeline(
             sources = generic.sources + results.size,
             pages = generic.pages + results.sumOf(DenominationChurchListCrawlResult::pageCount),
             candidates = generic.candidates + lists.sumOf { list -> list.churches.count(OfficialDenominationChurch::eligibleForDenominationEvidence) },
-            errors = generic.errors,
+            errors = generic.errors + results.sumOf(DenominationChurchListCrawlResult::errors),
             excludedUrls = generic.excludedUrls,
             churchesByDenomination = lists.associate { it.denominationId to it.churches.size },
             cacheHits = results.count(DenominationChurchListCrawlResult::cacheHit),
@@ -98,6 +105,7 @@ class OfficialDenominationChurchListPipeline(
     }
 
     fun reconcileGeneratedLists(catalogFile: Path, resourcesRoot: Path): OfficialDenominationReconciliationReport {
+        val dedicatedCrawlers = dedicatedCrawlers(resourcesRoot)
         val lists = dedicatedCrawlers.map { crawler ->
             val file = resourcesRoot.resolve("crawl/${crawler.outputFileName}")
             require(Files.isRegularFile(file)) { "Missing generated official list: $file" }
@@ -146,12 +154,67 @@ class OfficialDenominationChurchListPipeline(
             "PCJ" to 60,
             "EFC_JP" to 80,
             "GEC" to 25,
+            "ORTHODOX_JP" to 60,
+            "ANGLICAN_JP" to 290,
+            "CATHOLIC_JP" to 700,
+            "JMA" to 40,
+            "WHCJ" to 40,
+            "WJELC" to 40,
+            "JAC" to 20,
+            "OBC" to 30,
+            "JMBC" to 25,
+            "SEIKYODAN" to 20,
+            "WMC" to 30,
+            "JLBC" to 24,
+            "FMC_JP" to 15,
+            "NFK" to 25,
+            "NSKK" to 15,
+            "ADVENT" to 15,
+            "FUKUIN_DENDO" to 15,
+            "JEB" to 12,
+            "SEIYAKU" to 8,
+            "JEC" to 30,
+            "JFGC" to 20,
+            "JLC" to 30,
+            "KELC" to 20,
+            "LIVE" to 15,
+            "JFEC" to 20,
+            "GMI" to 20,
         )
         lists.forEach { list ->
             require(list.churches.size >= minimums.getValue(list.denominationId)) {
                 "${list.denominationId} official directory unexpectedly contained only ${list.churches.size} rows"
             }
         }
+    }
+
+    private fun dedicatedCrawlers(resourcesRoot: Path): List<DenominationChurchListCrawler> {
+        val sources = loadDenominationDirectorySources(resourcesRoot, json).associateBy(DenominationDirectorySource::denominationId)
+        fun source(id: String) = requireNotNull(sources[id]) { "Missing $id in sources/denominations.json" }
+        return baseDedicatedCrawlers + listOf(
+            WJELCDenominationChurchListCrawler(source("WJELC").singleChurchListUrl()),
+            JACDenominationChurchListCrawler(source("JAC").singleChurchListUrl()),
+            OBCDenominationChurchListCrawler(source("OBC").singleChurchListUrl()),
+            JMBCDenominationChurchListCrawler(source("JMBC").singleChurchListUrl()),
+            SEIKYODANDenominationChurchListCrawler(source("SEIKYODAN").singleChurchListUrl()),
+            WMCDenominationChurchListCrawler(source("WMC").singleChurchListUrl()),
+            JLBCDenominationChurchListCrawler(source("JLBC").singleChurchListUrl()),
+            FMCJPDenominationChurchListCrawler(source("FMC_JP").singleChurchListUrl()),
+            NFKDenominationChurchListCrawler(source("NFK").singleChurchListUrl()),
+            MSKKDenominationChurchListCrawler(source("NSKK").singleChurchListUrl()),
+            ADVENTDenominationChurchListCrawler(source("ADVENT").singleChurchListUrl()),
+            FUKUINDENDODenominationChurchListCrawler(source("FUKUIN_DENDO").singleChurchListUrl()),
+            JEBDenominationChurchListCrawler(source("JEB").singleChurchListUrl()),
+            SEIYAKUDenominationChurchListCrawler(source("SEIYAKU").singleChurchListUrl()),
+            JECDenominationChurchListCrawler(source("JEC").churchListUrlList),
+            JFGCDenominationChurchListCrawler(source("JFGC").churchListUrlList),
+            JLCDenominationChurchListCrawler(source("JLC").churchListUrlList),
+            KELCDenominationChurchListCrawler(source("KELC").churchListUrlList),
+            LIVEDenominationChurchListCrawler(source("LIVE").churchListUrlList),
+            JFECDenominationChurchListCrawler(source("JFEC").churchListUrlList),
+            GMIDenominationChurchListCrawler(source("GMI").churchListUrlList),
+            CatholicJpDenominationChurchListCrawler(source("CATHOLIC_JP")),
+        )
     }
 
     private fun replaceDedicatedCandidates(cacheRoot: Path, lists: List<OfficialDenominationChurchList>) {
@@ -187,3 +250,6 @@ class OfficialDenominationChurchListPipeline(
             .getOrElse { Files.move(part, path, StandardCopyOption.REPLACE_EXISTING) }
     }
 }
+
+private fun DenominationDirectorySource.singleChurchListUrl(): String =
+    churchListUrlList.singleOrNull() ?: error("$denominationId must configure exactly one church-list URL")

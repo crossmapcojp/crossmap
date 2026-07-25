@@ -58,7 +58,7 @@ interface SocialAccountExportParser {
 
 class YouTubeSubscribedChannelsCsvParser : SocialAccountExportParser {
     override fun parse(path: Path): List<SocialAccountCandidate> {
-        val rows = parseCsv(Files.readString(path)).filter { row -> row.any(String::isNotBlank) }
+        val rows = Rfc4180Csv.parse(Files.readString(path)).filter { row -> row.any(String::isNotBlank) }
         require(rows.isNotEmpty()) { "YouTube export is empty: $path" }
         val header = rows.first().map { it.removePrefix("\uFEFF").trim() }
         fun column(vararg names: String): Int = header.indexOfFirst { value -> names.any(value::equals) }
@@ -134,9 +134,38 @@ class FacebookChurchPageHtmlParser : FacebookChurchPageParser {
     ) || Regex("^(?:共通の友達|Mutual friends)\\s*\\d+").containsMatchIn(value)
 }
 
-/** Reserved for Facebook's pending downloadable JSON format. */
-class FacebookChurchPageJsonParser : FacebookChurchPageParser {
-    override fun parse(path: Path): List<SocialAccountCandidate> = emptyList()
+class FacebookChurchPageJsonParser(
+    private val json: Json = Json { ignoreUnknownKeys = true },
+) : FacebookChurchPageParser {
+    override fun parse(path: Path): List<SocialAccountCandidate> {
+        val root = json.parseToJsonElement(Files.readString(path)).jsonObject
+        return root["pages_followed_v2"].orEmptyArray().mapNotNull { element ->
+            val entry = element.jsonObject
+            val exportedName = entry["data"].orEmptyArray().firstOrNull()?.jsonObject?.string("name")
+                .orEmpty().ifBlank { entry.string("title") }
+            val name = repairMetaMojibake(exportedName.trim())
+            if (name.isBlank()) null else SocialAccountCandidate(
+                id = "facebook-export-name:${stableTextId(name)}",
+                platform = SocialPlatform.FACEBOOK,
+                // Facebook's 2026 pages-followed export contains names but no page IDs or URLs.
+                // Keep the row as reconciliation evidence without inventing a publishable profile.
+                url = "",
+                accountName = name,
+                sourceUrl = path.toUri().toString(),
+            )
+        }.distinctBy(SocialAccountCandidate::id)
+    }
+
+    private fun repairMetaMojibake(value: String): String {
+        if (value.isBlank() || value.any { it.code > 0xff }) return value
+        val repaired = value.toByteArray(StandardCharsets.ISO_8859_1).toString(StandardCharsets.UTF_8)
+        return repaired.takeUnless { '\uFFFD' in it } ?: value
+    }
+
+    private fun stableTextId(value: String): String = java.security.MessageDigest.getInstance("SHA-256")
+        .digest(value.lowercase().toByteArray(StandardCharsets.UTF_8))
+        .take(12)
+        .joinToString("") { "%02x".format(it) }
 }
 
 class TwitterListMembersJsonParser(
@@ -254,31 +283,9 @@ class SocialExportReader {
         inputs.facebookFollowingRawHtml?.let { addAll(FacebookChurchPageHtmlParser().parse(it)) }
         inputs.facebookFollowingJson?.let { addAll(FacebookChurchPageJsonParser().parse(it)) }
         inputs.twitterListMembersJson?.let { addAll(TwitterListMembersJsonParser().parse(it)) }
-    }.distinctBy { it.platform to SocialUrlNormalizer.canonical(it.url, it.platform) }
-}
-
-private fun parseCsv(value: String): List<List<String>> {
-    val rows = mutableListOf<List<String>>()
-    var row = mutableListOf<String>()
-    val cell = StringBuilder()
-    var quoted = false
-    var index = 0
-    while (index < value.length) {
-        val char = value[index]
-        when {
-            char == '"' && quoted && value.getOrNull(index + 1) == '"' -> { cell.append('"'); index++ }
-            char == '"' -> quoted = !quoted
-            char == ',' && !quoted -> { row += cell.toString(); cell.clear() }
-            (char == '\n' || char == '\r') && !quoted -> {
-                if (char == '\r' && value.getOrNull(index + 1) == '\n') index++
-                row += cell.toString(); cell.clear(); rows += row; row = mutableListOf()
-            }
-            else -> cell.append(char)
-        }
-        index++
+    }.distinctBy {
+        it.platform to SocialUrlNormalizer.canonical(it.url, it.platform).ifBlank { it.id }
     }
-    if (cell.isNotEmpty() || row.isNotEmpty()) { row += cell.toString(); rows += row }
-    return rows
 }
 
 private fun JsonObject.string(key: String): String = this[key]?.jsonPrimitive?.content.orEmpty()

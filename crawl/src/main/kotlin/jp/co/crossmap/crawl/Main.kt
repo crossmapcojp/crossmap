@@ -653,6 +653,7 @@ private class CrawlDenominationDirectories : CrawlCommand("crawl-denomination-di
         audit.output("rcj_churches", root.resolve("crawl/rcj-churches.json").toAbsolutePath().normalize())
         audit.output("igm_churches", root.resolve("crawl/igm-churches.json").toAbsolutePath().normalize())
         audit.output("jag_churches", root.resolve("crawl/jag-churches.json").toAbsolutePath().normalize())
+        audit.output("catholic_jp_churches", root.resolve("crawl/catholic_jp-churches.json").toAbsolutePath().normalize())
         audit.output("catalog", paths.churchCatalog.toAbsolutePath().normalize())
         echo(
             "Crawled ${report.sources} denomination sources / ${report.pages} pages: ${report.candidates} candidates, " +
@@ -1275,4 +1276,5 @@ private class PopulateDenominationEnglishNames : CrawlCommand("denomination-engl
 fun main(args: Array<String>) = Crawl().subcommands(
     ReadGoogleSavedPlaces(), ResolveGoogleSavedPlaces(), PromoteGoogleSavedPlaces(), Refresh(), CrawlDenominationDirectories(), BuildGeonames(), CleanupLlm(), OverrideDenomination(), MergeSocialExports(), LinkSocial(),
     PopulateEnglishNames(), AnalyzeEnglishNames(), PopulateDenominationEnglishNames(), PrepareGeoNameCache(), BuildChurchGeonames(), NormalizeAddresses(), BuildSnapshot(),
+    CatalogNeo4jHealth(), CatalogNeo4jMigrate(), CatalogNeo4jImport(), CatalogNeo4jExport(), CatalogNeo4jParity(), CatalogNeo4jIntegrity(),
 ).main(args)

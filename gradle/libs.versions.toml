@@ -20,11 +20,13 @@ icu4j = "78.3"
 material3 = "1.11.0-alpha07"
 kotlinx-coroutines = "1.11.0"
 kotlinx-serialization = "1.11.0"
+neo4j-driver = "6.2.0"
 okio = "3.17.0"
 clikt = "5.1.0"
 koog = "1.0.0"
 lucene-kmp = "10.2.0-alpha14"
 jsoup = "1.22.2"
+pdfbox = "3.0.8"
 freemarker = "2.3.34"
 
 [libraries]
@@ -54,6 +56,7 @@ ktor-serverNetty = { module = "io.ktor:ktor-server-netty-jvm", version.ref = "kt
 ktor-serverTestHost = { module = "io.ktor:ktor-server-test-host-jvm", version.ref = "ktor" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+neo4j-java-driver = { module = "org.neo4j.driver:neo4j-java-driver", version.ref = "neo4j-driver" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 clikt = { module = "com.github.ajalt.clikt:clikt", version.ref = "clikt" }
 koog-agents = { module = "ai.koog:koog-agents", version.ref = "koog" }
@@ -63,6 +66,7 @@ lucene-kmp-analysis-common = { module = "org.gnit.lucene-kmp:lucene-kmp-analysis
 lucene-kmp-analysis-kuromoji = { module = "org.gnit.lucene-kmp:lucene-kmp-analysis-kuromoji", version.ref = "lucene-kmp" }
 lucene-kmp-analysis-nori = { module = "org.gnit.lucene-kmp:lucene-kmp-analysis-nori", version.ref = "lucene-kmp" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
+pdfbox = { module = "org.apache.pdfbox:pdfbox", version.ref = "pdfbox" }
 freemarker = { module = "org.freemarker:freemarker", version.ref = "freemarker" }
 ktor-clientCore = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-clientCio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }

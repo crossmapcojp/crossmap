@@ -62,13 +62,16 @@ class GoogleSocialDataMergePipeline(
         val accounts = SocialExportReader().read(inputs)
         val matcher = SocialChurchAccountMatcher(migrated)
         val decisions = accounts.map(matcher::match)
+        val accountsById = accounts.associateBy(SocialAccountCandidate::id)
         val acceptedByChurch = decisions.asSequence()
             // Estimated matches are intentionally audit-only. They are useful review candidates,
             // but publishing them automatically would turn a fuzzy church-name collision into
             // durable catalog data.
             .filter { it.status == SocialMergeStatus.EXACT_MATCH }
+            // Some exports (notably Facebook pages_followed_v2) provide names without page URLs.
+            // They are useful matching evidence, but cannot become a SocialProfile safely.
+            .filter { decision -> accountsById.getValue(decision.socialAccountId).url.isNotBlank() }
             .groupBy { requireNotNull(it.churchId) }
-        val accountsById = accounts.associateBy(SocialAccountCandidate::id)
         val now = Instant.now().toString()
         val updatedChurches = migrated.map { church ->
             val accepted = acceptedByChurch[church.id].orEmpty().mapNotNull { decision ->

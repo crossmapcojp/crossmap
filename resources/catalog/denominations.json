@@ -458,7 +458,9 @@
         "id": "SEIKYODAN",
         "name": "基督聖協団",
         "aliases": [
-            "キリスト聖協団"
+            "基督聖協団",
+            "キリスト聖協団",
+            "聖協団"
         ],
         "officialWebsite": "http://www.seikyodan.com/",
         "proposed": false
@@ -490,14 +492,14 @@
         "aliases": [
             "メノナイトブレザレン"
         ],
-        "officialWebsite": "",
+        "officialWebsite": "https://jmbc.japan-mb.com/",
         "proposed": false
     },
     {
         "id": "JLBC",
         "name": "日本ルーテル同胞教団",
         "aliases": [],
-        "officialWebsite": "https://mafumikudo.wixsite.com/lbcj",
+        "officialWebsite": "https://clbj.org/",
         "proposed": false
     },
     {
@@ -538,13 +540,15 @@
         "proposed": false
     },
     {
-        "id": "HCC",
-        "name": "ハレルヤコミュニティチャーチ",
+        "id": "LIVE",
+        "name": "ライブチャーチ",
         "aliases": [
+            "ライブチャーチ",
+            "Live Church",
             "HCC",
             "ハレルヤコミュニティーチャーチ"
         ],
-        "officialWebsite": "",
+        "officialWebsite": "https://livechurch.jp/",
         "proposed": false
     },
     {
@@ -567,7 +571,7 @@
         "id": "ADVENT",
         "name": "日本アドベント・キリスト教団",
         "aliases": [],
-        "officialWebsite": "",
+        "officialWebsite": "https://nihonadobento.wordpress.com/",
         "proposed": false
     },
     {
@@ -595,7 +599,7 @@
         "id": "JEB",
         "name": "日本伝道隊",
         "aliases": [],
-        "officialWebsite": "",
+        "officialWebsite": "https://nihon-dendoutai.kyoukai.jp/",
         "proposed": false
     },
     {

@@ -12,6 +12,7 @@ import java.security.MessageDigest
 import java.time.Duration
 import java.time.Instant
 import jp.co.crossmap.ChurchMinister
+import jp.co.crossmap.LocalizedName
 import jp.co.crossmap.SocialProfile
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -33,6 +34,7 @@ data class OfficialDenominationChurch(
     val ministers: List<ChurchMinister> = emptyList(),
     val membershipStatus: OfficialChurchMembershipStatus = OfficialChurchMembershipStatus.LISTED,
     val note: String = "",
+    val localizedNames: List<LocalizedName> = emptyList(),
 ) {
     val eligibleForDenominationEvidence: Boolean
         get() = membershipStatus == OfficialChurchMembershipStatus.LISTED
@@ -58,6 +60,9 @@ interface DenominationChurchListCrawler {
     fun parse(html: String): List<OfficialDenominationChurch>
 
     fun parsePage(url: String, html: String): List<OfficialDenominationChurch> = parse(html)
+
+    fun parseLoadedPage(page: LoadedDenominationChurchPage): List<OfficialDenominationChurch> =
+        parsePage(page.url, page.html)
 
     fun merge(churches: List<OfficialDenominationChurch>): List<OfficialDenominationChurch> =
         churches.distinctBy { Triple(it.name, it.address, it.jurisdiction) }
@@ -88,6 +93,7 @@ data class LoadedDenominationChurchPage(
     val html: String,
     val fetchedAt: String,
     val cacheHit: Boolean,
+    val bytes: ByteArray = html.toByteArray(Charsets.UTF_8),
 )
 
 fun interface DenominationChurchPageLoader {
@@ -99,6 +105,7 @@ private data class DenominationChurchPageCacheMetadata(
     val sourceUrl: String,
     val fetchedAt: String,
     val contentSha256: String,
+    val contentType: String = "",
 )
 
 internal object DenominationDirectoryCachePolicy {
@@ -120,16 +127,20 @@ class CachedHttpDenominationChurchPageLoader(
 ) : DenominationChurchPageLoader {
     override fun load(url: String, forceRefresh: Boolean): LoadedDenominationChurchPage {
         val cacheKey = url.sha256()
-        val pageFile = cacheDirectory.resolve("$cacheKey.html")
+        val pageFile = cacheDirectory.resolve("$cacheKey.body")
+        val legacyPageFile = cacheDirectory.resolve("$cacheKey.html")
         val metadataFile = cacheDirectory.resolve("$cacheKey.json")
         if (forceRefresh) {
             Files.deleteIfExists(pageFile)
+            Files.deleteIfExists(legacyPageFile)
             Files.deleteIfExists(metadataFile)
         }
-        if (Files.isRegularFile(pageFile) && Files.isRegularFile(metadataFile)) {
+        if ((Files.isRegularFile(pageFile) || Files.isRegularFile(legacyPageFile)) && Files.isRegularFile(metadataFile)) {
             val metadata = json.decodeFromString<DenominationChurchPageCacheMetadata>(Files.readString(metadataFile))
             if (metadata.sourceUrl == url && DenominationDirectoryCachePolicy.isFresh(metadata.fetchedAt, now())) {
-                return LoadedDenominationChurchPage(url, Files.readString(pageFile), metadata.fetchedAt, cacheHit = true)
+                val bytes = if (Files.isRegularFile(pageFile)) Files.readAllBytes(pageFile) else Files.readAllBytes(legacyPageFile)
+                val html = if (Files.isRegularFile(pageFile)) decodeHtml(bytes, metadata.contentType) else bytes.toString(Charsets.UTF_8)
+                return LoadedDenominationChurchPage(url, html, metadata.fetchedAt, cacheHit = true, bytes = bytes)
             }
         }
 
@@ -141,15 +152,16 @@ class CachedHttpDenominationChurchPageLoader(
         val response = client.send(request, HttpResponse.BodyHandlers.ofByteArray())
         require(response.statusCode() in 200..299) { "HTTP ${response.statusCode()} for $url" }
         val fetchedAt = now().toString()
-        val html = decodeHtml(response.body(), response.headers().firstValue("content-type").orElse(""))
-        require(html.isNotBlank()) { "Official denomination directory returned an empty page: $url" }
+        val contentType = response.headers().firstValue("content-type").orElse("")
+        val html = decodeHtml(response.body(), contentType)
+        require(response.body().isNotEmpty()) { "Official denomination directory returned an empty page: $url" }
         Files.createDirectories(cacheDirectory)
-        atomicWrite(pageFile, html)
+        atomicWrite(pageFile, response.body())
         atomicWrite(
             metadataFile,
-            json.encodeToString(DenominationChurchPageCacheMetadata(url, fetchedAt, html.sha256())),
+            json.encodeToString(DenominationChurchPageCacheMetadata(url, fetchedAt, response.body().sha256(), contentType)),
         )
-        return LoadedDenominationChurchPage(response.uri().toString(), html, fetchedAt, cacheHit = false)
+        return LoadedDenominationChurchPage(response.uri().toString(), html, fetchedAt, cacheHit = false, bytes = response.body())
     }
 
     private fun decodeHtml(bytes: ByteArray, contentType: String): String {
@@ -169,6 +181,13 @@ class CachedHttpDenominationChurchPageLoader(
         runCatching { Files.move(part, path, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING) }
             .getOrElse { Files.move(part, path, StandardCopyOption.REPLACE_EXISTING) }
     }
+
+    private fun atomicWrite(path: Path, content: ByteArray) {
+        val part = path.resolveSibling("${path.fileName}.part")
+        Files.write(part, content)
+        runCatching { Files.move(part, path, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING) }
+            .getOrElse { Files.move(part, path, StandardCopyOption.REPLACE_EXISTING) }
+    }
 }
 
 data class DenominationChurchListCrawlResult(
@@ -176,6 +195,7 @@ data class DenominationChurchListCrawlResult(
     val outputFile: Path,
     val cacheHit: Boolean,
     val pageCount: Int,
+    val errors: Int = 0,
 )
 
 class DenominationChurchListCrawlerRunner(
@@ -198,11 +218,16 @@ class DenominationChurchListCrawlerRunner(
             cacheRoot.resolve("denomination-church-lists/${crawler.denominationId.lowercase()}"),
             json = json,
         )
-        val listPages = crawler.pageUrls.map { loader.load(it, forceRefresh) }
-        var churches = crawler.merge(listPages.flatMap { crawler.parsePage(it.url, it.html) })
+        val listPages = crawler.pageUrls.map { loadPage(it, resourcesRoot, loader, forceRefresh) }
+        var churches = crawler.merge(listPages.flatMap(crawler::parseLoadedPage))
+        var detailErrors = 0
         val detailPages = churches.mapNotNull { church ->
             church.denominationChurchListDetailPage.takeIf(String::isNotBlank)?.let { url ->
-                church to loader.load(url, forceRefresh)
+                runCatching { church to loadPage(url, resourcesRoot, loader, forceRefresh) }
+                    .getOrElse {
+                        detailErrors++
+                        null
+                    }
             }
         }
         val detailsByUrl = detailPages.associate { (church, page) -> church.denominationChurchListDetailPage to page }
@@ -237,10 +262,34 @@ class DenominationChurchListCrawlerRunner(
             outputFile = output,
             cacheHit = pages.all(LoadedDenominationChurchPage::cacheHit),
             pageCount = pages.size,
+            errors = detailErrors,
+        )
+    }
+
+    private fun loadPage(
+        url: String,
+        resourcesRoot: Path,
+        loader: DenominationChurchPageLoader,
+        forceRefresh: Boolean,
+    ): LoadedDenominationChurchPage {
+        if (!url.startsWith(RESOURCE_URL_PREFIX)) return loader.load(url, forceRefresh)
+        val relativePath = url.removePrefix(RESOURCE_URL_PREFIX)
+        val normalizedRoot = resourcesRoot.toAbsolutePath().normalize()
+        val file = normalizedRoot.resolve(relativePath).normalize()
+        require(file.startsWith(normalizedRoot)) { "Fixture URL escapes the resources directory: $url" }
+        require(Files.isRegularFile(file)) { "Missing committed denomination fixture: $file" }
+        val bytes = Files.readAllBytes(file)
+        return LoadedDenominationChurchPage(
+            url = url,
+            html = bytes.toString(Charsets.UTF_8),
+            fetchedAt = Files.getLastModifiedTime(file).toInstant().toString(),
+            cacheHit = true,
+            bytes = bytes,
         )
     }
 
     private fun invalidateLegacyCache(cacheDirectory: Path, url: String) {
+        if (url.startsWith(RESOURCE_URL_PREFIX)) return
         val mapFile = cacheDirectory.resolve("url-cache-map.json")
         if (!Files.isRegularFile(mapFile)) return
         val map = json.decodeFromString<Map<String, String>>(Files.readString(mapFile)).toMutableMap()
@@ -249,6 +298,10 @@ class DenominationChurchListCrawlerRunner(
         if (removedContentHash !in map.values) {
             Files.deleteIfExists(cacheDirectory.resolve("pages/$removedContentHash.html"))
         }
+    }
+
+    private companion object {
+        const val RESOURCE_URL_PREFIX = "resource:"
     }
 
     private fun atomicWrite(path: Path, content: String) {
@@ -261,6 +314,9 @@ class DenominationChurchListCrawlerRunner(
 
 private fun String.sha1(): String = digest("SHA-1")
 private fun String.sha256(): String = digest("SHA-256")
+private fun ByteArray.sha256(): String = MessageDigest.getInstance("SHA-256")
+    .digest(this)
+    .joinToString("") { "%02x".format(it) }
 private fun String.digest(algorithm: String): String = MessageDigest.getInstance(algorithm)
     .digest(toByteArray())
     .joinToString("") { "%02x".format(it) }

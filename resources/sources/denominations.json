@@ -358,9 +358,14 @@
         "name": "札幌教区",
         "kind": "DIOCESE",
         "parentJurisdictionId": null,
-        "jurisdictionWebsiteUrl": "https://csd.or.jp/",
+        "jurisdictionWebsiteUrl": "https://www.csd.or.jp/",
         "churchListUrlList": [
-          "https://csd.or.jp/"
+          "https://www.csd.or.jp/sapporo",
+          "https://www.csd.or.jp/tomakomai",
+          "https://www.csd.or.jp/hakodate",
+          "https://www.csd.or.jp/asahikawa",
+          "https://www.csd.or.jp/kitami",
+          "https://www.csd.or.jp/kushiro"
         ],
         "entrySelector": "",
         "nameSelector": "",
@@ -372,10 +377,10 @@
         "name": "仙台教区",
         "kind": "DIOCESE",
         "parentJurisdictionId": null,
-        "jurisdictionWebsiteUrl": "http://www.sendai.catholic.jp/",
-        "churchListUrlList": [
-          "http://www.sendai.catholic.jp/"
-        ],
+      "jurisdictionWebsiteUrl": "http://www.sendai.catholic.jp/",
+      "churchListUrlList": [
+        "https://sendai.catholic.jp/diocese/parishes/"
+      ],
         "entrySelector": "",
         "nameSelector": "",
         "addressSelector": "",
@@ -386,10 +391,10 @@
         "name": "新潟教区",
         "kind": "DIOCESE",
         "parentJurisdictionId": null,
-        "jurisdictionWebsiteUrl": "http://www.catholic-niigata.net/",
-        "churchListUrlList": [
-          "http://www.catholic-niigata.net/"
-        ],
+      "jurisdictionWebsiteUrl": "http://www.catholic-niigata.net/",
+      "churchListUrlList": [
+        "http://www.catholic-niigata.net/churches"
+      ],
         "entrySelector": "",
         "nameSelector": "",
         "addressSelector": "",
@@ -400,9 +405,12 @@
         "name": "さいたま教区",
         "kind": "DIOCESE",
         "parentJurisdictionId": null,
-        "jurisdictionWebsiteUrl": "http://saitama-kyoku.net/",
-        "churchListUrlList": [
-          "http://saitama-kyoku.net/"
+      "jurisdictionWebsiteUrl": "http://saitama-kyoku.net/",
+      "churchListUrlList": [
+        "https://web.archive.org/web/20230926000048id_/http://saitama-kyoku.net/our_parishes/",
+        "https://web.archive.org/web/20230924063951id_/http://saitama-kyoku.net/our_parishes/?label=2&key=Tochigi&tpl=",
+        "https://web.archive.org/web/20230924073307id_/http://saitama-kyoku.net/our_parishes/?label=2&key=Gunma&tpl=",
+        "https://web.archive.org/web/20230924060946id_/http://saitama-kyoku.net/our_parishes/?label=2&key=Ibaraki&tpl="
         ],
         "entrySelector": "",
         "nameSelector": "",
@@ -414,10 +422,11 @@
         "name": "東京大司教区",
         "kind": "DIOCESE",
         "parentJurisdictionId": null,
-        "jurisdictionWebsiteUrl": "https://tokyo.catholic.jp/",
-        "churchListUrlList": [
-          "https://tokyo.catholic.jp/"
-        ],
+      "jurisdictionWebsiteUrl": "https://tokyo.catholic.jp/",
+      "churchListUrlList": [
+        "https://tokyo.catholic.jp/archdiocese/parishes/tokyo/",
+        "https://tokyo.catholic.jp/archdiocese/parishes/chiba/"
+      ],
         "entrySelector": "",
         "nameSelector": "",
         "addressSelector": "",
@@ -428,9 +437,18 @@
         "name": "横浜教区",
         "kind": "DIOCESE",
         "parentJurisdictionId": null,
-        "jurisdictionWebsiteUrl": "http://www.yokohama.catholic.jp/",
-        "churchListUrlList": [
-          "http://www.yokohama.catholic.jp/"
+      "jurisdictionWebsiteUrl": "http://www.yokohama.catholic.jp/",
+      "churchListUrlList": [
+        "http://www.yokohama.catholic.jp/syokyoku_top/yb_parish_k01.html",
+        "http://www.yokohama.catholic.jp/syokyoku_top/yb_parish_k02.html",
+        "http://www.yokohama.catholic.jp/syokyoku_top/yb_parish_k03.html",
+        "http://www.yokohama.catholic.jp/syokyoku_top/yb_parish_k04.html",
+        "http://www.yokohama.catholic.jp/syokyoku_top/yb_parish_k05.html",
+        "http://www.yokohama.catholic.jp/syokyoku_top/yb_parish_k06.html",
+        "http://www.yokohama.catholic.jp/syokyoku_top/yb_parish_k07.html",
+        "http://www.yokohama.catholic.jp/syokyoku_top/yb_parish_s01.html",
+        "http://www.yokohama.catholic.jp/syokyoku_top/yb_parish_n01.html",
+        "http://www.yokohama.catholic.jp/syokyoku_top/yb_parish_y01.html"
         ],
         "entrySelector": "",
         "nameSelector": "",
@@ -442,9 +460,9 @@
         "name": "名古屋教区",
         "kind": "DIOCESE",
         "parentJurisdictionId": null,
-        "jurisdictionWebsiteUrl": "http://nagoya.catholic.jp/",
-        "churchListUrlList": [
-          "http://nagoya.catholic.jp/"
+      "jurisdictionWebsiteUrl": "http://nagoya.catholic.jp/",
+      "churchListUrlList": [
+        "https://nagoya.catholic.jp/church"
         ],
         "entrySelector": "",
         "nameSelector": "",
@@ -456,9 +474,9 @@
         "name": "京都教区",
         "kind": "DIOCESE",
         "parentJurisdictionId": null,
-        "jurisdictionWebsiteUrl": "http://www.kyoto.catholic.jp/",
-        "churchListUrlList": [
-          "http://www.kyoto.catholic.jp/"
+      "jurisdictionWebsiteUrl": "https://www.kyoto-catholic.net/",
+      "churchListUrlList": [
+        "https://kyoto.catholic.jp/addres/Address_Table.htm"
         ],
         "entrySelector": "",
         "nameSelector": "",
@@ -467,12 +485,12 @@
       },
       {
         "id": "a7c44672d93a",
-        "name": "大阪大司教区",
+      "name": "大阪高松大司教区",
         "kind": "DIOCESE",
         "parentJurisdictionId": null,
-        "jurisdictionWebsiteUrl": "http://www.osaka.catholic.jp/",
-        "churchListUrlList": [
-          "http://www.osaka.catholic.jp/"
+      "jurisdictionWebsiteUrl": "https://ostk.catholic.jp/",
+      "churchListUrlList": [
+        "https://ostk.catholic.jp/parish_mass/"
         ],
         "entrySelector": "",
         "nameSelector": "",
@@ -484,23 +502,9 @@
         "name": "広島教区",
         "kind": "DIOCESE",
         "parentJurisdictionId": null,
-        "jurisdictionWebsiteUrl": "http://hiroshima.catholic.jp/",
-        "churchListUrlList": [
-          "http://hiroshima.catholic.jp/"
-        ],
-        "entrySelector": "",
-        "nameSelector": "",
-        "addressSelector": "",
-        "urlSelector": ""
-      },
-      {
-        "id": "a77e524c54a0",
-        "name": "高松教区",
-        "kind": "DIOCESE",
-        "parentJurisdictionId": null,
-        "jurisdictionWebsiteUrl": "http://www.takamatsu.catholic.ne.jp/",
-        "churchListUrlList": [
-          "http://www.takamatsu.catholic.ne.jp/"
+      "jurisdictionWebsiteUrl": "http://hiroshima.catholic.jp/",
+      "churchListUrlList": [
+        "https://hiroshima.catholic.jp/church/"
         ],
         "entrySelector": "",
         "nameSelector": "",
@@ -512,9 +516,9 @@
         "name": "福岡教区",
         "kind": "DIOCESE",
         "parentJurisdictionId": null,
-        "jurisdictionWebsiteUrl": "http://fukuoka.catholic.jp/",
-        "churchListUrlList": [
-          "http://fukuoka.catholic.jp/"
+      "jurisdictionWebsiteUrl": "http://fukuoka.catholic.jp/",
+      "churchListUrlList": [
+        "https://fukuoka.catholic.jp/parish/"
         ],
         "entrySelector": "",
         "nameSelector": "",
@@ -526,9 +530,9 @@
         "name": "長崎大司教区",
         "kind": "DIOCESE",
         "parentJurisdictionId": null,
-        "jurisdictionWebsiteUrl": "https://www.nagasaki.catholic.jp/",
-        "churchListUrlList": [
-          "https://www.nagasaki.catholic.jp/"
+      "jurisdictionWebsiteUrl": "https://www.nagasaki.catholic.jp/",
+      "churchListUrlList": [
+        "https://www.nagasaki.catholic.jp/information/address"
         ],
         "entrySelector": "",
         "nameSelector": "",
@@ -540,9 +544,10 @@
         "name": "大分教区",
         "kind": "DIOCESE",
         "parentJurisdictionId": null,
-        "jurisdictionWebsiteUrl": "https://oita-catholic.jp/",
-        "churchListUrlList": [
-          "https://oita-catholic.jp/"
+      "jurisdictionWebsiteUrl": "https://oita-catholic.jp/",
+      "churchListUrlList": [
+        "https://oita-catholic.jp/pages/45/",
+        "https://oita-catholic.jp/pages/46/"
         ],
         "entrySelector": "",
         "nameSelector": "",
@@ -554,9 +559,11 @@
         "name": "鹿児島教区",
         "kind": "DIOCESE",
         "parentJurisdictionId": null,
-        "jurisdictionWebsiteUrl": "https://kagoshima-catholic.jp/",
-        "churchListUrlList": [
-          "https://kagoshima-catholic.jp/"
+      "jurisdictionWebsiteUrl": "https://kagoshima-catholic.jp/",
+      "churchListUrlList": [
+        "https://kagoshima-catholic.jp/diocese/",
+        "https://kagoshima-catholic.jp/diocese/page/2/",
+        "https://kagoshima-catholic.jp/diocese/page/3/"
         ],
         "entrySelector": "",
         "nameSelector": "",
@@ -568,9 +575,9 @@
         "name": "那覇教区",
         "kind": "DIOCESE",
         "parentJurisdictionId": null,
-        "jurisdictionWebsiteUrl": "http://www.naha.catholic.jp/",
-        "churchListUrlList": [
-          "http://www.naha.catholic.jp/"
+      "jurisdictionWebsiteUrl": "http://www.naha.catholic.jp/",
+      "churchListUrlList": [
+        "https://www.naha.catholic.jp/wp/wordpress/parish/"
         ],
         "entrySelector": "",
         "nameSelector": "",
@@ -2073,7 +2080,16 @@
     "denominationId": "JEC",
     "denominationName": "日本福音教会",
     "denominationWebsiteUrl": "https://www.jec-net.org/",
-    "churchListUrlList": [],
+    "churchListUrlList": [
+      "https://www.jec-net.org/pref/gunma/", "https://www.jec-net.org/pref/tokyo/",
+      "https://www.jec-net.org/pref/kanagawa/", "https://www.jec-net.org/pref/nagano/",
+      "https://www.jec-net.org/pref/shizuoka/", "https://www.jec-net.org/pref/aichi/",
+      "https://www.jec-net.org/pref/mie/", "https://www.jec-net.org/pref/kyoto/",
+      "https://www.jec-net.org/pref/osaka/", "https://www.jec-net.org/pref/hyogo/",
+      "https://www.jec-net.org/pref/nara/", "https://www.jec-net.org/pref/wakayama/",
+      "https://www.jec-net.org/pref/shimane/", "https://www.jec-net.org/pref/okayama/",
+      "https://www.jec-net.org/pref/tokushima/", "https://www.jec-net.org/pref/fukuoka/"
+    ],
     "socialUrlList": [],
     "entrySelector": "",
     "nameSelector": "",
@@ -2160,7 +2176,7 @@
     "denominationName": "日本アライアンス教団",
     "denominationWebsiteUrl": "http://jac-hij.sakura.ne.jp/",
     "churchListUrlList": [
-      "http://jac-hij.sakura.ne.jp/profile.html"
+      "https://jac-hij.sakura.ne.jp/profile.html"
     ],
     "socialUrlList": [],
     "entrySelector": "",
@@ -2204,7 +2220,9 @@
     "denominationName": "日本フォースクエア福音教団",
     "denominationWebsiteUrl": "https://www.japan-foursquare.jp/",
     "churchListUrlList": [
-      "https://www.japan-foursquare.jp/cont2/main.html"
+      "https://www.japan-foursquare.jp/cont2/6.html", "https://www.japan-foursquare.jp/cont2/22.html",
+      "https://www.japan-foursquare.jp/cont2/21.html", "https://www.japan-foursquare.jp/cont2/23.html",
+      "https://www.japan-foursquare.jp/cont2/13.html"
     ],
     "socialUrlList": [],
     "entrySelector": "",
@@ -2219,7 +2237,9 @@
     "denominationId": "OBC",
     "denominationName": "沖縄バプテスト連盟",
     "denominationWebsiteUrl": "http://okinawabaptist.com/",
-    "churchListUrlList": [],
+    "churchListUrlList": [
+      "http://okinawabaptist.com/?page_id=2"
+    ],
     "socialUrlList": [],
     "entrySelector": "",
     "nameSelector": "",
@@ -2233,7 +2253,9 @@
     "denominationId": "SEIKYODAN",
     "denominationName": "基督聖協団",
     "denominationWebsiteUrl": "http://www.seikyodan.com/",
-    "churchListUrlList": [],
+    "churchListUrlList": [
+      "https://www.seikyodan.com/shyozoku5.html"
+    ],
     "socialUrlList": [],
     "entrySelector": "",
     "nameSelector": "",
@@ -2247,7 +2269,10 @@
     "denominationId": "JLC",
     "denominationName": "日本ルーテル教団",
     "denominationWebsiteUrl": "http://www.jlc.or.jp/",
-    "churchListUrlList": [],
+    "churchListUrlList": [
+      "http://www.jlc.or.jp/area/hokkaido/", "http://www.jlc.or.jp/area/nigata/",
+      "http://www.jlc.or.jp/area/kanto/", "http://www.jlc.or.jp/area/okinawa/"
+    ],
     "socialUrlList": [
       "https://www.facebook.com/JapanLutheranChurch/"
     ],
@@ -2263,7 +2288,9 @@
     "denominationId": "WMC",
     "denominationName": "ワールドミッション教団",
     "denominationWebsiteUrl": "https://worldmission.or.jp/",
-    "churchListUrlList": [],
+    "churchListUrlList": [
+      "https://worldmission.or.jp/church/"
+    ],
     "socialUrlList": [],
     "entrySelector": "",
     "nameSelector": "",
@@ -2276,12 +2303,10 @@
     "id": "jfec",
     "denominationId": "JFEC",
     "denominationName": "同盟福音基督教会",
-    "denominationWebsiteUrl": "http://www.doumeifukuin.net/",
-    "churchListUrlList": [
-      "http://www.doumeifukuin.net/",
-      "http://www.doumeifukuin.net/shyozokukyoukai/",
-      "http://www.doumeifukuin.net/aihopechurch/"
-    ],
+  "denominationWebsiteUrl": "http://www.doumeifukuin.net/",
+  "churchListUrlList": [
+    "https://www.doumeifukuin.net/shyozokukyoukai/"
+  ],
     "socialUrlList": [],
     "entrySelector": "",
     "nameSelector": "",
@@ -2295,7 +2320,9 @@
     "denominationId": "JMBC",
     "denominationName": "日本メノナイトブレザレン教団",
     "denominationWebsiteUrl": "",
-    "churchListUrlList": [],
+    "churchListUrlList": [
+      "https://jmbc.japan-mb.com/church/"
+    ],
     "socialUrlList": [],
     "entrySelector": "",
     "nameSelector": "",
@@ -2308,9 +2335,9 @@
     "id": "jlbc",
     "denominationId": "JLBC",
     "denominationName": "日本ルーテル同胞教団",
-    "denominationWebsiteUrl": "https://mafumikudo.wixsite.com/lbcj",
+    "denominationWebsiteUrl": "https://clbj.org/",
     "churchListUrlList": [
-      "https://mafumikudo.wixsite.com/lbcj"
+      "https://clbj.org/church/"
     ],
     "socialUrlList": [],
     "entrySelector": "",
@@ -2339,7 +2366,10 @@
     "denominationId": "KELC",
     "denominationName": "近畿福音ルーテル教会",
     "denominationWebsiteUrl": "http://www.kelc.net/",
-    "churchListUrlList": [],
+    "churchListUrlList": [
+      "http://www.kelc.net/hyogo.html", "http://www.kelc.net/osaka.html",
+      "http://www.kelc.net/wakayama.html", "http://www.kelc.net/nara.html", "http://www.kelc.net/mie.html"
+    ],
     "socialUrlList": [],
     "entrySelector": "",
     "nameSelector": "",
@@ -2444,8 +2474,10 @@
     "id": "advent",
     "denominationId": "ADVENT",
     "denominationName": "日本アドベント・キリスト教団",
-    "denominationWebsiteUrl": "",
-    "churchListUrlList": [],
+    "denominationWebsiteUrl": "https://nihonadobento.wordpress.com/",
+    "churchListUrlList": [
+      "https://nihonadobento.wordpress.com/home/%e6%89%80%e5%b1%9e%e6%95%99%e4%bc%9a%e3%83%bb%e9%96%a2%e9%80%a3%e5%9b%a3%e4%bd%93%e4%b8%80%e8%a6%a7/"
+    ],
     "socialUrlList": [],
     "entrySelector": "",
     "nameSelector": "",
@@ -2476,7 +2508,6 @@
     "denominationName": "日本伝道福音教団",
     "denominationWebsiteUrl": "https://church.ne.jp/niigatabible_ch/main/denpuku.html",
     "churchListUrlList": [
-      "https://church.ne.jp/niigatabible_ch/",
       "https://church.ne.jp/niigatabible_ch/main/denpuku.html"
     ],
     "socialUrlList": [],
@@ -2505,8 +2536,10 @@
     "id": "jeb",
     "denominationId": "JEB",
     "denominationName": "日本伝道隊",
-    "denominationWebsiteUrl": "",
-    "churchListUrlList": [],
+    "denominationWebsiteUrl": "https://nihon-dendoutai.kyoukai.jp/",
+    "churchListUrlList": [
+      "https://nihon-dendoutai.kyoukai.jp/church/"
+    ],
     "socialUrlList": [],
     "entrySelector": "",
     "nameSelector": "",
@@ -2549,8 +2582,10 @@
     "id": "seiyaku",
     "denominationId": "SEIYAKU",
     "denominationName": "日本聖約キリスト教団",
-    "denominationWebsiteUrl": "http://www.seiyaku.jp/",
-    "churchListUrlList": [],
+    "denominationWebsiteUrl": "https://www.seiyaku.jp/",
+    "churchListUrlList": [
+      "https://www.seiyaku.jp/?page_id=1316"
+    ],
     "socialUrlList": [],
     "entrySelector": "",
     "nameSelector": "",
@@ -4235,5 +4270,21 @@
     "urlSelector": "",
     "sourceSpreadsheetRow": 237,
     "lastVerifiedAt": ""
+  },
+  {
+    "id": "live",
+    "denominationId": "LIVE",
+    "denominationName": "ライブチャーチ",
+    "denominationWebsiteUrl": "https://livechurch.jp/",
+    "churchListUrlList": [
+      "https://livechurch.jp/location/ja/", "https://livechurch.jp/location/en/", "https://livechurch.jp/location/pt/"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": null,
+    "lastVerifiedAt": "2026-07-25"
   }
 ]

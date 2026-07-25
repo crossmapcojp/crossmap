@@ -8,6 +8,7 @@ import java.time.Instant
 import jp.co.crossmap.ChurchRecord
 import jp.co.crossmap.DeterminationSource
 import jp.co.crossmap.FieldDetermination
+import jp.co.crossmap.LocalizedName
 import jp.co.crossmap.crawl.JapaneseEntityNormalizer
 import jp.co.crossmap.crawl.NOT_DETERMINED
 import kotlinx.serialization.json.Json
@@ -32,6 +33,16 @@ data class OfficialDenominationReconciliationReport(
         appendLine()
         appendAuditGroup("unmatched_official_entries", unmatchedOfficialEntryDetails)
     }.trimEnd()
+}
+
+private fun OfficialDenominationChurch.officialEnglishName(): String =
+    localizedNames.firstOrNull { it.languageCode == "en" }?.name.orEmpty()
+
+private fun List<LocalizedName>.withOfficialNames(official: List<LocalizedName>): List<LocalizedName> {
+    if (official.isEmpty()) return this
+    val officialLanguages = official.mapTo(hashSetOf(), LocalizedName::languageCode)
+    return (filterNot { it.languageCode in officialLanguages } + official)
+        .distinctBy { it.languageCode to it.name }
 }
 
 data class OfficialDenominationReconciliationAuditEntry(
@@ -198,7 +209,7 @@ class OfficialDenominationChurchListReconciler(
                 unchanged++
                 return@mapIndexed officialAssignment?.first
                     ?.takeIf { it.list.denominationId == current }
-                    ?.let { church.withOfficialMinisters(it.church, timestamp) }
+                    ?.let { church.withOfficialDetails(it.church, timestamp) }
                     ?: church
             }
 
@@ -371,6 +382,8 @@ class OfficialDenominationChurchListReconciler(
         )
         return copy(
             denominationId = denominationId,
+            englishName = entry.church.officialEnglishName().ifBlank { englishName },
+            localizedNames = localizedNames.withOfficialNames(entry.church.localizedNames),
             ministers = entry.church.ministers,
             websiteUrl = websiteUrl.ifBlank { entry.church.websiteUrl },
             email = email ?: entry.church.email.ifBlank { null },
@@ -380,13 +393,18 @@ class OfficialDenominationChurchListReconciler(
         )
     }
 
-    private fun ChurchRecord.withOfficialMinisters(
+    private fun ChurchRecord.withOfficialDetails(
         officialChurch: OfficialDenominationChurch,
         timestamp: String,
-    ): ChurchRecord = if (officialChurch.ministers.isEmpty()) {
+    ): ChurchRecord = if (officialChurch.ministers.isEmpty() && officialChurch.localizedNames.isEmpty()) {
         this
     } else {
-        copy(ministers = officialChurch.ministers, updatedAt = timestamp)
+        copy(
+            englishName = officialChurch.officialEnglishName().ifBlank { englishName },
+            localizedNames = localizedNames.withOfficialNames(officialChurch.localizedNames),
+            ministers = officialChurch.ministers.ifEmpty { ministers },
+            updatedAt = timestamp,
+        )
     }
 
     private fun ChurchRecord.withUnsupportedDenominationRemoved(
@@ -415,11 +433,15 @@ class OfficialDenominationChurchListReconciler(
             .getOrElse { Files.move(part, path, StandardCopyOption.REPLACE_EXISTING) }
     }
 
-    private data class OfficialEntry(
+    private class OfficialEntry(
         val key: String,
         val list: OfficialDenominationChurchList,
         val church: OfficialDenominationChurch,
-    )
+    ) {
+        override fun equals(other: Any?): Boolean = other is OfficialEntry && key == other.key
+
+        override fun hashCode(): Int = key.hashCode()
+    }
 
     private data class CatalogOfficialMatch(
         val churchIndex: Int,

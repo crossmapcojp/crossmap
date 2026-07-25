@@ -1,0 +1,55 @@
+package jp.co.crossmap.catalog.importer
+
+import jp.co.crossmap.ChurchRecord
+import jp.co.crossmap.GeoPoint
+import jp.co.crossmap.LocalizedName
+import jp.co.crossmap.SocialPlatform
+import jp.co.crossmap.SocialProfile
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+
+class LegacyJsonChurchCatalogSourceTest {
+    private val source = LegacyJsonChurchCatalogSource()
+
+    @Test
+    fun normalizesNamesUrlsAndSocialDuplicatesDeterministically() {
+        val record = source.normalize(
+            church(
+                localizedNames = listOf(LocalizedName("en-US", " Example Church ")),
+                socialProfiles = listOf(
+                    SocialProfile(SocialPlatform.FACEBOOK, "HTTPS://Example.COM/church/#top"),
+                    SocialProfile(SocialPlatform.FACEBOOK, "https://example.com/church"),
+                ),
+            ),
+            SourceMetadata("churches.json", "checksum", 0),
+        )
+        assertEquals(mapOf("en" to "Example Church", "ja" to "教会"), record.names.values)
+        assertEquals("https://example.com/#top", record.website?.normalizedUrl)
+        assertEquals(1, record.socialAccounts.size)
+        assertEquals("https://example.com/church", record.socialAccounts.single().normalizedUrl)
+    }
+
+    @Test
+    fun rejectsInvalidCoordinates() {
+        assertFailsWith<IllegalArgumentException> {
+            source.normalize(church(location = GeoPoint(91.0, 0.0)), SourceMetadata("churches.json", "checksum", 0))
+        }
+    }
+
+    private fun church(
+        localizedNames: List<LocalizedName> = emptyList(),
+        socialProfiles: List<SocialProfile> = emptyList(),
+        location: GeoPoint = GeoPoint(35.0, 139.0),
+    ) = ChurchRecord(
+        id = "google:1",
+        googleCid = "1",
+        name = "教会",
+        englishName = "Example Church",
+        localizedNames = localizedNames,
+        address = "Tokyo",
+        location = location,
+        websiteUrl = "HTTPS://Example.COM/#top",
+        socialProfiles = socialProfiles,
+    )
+}

@@ -1,6 +1,7 @@
 package jp.co.crossmap.crawl
 
 import java.nio.file.Files
+import java.nio.charset.StandardCharsets
 import jp.co.crossmap.SocialPlatform
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -63,10 +64,41 @@ class SocialExportParsersTest {
     }
 
     @Test
-    fun facebookJsonParserIsExplicitlyNoOpUntilExportArrives() {
+    fun facebookJsonParserReadsNameOnlyRowsAndRepairsMetaMojibake() {
         val file = Files.createTempFile("facebook-following", ".json")
-        Files.writeString(file, "{\"unknown_future_format\":[]}")
-        assertTrue(FacebookChurchPageJsonParser().parse(file).isEmpty())
+        val mojibake = "日本キリスト教団 東京教会".toByteArray(StandardCharsets.UTF_8)
+            .toString(StandardCharsets.ISO_8859_1)
+        Files.writeString(
+            file,
+            """{"pages_followed_v2":[
+              {"timestamp":1,"data":[{"name":"$mojibake"}],"title":"$mojibake"},
+              {"timestamp":2,"data":[{"name":"Grace Church Tokyo"}],"title":"Grace Church Tokyo"}
+            ]}""",
+        )
+
+        val accounts = FacebookChurchPageJsonParser().parse(file)
+
+        assertEquals(2, accounts.size)
+        assertEquals("日本キリスト教団 東京教会", accounts[0].accountName)
+        assertEquals("", accounts[0].url)
+        assertTrue(accounts[0].id.startsWith("facebook-export-name:"))
+        assertEquals("Grace Church Tokyo", accounts[1].accountName)
+    }
+
+    @Test
+    fun facebookJsonNameOnlyRowsAreNotCollapsedByTheCombinedReader() {
+        val file = Files.createTempFile("facebook-following", ".json")
+        Files.writeString(
+            file,
+            """{"pages_followed_v2":[
+              {"data":[{"name":"東京教会"}],"title":"東京教会"},
+              {"data":[{"name":"大阪教会"}],"title":"大阪教会"}
+            ]}""",
+        )
+
+        val accounts = SocialExportReader().read(SocialExportInputPaths(null, null, null, file, null))
+
+        assertEquals(listOf("東京教会", "大阪教会"), accounts.map { it.accountName })
     }
 
     @Test

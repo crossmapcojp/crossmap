@@ -7,6 +7,7 @@ import jp.co.crossmap.ChurchRecord
 import jp.co.crossmap.DeterminationSource
 import jp.co.crossmap.FieldDetermination
 import jp.co.crossmap.GeoPoint
+import jp.co.crossmap.LocalizedName
 import jp.co.crossmap.crawl.NOT_DETERMINED
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -921,6 +922,44 @@ class DenominationChurchListCrawlerTest {
     }
 
     @Test
+    fun officialLocalizedNameReplacesGeneratedEnglishNameInCanonicalRecord() {
+        val root = Files.createTempDirectory("crossmap-denomination-official-name")
+        try {
+            Files.createDirectories(root.resolve("catalog"))
+            val original = church("google:3", "コザ・バプテスト教会", "〒904-0004 沖縄県沖縄市中央１−１", "OBC")
+                .copy(
+                    englishName = "Generated Koza Baptist Church",
+                    localizedNames = listOf(LocalizedName("en", "Generated Koza Baptist Church"), LocalizedName("ko", "고자 교회")),
+                )
+            val catalogFile = root.resolve("catalog/churches.json")
+            Files.writeString(catalogFile, json.encodeToString(listOf(original)))
+
+            OfficialDenominationChurchListReconciler(json = json).reconcile(
+                catalogFile,
+                listOf(
+                    officialList(
+                        "OBC",
+                        listOf(
+                            OfficialDenominationChurch(
+                                name = original.name,
+                                localizedNames = listOf(LocalizedName("en", "Koza Baptist Church")),
+                                address = original.address,
+                            ),
+                        ),
+                    ),
+                ),
+            )
+
+            val updated = json.decodeFromString<List<ChurchRecord>>(Files.readString(catalogFile)).single()
+            assertEquals("Koza Baptist Church", updated.englishName)
+            assertEquals("Koza Baptist Church", updated.localizedNames.single { it.languageCode == "en" }.name)
+            assertEquals("고자 교회", updated.localizedNames.single { it.languageCode == "ko" }.name)
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun publishedCatalogDoesNotLabelTheTwoRealFalsePositivesAsJbc() {
         val resources = sequenceOf(java.nio.file.Path.of("resources"), java.nio.file.Path.of("../resources"))
             .first { Files.isRegularFile(it.resolve("catalog/churches.json")) }
@@ -937,7 +976,11 @@ class DenominationChurchListCrawlerTest {
 
     private fun officialList(id: String, churches: List<OfficialDenominationChurch>) = OfficialDenominationChurchList(
         denominationId = id,
-        denominationName = if (id == "JBC") "日本バプテスト連盟" else "日本基督教団",
+        denominationName = when (id) {
+            "JBC" -> "日本バプテスト連盟"
+            "OBC" -> "沖縄バプテスト連盟"
+            else -> "日本基督教団"
+        },
         sourceUrl = if (id == "JBC") "https://bapren.jp/church/" else "https://uccj.org/diocese",
         fetchedAt = "2026-07-18T00:00:00Z",
         churches = churches,

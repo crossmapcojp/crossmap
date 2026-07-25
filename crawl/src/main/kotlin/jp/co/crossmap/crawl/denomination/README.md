@@ -223,7 +223,41 @@ each "church detail webpage of denomination official website" needs to be crawle
 
 
 ### backlog of denomination order by the church count
-- [ ] カトリック中央協議会
-- [ ] 日本聖公会
-- [ ] 日本ハリストス正教会教団
+- [x] カトリック中央協議会
+- [x] 日本聖公会
+- [x] 日本ハリストス正教会教団
+- [x] 日本宣教連合会（コミット済み `resources/crawl/jma-churches.csv`）
+- [x] 西日本福音ルーテル教会
+- [x] 日本アライアンス教団
+- [x] ウェスレアン・ホーリネス教団（コミット済み `resources/crawl/whcj-churches.html`）
+- [x] 沖縄バプテスト連盟（公式英語名を canonical record に反映）
+- [x] 日本メノナイトブレザレン教団（公式英語名を canonical record に反映）
+- [x] 基督聖協団（フレーム本体 `shyozoku5.html` を直接取得）
+- [x] ワールドミッション教団
+- [x] 日本ルーテル同胞教団
+- [x] 日本フリーメソジスト教団
+- [x] 日本福音教団（半角カナの韓国人名読みを分離し、ハングル名を保持）
+- [x] 日本聖契キリスト教団（既存 canonical ID `NSKK`）
+- [x] 日本アドベント・キリスト教団
+- [x] 日本伝道福音教団
+- [x] 日本伝道隊（韓国人名のハングルと夫婦姓展開を保持）
+- [x] 日本聖約キリスト教団
+- [x] JEC 日本福音教会（registry-defined 16 prefecture pages）
+- [x] JFGC 日本フォースクエア福音教団（registry-defined 5 regional pages）
+- [x] JLC 日本ルーテル教団（registry-defined 4 regional pages）
+- [x] JFEC 同盟福音基督教会（directory-discovered detail pages）
+- [x] KELC 近畿福音ルーテル教会（registry-defined 5 prefecture pages）
+- [x] LIVE ライブチャーチ（official JA/EN/PT names merged by postal code）
+- [x] GMI グレース宣教会（directory-discovered detail pages）
 - [SKIPPED] イエス之御霊教会教団
+- [SKIPPED] キリストの教会（無楽器派）
+- [SKIPPED] 無教会主義集会
+- [SKIPPED] 聖書キリスト教会
+- [SKIPPED] 日本ネクスト・タウンズ・ミッション
+- [SKIPPED] 日本ペンテコステ教団
+- [SKIPPED] 活けるキリスト一麦の群
+- [SKIPPED]
+- [SKIPPED]
+- [SKIPPED]
+- [SKIPPED]
+- [SKIPPED]

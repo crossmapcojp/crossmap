@@ -48,6 +48,7 @@ if (useLocalLuceneKmp && file("../bbl-lucene/lucene-kmp").isDirectory) {
 include(":app:androidApp")
 include(":app:shared")
 include(":core")
+include(":catalog")
 include(":server")
 include("cli")
 include("crawl")

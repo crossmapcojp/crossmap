@@ -15,6 +15,12 @@ Crossmap does not require the former gmap project at build time or runtime. Exis
 - `app/androidApp` and `app/iosApp`: platform launchers, permissions, storage paths, and geolocation.
 - `resources`: durable inputs, crawl cache, evidence, review decisions, canonical catalogs, geonames, and versioned indexes.
 
+## Neo4j boundary
+
+Neo4j is a crawler/build-time database, not a server dependency. The `crawl` module imports and enriches the catalog in Neo4j, and `:server:generateChurchPages` reads bounded Neo4j projections to materialize the localized pages built from `church.html`. The Ktor server itself reads the generated Lucene snapshot, JSON detail data, and static WebClient files; it neither opens a Neo4j driver nor requires Neo4j to be running at startup or while serving requests.
+
+The repository-local instance uses `local.properties` for its Bolt credentials and keeps mutable database files under `cache/neo4j-data`. See [`docs/development/neo4j-local.md`](docs/development/neo4j-local.md) for start, import, parity, integrity, generation, and stop commands.
+
 ## Search behavior
 
 All crawled church-page text is searchable. A query is parsed longest-name-first against all 47 prefectures and the generated municipality/ward catalog. Exact and all-name-token tiers keep the complete query. The final geographic tier selects one intended address entity and filters its stable geoname code; the remaining words are scored inside that area. Duplicate municipality and ward names are resolved from browser/app coordinates when available, and otherwise remain unresolved instead of silently searching several unrelated areas. A geoname-only query such as `東京` or `Tokyo` uses the geographic filter with no text requirement.

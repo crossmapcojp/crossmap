@@ -217,6 +217,17 @@
 - [x] Materialize the available clean church data as a standalone canonical Crossmap catalog with no gmap build/runtime dependency.
 - [x] Build a full church index snapshot from the standalone canonical corpus.
 - [ ] Run the same golden query set through core, CLI, Ktor, Android, and iOS paths.
+
+## 9. Neo4j catalog, refreshed social exports, and denomination expansion
+
+- [x] Complete the current-catalog and read-only `cmj` ontology assessment required by `crossmap-neo4j-server-object-graph-mapper-codex-prompt.md`.
+- [x] Add the Neo4j domain model, bounded Crossmap mapper, driver lifecycle, repositories, migrations, and health checks.
+- [x] Add deterministic JSON import/export, parity validation, integrity checks, scripts, and implementation documentation.
+- [x] Use Neo4j only for crawl/catalog generation and build-time static detail-page generation; keep Ktor startup and request handling independent of a running Neo4j server.
+- [x] Parse the 2026-07-25 Facebook following export and Twitter/X list-member export and integrate both with the social merge pipeline.
+- [x] Implement and validate every requested single-page or committed-fixture denomination crawler, one implementation per file.
+- [x] Implement and validate every requested multi-page/detail-page denomination crawler, one implementation per file.
+- [x] Run the full data pipeline, repeat the crawler-owned Neo4j import to prove idempotency, generate `church.html` detail pages from Neo4j projections, and verify Ktor/WebClient behavior after Neo4j is stopped.
 - [x] Cover Japanese name, denomination, address, website body, prefecture, city, ambiguous city, location-only, pagination, and no-result scenarios.
 - [x] Run a real Lightpanda browser flow for all five localized church names and denomination searches, and verify all five denomination labels on the generated church detail page.
 - [x] Document build, crawl, snapshot, CLI, server, web, Android, and iOS usage in the README.

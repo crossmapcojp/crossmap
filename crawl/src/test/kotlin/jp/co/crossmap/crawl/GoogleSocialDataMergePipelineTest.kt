@@ -149,6 +149,33 @@ class GoogleSocialDataMergePipelineTest {
         assertEquals(1, updated.determinations.count { it.field == "socialProfiles.facebook" })
     }
 
+    @Test
+    fun facebookNameOnlyExportIsAuditedButNeverPublishedAsAFabricatedProfile() {
+        val root = Files.createTempDirectory("crossmap-facebook-name-only")
+        val resources = root.resolve("resources")
+        Files.createDirectories(resources.resolve("catalog"))
+        Files.writeString(resources.resolve("catalog/churches.json"), json.encodeToString(listOf(church("google:1", "東京教会"))))
+        val facebook = root.resolve("facebook.json")
+        Files.writeString(
+            facebook,
+            """{"pages_followed_v2":[{"data":[{"name":"東京教会"}],"title":"東京教会"}]}""",
+        )
+
+        val report = GoogleSocialDataMergePipeline(json).run(
+            resourcesRoot = resources,
+            inputs = SocialExportInputPaths(null, null, null, facebook, null),
+            applyChanges = true,
+            auditLog = root.resolve("social-merge.log"),
+        )
+
+        assertEquals(1, report.exactMatches)
+        val updated = json.decodeFromString<List<ChurchRecord>>(
+            Files.readString(resources.resolve("catalog/churches.json")),
+        ).single()
+        assertTrue(updated.socialProfiles.isEmpty())
+        assertTrue(Files.readString(resources.resolve("evidence/social-accounts.json")).contains("facebook-export-name:"))
+    }
+
     private fun church(id: String, name: String) = ChurchRecord(
         id = id,
         name = name,

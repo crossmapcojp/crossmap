@@ -15,8 +15,10 @@ repositories {
 
 dependencies {
     implementation(projects.core)
+    implementation(projects.catalog)
     implementation(libs.clikt)
     implementation(libs.jsoup)
+    implementation(libs.pdfbox)
     implementation(libs.koog.agents)
     implementation(libs.logback)
     implementation(libs.jsonic)
