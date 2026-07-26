@@ -15,14 +15,23 @@
             "日本ｷﾘｽﾄ教団"
         ],
         "officialWebsite": "http://uccj.org/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://uccj.org/diocese"
+        ]
     },
     {
         "id": "CATHOLIC_JP",
         "name": "カトリック",
-        "aliases": ["カトリック教会", "カトリック中央協議会"],
+        "aliases": [
+            "カトリック教会",
+            "カトリック中央協議会"
+        ],
         "officialWebsite": "https://www.cbcj.catholic.jp/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://www.cbcj.catholic.jp/map/index.php/"
+        ]
     },
     {
         "id": "ANGLICAN_JP",
@@ -31,21 +40,33 @@
             "聖公会"
         ],
         "officialWebsite": "http://www.nskk.org/province/index.html",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://www.nskk.org/tokyo/churchs/list"
+        ]
     },
     {
         "id": "JBC",
         "name": "日本バプテスト連盟",
         "aliases": [],
         "officialWebsite": "https://bapren.jp/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://bapren.jp/church/"
+        ]
     },
     {
         "id": "HPBC",
         "name": "Hawaii Pacific Baptist Convention",
-        "aliases": ["HPBC", "ハワイ・パシフィック・バプテスト・コンベンション", "ハワイ・パシフィック・バプテスト連盟"],
+        "aliases": [
+            "HPBC",
+            "ハワイ・パシフィック・バプテスト・コンベンション",
+            "ハワイ・パシフィック・バプテスト連盟"
+        ],
         "officialWebsite": "https://www.hpbaptist.net/",
-        "churchListUrlList": ["https://www.hpbaptist.net/location/asia/"],
+        "churchListUrlList": [
+            "https://www.hpbaptist.net/location/asia/"
+        ],
         "proposed": false
     },
     {
@@ -53,7 +74,10 @@
         "name": "日本同盟基督教団",
         "aliases": [],
         "officialWebsite": "https://domei.site/wp/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://db.jacc.info/database/db_list.php"
+        ]
     },
     {
         "id": "JAG",
@@ -79,7 +103,10 @@
             "Assembléia de Deus"
         ],
         "officialWebsite": "https://j-ag.org/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://j-ag.org/church-info/"
+        ]
     },
     {
         "id": "SJC",
@@ -99,7 +126,10 @@
             "JECA"
         ],
         "officialWebsite": "https://jeca.jp/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://jeca.jp/church/church/hokkaido.html"
+        ]
     },
     {
         "id": "SDA_JP",
@@ -116,7 +146,10 @@
             "Adventista do Sétimo Dia"
         ],
         "officialWebsite": "http://adventist.jp/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://adventist.jp/%E6%95%99%E4%BC%9A%E6%89%80%E5%9C%B0/%E6%95%99%E4%BC%9A%E4%B8%80%E8%A6%A7/"
+        ]
     },
     {
         "id": "JHC",
@@ -125,7 +158,10 @@
             "日本ホーリネス教団"
         ],
         "officialWebsite": "https://www.jhc.or.jp/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://jhc.or.jp/churches/locations.html"
+        ]
     },
     {
         "id": "RCJ",
@@ -135,21 +171,30 @@
             "日本キリスト改革派"
         ],
         "officialWebsite": "https://rcj-net.org/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://www.rcj.gr.jp/_church_list/result_keyword.php"
+        ]
     },
     {
         "id": "CCJ",
         "name": "日本キリスト教会",
         "aliases": [],
         "officialWebsite": "http://www.nikki-church.org/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "http://www.nikki-church.org/data.htm"
+        ]
     },
     {
         "id": "JCCJ",
         "name": "日本イエス・キリスト教団",
         "aliases": [],
         "officialWebsite": "https://jccj.info/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://jccj.info/localchurch_tyokkatu.php"
+        ]
     },
     {
         "id": "JELC",
@@ -159,7 +204,10 @@
             "日本福音ルーテル"
         ],
         "officialWebsite": "https://jelc.or.jp/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://jelc.or.jp/all_churchs/"
+        ]
     },
     {
         "id": "IGM",
@@ -169,7 +217,10 @@
             "インマヌエル綜合伝道団"
         ],
         "officialWebsite": "http://www.immanuel.or.jp/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://www.immanuel.or.jp/link.html"
+        ]
     },
     {
         "id": "TLEA",
@@ -180,14 +231,20 @@
             "主の十字架クリスチャンセンター"
         ],
         "officialWebsite": "https://tlea.tokyoantioch.com/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://tlea.tokyoantioch.com/ourchurch/all-tlea-link/"
+        ]
     },
     {
         "id": "HEJ",
         "name": "聖イエス会",
         "aliases": [],
         "officialWebsite": "https://seiiesukai.org/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://seiiesukai.org/branch/"
+        ]
     },
     {
         "id": "KCCJ",
@@ -199,7 +256,10 @@
             "在日大韓キリスト教"
         ],
         "officialWebsite": "https://kccj.jp/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://kccj.jp/church_list.php"
+        ]
     },
     {
         "id": "JBBF",
@@ -209,7 +269,10 @@
             "日本バプテスト・バイブル・フェローシップ"
         ],
         "officialWebsite": "https://jbbf.or.jp/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://jbbf.or.jp/%E4%BD%8F%E6%89%80%E9%8C%B2/"
+        ]
     },
     {
         "id": "FGJA",
@@ -221,7 +284,10 @@
             "純福音"
         ],
         "officialWebsite": "https://www.fgtc.jp/fullgospeltokyo/sanctuary-church/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://www.fgtc.jp/fullgospeltokyo/sanctuary-church.html"
+        ]
     },
     {
         "id": "CHRISTIAN_CHURCHES",
@@ -239,7 +305,10 @@
             "保守バプテスト"
         ],
         "officialWebsite": "https://doumei.holy.jp/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://doumei.holy.jp/churches/"
+        ]
     },
     {
         "id": "COTN_JP",
@@ -250,21 +319,30 @@
             "Church of the Nazarene"
         ],
         "officialWebsite": "http://www.nazarene.or.jp/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "http://www.nazarene.or.jp/cm/index.html"
+        ]
     },
     {
         "id": "JBU",
         "name": "日本バプテスト同盟",
         "aliases": [],
         "officialWebsite": "http://www.jbu.or.jp/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "http://www.jbu.or.jp/chs/"
+        ]
     },
     {
         "id": "PCJ",
         "name": "日本長老教会",
         "aliases": [],
         "officialWebsite": "https://chorokyokai.jp/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://chorokyokai.jp/churches/"
+        ]
     },
     {
         "id": "TPKF",
@@ -273,7 +351,10 @@
             "TPKF"
         ],
         "officialWebsite": "https://tpkf.org/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://tpkf.org/localch_group.html"
+        ]
     },
     {
         "id": "EFC_JP",
@@ -295,7 +376,10 @@
             "祝園チャペル"
         ],
         "officialWebsite": "https://efcj.org/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://efcj.org/churchlist"
+        ]
     },
     {
         "id": "BCC",
@@ -304,7 +388,10 @@
             "基督兄弟団"
         ],
         "officialWebsite": "https://kyodaidan.org/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://kyodaidan.org/church/"
+        ]
     },
     {
         "id": "BGC_JP",
@@ -318,14 +405,22 @@
             "けいはんなキリスト教会"
         ],
         "officialWebsite": "https://rengo.ne.jp/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://rengo.ne.jp/chruch-list/"
+        ]
     },
     {
         "id": "ORTHODOX_JP",
         "name": "日本ハリストス正教会教団",
         "aliases": [],
         "officialWebsite": "https://www.orthodoxjapan.jp/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://www.orthodoxjapan.jp/area-tokyo.html",
+            "https://www.orthodoxjapan.jp/area-higashi.html",
+            "https://www.orthodoxjapan.jp/area-nishi.html"
+        ]
     },
     {
         "id": "GEC",
@@ -339,7 +434,10 @@
         "name": "救世軍",
         "aliases": [],
         "officialWebsite": "https://www.salvationarmy.or.jp/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://www.salvationarmy.or.jp/about-org/chapel/"
+        ]
     },
     {
         "id": "JEC",
@@ -348,7 +446,10 @@
             "JEC"
         ],
         "officialWebsite": "https://www.jec-net.org/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://www.jec-net.org/"
+        ]
     },
     {
         "id": "CHURCHES_OF_CHRIST",
@@ -386,14 +487,20 @@
             "KPCA"
         ],
         "officialWebsite": "",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://japanmissionassociation.org/"
+        ]
     },
     {
         "id": "WJELC",
         "name": "西日本福音ルーテル教会",
         "aliases": [],
         "officialWebsite": "https://www.wjelc.or.jp/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://www.wjelc.or.jp/"
+        ]
     },
     {
         "id": "ELCMC",
@@ -410,7 +517,10 @@
         "name": "日本アライアンス教団",
         "aliases": [],
         "officialWebsite": "http://jac-hij.sakura.ne.jp/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "http://jac-hij.sakura.ne.jp/"
+        ]
     },
     {
         "id": "WHCJ",
@@ -420,7 +530,10 @@
             "ウェスレアン"
         ],
         "officialWebsite": "https://whchurch.jimdo.com/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://whchurch.jimdo.com/"
+        ]
     },
     {
         "id": "NCG",
@@ -440,7 +553,10 @@
             "フォースクエア"
         ],
         "officialWebsite": "https://www.japan-foursquare.jp/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://www.japan-foursquare.jp/"
+        ]
     },
     {
         "id": "OBC",
@@ -452,7 +568,10 @@
             "沖バプ"
         ],
         "officialWebsite": "http://okinawabaptist.com/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "http://okinawabaptist.com/"
+        ]
     },
     {
         "id": "SEIKYODAN",
@@ -463,28 +582,40 @@
             "聖協団"
         ],
         "officialWebsite": "http://www.seikyodan.com/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "http://www.seikyodan.com/shyozoku5.html"
+        ]
     },
     {
         "id": "JLC",
         "name": "日本ルーテル教団",
         "aliases": [],
         "officialWebsite": "http://www.jlc.or.jp/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "http://www.jlc.or.jp/"
+        ]
     },
     {
         "id": "WMC",
         "name": "ワールドミッション教団",
         "aliases": [],
         "officialWebsite": "https://worldmission.or.jp/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://worldmission.or.jp/"
+        ]
     },
     {
         "id": "JFEC",
         "name": "同盟福音基督教会",
         "aliases": [],
         "officialWebsite": "http://www.doumeifukuin.net/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "http://www.doumeifukuin.net/"
+        ]
     },
     {
         "id": "JMBC",
@@ -493,14 +624,20 @@
             "メノナイトブレザレン"
         ],
         "officialWebsite": "https://jmbc.japan-mb.com/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://jmbc.japan-mb.com/"
+        ]
     },
     {
         "id": "JLBC",
         "name": "日本ルーテル同胞教団",
         "aliases": [],
         "officialWebsite": "https://clbj.org/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://clbj.org/"
+        ]
     },
     {
         "id": "JRL",
@@ -514,7 +651,10 @@
         "name": "近畿福音ルーテル教会",
         "aliases": [],
         "officialWebsite": "http://www.kelc.net/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "http://www.kelc.net/"
+        ]
     },
     {
         "id": "FMC_JP",
@@ -523,21 +663,30 @@
             "日本フリーメソジスト"
         ],
         "officialWebsite": "http://fmcjp.org/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "http://fmcjp.org/"
+        ]
     },
     {
         "id": "NFK",
         "name": "日本福音教団",
         "aliases": [],
         "officialWebsite": "https://nihonfukuin.imagodei.jp/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://nihonfukuin.imagodei.jp/"
+        ]
     },
     {
         "id": "BIBLE_CHRISTIAN_ASSOCIATION",
         "name": "聖書キリスト教会",
         "aliases": [],
         "officialWebsite": "https://seishokirisuto.com/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://seishokirisuto.com/"
+        ]
     },
     {
         "id": "LIVE",
@@ -549,7 +698,10 @@
             "ハレルヤコミュニティーチャーチ"
         ],
         "officialWebsite": "https://livechurch.jp/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://livechurch.jp/"
+        ]
     },
     {
         "id": "NTM",
@@ -565,28 +717,40 @@
         "name": "日本聖契キリスト教団",
         "aliases": [],
         "officialWebsite": "https://nskk.gr.jp/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://nskk.gr.jp/church/"
+        ]
     },
     {
         "id": "ADVENT",
         "name": "日本アドベント・キリスト教団",
         "aliases": [],
         "officialWebsite": "https://nihonadobento.wordpress.com/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://nihonadobento.wordpress.com/home/%e6%89%80%e5%b1%9e%e6%95%99%e4%bc%9a%e3%83%bb%e9%96%a2%e9%80%a3%e5%9b%a3%e4%bd%93%e4%b8%80%e8%a6%a7/"
+        ]
     },
     {
         "id": "GMI",
         "name": "グレース宣教会",
         "aliases": [],
         "officialWebsite": "https://gmi.or.jp/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://gmi.or.jp/chapels/"
+        ]
     },
     {
         "id": "FUKUIN_DENDO",
         "name": "日本伝道福音教団",
         "aliases": [],
         "officialWebsite": "https://church.ne.jp/niigatabible_ch/main/denpuku.html",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://church.ne.jp/niigatabible_ch/main/denpuku.html"
+        ]
     },
     {
         "id": "JPC",
@@ -600,14 +764,20 @@
         "name": "日本伝道隊",
         "aliases": [],
         "officialWebsite": "https://nihon-dendoutai.kyoukai.jp/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://nihon-dendoutai.kyoukai.jp/church/"
+        ]
     },
     {
         "id": "JECU",
         "name": "日本福音教会連合",
         "aliases": [],
         "officialWebsite": "https://church.ne.jp/jecu/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://church.ne.jp/jecu/link.htm"
+        ]
     },
     {
         "id": "ICHIBAKU",
@@ -623,7 +793,10 @@
         "name": "日本聖約キリスト教団",
         "aliases": [],
         "officialWebsite": "http://www.seiyaku.jp/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "http://www.seiyaku.jp/"
+        ]
     },
     {
         "id": "YUAI",
@@ -631,7 +804,6 @@
         "aliases": [
             "友愛グループ"
         ],
-        "officialWebsite": "https://www.yuaichristianchurch.org/",
         "proposed": false
     },
     {
@@ -646,41 +818,56 @@
         "name": "日本バプテスト連合",
         "aliases": [],
         "officialWebsite": "https://www.jbaptist.org/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://www.jbaptist.org/blank-2"
+        ]
     },
     {
         "id": "MENNONITE_BRETHREN_COUNCIL_JP",
         "name": "日本メノナイト・キリスト教会協議会",
         "aliases": [],
         "officialWebsite": "http://www.mennonite.jp/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://www.mennonite.jp/church/"
+        ]
     },
     {
         "id": "CHRIST_EVANGELIZATION_TEAM",
         "name": "キリスト伝道隊",
         "aliases": [],
         "officialWebsite": "https://dendoutai.org/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://dendoutai.org/churches/"
+        ]
     },
     {
         "id": "COG_JP",
         "name": "チャーチ・オブ・ゴッド",
         "aliases": [],
         "officialWebsite": "https://www.cogjapan.com/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://www.cogjapan.com/"
+        ]
     },
     {
         "id": "SFDK",
         "name": "世界福音伝道会",
         "aliases": [],
         "officialWebsite": "https://www.sfdk.org/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://www.cogjapan.com/2515223646259452025012539125111249112473124881252212540.html"
+        ]
     },
     {
         "id": "JBM",
         "name": "日本バプテスト宣教団",
         "aliases": [],
-        "officialWebsite": "https://jbm.or.jp/",
+        "officialWebsite": "https://ja.wikipedia.org/wiki/%E6%97%A5%E6%9C%AC%E3%83%90%E3%83%97%E3%83%86%E3%82%B9%E3%83%88%E5%AE%A3%E6%95%99%E5%9B%A3",
         "proposed": false
     },
     {
@@ -695,7 +882,10 @@
         "name": "日本メノナイト・キリスト教会会議",
         "aliases": [],
         "officialWebsite": "https://mennonite.jpn.org/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://mennonite.jpn.org/"
+        ]
     },
     {
         "id": "SCMS",
@@ -709,7 +899,10 @@
         "name": "カルバリーチャペルグループ",
         "aliases": [],
         "officialWebsite": "https://www.yamatocalvarychapel.com/service/branch_01.php",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://www.yamatocalvarychapel.com/service/branch_01.php"
+        ]
     },
     {
         "id": "JEMS_ASSOCIATION",
@@ -730,7 +923,10 @@
         "name": "福音交友会",
         "aliases": [],
         "officialWebsite": "http://fkk-web.net/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "http://fkk-web.net/church/church.html"
+        ]
     },
     {
         "id": "MFK",
@@ -751,21 +947,30 @@
         "name": "インドネシア福音教会",
         "aliases": [],
         "officialWebsite": "https://www.giii-japan.org/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://www.giii-japan.org/gereja-wilayah"
+        ]
     },
     {
         "id": "CCMJ",
         "name": "カルバリーチャペルミニストリー JAPAN",
         "aliases": [],
         "officialWebsite": "http://www.calvaryjapan.com/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "http://www.calvaryjapan.com/"
+        ]
     },
     {
         "id": "KECCJCC",
         "name": "カンバーランド長老キリスト教会日本中会",
         "aliases": [],
         "officialWebsite": "https://www.cumberland.jp/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://www.cumberland.jp/introduction/"
+        ]
     },
     {
         "id": "BFG",
@@ -807,28 +1012,30 @@
         "name": "日本神の教会連盟",
         "aliases": [],
         "officialWebsite": "http://xn--u9j463geip7pa94cc38by5dpv1d.com/",
-        "proposed": false
-    },
-    {
-        "id": "OMF",
-        "name": "OMFインターナショナル（国際福音宣教会）",
-        "aliases": [],
-        "officialWebsite": "https://omf.org/jp/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "http://xn--u9j463geip7pa94cc38by5dpv1d.com/"
+        ]
     },
     {
         "id": "JCGA",
         "name": "日本チャーチオブゴッド教団",
         "aliases": [],
         "officialWebsite": "https://www.japanchurchofgod.org/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://www.japanchurchofgod.org/family"
+        ]
     },
     {
         "id": "JGPC",
         "name": "日本福音ペンテコステ教団",
         "aliases": [],
         "officialWebsite": "https://jgpc.jimdofree.com/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://jgpc.jimdofree.com/%E6%95%99%E4%BC%9A%E4%B8%80%E8%A6%A7/"
+        ]
     },
     {
         "id": "JFWB",
@@ -842,7 +1049,10 @@
         "name": "聖書教会連盟",
         "aliases": [],
         "officialWebsite": "http://www.kyoukai.com/rennmei/index.html",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "http://www.kyoukai.com/rennmei/index.html"
+        ]
     },
     {
         "id": "TCCG",
@@ -856,14 +1066,20 @@
         "name": "日本アライアンス・ミッション",
         "aliases": [],
         "officialWebsite": "https://japanalliancemission.org/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://japanalliancemission.org/info/alliance-church-network/"
+        ]
     },
     {
         "id": "TFMC",
         "name": "東京フリー・メソジスト教団",
         "aliases": [],
         "officialWebsite": "https://tokyofree.net/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://tokyofree.net/"
+        ]
     },
     {
         "id": "BFS",
@@ -876,36 +1092,28 @@
         "id": "ALLIES_5",
         "name": "アライズ5",
         "aliases": [],
-        "officialWebsite": "https://www.hugedomains.com/domain_profile.cfm?d=arise5.com",
-        "proposed": false
-    },
-    {
-        "id": "NLM",
-        "name": "ニューライフ・ミニストリーズ",
-        "aliases": [],
-        "officialWebsite": "https://www.newlifeministries.jp/",
+        "officialWebsite": "",
         "proposed": false
     },
     {
         "id": "LECC",
         "name": "ルーテル福音キリスト教会",
         "aliases": [],
-        "officialWebsite": "",
-        "proposed": false
+        "officialWebsite": "https://www.leccjapan.com/",
+        "proposed": false,
+        "churchListUrlList": [
+            "https://www.leccjapan.com/churches"
+        ]
     },
     {
         "id": "VCG",
         "name": "勝利教会グループ",
         "aliases": [],
         "officialWebsite": "http://www5a.biglobe.ne.jp/~vct/",
-        "proposed": false
-    },
-    {
-        "id": "CHRA",
-        "name": "基督心宗教団",
-        "aliases": [],
-        "officialWebsite": "",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://www5a.biglobe.ne.jp/~vct/99_blank001.html"
+        ]
     },
     {
         "id": "CCA",
@@ -919,14 +1127,21 @@
         "name": "日本聖泉基督教会連合",
         "aliases": [],
         "officialWebsite": "https://seisen-rengou.blogspot.com/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://seisen-rengou.blogspot.com/2012/02/blog-post_22.html"
+        ]
     },
     {
         "id": "ENCJ",
         "name": "エブリネイションチャーチズジャパン",
         "aliases": [],
         "officialWebsite": "https://everynation.jp/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://everynation.jp/directory/",
+            "https://everynation.jp/en/directory/"
+        ]
     },
     {
         "id": "JBCF",
@@ -939,21 +1154,24 @@
         "id": "RCC",
         "name": "復活之キリスト教団",
         "aliases": [],
-        "officialWebsite": "",
+        "officialWebsite": "https://ja.wikipedia.org/wiki/%E5%BE%A9%E6%B4%BB%E4%B9%8B%E3%82%AD%E3%83%AA%E3%82%B9%E3%83%88%E6%95%99%E5%9B%A3",
         "proposed": false
     },
     {
         "id": "JOAC",
         "name": "日本オリベットアッセンブリー教団",
         "aliases": [],
-        "officialWebsite": "https://olivetassembly.or.jp/about-us/organization.html",
-        "proposed": false
+        "officialWebsite": "https://olivetassembly.or.jp/",
+        "proposed": false,
+        "churchListUrlList": [
+            "https://olivetassembly.or.jp/our-regions.html"
+        ]
     },
     {
         "id": "JESUS_EVANGELICAL_CHURCH",
         "name": "イエス福音教団",
         "aliases": [],
-        "officialWebsite": "",
+        "officialWebsite": "https://ja.wikipedia.org/wiki/%E3%82%A4%E3%82%A8%E3%82%B9%E7%A6%8F%E9%9F%B3%E6%95%99%E5%9B%A3",
         "proposed": false
     },
     {
@@ -981,35 +1199,44 @@
         "id": "JCB",
         "name": "日本キリスト兄弟団",
         "aliases": [],
-        "officialWebsite": "",
+        "officialWebsite": "https://ja.wikipedia.org/wiki/%E6%97%A5%E6%9C%AC%E3%82%AD%E3%83%AA%E3%82%B9%E3%83%88%E5%85%84%E5%BC%9F%E5%9B%A3",
         "proposed": false
     },
     {
         "id": "JCUC",
         "name": "日本キリスト合同教会",
         "aliases": [],
-        "officialWebsite": "http://web.archive.org/web/20180317203733/http:/www.godo.or.jp/",
-        "proposed": false
+        "officialWebsite": "https://godo.or.jp/",
+        "proposed": false,
+        "churchListUrlList": [
+            "https://godo.or.jp/churches/"
+        ]
     },
     {
         "id": "TJC",
         "name": "真イエス教会",
         "aliases": [],
         "officialWebsite": "https://tjc.org/jp/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://www.tjc.or.jp/churchIndex#main"
+        ]
     },
     {
         "id": "OCCJ",
         "name": "日本華僑基督教団",
         "aliases": [],
         "officialWebsite": "https://www.occj.net/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://www.occj.net/"
+        ]
     },
     {
-        "id": "JMSJ",
+        "id": "JJWM",
         "name": "イエス教日本世界宣教会",
         "aliases": [],
-        "officialWebsite": "",
+        "officialWebsite": "https://ja.wikipedia.org/wiki/%E3%82%A4%E3%82%A8%E3%82%B9%E6%95%99%E6%97%A5%E6%9C%AC%E4%B8%96%E7%95%8C%E5%AE%A3%E6%95%99%E4%BC%9A",
         "proposed": false
     },
     {
@@ -1020,17 +1247,10 @@
         "proposed": false
     },
     {
-        "id": "IECA",
-        "name": "国際福音キリスト教会",
-        "aliases": [],
-        "officialWebsite": "http://agapechapel.net/",
-        "proposed": false
-    },
-    {
         "id": "RPJ",
         "name": "日本キリスト改革長老教会",
         "aliases": [],
-        "officialWebsite": "http://www.rpjapan.org/",
+        "officialWebsite": "",
         "proposed": false
     },
     {
@@ -1051,29 +1271,38 @@
         "id": "JFMC",
         "name": "日本自由メソヂスト教団",
         "aliases": [],
-        "officialWebsite": "http://blog.livedoor.jp/methodist_free/",
-        "proposed": false
+        "officialWebsite": "https://methodist-free.jp/",
+        "proposed": false,
+        "churchListUrlList": [
+            "https://methodist-free.jp/"
+        ]
     },
     {
         "id": "CEG",
-        "name": "キリスト伝道団　",
+        "name": "キリスト伝道団",
         "aliases": [],
         "officialWebsite": "",
         "proposed": false
     },
     {
-        "id": "CFJYM",
+        "id": "QUAKER_JP",
         "name": "キリスト友会日本年会",
         "aliases": [],
         "officialWebsite": "http://www.kirisutoyuukai.org/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://quakerjapan.wixsite.com/tokyogekkai/about-us"
+        ]
     },
     {
         "id": "CHRISTIAN_FELLOWSHIP",
         "name": "キリスト同信会",
         "aliases": [],
         "officialWebsite": "https://nakano-psc.org/about/other_area/",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://nakano-psc.org/about/other_area/"
+        ]
     },
     {
         "id": "ZION_MISSION",
@@ -1086,18 +1315,14 @@
         "id": "BCA",
         "name": "ベタニヤ・クリスチャン・アッセンブリーズ",
         "aliases": [],
-        "officialWebsite": "",
-        "proposed": false
+        "officialWebsite": "https://church.ne.jp/bethany/assemblies.html",
+        "proposed": false,
+        "churchListUrlList": [
+            "https://church.ne.jp/bethany/assemblies.html"
+        ]
     },
     {
-        "id": "MISSION_TOHOKU",
-        "name": "ミッション東北",
-        "aliases": [],
-        "officialWebsite": "",
-        "proposed": false
-    },
-    {
-        "id": "KCGF",
+        "id": "KKFF",
         "name": "九州キリスト福音フェローシップ",
         "aliases": [],
         "officialWebsite": "",
@@ -1108,28 +1333,37 @@
         "name": "新生キリスト教会連合",
         "aliases": [],
         "officialWebsite": "https://mccjapa8.wixsite.com/mccjapan/--c1k3t",
-        "proposed": false
+        "proposed": false,
+        "churchListUrlList": [
+            "https://mccjapa8.wixsite.com/mccjapan/--c1k3t"
+        ]
     },
     {
         "id": "JVCF",
         "name": "日本ヴィンヤード・クリスチャン・フェロシップ",
         "aliases": [],
-        "officialWebsite": "",
+        "officialWebsite": "https://worship.vcfkani.org/introduction/",
         "proposed": false
     },
     {
         "id": "JMS",
         "name": "日本宣教会",
         "aliases": [],
-        "officialWebsite": "",
-        "proposed": false
+        "officialWebsite": "https://nihonsenkyoukai.com/",
+        "proposed": false,
+        "churchListUrlList": [
+            "https://nihonsenkyoukai.com/our-churches/"
+        ]
     },
     {
         "id": "JAPAN_FREE_EVANGELICAL_CHURCH",
         "name": "日本自由福音教団",
         "aliases": [],
-        "officialWebsite": "",
-        "proposed": false
+        "officialWebsite": "https://njfk-jp.com/",
+        "proposed": false,
+        "churchListUrlList": [
+            "https://njfk-jp.com/"
+        ]
     },
     {
         "id": "OMS",
@@ -1142,8 +1376,11 @@
         "id": "MINO_MISSION",
         "name": "美濃ミッション",
         "aliases": [],
-        "officialWebsite": "",
-        "proposed": false
+        "officialWebsite": "https://www.cty-net.ne.jp/~mmi/",
+        "proposed": false,
+        "churchListUrlList": [
+            "https://www.cty-net.ne.jp/~mmi/church.html"
+        ]
     },
     {
         "id": "IFGF",
@@ -1154,16 +1391,19 @@
     },
     {
         "id": "ECC",
-        "name": "ｴﾊﾞﾝｼﾞｪﾘｶﾙ･ｺﾝｸﾞﾘｹﾞｰｼｮﾅﾙ･ﾁｬｰﾁ",
+        "name": "エバンジェリカル・コングリゲーショナル・チャーチ",
         "aliases": [],
-        "officialWebsite": "http://churchkyodo.sunnyday.jp/%e5%bd%93%e6%95%99%e4%bc%9a%e3%81%ab%e3%81%a4%e3%81%84%e3%81%a6/",
-        "proposed": false
+        "officialWebsite": "https://gracegardenchurch.com/introduction/overview/",
+        "proposed": false,
+        "churchListUrlList": [
+            "https://gracegardenchurch.com/introduction/overview/"
+        ]
     },
     {
         "id": "CBA",
         "name": "キリスト信徒の集会",
         "aliases": [],
-        "officialWebsite": "",
+        "officialWebsite": "https://ja.wikipedia.org/wiki/%E3%82%AD%E3%83%AA%E3%82%B9%E3%83%88%E4%BF%A1%E5%BE%92%E3%81%AE%E9%9B%86%E4%BC%9A",
         "proposed": false
     },
     {
@@ -1174,43 +1414,8 @@
         "proposed": false
     },
     {
-        "id": "ATD",
-        "name": "日本聖公会東京教区　",
-        "aliases": [],
-        "officialWebsite": "",
-        "proposed": false
-    },
-    {
         "id": "ICEC",
         "name": "キリスト教国際福音教団",
-        "aliases": [],
-        "officialWebsite": "",
-        "proposed": false
-    },
-    {
-        "id": "CJMSB",
-        "name": "クリスター日本宣教団体",
-        "aliases": [],
-        "officialWebsite": "",
-        "proposed": false
-    },
-    {
-        "id": "ZION_GROUP",
-        "name": "シオンの群",
-        "aliases": [],
-        "officialWebsite": "",
-        "proposed": false
-    },
-    {
-        "id": "SIMS",
-        "name": "センド国際宣教団",
-        "aliases": [],
-        "officialWebsite": "",
-        "proposed": false
-    },
-    {
-        "id": "CBJM",
-        "name": "保守バプテスト日本宣教団",
         "aliases": [],
         "officialWebsite": "",
         "proposed": false
@@ -1233,8 +1438,11 @@
         "id": "JAPAN_BETHEL_MISSION",
         "name": "日本べテルミッション",
         "aliases": [],
-        "officialWebsite": "",
-        "proposed": false
+        "officialWebsite": "https://japanbethelmission.com/",
+        "proposed": false,
+        "churchListUrlList": [
+            "https://japanbethelmission.com/"
+        ]
     },
     {
         "id": "TDMCF",
@@ -1244,43 +1452,22 @@
         "proposed": false
     },
     {
-        "id": "EEMKCA",
-        "name": "東洋宣教団きよめキリスト教会",
-        "aliases": [],
-        "officialWebsite": "",
-        "proposed": false
-    },
-    {
         "id": "EGM",
         "name": "東洋福音教団",
         "aliases": [],
-        "officialWebsite": "",
+        "officialWebsite": "https://ja.wikipedia.org/wiki/%E6%9D%B1%E6%B4%8B%E7%A6%8F%E9%9F%B3%E6%95%99%E5%9B%A3",
         "proposed": false
     },
     {
-        "id": "BSG",
+        "id": "BSF",
         "name": "聖書研究会",
         "aliases": [],
-        "officialWebsite": "",
+        "officialWebsite": "https://skk-jpn.com/",
         "proposed": false
     },
     {
         "id": "KEFA",
         "name": "関西福音交友会",
-        "aliases": [],
-        "officialWebsite": "",
-        "proposed": false
-    },
-    {
-        "id": "TCCT",
-        "name": "高松コミュニティ・チャーチ（TCCh）",
-        "aliases": [],
-        "officialWebsite": "",
-        "proposed": false
-    },
-    {
-        "id": "CALVARY_BAPTIST",
-        "name": "カルバリー　バプテスト",
         "aliases": [],
         "officialWebsite": "",
         "proposed": false
@@ -1307,101 +1494,62 @@
         "proposed": false
     },
     {
-        "id": "SACC",
-        "name": "スウェーデン同盟キリスト教団",
-        "aliases": [],
-        "officialWebsite": "",
-        "proposed": false
-    },
-    {
-        "id": "DBBC",
-        "name": "デフ聖書バプテスト教会",
-        "aliases": [],
-        "officialWebsite": "",
-        "proposed": false
-    },
-    {
         "id": "AJBMM",
         "name": "全日本バプテスト・ミド・ミッション",
         "aliases": [],
-        "officialWebsite": "",
-        "proposed": false
-    },
-    {
-        "id": "KIRISUTO_DENDOTAI",
-        "name": "基督伝道隊",
-        "aliases": [],
-        "officialWebsite": "",
-        "proposed": false
-    },
-    {
-        "id": "HOPE_CHURCH",
-        "name": "希望の教会",
-        "aliases": [],
-        "officialWebsite": "",
+        "officialWebsite": "https://bmmjapan.org/",
         "proposed": false
     },
     {
         "id": "JCA",
         "name": "日本基督会",
         "aliases": [],
-        "officialWebsite": "",
-        "proposed": false
+        "officialWebsite": "https://shibuya-kirisutokai.la.coocan.jp/",
+        "proposed": false,
+        "churchListUrlList": [
+            "https://shibuya-kirisutokai.la.coocan.jp/nihonkirisutokai.htm",
+            "https://shibuya-kirisutokai.la.coocan.jp/"
+        ]
     },
     {
         "id": "THC",
         "name": "東京ホライズンチャペル",
         "aliases": [],
-        "officialWebsite": "",
-        "proposed": false
-    },
-    {
-        "id": "LWCC",
-        "name": "活水基督教団",
-        "aliases": [],
-        "officialWebsite": "",
-        "proposed": false
+        "officialWebsite": "https://horizonchapel.jp/",
+        "proposed": false,
+        "churchListUrlList": [
+            "https://horizonchapel.jp/service"
+        ]
     },
     {
         "id": "GBF",
         "name": "福音バプテスト連合 ",
         "aliases": [],
-        "officialWebsite": "",
-        "proposed": false
-    },
-    {
-        "id": "HSGFCEMS",
-        "name": "聖流の群（旧：キリスト福音宣教会）",
-        "aliases": [],
-        "officialWebsite": "",
+        "officialWebsite": "https://ja.wikipedia.org/wiki/%E7%A6%8F%E9%9F%B3%E3%83%90%E3%83%97%E3%83%86%E3%82%B9%E3%83%88%E9%80%A3%E5%90%88",
         "proposed": false
     },
     {
         "id": "ICM",
-        "name": "インターナショナル・チャペル・ ﾐﾆｽﾄﾘｰｽﾞ",
+        "name": "インターナショナル・チャペル・ミニストリーズ",
         "aliases": [],
-        "officialWebsite": "",
-        "proposed": false
-    },
-    {
-        "id": "CAMS",
-        "name": "クリスチャンズ・イン・アクション宣教団",
-        "aliases": [],
-        "officialWebsite": "",
+        "officialWebsite": "https://www.ikomachapel.org/iic%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6",
         "proposed": false
     },
     {
         "id": "BEMS",
         "name": "バルナバ福音宣教会",
         "aliases": [],
-        "officialWebsite": "",
+        "officialWebsite": "https://barnabas-missionary.amebaownd.com/",
         "proposed": false
     },
     {
         "id": "YWAM",
         "name": "ユース･ウィズ･ア･ミッション",
-        "aliases": [],
-        "officialWebsite": "",
+        "aliases": [
+            "日本ワイワム",
+            "ワイワム"
+        ],
+        "officialWebsite": "https://www.ywamjapan.org/ja/",
         "proposed": false
     },
     {
@@ -1415,7 +1563,7 @@
         "id": "JNAC",
         "name": "日本新使徒教会",
         "aliases": [],
-        "officialWebsite": "",
+        "officialWebsite": "https://www.accjapan.org/",
         "proposed": false
     },
     {
