@@ -37,6 +37,15 @@ internal object ChurchMinisterParser {
         Role("retired_cooperating_minister", "引退協力教師", "Retired Cooperating Minister", "은퇴 협력 교역자", "Ministro cooperador aposentado", "Pelayan gereja mitra emeritus", listOf("引退協力教師")),
         Role("elder", "長老", "Elder", "장로", "Presbítero", "Penatua", listOf("長老")),
         Role("minister", "教職", "Minister", "교역자", "Ministro", "Pelayan gereja", listOf("教職", "教師")),
+        Role(
+            "person_in_charge",
+            "責任者",
+            "Person in Charge",
+            "책임자",
+            "Responsável",
+            "Penanggung jawab",
+            listOf("責任者"),
+        ),
     )
     private val aliases = roles.flatMap { role -> role.aliases.map { it to role } }.sortedByDescending { it.first.length }
     private val rolePattern = aliases.joinToString("|") { Regex.escape(it.first) }

@@ -8,7 +8,7 @@
       "https://uccj.org/diocese"
     ],
     "socialUrlList": [],
-    "entrySelector": "",
+    "entrySelector": "div[id^=post-body-]",
     "nameSelector": "",
     "addressSelector": "",
     "urlSelector": "",
@@ -2468,7 +2468,7 @@
     "addressSelector": "",
     "urlSelector": "",
     "sourceSpreadsheetRow": 78,
-    "lastVerifiedAt": "2026-07-13T16:43:39.480Z"
+    "lastVerifiedAt": "2026-07-26T00:00:00Z"
   },
   {
     "id": "advent",
@@ -2644,29 +2644,33 @@
     "id": "xlsx_eb798427f502",
     "denominationId": "MENNONITE_BRETHREN_COUNCIL_JP",
     "denominationName": "日本メノナイト・キリスト教会協議会",
-    "denominationWebsiteUrl": "http://www.mennonite.jp/",
-    "churchListUrlList": [],
+    "denominationWebsiteUrl": "https://www.mennonite.jp/",
+    "churchListUrlList": [
+      "https://www.mennonite.jp/church/"
+    ],
     "socialUrlList": [],
     "entrySelector": "",
     "nameSelector": "",
     "addressSelector": "",
     "urlSelector": "",
     "sourceSpreadsheetRow": 101,
-    "lastVerifiedAt": "2026-07-13T16:28:47.568Z"
+    "lastVerifiedAt": "2026-07-26"
   },
   {
     "id": "xlsx_63ae906088cd",
     "denominationId": "CHRIST_EVANGELIZATION_TEAM",
     "denominationName": "キリスト伝道隊",
     "denominationWebsiteUrl": "https://dendoutai.org/",
-    "churchListUrlList": [],
+    "churchListUrlList": [
+      "https://dendoutai.org/churches/"
+    ],
     "socialUrlList": [],
     "entrySelector": "",
     "nameSelector": "",
     "addressSelector": "",
     "urlSelector": "",
     "sourceSpreadsheetRow": 102,
-    "lastVerifiedAt": "2026-07-13T16:28:50.417Z"
+    "lastVerifiedAt": "2026-07-26"
   },
   {
     "id": "xlsx_1ddc0311e89d",
@@ -2682,21 +2686,23 @@
     "addressSelector": "",
     "urlSelector": "",
     "sourceSpreadsheetRow": 104,
-    "lastVerifiedAt": "2026-07-13T16:43:39.480Z"
+    "lastVerifiedAt": "2026-07-26"
   },
   {
     "id": "xlsx_9321cb4c0350",
     "denominationId": "SFDK",
     "denominationName": "世界福音伝道会",
     "denominationWebsiteUrl": "https://www.sfdk.org/",
-    "churchListUrlList": [],
+    "churchListUrlList": [
+      "https://www.sfdk.org/"
+    ],
     "socialUrlList": [],
     "entrySelector": "",
     "nameSelector": "",
     "addressSelector": "",
     "urlSelector": "",
     "sourceSpreadsheetRow": 105,
-    "lastVerifiedAt": "2026-07-13T16:28:48.082Z"
+    "lastVerifiedAt": "2026-07-26"
   },
   {
     "id": "xlsx_ba946c239dbb",
@@ -2731,14 +2737,16 @@
     "denominationId": "JMCC",
     "denominationName": "日本メノナイト・キリスト教会会議",
     "denominationWebsiteUrl": "https://mennonite.jpn.org/",
-    "churchListUrlList": [],
+    "churchListUrlList": [
+      "https://mennonite.jpn.org/"
+    ],
     "socialUrlList": [],
     "entrySelector": "",
     "nameSelector": "",
     "addressSelector": "",
     "urlSelector": "",
     "sourceSpreadsheetRow": 109,
-    "lastVerifiedAt": "2026-07-13T16:28:48.151Z"
+    "lastVerifiedAt": "2026-07-26T00:00:00Z"
   },
   {
     "id": "xlsx_3d8857781562",
@@ -2759,14 +2767,16 @@
     "denominationId": "CCG",
     "denominationName": "カルバリーチャペルグループ",
     "denominationWebsiteUrl": "https://www.yamatocalvarychapel.com/service/branch_01.php",
-    "churchListUrlList": [],
+    "churchListUrlList": [
+      "https://www.yamatocalvarychapel.com/service/branch_01.php"
+    ],
     "socialUrlList": [],
     "entrySelector": "",
     "nameSelector": "",
     "addressSelector": "",
     "urlSelector": "",
     "sourceSpreadsheetRow": 111,
-    "lastVerifiedAt": "2026-07-13T16:28:48.341Z"
+    "lastVerifiedAt": "2026-07-26"
   },
   {
     "id": "xlsx_4d9409428c0e",
@@ -2801,14 +2811,16 @@
     "denominationId": "GFA",
     "denominationName": "福音交友会",
     "denominationWebsiteUrl": "http://fkk-web.net/",
-    "churchListUrlList": [],
+    "churchListUrlList": [
+      "http://fkk-web.net/church/church.html"
+    ],
     "socialUrlList": [],
     "entrySelector": "",
     "nameSelector": "",
     "addressSelector": "",
     "urlSelector": "",
     "sourceSpreadsheetRow": 115,
-    "lastVerifiedAt": "2026-07-13T16:28:48.479Z"
+    "lastVerifiedAt": "2026-07-26T00:00:00Z"
   },
   {
     "id": "xlsx_db37274d5efe",
@@ -2843,28 +2855,32 @@
     "denominationId": "IEC",
     "denominationName": "インドネシア福音教会",
     "denominationWebsiteUrl": "https://www.giii-japan.org/",
-    "churchListUrlList": [],
+    "churchListUrlList": [
+      "https://www.giii-japan.org/gereja-wilayah"
+    ],
     "socialUrlList": [],
     "entrySelector": "",
     "nameSelector": "",
     "addressSelector": "",
     "urlSelector": "",
     "sourceSpreadsheetRow": 118,
-    "lastVerifiedAt": "2026-07-13T16:28:48.753Z"
+    "lastVerifiedAt": "2026-07-26"
   },
   {
     "id": "xlsx_a3d05694dba6",
     "denominationId": "CCMJ",
     "denominationName": "カルバリーチャペルミニストリー JAPAN",
     "denominationWebsiteUrl": "http://www.calvaryjapan.com/",
-    "churchListUrlList": [],
+    "churchListUrlList": [
+      "http://www.calvaryjapan.com/"
+    ],
     "socialUrlList": [],
     "entrySelector": "",
     "nameSelector": "",
     "addressSelector": "",
     "urlSelector": "",
     "sourceSpreadsheetRow": 119,
-    "lastVerifiedAt": "2026-07-13T16:28:49.442Z"
+    "lastVerifiedAt": "2026-07-26"
   },
   {
     "id": "xlsx_ff7a146a1be6",
@@ -2875,12 +2891,12 @@
       "https://www.cumberland.jp/introduction/"
     ],
     "socialUrlList": [],
-    "entrySelector": "",
-    "nameSelector": "",
-    "addressSelector": "",
-    "urlSelector": "",
+    "entrySelector": "table tbody tr",
+    "nameSelector": "td:first-child",
+    "addressSelector": "td:nth-child(3)",
+    "urlSelector": "td:first-child a[href]",
     "sourceSpreadsheetRow": 120,
-    "lastVerifiedAt": "2026-07-13T16:28:50.487Z"
+    "lastVerifiedAt": "2026-07-26"
   },
   {
     "id": "xlsx_11d4b56ceeba",
@@ -2929,14 +2945,17 @@
     "denominationId": "CCNZ",
     "denominationName": "チャーチオブクライストニュージーランド日本",
     "denominationWebsiteUrl": "https://www.ccnz.jp/",
-    "churchListUrlList": [],
+    "churchListUrlList": [
+      "https://www.ccnz.jp/group/",
+      "https://www.ccnz.jp/church/access.html"
+    ],
     "socialUrlList": [],
-    "entrySelector": "",
-    "nameSelector": "",
-    "addressSelector": "",
+    "entrySelector": "div.grBox",
+    "nameSelector": "h4",
+    "addressSelector": "table tr:has(th:contains(住所)) td",
     "urlSelector": "",
     "sourceSpreadsheetRow": 124,
-    "lastVerifiedAt": "2026-07-13T16:28:49.137Z"
+    "lastVerifiedAt": "2026-07-26"
   },
   {
     "id": "xlsx_feb604a8f53f",
@@ -2957,7 +2976,9 @@
     "denominationId": "JCGF",
     "denominationName": "日本神の教会連盟",
     "denominationWebsiteUrl": "http://xn--u9j463geip7pa94cc38by5dpv1d.com/",
-    "churchListUrlList": [],
+    "churchListUrlList": [
+      "http://xn--u9j463geip7pa94cc38by5dpv1d.com/"
+    ],
     "socialUrlList": [],
     "entrySelector": "",
     "nameSelector": "",
@@ -2991,12 +3012,12 @@
       "https://www.japanchurchofgod.org/family"
     ],
     "socialUrlList": [],
-    "entrySelector": "",
-    "nameSelector": "",
-    "addressSelector": "",
-    "urlSelector": "",
+    "entrySelector": "div[data-testid=richTextElement]",
+    "nameSelector": "h1",
+    "addressSelector": "p, h1",
+    "urlSelector": "a[href]",
     "sourceSpreadsheetRow": 129,
-    "lastVerifiedAt": "2026-07-13T16:28:49.731Z"
+    "lastVerifiedAt": "2026-07-26"
   },
   {
     "id": "xlsx_6a651d97024c",
@@ -3007,12 +3028,12 @@
       "https://jgpc.jimdofree.com/%E6%95%99%E4%BC%9A%E4%B8%80%E8%A6%A7/"
     ],
     "socialUrlList": [],
-    "entrySelector": "",
-    "nameSelector": "",
+    "entrySelector": "table tr:has(a[href])",
+    "nameSelector": "a[href]",
     "addressSelector": "",
-    "urlSelector": "",
+    "urlSelector": "a[href]",
     "sourceSpreadsheetRow": 130,
-    "lastVerifiedAt": "2026-07-13T16:28:50.352Z"
+    "lastVerifiedAt": "2026-07-26"
   },
   {
     "id": "xlsx_f5981f2cf029",
@@ -3033,14 +3054,16 @@
     "denominationId": "BIBLE_CHURCH_FEDERATION",
     "denominationName": "聖書教会連盟",
     "denominationWebsiteUrl": "http://www.kyoukai.com/rennmei/index.html",
-    "churchListUrlList": [],
+    "churchListUrlList": [
+      "http://www.kyoukai.com/rennmei/syo/hp/1ran.html"
+    ],
     "socialUrlList": [],
-    "entrySelector": "",
-    "nameSelector": "",
-    "addressSelector": "",
-    "urlSelector": "",
+    "entrySelector": "table tr",
+    "nameSelector": "td:first-child",
+    "addressSelector": "td:nth-child(2)",
+    "urlSelector": "td:first-child a[href]",
     "sourceSpreadsheetRow": 132,
-    "lastVerifiedAt": "2026-07-13T16:28:50.453Z"
+    "lastVerifiedAt": "2026-07-26"
   },
   {
     "id": "xlsx_3fda285a9665",
@@ -3065,19 +3088,21 @@
       "https://japanalliancemission.org/info/alliance-church-network/"
     ],
     "socialUrlList": [],
-    "entrySelector": "",
-    "nameSelector": "",
-    "addressSelector": "",
-    "urlSelector": "",
+    "entrySelector": "div.location.grow",
+    "nameSelector": "div.information h4",
+    "addressSelector": "div.information p",
+    "urlSelector": "div.information a[href]",
     "sourceSpreadsheetRow": 134,
-    "lastVerifiedAt": "2026-07-13T16:28:51.357Z"
+    "lastVerifiedAt": "2026-07-26"
   },
   {
     "id": "xlsx_1b16b781a295",
     "denominationId": "TFMC",
     "denominationName": "東京フリー・メソジスト教団",
     "denominationWebsiteUrl": "https://tokyofree.net/",
-    "churchListUrlList": [],
+    "churchListUrlList": [
+      "https://tokyofree.net/"
+    ],
     "socialUrlList": [],
     "entrySelector": "",
     "nameSelector": "",
@@ -3132,15 +3157,17 @@
     "id": "xlsx_844629460c39",
     "denominationId": "LECC",
     "denominationName": "ルーテル福音キリスト教会",
-    "denominationWebsiteUrl": "",
-    "churchListUrlList": [],
+    "denominationWebsiteUrl": "https://www.leccjapan.com/",
+    "churchListUrlList": [
+      "https://www.leccjapan.com/churches"
+    ],
     "socialUrlList": [],
-    "entrySelector": "",
+    "entrySelector": "main a[href]",
     "nameSelector": "",
     "addressSelector": "",
     "urlSelector": "",
     "sourceSpreadsheetRow": 139,
-    "lastVerifiedAt": ""
+    "lastVerifiedAt": "2026-07-26"
   },
   {
     "id": "xlsx_7bb40e57e76b",
@@ -3189,14 +3216,16 @@
     "denominationId": "JSCCF",
     "denominationName": "日本聖泉基督教会連合",
     "denominationWebsiteUrl": "https://seisen-rengou.blogspot.com/",
-    "churchListUrlList": [],
+    "churchListUrlList": [
+      "https://seisen-rengou.blogspot.com/2012/02/blog-post_22.html"
+    ],
     "socialUrlList": [],
     "entrySelector": "",
     "nameSelector": "",
     "addressSelector": "",
     "urlSelector": "",
     "sourceSpreadsheetRow": 143,
-    "lastVerifiedAt": "2026-07-13T16:28:52.128Z"
+    "lastVerifiedAt": "2026-07-26"
   },
   {
     "id": "xlsx_8bb687c6219e",
@@ -3207,12 +3236,12 @@
       "https://everynation.jp/directory/"
     ],
     "socialUrlList": [],
-    "entrySelector": "",
+    "entrySelector": "div.et_pb_column:has(h4)",
     "nameSelector": "",
     "addressSelector": "",
     "urlSelector": "",
     "sourceSpreadsheetRow": 144,
-    "lastVerifiedAt": "2026-07-13T16:28:57.601Z"
+    "lastVerifiedAt": "2026-07-26"
   },
   {
     "id": "xlsx_ca8acd3c790a",
@@ -3246,17 +3275,17 @@
     "id": "xlsx_18816f940131",
     "denominationId": "JOAC",
     "denominationName": "日本オリベットアッセンブリー教団",
-    "denominationWebsiteUrl": "https://olivetassembly.or.jp/about-us/organization.html",
+    "denominationWebsiteUrl": "https://olivetassembly.or.jp/",
     "churchListUrlList": [
-      "https://olivetassembly.or.jp/churches.html"
+      "resource:crawl/joac-churches.html"
     ],
     "socialUrlList": [],
-    "entrySelector": "",
-    "nameSelector": "",
+    "entrySelector": "ul.church-links li",
+    "nameSelector": "a[href]",
     "addressSelector": "",
-    "urlSelector": "",
+    "urlSelector": "a[href]",
     "sourceSpreadsheetRow": 147,
-    "lastVerifiedAt": "2026-07-13T16:43:39.480Z"
+    "lastVerifiedAt": "2026-07-26"
   },
   {
     "id": "xlsx_c2b6e3644d67",
@@ -3332,39 +3361,42 @@
     "id": "xlsx_84b3a8f19118",
     "denominationId": "JCUC",
     "denominationName": "日本キリスト合同教会",
-    "denominationWebsiteUrl": "http://web.archive.org/web/20180317203733/http:/www.godo.or.jp/",
-    "churchListUrlList": [],
+    "denominationWebsiteUrl": "https://godo.or.jp/",
+    "churchListUrlList": [
+      "https://godo.or.jp/churches/"
+    ],
     "socialUrlList": [],
-    "entrySelector": "",
-    "nameSelector": "",
+    "entrySelector": "article.page-article h3",
+    "nameSelector": ":root",
     "addressSelector": "",
     "urlSelector": "",
     "sourceSpreadsheetRow": 154,
-    "lastVerifiedAt": "2026-07-13T16:28:53.555Z"
+    "lastVerifiedAt": "2026-07-26"
   },
   {
     "id": "xlsx_2ecc6d4ab227",
     "denominationId": "TJC",
     "denominationName": "真イエス教会",
-    "denominationWebsiteUrl": "https://tjc.org/jp/",
+    "denominationWebsiteUrl": "https://www.tjc.or.jp/",
     "churchListUrlList": [
-      "https://tjc.org/zh/find-a-church/",
-      "https://tjc.org/zh/get-in-touch/"
+      "https://www.tjc.or.jp/churchIndex"
     ],
     "socialUrlList": [],
-    "entrySelector": "",
-    "nameSelector": "",
-    "addressSelector": "",
-    "urlSelector": "",
+    "entrySelector": "div.pro.clearfix dl.clearfix",
+    "nameSelector": "a[href*=churchShow]",
+    "addressSelector": "div.des",
+    "urlSelector": "a[href*=churchShow]",
     "sourceSpreadsheetRow": 155,
-    "lastVerifiedAt": "2026-07-13T16:28:52.139Z"
+    "lastVerifiedAt": "2026-07-26"
   },
   {
     "id": "xlsx_0f16b6b5691c",
     "denominationId": "OCCJ",
     "denominationName": "日本華僑基督教団",
     "denominationWebsiteUrl": "https://www.occj.net/",
-    "churchListUrlList": [],
+    "churchListUrlList": [
+      "https://www.occj.net/church"
+    ],
     "socialUrlList": [],
     "entrySelector": "",
     "nameSelector": "",
@@ -3461,15 +3493,17 @@
     "id": "xlsx_e0a6cc3f86eb",
     "denominationId": "JFMC",
     "denominationName": "日本自由メソヂスト教団",
-    "denominationWebsiteUrl": "http://blog.livedoor.jp/methodist_free/",
-    "churchListUrlList": [],
+    "denominationWebsiteUrl": "https://methodist-free.jp/",
+    "churchListUrlList": [
+      "https://methodist-free.jp/"
+    ],
     "socialUrlList": [],
-    "entrySelector": "",
-    "nameSelector": "",
+    "entrySelector": "ul#menu-link > li",
+    "nameSelector": "a",
     "addressSelector": "",
-    "urlSelector": "",
+    "urlSelector": "a",
     "sourceSpreadsheetRow": 163,
-    "lastVerifiedAt": "2026-07-13T16:28:53.444Z"
+    "lastVerifiedAt": "2026-07-26"
   },
   {
     "id": "xlsx_f19b6f1644a2",
@@ -3487,24 +3521,28 @@
   },
   {
     "id": "xlsx_afde972c6c12",
-    "denominationId": "CFJYM",
+    "denominationId": "QUAKER_JP",
     "denominationName": "キリスト友会日本年会",
-    "denominationWebsiteUrl": "http://www.kirisutoyuukai.org/",
-    "churchListUrlList": [],
+    "denominationWebsiteUrl": "https://quakerjapan.wixsite.com/tokyogekkai/",
+    "churchListUrlList": [
+      "https://quakerjapan.wixsite.com/tokyogekkai/about-us"
+    ],
     "socialUrlList": [],
-    "entrySelector": "",
-    "nameSelector": "",
+    "entrySelector": "section#comp-lbenz59n div[data-testid=richTextElement]",
+    "nameSelector": ".backcolor_21",
     "addressSelector": "",
     "urlSelector": "",
     "sourceSpreadsheetRow": 165,
-    "lastVerifiedAt": "2026-07-13T16:28:53.081Z"
+    "lastVerifiedAt": "2026-07-26"
   },
   {
     "id": "xlsx_958d0b351e84",
     "denominationId": "CHRISTIAN_FELLOWSHIP",
     "denominationName": "キリスト同信会",
     "denominationWebsiteUrl": "https://nakano-psc.org/about/other_area/",
-    "churchListUrlList": [],
+    "churchListUrlList": [
+      "https://nakano-psc.org/about/other_area/"
+    ],
     "socialUrlList": [],
     "entrySelector": "",
     "nameSelector": "",
@@ -3531,8 +3569,10 @@
     "id": "xlsx_f045736c8a00",
     "denominationId": "BCA",
     "denominationName": "ベタニヤ・クリスチャン・アッセンブリーズ",
-    "denominationWebsiteUrl": "",
-    "churchListUrlList": [],
+    "denominationWebsiteUrl": "https://church.ne.jp/bethany/",
+    "churchListUrlList": [
+      "https://church.ne.jp/bethany/assemblies.html"
+    ],
     "socialUrlList": [],
     "entrySelector": "",
     "nameSelector": "",
@@ -3573,9 +3613,9 @@
     "id": "xlsx_7998d313189e",
     "denominationId": "NLCCU",
     "denominationName": "新生キリスト教会連合",
-    "denominationWebsiteUrl": "https://mccjapa8.wixsite.com/mccjapan/--c1k3t",
+    "denominationWebsiteUrl": "https://mccjapa8.wixsite.com/mccjapan/",
     "churchListUrlList": [
-      "https://mccjapa8.wixsite.com/mccjapan/churchinfo"
+      "https://mccjapa8.wixsite.com/mccjapan/--c1k3t"
     ],
     "socialUrlList": [],
     "entrySelector": "",
@@ -3589,8 +3629,10 @@
     "id": "xlsx_17a6c6c826c3",
     "denominationId": "JVCF",
     "denominationName": "日本ヴィンヤード・クリスチャン・フェロシップ",
-    "denominationWebsiteUrl": "",
-    "churchListUrlList": [],
+    "denominationWebsiteUrl": "https://worship.vcfkani.org/",
+    "churchListUrlList": [
+      "https://worship.vcfkani.org/introduction/"
+    ],
     "socialUrlList": [],
     "entrySelector": "",
     "nameSelector": "",
@@ -3603,8 +3645,10 @@
     "id": "xlsx_8804ef621256",
     "denominationId": "JMS",
     "denominationName": "日本宣教会",
-    "denominationWebsiteUrl": "",
-    "churchListUrlList": [],
+    "denominationWebsiteUrl": "https://nihonsenkyoukai.com/",
+    "churchListUrlList": [
+      "https://nihonsenkyoukai.com/our-churches/"
+    ],
     "socialUrlList": [],
     "entrySelector": "",
     "nameSelector": "",
@@ -4286,5 +4330,21 @@
     "urlSelector": "",
     "sourceSpreadsheetRow": null,
     "lastVerifiedAt": "2026-07-25"
+  },
+  {
+    "id": "hpbc",
+    "denominationId": "HPBC",
+    "denominationName": "Hawaii Pacific Baptist Convention",
+    "denominationWebsiteUrl": "https://www.hpbaptist.net/",
+    "churchListUrlList": [
+      "https://www.hpbaptist.net/location/asia/"
+    ],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": null,
+    "lastVerifiedAt": "2026-07-26"
   }
 ]

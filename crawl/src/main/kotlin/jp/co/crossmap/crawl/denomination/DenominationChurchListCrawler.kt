@@ -164,16 +164,8 @@ class CachedHttpDenominationChurchPageLoader(
         return LoadedDenominationChurchPage(response.uri().toString(), html, fetchedAt, cacheHit = false, bytes = response.body())
     }
 
-    private fun decodeHtml(bytes: ByteArray, contentType: String): String {
-        val asciiHead = bytes.take(4096).toByteArray().toString(Charsets.ISO_8859_1)
-        val charsetName = Regex("charset\\s*=\\s*[\"']?([^\"';>\\s]+)", RegexOption.IGNORE_CASE)
-            .find(contentType)?.groupValues?.get(1)
-            ?: Regex("charset\\s*=\\s*[\"']?([^\"';>\\s]+)", RegexOption.IGNORE_CASE)
-                .find(asciiHead)?.groupValues?.get(1)
-            ?: "UTF-8"
-        val charset = runCatching { Charset.forName(charsetName) }.getOrDefault(Charsets.UTF_8)
-        return bytes.toString(charset)
-    }
+    private fun decodeHtml(bytes: ByteArray, contentType: String): String =
+        decodeDenominationHtml(bytes, contentType)
 
     private fun atomicWrite(path: Path, content: String) {
         val part = path.resolveSibling("${path.fileName}.part")
@@ -310,6 +302,23 @@ class DenominationChurchListCrawlerRunner(
         runCatching { Files.move(part, path, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING) }
             .getOrElse { Files.move(part, path, StandardCopyOption.REPLACE_EXISTING) }
     }
+}
+
+internal fun decodeDenominationHtml(bytes: ByteArray, contentType: String): String {
+    val asciiHead = bytes.take(4096).toByteArray().toString(Charsets.ISO_8859_1)
+    val charsetPattern = Regex("charset\\s*=\\s*[\"']?([^\"';>\\s]+)", RegexOption.IGNORE_CASE)
+    val charset = sequenceOf(
+        charsetPattern.find(contentType)?.groupValues?.get(1),
+        charsetPattern.find(asciiHead)?.groupValues?.get(1),
+        "UTF-8",
+    ).filterNotNull().mapNotNull { name ->
+        val compatibleName = when (name.lowercase().replace('-', '_')) {
+            "shift_jis", "shiftjis", "sjis" -> "windows-31j"
+            else -> name
+        }
+        runCatching { Charset.forName(compatibleName) }.getOrNull()
+    }.first()
+    return bytes.toString(charset)
 }
 
 private fun String.sha1(): String = digest("SHA-1")

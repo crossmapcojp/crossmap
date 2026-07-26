@@ -35,6 +35,18 @@ class DenominationChurchListCrawlerTest {
     }
 
     @Test
+    fun invalidHttpCharsetFallsThroughToTheHtmlMetaCharset() {
+        val html =
+            """<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">""" +
+                """<p>日本福音教会連合 ℡ 0561(72)1166</p>"""
+        val bytes = html.toByteArray(java.nio.charset.Charset.forName("windows-31j"))
+
+        val decoded = decodeDenominationHtml(bytes, "text/html; charset=none")
+        assertTrue(decoded.contains("日本福音教会連合"))
+        assertTrue(decoded.contains("℡ 0561(72)1166"))
+    }
+
+    @Test
     fun uccjParserReadsRealChurchRowsAndSkipsDioceseHeadings() {
         val html = """
             <table class="kyokai">
