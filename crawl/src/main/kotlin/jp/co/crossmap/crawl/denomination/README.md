@@ -85,20 +85,20 @@ Run all dedicated crawlers fresh and reconcile the catalog with:
 ## TODO Denomination coverage progress:
 
 ### SinglePageDenominationChurchListCrawler
-- [x] UCCJ 日本基督教団
-- [x] JBC 日本バプテスト連盟
-- [x] JACC 日本同盟基督教団
-- [x] JHC 日本ホーリネス教団
-- [x] RCJ 日本キリスト改革派教会
-- [x] JBBC 日本バプテスト・バイブル・フェローシップ
-- [x] IGM イムマヌエル綜合伝道団
+- [x] UCCJ 日本基督教団 - https://uccj.org/diocese
+- [x] JBC 日本バプテスト連盟 - https://bapren.jp/church/
+- [x] JACC 日本同盟基督教団 - https://db.jacc.info/database/db_list.php
+- [x] JHC 日本ホーリネス教団 - https://jhc.or.jp/churches/locations.html
+- [x] RCJ 日本キリスト改革派教会 - https://www.rcj.gr.jp/_church_list/result_keyword.php
+- [x] JBBF 日本バプテスト・バイブル・フェローシップ - https://jbbf.or.jp/%E4%BD%8F%E6%89%80%E9%8C%B2/
+- [x] IGM イムマヌエル綜合伝道団 - https://www.immanuel.or.jp/link.html
 - [x] JELC 日本福音ルーテル教会 https://jelc.or.jp/all_churchs/
-- [x] JCC 日本キリスト教会 http://www.nikki-church.org/data.htm
-- [x] SDA_JP セブンスデー・アドベンチスト教団 https://adventist.jp/%E6%95%99%E4%BC%9A%E6%89%80%E5%9C%A8%E5%9C%B0/%E6%95%99%E4%BC%9A%E4%B8%80%E8%A6%A7/
+- [x] CCJ 日本キリスト教会 http://www.nikki-church.org/data.htm
+- [x] SDA_JP セブンスデー・アドベンチスト教団 https://adventist.jp/%E6%95%99%E4%BC%9A%E6%89%80%E5%9C%B0/%E6%95%99%E4%BC%9A%E4%B8%80%E8%A6%A7/
 - [x] TLEA The Light of Eternal Agape https://tlea.tokyoantioch.com/ourchurch/all-tlea-link/
 - [x] HEJ 聖イエス会 https://seiiesukai.org/branch/
 
-- [x] 日本フルゴスペル教団 https://www.fgja.jp/sanctuary-church.html
+- [x] FGJA 日本フルゴスペル教団 https://www.fgtc.jp/fullgospeltokyo/sanctuary-church.html
 but excluding:
   東ロシア地方会	フルゴスペルウラジオストック教会	李 ミラン 牧師	ShilKinskaya Street 15-457
   Vladivostok,690066 Rep. of Russia
@@ -113,15 +113,15 @@ but excluding:
   Primorsky kray Partizansk, 692864 Rep. of Russia
   Tel:7-9147-37-6736
 
-- [x] 日本ナザレン教団 https://www.nazarene.or.jp/cm/index.html
-- [x] 日本バプテスト同盟 http://www.jbu.or.jp/chs/
-- [x] 単立ペンテコステ教会フェローシップ https://tpkf.org/localch_group.html
-- [x] 基督兄弟団 https://kyodaidan.org/church/
-- [x] 日本バプテスト教会連合 https://rengo.ne.jp/chruch-list/
-- [x] 救世軍 https://www.salvationarmy.or.jp/about-org/chapel/
+- [x] COTN_JP 日本ナザレン教団 http://www.nazarene.or.jp/cm/index.html
+- [x] JBU 日本バプテスト同盟 http://www.jbu.or.jp/chs/
+- [x] TPKF 単立ペンテコステ教会フェローシップ https://tpkf.org/localch_group.html
+- [x] BCC 基督兄弟団 https://kyodaidan.org/church/
+- [x] BGC_JP 日本バプテスト教会連合 https://rengo.ne.jp/chruch-list/
+- [x] SA_JP 救世軍 https://www.salvationarmy.or.jp/about-org/chapel/
 
 ### MultiPageDenominationChurchListCrawler
-- [x] JAG 日本アッセンブリーズ・オブ・ゴッド教団
+- [x] JAG 日本アッセンブリーズ・オブ・ゴッド教団 - https://j-ag.org/church-info/
 - https://j-ag.org/church-info/hokkaido-kyoku/
 - https://j-ag.org/church-info/hokkaido-kyoku/page/2/
 - https://j-ag.org/church-info/tohoku-kyoku/
@@ -147,7 +147,7 @@ but excluding:
 - https://j-ag.org/church-info/kyushu-kyoku/page/2/
 - https://j-ag.org/church-info/okinawa-kyoku/
 
-- [x] JECA 日本福音キリスト教会連合
+- [x] JECA 日本福音キリスト教会連合 - https://jeca.jp/church/church/hokkaido.html
 - https://jeca.jp/church/church/hokkaido.html
 - https://jeca.jp/church/church/touhoku.html
 - https://jeca.jp/church/church/kitakanto.html
@@ -160,7 +160,7 @@ but excluding:
 - https://jeca.jp/church/code/nisinippon.html
 - https://jeca.jp/church/church/okinawa.html
 
-- [x] JCCJ 日本イエス・キリスト教団
+- [x] JCCJ 日本イエス・キリスト教団 - https://jccj.info/localchurch_tyokkatu.php
 - https://jccj.info/localchurch_tyokkatu.php
 - https://jccj.info/localchurch_touhoku.php
 - https://jccj.info/localchurch_kanto.php
@@ -172,7 +172,7 @@ but excluding:
 - https://jccj.info/localchurch_shikoku.php
 - https://jccj.info/localchurch_kyusyu.php
 
-- [x] KCCJ 在日大韓基督教会
+- [x] KCCJ 在日大韓基督教会 - https://kccj.jp/church_list.php
 - https://kccj.jp/church_list.php
 - https://kccj.jp/church_list.php?page=2&chihokai=&keyfield=&key=
 - https://kccj.jp/church_list.php?page=3&chihokai=&keyfield=&key=
@@ -201,7 +201,7 @@ but exclude following none-church entities:
 2	 ケアハウスセットンの家		072−272−8338	〒590-0142 大阪府堺市南区檜尾 3360−10
 1	 精神障害碍者支援に取り組む「社会福祉法人サワリ」
 
-- [x] 保守バプテスト同盟
+- [x] JCBA 保守バプテスト同盟 - https://doumei.holy.jp/churches/
 - https://doumei.holy.jp/churches/%e9%9d%92%e6%a3%ae%e7%9c%8c%e3%83%bb%e5%b2%a9%e6%89%8b%e7%9c%8c%e3%83%bb%e7%a7%8b%e7%94%b0%e7%9c%8c/
 - https://doumei.holy.jp/churches/%e5%ae%ae%e5%9f%8e%e7%9c%8c/
 - https://doumei.holy.jp/churches/%e5%b1%b1%e5%bd%a2%e7%9c%8c/
@@ -209,55 +209,162 @@ but exclude following none-church entities:
 - https://doumei.holy.jp/churches/%e9%a6%96%e9%83%bd%e5%9c%8f%e9%95%b7%e5%b4%8e%e7%9c%8c/
 The church list includes social links. so reconcile with the data from exported google saved places/youtube/facebook/instagram/x.com
 
-- [x] 日本長老教会 https://chorokyokai.jp/churches/
+- [x] PCJ 日本長老教会 https://chorokyokai.jp/churches/
 each "church detail webpage of denomination official website" needs to be crawled to get more detail chruch info such as pastor name, email, address, website, etc.
 
-- [x] 日本福音自由教会協議会 https://efcj.org/churchlist
+- [x] EFC_JP 日本福音自由教会協議会 https://efcj.org/churchlist
   each "church detail webpage of denomination official website" needs to be crawled to get more detail chruch info such as pastor name, email, address, website, etc.
 
-- [x] 福音伝道教団
+- [x] GEC 福音伝道教団 - https://fukuindendou.org/
 - https://fdk.fukuindendou.org/gunma/
 - https://fdk.fukuindendou.org/saitama/
 - https://fdk.fukuindendou.org/tochigi/
 - https://fdk.fukuindendou.org/tokyo-kanagawa/
 
 
+
+- [x] CATHOLIC_JP カトリック中央協議会 - https://www.cbcj.catholic.jp/map/index.php/
+- [x] ANGLICAN_JP 日本聖公会 - https://www.nskk.org/tokyo/churchs/list
+- [x] ORTHODOX_JP 日本ハリストス正教会教団 - https://www.orthodoxjapan.jp/area-tokyo.html
+- [x] JMA 日本宣教連合会 - https://japanmissionassociation.org/
+- [x] WJELC 西日本福音ルーテル教会 - https://www.wjelc.or.jp/
+- [x] JAC 日本アライアンス教団 - http://jac-hij.sakura.ne.jp/
+- [x] WHCJ ウェスレアン・ホーリネス教団（コミット済み `resources/crawl/whcj-churches.html`） - https://whchurch.jimdo.com/
+- [x] OBC 沖縄バプテスト連盟（公式英語名を canonical record に反映） - http://okinawabaptist.com/
+- [x] JMBC 日本メノナイトブレザレン教団（公式英語名を canonical record に反映） - https://jmbc.japan-mb.com/
+- [x] SEIKYODAN 基督聖協団（フレーム本体 `shyozoku5.html` を直接取得） - http://www.seikyodan.com/shyozoku5.html
+- [x] WMC ワールドミッション教団 - https://worldmission.or.jp/
+- [x] JLBC 日本ルーテル同胞教団 - https://clbj.org/
+- [x] FMC_JP 日本フリーメソジスト教団 - http://fmcjp.org/
+- [x] NFK 日本福音教団（半角カナの韓国人名読みを分離し、ハングル名を保持） - https://nihonfukuin.imagodei.jp/
+
+
 ### backlog of denomination order by the church count
-- [x] カトリック中央協議会
-- [x] 日本聖公会
-- [x] 日本ハリストス正教会教団
-- [x] 日本宣教連合会（コミット済み `resources/crawl/jma-churches.csv`）
-- [x] 西日本福音ルーテル教会
-- [x] 日本アライアンス教団
-- [x] ウェスレアン・ホーリネス教団（コミット済み `resources/crawl/whcj-churches.html`）
-- [x] 沖縄バプテスト連盟（公式英語名を canonical record に反映）
-- [x] 日本メノナイトブレザレン教団（公式英語名を canonical record に反映）
-- [x] 基督聖協団（フレーム本体 `shyozoku5.html` を直接取得）
-- [x] ワールドミッション教団
-- [x] 日本ルーテル同胞教団
-- [x] 日本フリーメソジスト教団
-- [x] 日本福音教団（半角カナの韓国人名読みを分離し、ハングル名を保持）
-- [x] 日本聖契キリスト教団（既存 canonical ID `NSKK`）
-- [x] 日本アドベント・キリスト教団
-- [x] 日本伝道福音教団
-- [x] 日本伝道隊（韓国人名のハングルと夫婦姓展開を保持）
-- [x] 日本聖約キリスト教団
-- [x] JEC 日本福音教会（registry-defined 16 prefecture pages）
-- [x] JFGC 日本フォースクエア福音教団（registry-defined 5 regional pages）
-- [x] JLC 日本ルーテル教団（registry-defined 4 regional pages）
-- [x] JFEC 同盟福音基督教会（directory-discovered detail pages）
-- [x] KELC 近畿福音ルーテル教会（registry-defined 5 prefecture pages）
-- [x] LIVE ライブチャーチ（official JA/EN/PT names merged by postal code）
-- [x] GMI グレース宣教会（directory-discovered detail pages）
-- [SKIPPED] イエス之御霊教会教団
-- [SKIPPED] キリストの教会（無楽器派）
-- [SKIPPED] 無教会主義集会
-- [SKIPPED] 聖書キリスト教会
-- [SKIPPED] 日本ネクスト・タウンズ・ミッション
-- [SKIPPED] 日本ペンテコステ教団
-- [SKIPPED] 活けるキリスト一麦の群
-- [SKIPPED]
-- [SKIPPED]
-- [SKIPPED]
-- [SKIPPED]
-- [SKIPPED]
+- [ ] HPBC Hawaii Pacific Baptist Convention - https://www.hpbaptist.net/location/asia/
+- [ ] JEC 日本福音教会 - https://www.jec-net.org/
+- [ ] JFGC 日本フォースクエア福音教団 - https://www.japan-foursquare.jp/
+- [ ] JLC 日本ルーテル教団 - http://www.jlc.or.jp/
+- [ ] JFEC 同盟福音基督教会 - http://www.doumeifukuin.net/
+- [ ] KELC 近畿福音ルーテル教会 - http://www.kelc.net/
+- [ ] BIBLE_CHRISTIAN_ASSOCIATION 聖書キリスト教会 - https://seishokirisuto.com/
+- [ ] LIVE ライブチャーチ - https://livechurch.jp/
+- [ ] NSKK 日本聖契キリスト教団 - https://nskk.gr.jp/church/
+- [ ] ADVENT 日本アドベント・キリスト教団 - https://nihonadobento.wordpress.com/home/%e6%89%80%e5%b1%9e%e6%95%99%e4%bc%9a%e3%83%bb%e9%96%a2%e9%80%a3%e5%9b%a3%e4%bd%93%e4%b8%80%e8%a6%a7/
+- [ ] GMI グレース宣教会 - https://gmi.or.jp/chapels/
+- [ ] FUKUIN_DENDO 日本伝道福音教団 - https://church.ne.jp/niigatabible_ch/main/denpuku.html
+- [ ] JEB 日本伝道隊 - https://nihon-dendoutai.kyoukai.jp/church/
+- [ ] JECU 日本福音教会連合 - https://church.ne.jp/jecu/link.htm
+- [ ] ICHIBAKU 活けるキリスト一麦の群 - http://www.ichibaku.org/
+- [ ] SEIYAKU 日本聖約キリスト教団 - http://www.seiyaku.jp/
+- [ ] OBC_JP 日本オープンバイブル教団 - https://open-bible.jimdofree.com/
+- [ ] JBA 日本バプテスト連合 - https://www.jbaptist.org/blank-2
+- [ ] MENNONITE_BRETHREN_COUNCIL_JP 日本メノナイト・キリスト教会協議会 - https://www.mennonite.jp/church/
+- [ ] CHRIST_EVANGELIZATION_TEAM キリスト伝道隊 - https://dendoutai.org/churches/
+- [ ] COG_JP チャーチ・オブ・ゴッド - https://www.cogjapan.com/
+- [ ] SFDK 世界福音伝道会 - https://www.cogjapan.com/2515223646259452025012539125111249112473124881252212540.html
+- [ ] JBM 日本バプテスト宣教団 - https://ja.wikipedia.org/wiki/%E6%97%A5%E6%9C%AC%E3%83%90%E3%83%97%E3%83%86%E3%82%B9%E3%83%88%E5%AE%A3%E6%95%99%E5%9B%A3
+- [ ] JMCC 日本メノナイト・キリスト教会会議 - https://mennonite.jpn.org/
+- [ ] CCG カルバリーチャペルグループ - https://www.yamatocalvarychapel.com/service/branch_01.php
+- [ ] JEMS_ASSOCIATION 日本福音宣教会 - http://senkyokai.com/
+- [ ] GFA 福音交友会 - http://fkk-web.net/church/church.html
+- [ ] IEC インドネシア福音教会 - https://www.giii-japan.org/gereja-wilayah
+- [ ] CCMJ カルバリーチャペルミニストリー JAPAN - http://www.calvaryjapan.com/
+- [ ] KECCJCC カンバーランド長老キリスト教会日本中会 - https://www.cumberland.jp/introduction/
+- [ ] CCNZ チャーチオブクライストニュージーランド日本 - https://www.ccnz.jp/
+- [ ] NEW_HOPE_ASIA_JP ニューホープ・インターナショナル・アジア・ジャパン - https://newhope.jp/
+- [ ] JCGF 日本神の教会連盟 - http://xn--u9j463geip7pa94cc38by5dpv1d.com/
+- [ ] JCGA 日本チャーチオブゴッド教団 - https://www.japanchurchofgod.org/family
+- [ ] JGPC 日本福音ペンテコステ教団 - https://jgpc.jimdofree.com/%E6%95%99%E4%BC%9A%E4%B8%80%E8%A6%A7/
+- [ ] JFWB 福音バプテスト宣教団 - http://jfwb.net/
+- [ ] BIBLE_CHURCH_FEDERATION 聖書教会連盟 - http://www.kyoukai.com/rennmei/index.html
+- [ ] JAM 日本アライアンス・ミッション - https://japanalliancemission.org/info/alliance-church-network/
+- [ ] TFMC 東京フリー・メソジスト教団 - https://tokyofree.net/
+- [ ] LECC ルーテル福音キリスト教会 - https://www.leccjapan.com/churches
+- [ ] VCG 勝利教会グループ - https://www5a.biglobe.ne.jp/~vct/99_blank001.html
+- [ ] JSCCF 日本聖泉基督教会連合 - https://seisen-rengou.blogspot.com/2012/02/blog-post_22.html
+- [ ] ENCJ エブリネイションチャーチズジャパン - https://everynation.jp/directory/
+- [ ] RCC 復活之キリスト教団 - https://ja.wikipedia.org/wiki/%E5%BE%A9%E6%B4%BB%E4%B9%8B%E3%82%AD%E3%83%AA%E3%82%B9%E3%83%88%E6%95%99%E5%9B%A3
+- [ ] JOAC 日本オリベットアッセンブリー教団 - https://olivetassembly.or.jp/our-regions.html
+- [ ] JESUS_EVANGELICAL_CHURCH イエス福音教団 - https://ja.wikipedia.org/wiki/%E3%82%A4%E3%82%A8%E3%82%B9%E7%A6%8F%E9%9F%B3%E6%95%99%E5%9B%A3
+- [ ] JCB 日本キリスト兄弟団 - https://ja.wikipedia.org/wiki/%E6%97%A5%E6%9C%AC%E3%82%AD%E3%83%AA%E3%82%B9%E3%83%88%E5%85%84%E5%BC%9F%E5%9B%A3
+- [ ] JCUC 日本キリスト合同教会 - https://godo.or.jp/churches/
+- [ ] TJC 真イエス教会 - https://www.tjc.or.jp/churchIndex#main
+- [ ] OCCJ 日本華僑基督教団 - https://www.occj.net/
+- [ ] JJWM イエス教日本世界宣教会 - https://ja.wikipedia.org/wiki/%E3%82%A4%E3%82%A8%E3%82%B9%E6%95%99%E6%97%A5%E6%9C%AC%E4%B8%96%E7%95%8C%E5%AE%A3%E6%95%99%E4%BC%9A
+- [ ] JFMC 日本自由メソヂスト教団 - https://methodist-free.jp/
+- [ ] QUAKER_JP キリスト友会日本年会 - https://quakerjapan.wixsite.com/tokyogekkai/about-us
+- [ ] CHRISTIAN_FELLOWSHIP キリスト同信会 - https://nakano-psc.org/about/other_area/
+- [ ] BCA ベタニヤ・クリスチャン・アッセンブリーズ - https://church.ne.jp/bethany/assemblies.html
+- [ ] NLCCU 新生キリスト教会連合 - https://mccjapa8.wixsite.com/mccjapan/--c1k3t
+- [ ] JVCF 日本ヴィンヤード・クリスチャン・フェロシップ - https://worship.vcfkani.org/introduction/
+- [ ] JMS 日本宣教会 - https://nihonsenkyoukai.com/our-churches/
+- [ ] JAPAN_FREE_EVANGELICAL_CHURCH 日本自由福音教団 - https://njfk-jp.com/
+- [ ] MINO_MISSION 美濃ミッション - https://www.cty-net.ne.jp/~mmi/church.html
+- [ ] ECC エバンジェリカル・コングリゲーショナル・チャーチ - https://gracegardenchurch.com/introduction/overview/
+- [ ] CBA キリスト信徒の集会 - https://ja.wikipedia.org/wiki/%E3%82%AD%E3%83%AA%E3%82%B9%E3%83%88%E4%BF%A1%E5%BE%92%E3%81%AE%E9%9B%86%E4%BC%9A
+- [ ] JAPAN_BETHEL_MISSION 日本べテルミッション - https://japanbethelmission.com/
+- [ ] EGM 東洋福音教団 - https://ja.wikipedia.org/wiki/%E6%9D%B1%E6%B4%8B%E7%A6%8F%E9%9F%B3%E6%95%99%E5%9B%A3
+- [ ] BSF 聖書研究会 - https://skk-jpn.com/
+- [ ] AJBMM 全日本バプテスト・ミド・ミッション - https://bmmjapan.org/
+- [ ] JCA 日本基督会 - https://shibuya-kirisutokai.la.coocan.jp/nihonkirisutokai.htm
+- [ ] THC 東京ホライズンチャペル - https://horizonchapel.jp/service
+- [ ] GBF 福音バプテスト連合 - https://ja.wikipedia.org/wiki/%E7%A6%8F%E9%9F%B3%E3%83%90%E3%83%97%E3%83%86%E3%82%B9%E3%83%88%E9%80%A3%E5%90%88
+- [ ] ICM インターナショナル・チャペル・ミニストリーズ - https://www.ikomachapel.org/iic%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6
+- [ ] BEMS バルナバ福音宣教会 - https://barnabas-missionary.amebaownd.com/
+- [ ] YWAM ユース･ウィズ･ア･ミッション - https://www.ywamjapan.org/ja/
+- [ ] JNAC 日本新使徒教会 - https://www.accjapan.org/
+
+### if the church group is not an organization, or if the orgnaization does not have website, in those cases, we need to skip trying to create denomination specific crawlers and they will be added here:
+
+- [SKIPPED] SJC イエス之御霊教会教団 - no official website
+- [SKIPPED] CHRISTIAN_CHURCHES キリストの教会（クリスチャン・チャーチ系） - not a denomination organization
+- [SKIPPED] CHURCHES_OF_CHRIST キリストの教会（無楽器派） - not a denomination organization
+- [SKIPPED] UPC_JP 日本ユナイテッド・ペンテコステ教団 - no official website
+- [SKIPPED] ELCMC 東洋ローア・キリスト伝道教会 - no official website
+- [SKIPPED] NCG 無教会主義集会 - not a denomination organization
+- [SKIPPED] JRL 日本リバイバル連盟 - no official website
+- [SKIPPED] NTM 日本ネクスト・タウンズ・ミッション - no official website
+- [SKIPPED] JPC 日本ペンテコステ教団 - no official website
+- [SKIPPED] YUAI 友愛グループ教会連合 - no official website
+- [SKIPPED] JFDA 日本フェローシップ・ディコンリー伝道会 - no official website
+- [SKIPPED] SCMS 札幌キリスト召団 - no official website
+- [SKIPPED] FGCC 神の家族キリスト教会 - no official website
+- [SKIPPED] MFK 萬国福音教団 - no official website
+- [SKIPPED] JCGG イエス・キリスト福音の群 - no official website
+- [SKIPPED] BFG ブレッシング・フェローシップ・グループ - no official website
+- [SKIPPED] KPCJ 大韓イエス教長老会 - no official website
+- [SKIPPED] GGCC 栄光の福音キリスト教団 - no official website
+- [SKIPPED] TCCG ト－タル・クリスチャン・チャ－チグループ - no official website
+- [SKIPPED] BFS 聖書友の会 - no official website
+- [SKIPPED] ALLIES_5 アライズ5 - no official website
+- [SKIPPED] CCA 基督教カナン教団 - no official website
+- [SKIPPED] JBCF キリスト教日本バプテスト会(連盟) - no official website
+- [SKIPPED] CLC ｸﾘｽﾁｬﾝ・ﾗｲﾌ・ﾁｬｰﾁｽﾞ・ｲﾝﾀｰﾅｼｮﾅﾙ - no official website
+- [SKIPPED] ZCF シオン・クリスチャン・フェロシップ - no official website
+- [SKIPPED] JCC 日本キリストの教会 - no official website
+- [SKIPPED] ZCA シオン・キリスト教団 - no official website
+- [SKIPPED] RPJ 日本キリスト改革長老教会 - no official website
+- [SKIPPED] JBPCC 日本バイブル・プロテスタント基督教会 - no official website
+- [SKIPPED] JEMS_MISSION 日本福音宣教団 - no official website
+- [SKIPPED] CEG キリスト伝道団 - no official website
+- [SKIPPED] ZION_MISSION シオン宣教団 - no official website
+- [SKIPPED] KKFF 九州キリスト福音フェローシップ - no official website
+- [SKIPPED] OMS 東洋宣教団 - no official website
+- [SKIPPED] IFGF インターナショナル・フルゴスペル・フェローシップ - no official website
+- [SKIPPED] CGEC キリスト教ガリラヤ福音教団 - no official website
+- [SKIPPED] ICEC キリスト教国際福音教団 - no official website
+- [SKIPPED] ICC 国際基督教団 - no official website
+- [SKIPPED] JAPAN_BETHESDA_CHURCH 日本ベテスダ教団 - no official website
+- [SKIPPED] TDMCF 東京地区メノナイト教会連合 - no official website
+- [SKIPPED] KEFA 関西福音交友会 - no official website
+- [SKIPPED] SANBI_MISSION サンビ教団 - no official website
+- [SKIPPED] JCM ジーザス・クライスト・ミニストリーズ - no official website
+- [SKIPPED] JAPAN_BETHANY_MISSION ジャパン・ベサニー・ミッション - no official website
+- [SKIPPED] JAPAN_APOSTOLIC_CHRISTIAN_CHURCH 日本使徒キリスト教会 - no official website
+- [SKIPPED] JEBC 日本福音基督教団 - no official website
+- [SKIPPED] OPCJM 正統長老教会日本ミッション - no official website
+- [SKIPPED] FCWMS 藤原キリスト世界伝道団 - no official website
+- [SKIPPED] CCC カルバリキリスト教団 - no official website
+- [SKIPPED] SEGMJ 在日スエーデン東洋福音伝道団 - no official website
+- [SKIPPED] INDEPENDENT_BAPTIST 単立バプテスト - not a denomination organization
+- [SKIPPED] INDEPENDENT_CHURCH 単立 - not a denomination organization
