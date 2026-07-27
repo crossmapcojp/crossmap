@@ -13,8 +13,6 @@ import jp.co.crossmap.DeterminationSource
 import jp.co.crossmap.FieldDetermination
 import jp.co.crossmap.LocalizedName
 import jp.co.crossmap.crawl.denomination.OfficialDenominationChurchListPipeline
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.time.DurationUnit
 import kotlin.time.TimeMark
@@ -52,7 +50,7 @@ data class GoogleSavedPlacesPromotionReport(
 class GoogleSavedPlacesCleanupWorkflow(
     private val postCrawlCleanup: PostCrawlCleanup,
     private val englishNameResolver: ChurchEnglishNameResolver,
-    private val websiteRefresher: WebsiteRefresher = WebsiteRefresher(),
+    private val churchWebsiteCrawler: ChurchWebsiteCrawler = ChurchWebsiteCrawler(),
     private val directoryCrawler: OfficialDenominationChurchListPipeline = OfficialDenominationChurchListPipeline(),
     private val now: () -> String = { Instant.now().toString() },
     private val json: Json = Json { ignoreUnknownKeys = true; prettyPrint = true; encodeDefaults = true },
@@ -79,7 +77,7 @@ class GoogleSavedPlacesCleanupWorkflow(
         val staging = pendingCatalog(resourcesRoot, cacheRoot)
         stageMark = TimeSource.Monotonic.markNow()
         progress.start("website_refresh")
-        val website = if (refreshWebsites) websiteRefresher.refresh(resourcesRoot, staging, cacheRoot) else null
+        val website = if (refreshWebsites) churchWebsiteCrawler.crawl(resourcesRoot, staging, cacheRoot) else null
         stageDurations["website_refresh"] = stageMark.elapsedNow().toDouble(DurationUnit.SECONDS)
         stageMark = TimeSource.Monotonic.markNow()
         progress.start("directory_crawl")

@@ -7,7 +7,7 @@ import jp.co.crossmap.crawl.CrossmapPaths
 import jp.co.crossmap.crawl.DenominationCandidate
 import jp.co.crossmap.crawl.DenominationDirectorySource
 import jp.co.crossmap.crawl.DirectoryCrawlReport
-import jp.co.crossmap.crawl.GoogleSavedPlaceSeed
+import jp.co.crossmap.crawl.GoogleSavedPlaceCrawl
 import jp.co.crossmap.crawl.OfficialDirectoryCrawler
 import jp.co.crossmap.crawl.loadDenominationDirectorySources
 import kotlinx.serialization.json.Json
@@ -121,7 +121,7 @@ class OfficialDenominationChurchListPipeline(
     private fun loadGooglePlaceTitles(cacheRoot: Path): Map<String, String> {
         val file = cacheRoot.resolve("google-saved-places/seeds.json")
         if (!Files.isRegularFile(file)) return emptyMap()
-        return json.decodeFromString<List<GoogleSavedPlaceSeed>>(Files.readString(file))
+        return json.decodeFromString<List<GoogleSavedPlaceCrawl>>(Files.readString(file))
             .associate { it.id to it.title }
     }
 

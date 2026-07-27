@@ -45,17 +45,17 @@ private class ReadGoogleSavedPlaces : CrawlCommand("read-google-saved-places", C
         val rawDirectory = paths.googleSavedPlaces
         audit.input("saved_places_directory", inputDirectory)
         audit.input("resources", Path.of(resources).toAbsolutePath().normalize())
-        audit.setting("included_lists", GoogleSavedPlacesSeedReader.GMAP_DEFAULT_LISTS.sorted().joinToString(","))
-        val excludedUrls = GoogleSavedPlacesSeedReader.readExcludedUrls(
+        audit.setting("included_lists", GoogleSavedPlacesCrawler.GMAP_DEFAULT_LISTS.sorted().joinToString(","))
+        val excludedUrls = GoogleSavedPlacesCrawler.readExcludedUrls(
             listOf(
                 rawDirectory.resolve("exclusions/church-exclude.csv"),
                 rawDirectory.resolve("exclusions/catholic-exclude.csv"),
             ),
         )
-        val report = GoogleSavedPlacesSeedReader().readDirectory(
+        val report = GoogleSavedPlacesCrawler().readDirectory(
             inputDirectory = inputDirectory,
             output = rawDirectory.resolve("seeds.json"),
-            includedLists = GoogleSavedPlacesSeedReader.GMAP_DEFAULT_LISTS,
+            includedLists = GoogleSavedPlacesCrawler.GMAP_DEFAULT_LISTS,
             excludedUrls = excludedUrls,
         )
         Files.writeString(
@@ -257,7 +257,7 @@ private class PromoteGoogleSavedPlaces : CrawlCommand("promote-google-saved-plac
                 englishNameResolver = englishResolver,
             ),
             englishNameResolver = englishResolver,
-            websiteRefresher = WebsiteRefresher(cacheFreshness = Duration.ofHours(websiteCacheHours.toLong())),
+            churchWebsiteCrawler = ChurchWebsiteCrawler(cacheFreshness = Duration.ofHours(websiteCacheHours.toLong())),
         ).run(
             resourcesRoot = root,
             llmLimit = limit,
@@ -671,7 +671,7 @@ private class Refresh : CrawlCommand("refresh", CrawlReport.REFRESH) {
         val paths = CrossmapPaths(root)
         audit.input("catalog", paths.churchCatalog.toAbsolutePath().normalize())
         audit.setting("max_concurrency", concurrency)
-        val report = WebsiteRefresher(concurrency).refresh(root, cacheRoot = paths.cacheRoot)
+        val report = ChurchWebsiteCrawler(concurrency).crawl(root, cacheRoot = paths.cacheRoot)
         audit.metric("churches", report.churches)
         audit.metric("fetched", report.fetched)
         audit.metric("unchanged", report.unchanged)

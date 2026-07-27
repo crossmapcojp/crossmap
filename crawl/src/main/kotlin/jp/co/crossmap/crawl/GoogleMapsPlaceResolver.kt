@@ -19,8 +19,6 @@ import jp.co.crossmap.GeoPoint
 import jp.co.crossmap.ChurchWebsitePolicy
 import jp.co.crossmap.LocalizedName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.jsoup.Jsoup
 
@@ -64,7 +62,7 @@ data class GoogleMapsResolutionReport(
 data class GoogleMapsPage(val html: String, val cacheHit: Boolean)
 
 fun interface GoogleMapsPageSource {
-    fun load(seed: GoogleSavedPlaceSeed): GoogleMapsPage
+    fun load(seed: GoogleSavedPlaceCrawl): GoogleMapsPage
 }
 
 class CachedGoogleMapsPageSource(
@@ -76,7 +74,7 @@ class CachedGoogleMapsPageSource(
         .followRedirects(HttpClient.Redirect.NORMAL)
         .build(),
 ) : GoogleMapsPageSource {
-    override fun load(seed: GoogleSavedPlaceSeed): GoogleMapsPage {
+    override fun load(seed: GoogleSavedPlaceCrawl): GoogleMapsPage {
         // Retain gmap's verified edge-case redirect while keeping the Saved Places CID as entity identity.
         val pageCid = if (seed.googleCid == "3576720766476721565") "6907614827878617439" else seed.googleCid
         val cache = cacheDirectory.resolve("$pageCid.html")
@@ -110,7 +108,7 @@ class GoogleMapsPlaceParser(
     private val websitePolicy: ChurchWebsitePolicy = ChurchWebsitePolicy(emptySet()),
 ) {
     private val nameDecomposer = ChurchNameDecomposer()
-    fun parse(seed: GoogleSavedPlaceSeed, html: String, now: String = Instant.now().toString()): GooglePlaceChurchCandidate {
+    fun parse(seed: GoogleSavedPlaceCrawl, html: String, now: String = Instant.now().toString()): GooglePlaceChurchCandidate {
         require(html.contains("google.com/maps/preview/place/")) { "Not a Google Maps place page" }
         val document = Jsoup.parse(html)
         val ogTitle = document.selectFirst("meta[property=og:title]")?.attr("content").orEmpty()
@@ -253,7 +251,7 @@ class GoogleMapsPlaceResolver(
     fun resolve(resourcesRoot: Path, cacheRoot: Path = CrossmapPaths.defaultCacheRoot(resourcesRoot)): GoogleMapsResolutionReport {
         require(maxConcurrency in 1..32)
         val raw = CrossmapPaths(resourcesRoot, cacheRoot).googleSavedPlaces
-        val seeds = json.decodeFromString<List<GoogleSavedPlaceSeed>>(Files.readString(raw.resolve("seeds.json")))
+        val seeds = json.decodeFromString<List<GoogleSavedPlaceCrawl>>(Files.readString(raw.resolve("seeds.json")))
         val excludedGooglePlaces = ExcludedGooglePlaces.load(resourcesRoot)
         val executor = Executors.newFixedThreadPool(maxConcurrency)
         val results = try {
@@ -316,7 +314,7 @@ class GoogleMapsPlaceResolver(
         val error: GoogleMapsResolutionError? = null,
     )
 
-    private fun resolveOne(seed: GoogleSavedPlaceSeed): Result = runCatching {
+    private fun resolveOne(seed: GoogleSavedPlaceCrawl): Result = runCatching {
         val page = pageSource.load(seed)
         val candidate = parser.parse(seed, page.html)
         if (GoogleSavedPlacesLists.CATHOLIC_CHURCH in seed.sourceLists && !isCatholicChurchName(candidate.name)) {

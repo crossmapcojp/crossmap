@@ -10,14 +10,12 @@ import java.util.concurrent.atomic.AtomicInteger
 import jp.co.crossmap.ChurchRecord
 import jp.co.crossmap.CrawledPage
 import jp.co.crossmap.GeoPoint
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class WebsiteRefresherTest {
+class ChurchWebsiteCrawlerTest {
     private val json = Json { ignoreUnknownKeys = true; prettyPrint = true; encodeDefaults = true }
 
     @Test
@@ -42,14 +40,14 @@ class WebsiteRefresherTest {
             )
             Files.writeString(root.resolve("cache/church-web-pages/manifest.json"), "[]")
 
-            val first = WebsiteRefresher(maxConcurrency = 1, hostDelayMillis = 0).refresh(root, cacheRoot = root.resolve("cache"))
+            val first = ChurchWebsiteCrawler(maxConcurrency = 1, hostDelayMillis = 0).crawl(root, cacheRoot = root.resolve("cache"))
             assertEquals(2, first.fetched)
             val church = json.decodeFromString<List<ChurchRecord>>(Files.readString(root.resolve("catalog/churches.json"))).single()
             assertEquals(setOf("岡山バプテスト教会", "教会案内"), church.pages.map { it.title }.toSet())
             assertTrue(church.pages.any { it.text.contains("バプテスト") })
 
-            val second = WebsiteRefresher(maxConcurrency = 1, hostDelayMillis = 0, cacheFreshness = Duration.ZERO)
-                .refresh(root, cacheRoot = root.resolve("cache"))
+            val second = ChurchWebsiteCrawler(maxConcurrency = 1, hostDelayMillis = 0, cacheFreshness = Duration.ZERO)
+                .crawl(root, cacheRoot = root.resolve("cache"))
             assertEquals(2, second.unchanged)
             assertEquals(0, second.errors)
         } finally {
@@ -91,7 +89,7 @@ class WebsiteRefresherTest {
                 ),
             )
             Files.writeString(root.resolve("cache/church-web-pages/manifest.json"), "[]")
-            WebsiteRefresher(maxConcurrency = 1, hostDelayMillis = 0).refresh(root, cacheRoot = root.resolve("cache"))
+            ChurchWebsiteCrawler(maxConcurrency = 1, hostDelayMillis = 0).crawl(root, cacheRoot = root.resolve("cache"))
             val manifest = root.resolve("cache/church-web-pages/manifest.json")
             Files.writeString(
                 manifest,
@@ -101,8 +99,8 @@ class WebsiteRefresherTest {
                 ),
             )
 
-            val cached = WebsiteRefresher(maxConcurrency = 1, hostDelayMillis = 0)
-                .refresh(root, cacheRoot = root.resolve("cache"))
+            val cached = ChurchWebsiteCrawler(maxConcurrency = 1, hostDelayMillis = 0)
+                .crawl(root, cacheRoot = root.resolve("cache"))
 
             assertEquals(1, requests.get())
             assertEquals(1, cached.unchanged)
@@ -146,7 +144,7 @@ class WebsiteRefresherTest {
             )
             Files.writeString(root.resolve("cache/church-web-pages/manifest.json"), "[]")
 
-            val report = WebsiteRefresher(maxConcurrency = 1, hostDelayMillis = 0).refresh(root, cacheRoot = root.resolve("cache"))
+            val report = ChurchWebsiteCrawler(maxConcurrency = 1, hostDelayMillis = 0).crawl(root, cacheRoot = root.resolve("cache"))
             assertEquals(1, report.fetched)
             assertEquals(3, attempts.get())
         } finally {
@@ -180,8 +178,8 @@ class WebsiteRefresherTest {
             )
             Files.writeString(root.resolve("cache/church-web-pages/manifest.json"), "[]")
 
-            val report = WebsiteRefresher(maxConcurrency = 1, hostDelayMillis = 0)
-                .refresh(root, cacheRoot = root.resolve("cache"))
+            val report = ChurchWebsiteCrawler(maxConcurrency = 1, hostDelayMillis = 0)
+                .crawl(root, cacheRoot = root.resolve("cache"))
             val church = json.decodeFromString<List<ChurchRecord>>(
                 Files.readString(root.resolve("catalog/churches.json")),
             ).single()
@@ -228,8 +226,8 @@ class WebsiteRefresherTest {
             )
             Files.writeString(root.resolve("cache/church-web-pages/manifest.json"), "[]")
 
-            val report = WebsiteRefresher(maxConcurrency = 2, hostDelayMillis = 0)
-                .refresh(root, cacheRoot = root.resolve("cache"))
+            val report = ChurchWebsiteCrawler(maxConcurrency = 2, hostDelayMillis = 0)
+                .crawl(root, cacheRoot = root.resolve("cache"))
             val churches = json.decodeFromString<List<ChurchRecord>>(Files.readString(root.resolve("catalog/churches.json")))
 
             assertEquals(0, report.fetched)
@@ -261,7 +259,7 @@ class WebsiteRefresherTest {
             )
             Files.writeString(root.resolve("cache/church-web-pages/manifest.json"), "[]")
 
-            val report = WebsiteRefresher(maxConcurrency = 1, hostDelayMillis = 0).refresh(root, cacheRoot = root.resolve("cache"))
+            val report = ChurchWebsiteCrawler(maxConcurrency = 1, hostDelayMillis = 0).crawl(root, cacheRoot = root.resolve("cache"))
 
             assertEquals(1, report.fetched)
             assertEquals(0, requests.get())
@@ -301,16 +299,16 @@ class WebsiteRefresherTest {
             )
             Files.writeString(root.resolve("cache/church-web-pages/manifest.json"), "[]")
 
-            val report = WebsiteRefresher(maxConcurrency = 2, hostDelayMillis = 0)
-                .refresh(root, cacheRoot = root.resolve("cache"))
+            val report = ChurchWebsiteCrawler(maxConcurrency = 2, hostDelayMillis = 0)
+                .crawl(root, cacheRoot = root.resolve("cache"))
 
             assertEquals(1, requests.get())
             assertEquals(2, report.fetched)
             val churches = json.decodeFromString<List<ChurchRecord>>(Files.readString(root.resolve("catalog/churches.json")))
             assertTrue(churches.all { it.pages.single().title == "共同サイト" })
 
-            val cachedReport = WebsiteRefresher(maxConcurrency = 2, hostDelayMillis = 0)
-                .refresh(root, cacheRoot = root.resolve("cache"))
+            val cachedReport = ChurchWebsiteCrawler(maxConcurrency = 2, hostDelayMillis = 0)
+                .crawl(root, cacheRoot = root.resolve("cache"))
             assertEquals(1, requests.get())
             assertEquals(2, cachedReport.unchanged)
         } finally {

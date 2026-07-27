@@ -7,7 +7,6 @@ import jp.co.crossmap.LocalizedName
 import kotlin.io.path.extension
 import kotlin.io.path.nameWithoutExtension
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 object GoogleSavedPlacesLists {
@@ -23,7 +22,7 @@ object GoogleSavedPlacesLists {
 
 /** Raw, stable seed data read from a Google Takeout Saved Places list. */
 @Serializable
-data class GoogleSavedPlaceSeed(
+data class GoogleSavedPlaceCrawl(
     val id: String,
     val googleCid: String,
     val title: String,
@@ -40,7 +39,7 @@ data class GoogleSavedPlaceSeed(
 )
 
 @Serializable
-data class GoogleSavedPlacesSeedError(
+data class GoogleSavedPlacesCrawlError(
     val sourceFile: String,
     val rowNumber: Int,
     val title: String? = null,
@@ -48,14 +47,14 @@ data class GoogleSavedPlacesSeedError(
 )
 
 @Serializable
-data class GoogleSavedPlacesSeedReport(
+data class GoogleSavedPlacesCrawlReport(
     val filesRead: Int,
     val rowsRead: Int,
     val seedsWritten: Int,
     val duplicatesMerged: Int,
     val namePatternCounts: Map<String, Int> = emptyMap(),
     val languageCounts: Map<String, Int> = emptyMap(),
-    val errors: List<GoogleSavedPlacesSeedError>,
+    val errors: List<GoogleSavedPlacesCrawlError>,
 )
 
 /**
@@ -66,7 +65,7 @@ data class GoogleSavedPlacesSeedReport(
  * @see jp.co.crossmap.crawl.ReadGoogleSavedPlaces for the CLI command that supplies
  * `inputDirectory` via the `--input` option (e.g. `--input Takeout/Saved`).
  */
-class GoogleSavedPlacesSeedReader(
+class GoogleSavedPlacesCrawler(
     private val json: Json = Json { prettyPrint = true; encodeDefaults = true },
 ) {
     fun readDirectory(
@@ -74,7 +73,7 @@ class GoogleSavedPlacesSeedReader(
         output: Path,
         includedLists: Set<String>? = null,
         excludedUrls: Set<String> = emptySet(),
-    ): GoogleSavedPlacesSeedReport {
+    ): GoogleSavedPlacesCrawlReport {
         require(Files.isDirectory(inputDirectory)) { "Saved Places input is not a directory: $inputDirectory" }
         val files = Files.list(inputDirectory).use { paths ->
             paths.filter {
@@ -88,8 +87,8 @@ class GoogleSavedPlacesSeedReader(
 
         var rowsRead = 0
         var duplicates = 0
-        val errors = mutableListOf<GoogleSavedPlacesSeedError>()
-        val seeds = linkedMapOf<String, GoogleSavedPlaceSeed>()
+        val errors = mutableListOf<GoogleSavedPlacesCrawlError>()
+        val seeds = linkedMapOf<String, GoogleSavedPlaceCrawl>()
 
         files.forEach { source ->
             val sourceList = source.nameWithoutExtension
@@ -110,7 +109,7 @@ class GoogleSavedPlacesSeedReader(
                 runCatching {
                     require(title.isNotBlank()) { "Saved place title is blank" }
                     val cid = googleCid(url)
-                    val candidate = GoogleSavedPlaceSeed(
+                    val candidate = GoogleSavedPlaceCrawl(
                         id = "google:$cid",
                         googleCid = cid,
                         title = title,
@@ -133,7 +132,7 @@ class GoogleSavedPlacesSeedReader(
                         )
                     }
                 }.onFailure { failure ->
-                    errors += GoogleSavedPlacesSeedError(
+                    errors += GoogleSavedPlacesCrawlError(
                         sourceFile = source.fileName.toString(),
                         rowNumber = rowIndex + 2,
                         title = title.ifBlank { null },
@@ -144,9 +143,9 @@ class GoogleSavedPlacesSeedReader(
         }
 
         Files.createDirectories(output.parent)
-        val ordered = seeds.values.sortedWith(compareBy(GoogleSavedPlaceSeed::title, GoogleSavedPlaceSeed::googleCid))
+        val ordered = seeds.values.sortedWith(compareBy(GoogleSavedPlaceCrawl::title, GoogleSavedPlaceCrawl::googleCid))
         Files.writeString(output, json.encodeToString(ordered))
-        return GoogleSavedPlacesSeedReport(
+        return GoogleSavedPlacesCrawlReport(
             filesRead = files.size,
             rowsRead = rowsRead,
             seedsWritten = ordered.size,

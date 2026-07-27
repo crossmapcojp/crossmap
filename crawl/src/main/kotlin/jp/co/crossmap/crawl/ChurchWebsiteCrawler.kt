@@ -19,14 +19,12 @@ import jp.co.crossmap.ChurchRecord
 import jp.co.crossmap.ChurchWebsitePolicy
 import jp.co.crossmap.CrawledContentType
 import jp.co.crossmap.CrawledPage
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.jsoup.Jsoup
 
-data class RefreshReport(val churches: Int, val fetched: Int, val unchanged: Int, val errors: Int)
+data class GooglePlacesCrawlReport(val churches: Int, val fetched: Int, val unchanged: Int, val errors: Int)
 
-class WebsiteRefresher(
+class ChurchWebsiteCrawler(
     private val maxConcurrency: Int = 32,
     private val hostDelayMillis: Long = 250,
     private val maxAttempts: Int = 3,
@@ -43,11 +41,11 @@ class WebsiteRefresher(
     private val fetches = ConcurrentHashMap<String, CompletableFuture<FetchResult>>()
     private var urlCache: Map<String, String> = emptyMap()
 
-    fun refresh(
+    fun crawl(
         resourcesRoot: Path,
         catalogFile: Path = resourcesRoot.resolve("catalog/churches.json"),
         cacheRoot: Path = CrossmapPaths.defaultCacheRoot(resourcesRoot),
-    ): RefreshReport {
+    ): GooglePlacesCrawlReport {
         require(maxConcurrency in 1..32) { "maxConcurrency must be between 1 and 32" }
         require(!cacheFreshness.isNegative) { "cacheFreshness must not be negative" }
         fetches.clear()
@@ -128,7 +126,7 @@ class WebsiteRefresher(
                         "churches=${timing.churches} requests=${timing.requests}",
                 )
             }
-        return RefreshReport(
+        return GooglePlacesCrawlReport(
             churches = churches.size,
             fetched = results.sumOf { it.fetched },
             unchanged = results.sumOf { it.unchanged },

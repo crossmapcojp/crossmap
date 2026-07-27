@@ -284,9 +284,9 @@ Gradle orchestration:
 
 ### [`GoogleSavedPlacesSeedReader.kt`](src/main/kotlin/jp/co/crossmap/crawl/GoogleSavedPlacesSeedReader.kt)
 
-- `GoogleSavedPlacesSeedReader` implements the standalone first stage of the former gmap workflow: RFC 4180 CSV parsing, Japanese/English header aliases, CID extraction from Takeout or canonical Maps URLs, cross-list deduplication, and durable raw JSON.
-- `GoogleSavedPlaceSeed` intentionally contains only fields present in the dump. It is not a partially valid `ChurchRecord`; Google-page resolution must supply the remaining place evidence first.
-- `GoogleSavedPlacesSeedReport` and `GoogleSavedPlacesSeedError` preserve row counts, duplicates, and malformed-row diagnostics without stopping valid rows.
+- `GoogleSavedPlacesCrawler` implements the standalone first stage of the former gmap workflow: RFC 4180 CSV parsing, Japanese/English header aliases, CID extraction from Takeout or canonical Maps URLs, cross-list deduplication, and durable raw JSON.
+- `GoogleSavedPlaceCrawl` intentionally contains only fields present in the dump. It is not a partially valid `ChurchRecord`; Google-page resolution must supply the remaining place evidence first.
+- `GoogleSavedPlacesCrawlReport` and `GoogleSavedPlacesCrawlError` preserve row counts, duplicates, and malformed-row diagnostics without stopping valid rows.
 
 ### [`GoogleMapsPlaceResolver.kt`](src/main/kotlin/jp/co/crossmap/crawl/GoogleMapsPlaceResolver.kt)
 
@@ -326,9 +326,9 @@ Gradle orchestration:
 ### [`WebsiteRefresher.kt`](src/main/kotlin/jp/co/crossmap/crawl/WebsiteRefresher.kt)
 
 - `ExcludedChurchListingDomains` loads the reviewed exact/subdomain exclusions from `resources/catalog/excludedChurchListingDomains.txt` into the shared core policy.
-- `WebsiteRefresher` sanitizes records and removes excluded prior page evidence before scheduling work. It never fetches listing/search/map aggregators or the Google Maps fallback; only eligible church-owned websites can enter the HTML cache and index content.
+- `ChurchWebsiteCrawler` sanitizes records and removes excluded prior page evidence before scheduling work. It never fetches listing/search/map aggregators or the Google Maps fallback; only eligible church-owned websites can enter the HTML cache and index content.
 - `ChurchWebsitePolicy` is also applied by `SnapshotBuilder`, the Ktor API, and static-site generation as defense against stale catalogs or indexes. The app consumes the same sanitized `ChurchRecord` snapshot.
-- `RefreshReport`, `ChurchRefresh`, and `FetchResult` carry aggregate and per-fetch outcomes.
+- `GooglePlacesCrawlReport`, `ChurchRefresh`, and `FetchResult` carry aggregate and per-fetch outcomes.
 
 ### [`OfficialDirectoryCrawler.kt`](src/main/kotlin/jp/co/crossmap/crawl/OfficialDirectoryCrawler.kt)
 

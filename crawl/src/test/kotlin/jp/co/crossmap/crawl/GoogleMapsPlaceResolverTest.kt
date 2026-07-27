@@ -8,8 +8,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 class GoogleMapsPlaceResolverTest {
@@ -17,7 +15,7 @@ class GoogleMapsPlaceResolverTest {
 
     @Test
     fun parsesTheSameGoogleEvidenceFieldsUsedByGmap() {
-        val seed = GoogleSavedPlaceSeed(
+        val seed = GoogleSavedPlaceCrawl(
             id = "google:14619940621679272361",
             googleCid = "14619940621679272361",
             title = "同盟福音グレースチャペル武豊",
@@ -178,7 +176,7 @@ class GoogleMapsPlaceResolverTest {
 
     @Test
     fun preservesRicherSeedAliasesWhenGoogleTitleOnlyContainsLatinName() {
-        val seed = GoogleSavedPlaceSeed(
+        val seed = GoogleSavedPlaceCrawl(
             id = "google:8998728770320543438",
             googleCid = "8998728770320543438",
             title = "Just Church（ジャスト・チャーチ）",
@@ -211,7 +209,7 @@ class GoogleMapsPlaceResolverTest {
             geonames = mapOf("浜松" to "Hamamatsu", "安城" to "Anjo"),
         )
         val title = "ADVM Assembleia de Deus Visão Missionaria Hamamatsu"
-        val seed = GoogleSavedPlaceSeed(
+        val seed = GoogleSavedPlaceCrawl(
             id = "google:raw-portuguese",
             googleCid = "raw-portuguese",
             title = title,
@@ -232,7 +230,7 @@ class GoogleMapsPlaceResolverTest {
 
         val portugueseTitle = "ASSEMBLEIA DE DEUS BELÉM ANJO-SHI"
         val localizedPageCandidate = GoogleMapsPlaceParser(localizer).parse(
-            GoogleSavedPlaceSeed(
+            GoogleSavedPlaceCrawl(
                 id = "google:localized-page",
                 googleCid = "localized-page",
                 title = portugueseTitle,
@@ -271,7 +269,7 @@ class GoogleMapsPlaceResolverTest {
             val candidates = json.decodeFromString<List<GooglePlaceChurchCandidate>>(
                 Files.readString(raw.resolve("google-place-candidates.json")),
             )
-            val enrichedSeeds = json.decodeFromString<List<GoogleSavedPlaceSeed>>(
+            val enrichedSeeds = json.decodeFromString<List<GoogleSavedPlaceCrawl>>(
                 Files.readString(raw.resolve("seeds.json")),
             )
 
@@ -323,7 +321,7 @@ class GoogleMapsPlaceResolverTest {
         }
     }
 
-    private fun seed(cid: String, title: String, list: String) = GoogleSavedPlaceSeed(
+    private fun seed(cid: String, title: String, list: String) = GoogleSavedPlaceCrawl(
         id = "google:$cid",
         googleCid = cid,
         title = title,

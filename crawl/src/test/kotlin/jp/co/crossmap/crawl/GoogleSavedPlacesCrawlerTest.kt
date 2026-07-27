@@ -4,10 +4,9 @@ import java.nio.file.Files
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
-class GoogleSavedPlacesSeedReaderTest {
+class GoogleSavedPlacesCrawlerTest {
     private val json = Json { ignoreUnknownKeys = true }
 
     @Test
@@ -26,8 +25,8 @@ class GoogleSavedPlacesSeedReaderTest {
             )
             val output = root.resolve("resources/raw/google-saved-places/seeds.json")
 
-            val report = GoogleSavedPlacesSeedReader().readDirectory(input, output)
-            val seeds = json.decodeFromString<List<GoogleSavedPlaceSeed>>(Files.readString(output))
+            val report = GoogleSavedPlacesCrawler().readDirectory(input, output)
+            val seeds = json.decodeFromString<List<GoogleSavedPlaceCrawl>>(Files.readString(output))
 
             assertEquals(2, report.filesRead)
             assertEquals(2, report.rowsRead)
@@ -56,8 +55,8 @@ class GoogleSavedPlacesSeedReaderTest {
             )
             val output = root.resolve("seeds.json")
 
-            val report = GoogleSavedPlacesSeedReader().readDirectory(input, output)
-            val seeds = json.decodeFromString<List<GoogleSavedPlaceSeed>>(Files.readString(output))
+            val report = GoogleSavedPlacesCrawler().readDirectory(input, output)
+            val seeds = json.decodeFromString<List<GoogleSavedPlaceCrawl>>(Files.readString(output))
 
             assertEquals(2, report.rowsRead)
             assertEquals(1, report.seedsWritten)
@@ -74,7 +73,7 @@ class GoogleSavedPlacesSeedReaderTest {
     fun acceptsCanonicalCidQueryUrlsUsedAfterTheFirstResolution() {
         assertEquals(
             "5433858323697585828",
-            GoogleSavedPlacesSeedReader.googleCid("https://www.google.com/maps?cid=5433858323697585828"),
+            GoogleSavedPlacesCrawler.googleCid("https://www.google.com/maps?cid=5433858323697585828"),
         )
     }
 
@@ -89,8 +88,8 @@ class GoogleSavedPlacesSeedReaderTest {
             )
             val output = root.resolve("seeds.json")
 
-            val report = GoogleSavedPlacesSeedReader().readDirectory(root, output)
-            val seed = json.decodeFromString<List<GoogleSavedPlaceSeed>>(Files.readString(output)).single()
+            val report = GoogleSavedPlacesCrawler().readDirectory(root, output)
+            val seed = json.decodeFromString<List<GoogleSavedPlaceCrawl>>(Files.readString(output)).single()
 
             assertEquals("Just Church（ジャスト・チャーチ）", seed.title)
             assertEquals(null, seed.japaneseName)
@@ -117,13 +116,13 @@ class GoogleSavedPlacesSeedReaderTest {
             Files.writeString(root.resolve("カトリック教会.csv"), header + "カトリック厚木教会,,$catholicUrl,\n")
             Files.writeString(root.resolve("クリスチャン企業.csv"), header + "対象外,,$unrelatedUrl,\n")
 
-            val report = GoogleSavedPlacesSeedReader().readDirectory(
+            val report = GoogleSavedPlacesCrawler().readDirectory(
                 inputDirectory = root,
                 output = root.resolve("seeds.json"),
-                includedLists = GoogleSavedPlacesSeedReader.GMAP_DEFAULT_LISTS,
+                includedLists = GoogleSavedPlacesCrawler.GMAP_DEFAULT_LISTS,
                 excludedUrls = setOf(catholicUrl),
             )
-            val seeds = json.decodeFromString<List<GoogleSavedPlaceSeed>>(Files.readString(root.resolve("seeds.json")))
+            val seeds = json.decodeFromString<List<GoogleSavedPlaceCrawl>>(Files.readString(root.resolve("seeds.json")))
 
             assertEquals(2, report.filesRead)
             assertEquals(2, report.rowsRead)
