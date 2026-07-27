@@ -352,6 +352,29 @@ class GoogleMapsPlaceResolverTest {
         }
     }
 
+    @Test
+    fun throwsExceptionAndHaltsProcessOnFetchOrParseError() {
+        val root = Files.createTempDirectory("crossmap-google-place-error-halt")
+        try {
+            val raw = Files.createDirectories(root.resolve("cache/google-saved-places"))
+            val seeds = listOf(
+                seed("9999999999999999999", "Failed Place", "教会"),
+            )
+            Files.writeString(raw.resolve("seeds.json"), json.encodeToString(seeds))
+
+            val exception = kotlin.test.assertFailsWith<IllegalStateException> {
+                GoogleSavedPlacesCrawler(json = json).resolve(
+                    resourcesRoot = root,
+                    cacheRoot = root.resolve("cache"),
+                    pageSource = GoogleMapsPageSource { seed -> GoogleMapsPage("<html>Invalid HTML without place info</html>", cacheHit = false) },
+                )
+            }
+            assertTrue(exception.message!!.contains("Failed to parse Google Maps page"))
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
     private fun seed(cid: String, title: String, list: String) = GoogleSavedPlaceCrawl(
         id = "google:$cid",
         googleCid = cid,

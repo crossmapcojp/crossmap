@@ -574,18 +574,29 @@ class GoogleSavedPlacesCrawler(
         val error: GoogleMapsResolutionError? = null,
     )
 
-    private fun resolveOne(seed: GoogleSavedPlaceCrawl, pageSource: GoogleMapsPageSource, parser: GoogleMapsPlaceParser): Result =
-        runCatching {
-            val page = pageSource.load(seed)
-            val candidate = parser.parse(seed, page.html)
-            if (GoogleSavedPlacesLists.CATHOLIC_CHURCH in seed.sourceLists && !isCatholicChurchName(candidate.name)) {
-                Result(cacheHit = page.cacheHit, fetched = !page.cacheHit, filtered = true)
-            } else {
-                Result(candidate = candidate, cacheHit = page.cacheHit, fetched = !page.cacheHit)
-            }
-        }.getOrElse { error ->
-            Result(error = GoogleMapsResolutionError(seed.id, seed.title, error.message ?: error::class.simpleName.orEmpty()))
+    private fun resolveOne(seed: GoogleSavedPlaceCrawl, pageSource: GoogleMapsPageSource, parser: GoogleMapsPlaceParser): Result {
+        val page = try {
+            pageSource.load(seed)
+        } catch (error: Exception) {
+            throw IllegalStateException(
+                "Failed to fetch Google Maps page for place '${seed.title}' (CID: ${seed.googleCid}, URL: ${seed.googleMapsUrl}): ${error.message}",
+                error,
+            )
         }
+        val candidate = try {
+            parser.parse(seed, page.html)
+        } catch (error: Exception) {
+            throw IllegalStateException(
+                "Failed to parse Google Maps page for place '${seed.title}' (CID: ${seed.googleCid}, URL: ${seed.googleMapsUrl}): ${error.message}",
+                error,
+            )
+        }
+        return if (GoogleSavedPlacesLists.CATHOLIC_CHURCH in seed.sourceLists && !isCatholicChurchName(candidate.name)) {
+            Result(cacheHit = page.cacheHit, fetched = !page.cacheHit, filtered = true)
+        } else {
+            Result(candidate = candidate, cacheHit = page.cacheHit, fetched = !page.cacheHit)
+        }
+    }
 
     private fun isCatholicChurchName(name: String): Boolean = !name.contains("宣教会") && (
         listOf("教会", "教会堂", "聖堂", "Church", "church", "天主堂", "天主堂)", "集会所", "教会（巡回）",
