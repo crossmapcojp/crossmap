@@ -287,21 +287,21 @@ each "church detail webpage of denomination official website" needs to be crawle
 
 
 ### backlog of denomination order by the church count
- - [ ] JAPAN_FREE_EVANGELICAL_CHURCH 日本自由福音教団 - https://njfk-jp.com/
-- [ ] MINO_MISSION 美濃ミッション - https://www.cty-net.ne.jp/~mmi/church.html
-- [ ] ECC エバンジェリカル・コングリゲーショナル・チャーチ - https://gracegardenchurch.com/introduction/overview/
-- [ ] CBA キリスト信徒の集会 - https://ja.wikipedia.org/wiki/%E3%82%AD%E3%83%AA%E3%82%B9%E3%83%88%E4%BF%A1%E5%BE%92%E3%81%AE%E9%9B%86%E4%BC%9A
-- [ ] JAPAN_BETHEL_MISSION 日本べテルミッション - https://japanbethelmission.com/
-- [ ] EGM 東洋福音教団 - https://ja.wikipedia.org/wiki/%E6%9D%B1%E6%B4%8B%E7%A6%8F%E9%9F%B3%E6%95%99%E5%9B%A3
-- [ ] BSF 聖書研究会 - https://skk-jpn.com/
-- [ ] AJBMM 全日本バプテスト・ミド・ミッション - https://bmmjapan.org/
-- [ ] JCA 日本基督会 - https://shibuya-kirisutokai.la.coocan.jp/nihonkirisutokai.htm
-- [ ] THC 東京ホライズンチャペル - https://horizonchapel.jp/service
-- [ ] GBF 福音バプテスト連合 - https://ja.wikipedia.org/wiki/%E7%A6%8F%E9%9F%B3%E3%83%90%E3%83%97%E3%83%86%E3%82%B9%E3%83%88%E9%80%A3%E5%90%88
-- [ ] ICM インターナショナル・チャペル・ミニストリーズ - https://www.ikomachapel.org/iic%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6
-- [ ] BEMS バルナバ福音宣教会 - https://barnabas-missionary.amebaownd.com/
-- [ ] YWAM ユース･ウィズ･ア･ミッション - https://www.ywamjapan.org/ja/
-- [ ] JNAC 日本新使徒教会 - https://www.accjapan.org/
+ - [x] JAPAN_FREE_EVANGELICAL_CHURCH 日本自由福音教団 - https://njfk-jp.com/
+- [x] MINO_MISSION 美濃ミッション - https://www.cty-net.ne.jp/~mmi/church.html
+- [x] ECC エバンジェリカル・コングリゲーショナル・チャーチ - https://gracegardenchurch.com/introduction/overview/
+- [x] CBA キリスト信徒の集会 - https://ja.wikipedia.org/wiki/%E3%82%AD%E3%83%AA%E3%82%B9%E3%83%88%E4%BF%A1%E5%BE%92%E3%81%AE%E9%9B%86%E4%BC%9A
+- [x] JAPAN_BETHEL_MISSION 日本べテルミッション - https://japanbethelmission.com/
+- [x] EGM 東洋福音教団 - https://ja.wikipedia.org/wiki/%E6%9D%B1%E6%B4%8B%E7%A6%8F%E9%9F%B3%E6%95%99%E5%9B%A3
+- [x] BSF 聖書研究会 - https://skk-jpn.com/
+- [x] AJBMM 全日本バプテスト・ミド・ミッション - https://bmmjapan.org/
+- [x] JCA 日本基督会 - https://shibuya-kirisutokai.la.coocan.jp/nihonkirisutokai.htm
+- [x] THC 東京ホライズンチャペル - https://horizonchapel.jp/service
+- [x] GBF 福音バプテスト連合 - https://ja.wikipedia.org/wiki/%E7%A6%8F%E9%9F%B3%E3%83%90%E3%83%97%E3%83%86%E3%82%B9%E3%83%88%E9%80%A3%E5%90%88
+- [x] ICM インターナショナル・チャペル・ミニストリーズ - https://www.ikomachapel.org/iic%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6
+- [x] BEMS バルナバ福音宣教会 - https://barnabas-missionary.amebaownd.com/
+- [x] YWAM ユース･ウィズ･ア･ミッション - https://www.ywamjapan.org/ja/
+- [x] JNAC 日本新使徒教会 - https://www.accjapan.org/
 
 ### if the church group is not an organization, or if the orgnaization does not have website, in those cases, we need to skip trying to create denomination specific crawlers and they will be added here:
 

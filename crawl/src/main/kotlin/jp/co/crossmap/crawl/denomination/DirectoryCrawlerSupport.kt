@@ -8,9 +8,9 @@ import org.jsoup.nodes.Element
 
 internal object DirectoryCrawlerSupport {
     private val addressPattern = Regex(
-        "〒?\\s*[0-9０-９]{3}[-ー－‐]?[0-9０-９]{4}\\s*[^|｜\\n]*?(?=\\s*(?:TEL|Tel|電話|FAX|Fax|主任牧師|担任牧師|副牧師|牧師|伝道師|宣教師|司祭|教職|$))",
+        "〒?\\s*[0-9０-９]{3}[-ー－‐]?[0-9０-９]{4}\\s*[^|｜\\n]*?(?=\\s*(?:TEL|Tel|℡|電話|FAX|Fax|主任牧師|担任牧師|副牧師|牧師|伝道師|宣教師|司祭|教職|$))",
     )
-    private val phone = Regex("(?:TEL|Tel|電話)[\\s　]*[:：]?[\\s　]*([0-9０-９()（）+\\-ー－‐/\\s　]{8,})")
+    private val phone = Regex("(?:TEL|Tel|℡|電話(?:番号)?)[\\s　]*[:：]?[\\s　]*([0-9０-９()（）+\\-ー－‐/\\s　]{8,})")
     private val fax = Regex("(?:FAX|Fax)[\\s　]*[:：]?[\\s　]*([0-9０-９()（）+\\-ー－‐/\\s　]{8,})")
     private val email = Regex("[A-Z0-9._%+\\-]+(?:@|＠|\\s*(?:\\[at]|\\(at\\)|※)\\s*)[A-Z0-9.\\-]+\\.[A-Z]{2,}", RegexOption.IGNORE_CASE)
     private val addressTrailingInstructions = Regex(

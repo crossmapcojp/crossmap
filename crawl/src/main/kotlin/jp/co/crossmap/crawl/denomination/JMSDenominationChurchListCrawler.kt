@@ -15,7 +15,7 @@ class JMSDenominationChurchListCrawler(
             .mapNotNull { heading ->
                 val name = heading.text().trim()
                 if (name !in churchNames) return@mapNotNull null
-                val card = heading.closest("div.e-con.e-child") ?: heading.parent()
+                val card = heading.closest("div.e-con.e-child") ?: heading.parent()!!
                 val text = card.text()
                 val links = card.select("a[href]")
                 val address = if (name == "喜多見チャペル") {

@@ -214,6 +214,21 @@ class OfficialDenominationChurchListPipeline(
             "NLCCU" to 4,
             "JVCF" to 6,
             "JMS" to 7,
+            "JAPAN_FREE_EVANGELICAL_CHURCH" to 5,
+            "MINO_MISSION" to 3,
+            "ECC" to 3,
+            "CBA" to 1,
+            "JAPAN_BETHEL_MISSION" to 5,
+            "EGM" to 1,
+            "BSF" to 1,
+            "AJBMM" to 1,
+            "JCA" to 1,
+            "THC" to 2,
+            "GBF" to 1,
+            "ICM" to 2,
+            "BEMS" to 1,
+            "YWAM" to 10,
+            "JNAC" to 1,
         )
         lists.forEach { list ->
             require(list.churches.size >= minimums.getValue(list.denominationId)) {
@@ -290,6 +305,21 @@ class OfficialDenominationChurchListPipeline(
             JVCFDenominationChurchListCrawler(source("JVCF").singleChurchListUrl()),
             JMSDenominationChurchListCrawler(source("JMS").singleChurchListUrl()),
             CatholicJpDenominationChurchListCrawler(source("CATHOLIC_JP")),
+            JapanFreeEvangelicalChurchDenominationChurchListCrawler(source("JAPAN_FREE_EVANGELICAL_CHURCH").singleChurchListUrl()),
+            MinoMissionDenominationChurchListCrawler(source("MINO_MISSION").singleChurchListUrl()),
+            ECCDenominationChurchListCrawler(source("ECC").singleChurchListUrl()),
+            ChriterianFaithAssemblyDenominationChurchListCrawler(source("CBA").singleChurchListUrl()),
+            JapanBethelMissionDenominationChurchListCrawler(source("JAPAN_BETHEL_MISSION").singleChurchListUrl()),
+            EasternGospelMessiahDenominationChurchListCrawler(source("EGM").singleChurchListUrl()),
+            BSFDenominationChurchListCrawler(source("BSF").singleChurchListUrl()),
+            AllJapanBaptistMidMissionDenominationChurchListCrawler(source("AJBMM").singleChurchListUrl()),
+            NihonKiristoKaiDenominationChurchListCrawler(source("JCA").singleChurchListUrl()),
+            TokyoHorizonChapelDenominationChurchListCrawler(source("THC").singleChurchListUrl()),
+            GospelBaptistFederationDenominationChurchListCrawler(source("GBF").singleChurchListUrl()),
+            InternationalChapelMinistriesDenominationChurchListCrawler(source("ICM").singleChurchListUrl()),
+            BarnabasEvangelicalMissionSocietyDenominationChurchListCrawler(source("BEMS").singleChurchListUrl()),
+            YouthWithAMissionJapanDenominationChurchListCrawler(source("YWAM").singleChurchListUrl()),
+            NewApostolicChurchJapanDenominationChurchListCrawler(source("JNAC").singleChurchListUrl()),
         )
     }
 
