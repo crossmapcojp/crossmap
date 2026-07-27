@@ -111,11 +111,13 @@ private class ResolveGoogleSavedPlaces : CrawlCommand("resolve-google-saved-plac
         audit.input("seeds", paths.googleSavedPlaces.resolve("seeds.json").toAbsolutePath().normalize())
         audit.setting("concurrency", concurrency)
         audit.setting("offline", offline)
-        val report = GoogleMapsPlaceResolver(
-            pageSource = CachedGoogleMapsPageSource(paths.googleMapsPages, allowNetwork = !offline),
-            parser = GoogleMapsPlaceParser(localizer, ExcludedChurchListingDomains.policy(root)),
-            maxConcurrency = concurrency,
-        ).resolve(root, paths.cacheRoot)
+        val report = GoogleSavedPlacesCrawler(json = json).resolve(
+            resourcesRoot = root,
+            cacheRoot = paths.cacheRoot,
+            concurrency = concurrency,
+            offline = offline,
+            multilingualNameLocalizer = localizer,
+        )
         audit.metric("seeds", report.seeds)
         audit.metric("candidates", report.candidates)
         audit.metric("cache_hits", report.cacheHits)
@@ -1266,15 +1268,55 @@ private class PopulateDenominationEnglishNames : CrawlCommand("denomination-engl
 
     private fun sanitizeLatinText(value: String): String = java.text.Normalizer.normalize(value, java.text.Normalizer.Form.NFKD)
         .replace(Regex("""\p{M}+"""), "")
-        .replace(Regex("""['’]"""), "")
+        .replace(Regex("""[''']"""), "")
         .replace("&", " and ")
         .replace(Regex("""[^A-Za-z0-9 .-]+"""), " ")
         .replace(Regex("""\s+"""), " ")
         .trim(' ', '.', '-')
 }
 
+private class FetchUrl : CliktCommand("fetch-url") {
+    private val url by option("--url", help = "URL to fetch").required()
+    private val resources by option("--resources").default("resources")
+
+    override fun run() {
+        val root = Path.of(resources)
+        val paths = CrossmapPaths(root)
+        val cacheDir = paths.cacheRoot.resolve("web-pages")
+        val pw = PlaywrightBrowser()
+        try {
+            val fetcher = HttpFetcher(
+                cacheDir = cacheDir,
+                proxiesCsv = root.resolve("proxies.csv"),
+                playwright = pw,
+                manualCacheDir = paths.webPagesManual,
+                cloudflareBlockedLog = paths.cloudflareBlockedLog,
+                verbose = true,
+            )
+            echo("--- Fetching URL ---")
+            echo("URL: $url")
+            echo("Cache dir: $cacheDir")
+            echo("")
+            val start = System.nanoTime()
+            val result = fetcher.fetch(url)
+            val elapsed = (System.nanoTime() - start) / 1_000_000
+            echo("")
+            echo("--- Result ---")
+            echo("Via: ${result.via}")
+            echo("Status: ${result.statusCode}")
+            echo("Content hash: ${result.contentHash}")
+            echo("Content length: ${result.html.length} chars")
+            echo("Time: ${elapsed}ms")
+            echo("Cloudflare blocked: ${result.via == "http" && result.statusCode in listOf(403, 503)}")
+        } finally {
+            pw.close()
+        }
+    }
+}
+
 fun main(args: Array<String>) = Crawl().subcommands(
     ReadGoogleSavedPlaces(), ResolveGoogleSavedPlaces(), PromoteGoogleSavedPlaces(), Refresh(), CrawlDenominationDirectories(), BuildGeonames(), CleanupLlm(), OverrideDenomination(), MergeSocialExports(), LinkSocial(),
     PopulateEnglishNames(), AnalyzeEnglishNames(), PopulateDenominationEnglishNames(), PrepareGeoNameCache(), BuildChurchGeonames(), NormalizeAddresses(), BuildSnapshot(),
     CatalogNeo4jHealth(), CatalogNeo4jMigrate(), CatalogNeo4jImport(), CatalogNeo4jExport(), CatalogNeo4jParity(), CatalogNeo4jIntegrity(),
+    FetchUrl(),
 ).main(args)

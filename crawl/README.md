@@ -6,7 +6,7 @@ The `crawl` module turns raw church-source data and downloaded web evidence into
 
 There are two inputs to understand:
 
-1. **Current bootstrap data:** `resources/catalog/churches.json` was created once from the clean data under the old gmap `output` directory. The copied HTML now lives in `cache/church-web-pages`. Crossmap does not need the gmap project at runtime.
+1. **Current bootstrap data:** `resources/catalog/churches.json` was created once from the clean data under the old gmap `output` directory. The copied HTML now lives in `cache/web-pages`. Crossmap does not need the gmap project at runtime.
 2. **Permanent repeatable starting point:** the personal Google Takeout Saved Places CSV directory (containing files such as `教会.csv` and `カトリック教会.csv`) is passed to `read-google-saved-places`. Crossmap reads the real Japanese `タイトル,メモ,URL,コメント` schema, extracts stable Google CIDs, merges duplicates across lists, and writes seeds and audit output under `cache/google-saved-places`.
 
 The CSV reader, CID-page resolver, and promotion workflow are standalone Crossmap stages. Resolution prefers the copied gmap CID HTML cache, uses plain HTTP and then Lightpanda only for missing pages, extracts the same Google place fields as gmap, and writes raw candidates plus an audit report. Promotion normalizes/deduplicates candidates, reuses prior evidence, resolves every mandatory English name, runs the existing website/directory/denomination cleanup, and atomically replaces the canonical catalog only after all gates pass. Crossmap never imports or calls gmap code.
@@ -311,6 +311,12 @@ Gradle orchestration:
 - `LightPanda` is the lightweight JavaScript-rendering fallback. It invokes `lightpanda fetch --dump html URL`, validates HTTP(S) input, drains bounded stdout/stderr concurrently, enforces a timeout, terminates hung processes, and returns rendered HTML.
 - Set `LIGHTPANDA_BINARY` when the executable is not on `PATH`. `TestLightPanda.kt` covers the command contract and errors; set `CROSSMAP_LIGHTPANDA_INTEGRATION=1` to exercise the installed binary.
 
+### [`PlaywrightBrowser.kt`](src/main/kotlin/jp/co/crossmap/crawl/PlaywrightBrowser.kt)
+
+- `PlaywrightBrowser` is a singleton-per-process headless Chromium browser via Microsoft Playwright. It is used as the primary fetcher for Google Maps CID pages (which are JS-heavy SPAs) and as the final fallback for other URLs when both HttpClient and LightPanda fail.
+- Implements `Closeable`; callers create one instance and share it across all fetch calls. Each `fetchHtml` call creates an isolated browser context (no shared cookies or session state).
+- Used by `HttpFetcher` and `GoogleSavedPlacesCrawler`.
+
 ### [`JapaneseAddressNormalizationPipeline.kt`](src/main/kotlin/jp/co/crossmap/crawl/JapaneseAddressNormalizationPipeline.kt)
 
 - `LocalGeoloniaAddressNormalizer` builds and invokes the user-provided local Geolonia checkout through the small batch runner in `crawl/scripts`; the normalization algorithm remains upstream rather than becoming a divergent Kotlin fork.
@@ -438,6 +444,38 @@ Gradle orchestration:
 
 - `SnapshotBuilder` builds the church Lucene index, copies the exact geoname catalog used by the index, writes a manifest, ZIPs the immutable snapshot, computes SHA-256, and atomically updates latest metadata for CLI/server/mobile consumers.
 - `translatedGeoNamesForLanguage` looks up each church's detected geonames in `church-ja-all.json` and returns translated strings for each supported language (ja/en/ko/pt/id), enabling per-language Lucene geoname index population.
+
+## Web fetching and Cloudflare handling
+
+`HttpFetcher` is the central HTTP fetcher for all web pages (church websites, Google Maps CID pages, denomination directory lists). It provides caching, proxy rotation, conditional GET, and a multi-tier fallback chain.
+
+### Fetch fallback chain
+
+```
+Google Maps URLs (google.com/maps):  Playwright (headless Chromium)
+Other URLs:                          HttpClient → LightPanda → Playwright
+```
+
+All fetched content is cached to disk under `cache/web-pages/` keyed by SHA-256 of the URL. Cache freshness is controlled by `crossmap.httpFetcherCacheExpDate` in `local.properties`.
+
+### Manual cache override
+
+Some sites block automated fetchers with Cloudflare challenges. When all fallback tiers are blocked, `HttpFetcher` logs the URL to `cache/cloudflare-blocked.log` and prints instructions to the console:
+
+```
+[cloudflare] BLOCKED: https://example.com/church — saved to log: logs/cloudflare-blocked.log
+[cloudflare] To fix: open URL in browser → copy page HTML → save as cache/web-pages-manual/{sha256}.html
+```
+
+To resolve a Cloudflare-blocked URL:
+
+1. Open the blocked URL in your browser.
+2. View the page source (Ctrl+U or right-click → View Page Source).
+3. Copy the full HTML.
+4. Save it as `cache/web-pages-manual/{sha256-of-url}.html`. The SHA-256 key is printed in the log entry.
+5. Re-run the crawl command. `HttpFetcher` checks `cache/web-pages-manual/` before any network fetch, so the manually saved file is used immediately.
+
+The `logs/cloudflare-blocked.log` is append-only. Each entry contains the timestamp, URL, SHA-256 cache key, and the expected manual file path.
 
 ## Adding a new stage or rule
 

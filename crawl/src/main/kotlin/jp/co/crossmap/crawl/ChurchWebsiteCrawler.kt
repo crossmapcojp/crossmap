@@ -30,11 +30,9 @@ class ChurchWebsiteCrawler(
     private val maxAttempts: Int = 3,
     private val cacheFreshness: Duration = Duration.ofDays(30),
     private val json: Json = Json { ignoreUnknownKeys = true; prettyPrint = true; encodeDefaults = true },
-    private val client: HttpClient = HttpClient.newBuilder()
-        .connectTimeout(Duration.ofSeconds(15))
-        .followRedirects(HttpClient.Redirect.NORMAL)
-        .build(),
+    client: HttpClient? = null,
 ) {
+    private val client: HttpClient = client ?: HttpFetcher().proxyClient()
     private val hostLocks = ConcurrentHashMap<String, Any>()
     private val hostLastRequest = ConcurrentHashMap<String, Long>()
     private val robots = ConcurrentHashMap<String, List<String>>()

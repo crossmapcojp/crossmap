@@ -28,6 +28,7 @@ lucene-kmp = "10.2.0-alpha14"
 jsoup = "1.22.2"
 pdfbox = "3.0.8"
 freemarker = "2.3.34"
+playwright = "1.50.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -66,6 +67,7 @@ lucene-kmp-analysis-common = { module = "org.gnit.lucene-kmp:lucene-kmp-analysis
 lucene-kmp-analysis-kuromoji = { module = "org.gnit.lucene-kmp:lucene-kmp-analysis-kuromoji", version.ref = "lucene-kmp" }
 lucene-kmp-analysis-nori = { module = "org.gnit.lucene-kmp:lucene-kmp-analysis-nori", version.ref = "lucene-kmp" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
+playwright = { module = "com.microsoft.playwright:playwright", version.ref = "playwright" }
 pdfbox = { module = "org.apache.pdfbox:pdfbox", version.ref = "pdfbox" }
 freemarker = { module = "org.freemarker:freemarker", version.ref = "freemarker" }
 ktor-clientCore = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }

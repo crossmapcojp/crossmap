@@ -8,8 +8,11 @@ data class CrossmapPaths(
     val cacheRoot: Path = defaultCacheRoot(resourcesRoot),
 ) {
     val googleSavedPlaces: Path get() = cacheRoot.resolve("google-saved-places")
-    val googleMapsPages: Path get() = cacheRoot.resolve("google-maps-pages/pages")
-    val churchWebPages: Path get() = cacheRoot.resolve("church-web-pages")
+    val googleMapsPages: Path get() = cacheRoot.resolve("web-pages")
+    val churchWebPages: Path get() = cacheRoot.resolve("web-pages")
+    val webPages: Path get() = cacheRoot.resolve("web-pages")
+    val webPagesManual: Path get() = cacheRoot.resolve("web-pages-manual")
+    val cloudflareBlockedLog: Path get() = resourcesRoot.resolve("../logs/cloudflare-blocked.log").normalize()
     val cleanup: Path get() = cacheRoot.resolve("cleanup")
     val churchNameTranslation: Path get() = cacheRoot.resolve("church-name-translation")
     val addressNormalization: Path get() = cacheRoot.resolve("address-normalization")

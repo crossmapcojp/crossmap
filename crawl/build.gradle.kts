@@ -18,6 +18,7 @@ dependencies {
     implementation(projects.catalog)
     implementation(libs.clikt)
     implementation(libs.jsoup)
+    implementation(libs.playwright)
     implementation(libs.pdfbox)
     implementation(libs.koog.agents)
     implementation(libs.logback)
@@ -271,4 +272,19 @@ tasks.register<JavaExec>("populateDenominationEnglishNames") {
         val exit = ProcessBuilder("df", "-h", "/media/joel/llms").inheritIO().start().waitFor()
         check(exit == 0) { "df failed; refusing to invoke Ollama" }
     }*/
+}
+
+tasks.register<JavaExec>("fetchUrl") {
+    group = "crossmap"
+    description = "Fetch a single URL through the full fetch pipeline (HttpClient → LightPanda → Playwright) with verbose logging"
+    classpath = sourceSets.main.get().runtimeClasspath
+    mainClass = "jp.co.crossmap.crawl.MainKt"
+    workingDir = rootProject.projectDir
+    args(
+        "fetch-url",
+        "--url",
+        providers.gradleProperty("url").orElse("").get(),
+        "--resources",
+        providers.gradleProperty("crossmapResources").orElse("resources").get(),
+    )
 }

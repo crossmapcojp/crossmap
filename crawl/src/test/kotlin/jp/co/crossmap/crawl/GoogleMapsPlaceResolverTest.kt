@@ -43,6 +43,33 @@ class GoogleMapsPlaceResolverTest {
     }
 
     @Test
+    fun parsesFetchedModernGoogleMapsHtmlFixture() {
+        val resourcePath = Path.of("src/test/resources/googlesavedplaces/9513821837673497869.html")
+        val html = if (Files.exists(resourcePath)) {
+            Files.readString(resourcePath)
+        } else {
+            javaClass.getResourceAsStream("/googlesavedplaces/9513821837673497869.html")?.bufferedReader()?.readText()
+                ?: error("Test fixture 9513821837673497869.html not found")
+        }
+
+        val seed = GoogleSavedPlaceCrawl(
+            id = "google:9513821837673497869",
+            googleCid = "9513821837673497869",
+            title = "清瀬福音自由教会",
+            googleMapsUrl = "https://www.google.com/maps?cid=9513821837673497869",
+            sourceLists = listOf("教会"),
+        )
+
+        val candidate = GoogleMapsPlaceParser().parse(seed, html, now = "2026-07-27T00:00:00Z")
+
+        assertEquals("清瀬福音自由教会", candidate.name)
+        assertEquals("〒352-0032 埼玉県新座市新堀２丁目１１−１０", candidate.address)
+        assertEquals(GeoPoint(35.7698524, 139.527224), candidate.location)
+        assertEquals("http://kiyose-efc.com/", candidate.websiteUrl)
+        assertEquals("プロテスタント教会", candidate.category)
+    }
+
+    @Test
     fun removesTrailingChurchNamesFromGooglePlaceAddresses() {
         val cases = listOf(
             Triple(
@@ -262,10 +289,12 @@ class GoogleMapsPlaceResolverTest {
                 seeds[1].id to html("盛岡ドミニカン修道院", "〒020-0102 岩手県盛岡市上田", 39.72, 141.13),
             )
 
-            val report = GoogleMapsPlaceResolver(
+            val report = GoogleSavedPlacesCrawler(json = json).resolve(
+                resourcesRoot = root,
+                cacheRoot = root.resolve("cache"),
+                concurrency = 2,
                 pageSource = GoogleMapsPageSource { seed -> GoogleMapsPage(pages.getValue(seed.id), cacheHit = true) },
-                maxConcurrency = 2,
-            ).resolve(root, root.resolve("cache"))
+            )
             val candidates = json.decodeFromString<List<GooglePlaceChurchCandidate>>(
                 Files.readString(raw.resolve("google-place-candidates.json")),
             )
@@ -304,9 +333,11 @@ class GoogleMapsPlaceResolverTest {
                 json.encodeToString(listOf(seed("1885579487859421798", "カトリック教会", "カトリック教会"))),
             )
 
-            val report = GoogleMapsPlaceResolver(
+            val report = GoogleSavedPlacesCrawler(json = json).resolve(
+                resourcesRoot = root,
+                cacheRoot = root.resolve("cache"),
                 pageSource = GoogleMapsPageSource { error("An excluded place must not be loaded") },
-            ).resolve(root, root.resolve("cache"))
+            )
             val candidates = json.decodeFromString<List<GooglePlaceChurchCandidate>>(
                 Files.readString(raw.resolve("google-place-candidates.json")),
             )

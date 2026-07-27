@@ -33,12 +33,12 @@ class ChurchWebsiteCrawlerTest {
         try {
             val website = "http://127.0.0.1:${server.address.port}/"
             Files.createDirectories(root.resolve("catalog"))
-            Files.createDirectories(root.resolve("cache/church-web-pages"))
+            Files.createDirectories(root.resolve("cache/web-pages"))
             Files.writeString(
                 root.resolve("catalog/churches.json"),
                 json.encodeToString(listOf(ChurchRecord("google:906297735827744432", "906297735827744432", "岡山バプテスト教会", "Okayama Baptist Church", address = "〒700-0825 岡山県岡山市北区田町１丁目７−２８", location = GeoPoint(34.6619806, 133.9231824), websiteUrl = website))),
             )
-            Files.writeString(root.resolve("cache/church-web-pages/manifest.json"), "[]")
+            Files.writeString(root.resolve("cache/web-pages/manifest.json"), "[]")
 
             val first = ChurchWebsiteCrawler(maxConcurrency = 1, hostDelayMillis = 0).crawl(root, cacheRoot = root.resolve("cache"))
             assertEquals(2, first.fetched)
@@ -70,7 +70,7 @@ class ChurchWebsiteCrawlerTest {
         try {
             val website = "http://127.0.0.1:${server.address.port}/"
             Files.createDirectories(root.resolve("catalog"))
-            Files.createDirectories(root.resolve("cache/church-web-pages"))
+            Files.createDirectories(root.resolve("cache/web-pages"))
             Files.writeString(root.resolve("catalog/excludedChurchListingDomains.txt"), "")
             Files.writeString(
                 root.resolve("catalog/churches.json"),
@@ -88,9 +88,9 @@ class ChurchWebsiteCrawlerTest {
                     ),
                 ),
             )
-            Files.writeString(root.resolve("cache/church-web-pages/manifest.json"), "[]")
+            Files.writeString(root.resolve("cache/web-pages/manifest.json"), "[]")
             ChurchWebsiteCrawler(maxConcurrency = 1, hostDelayMillis = 0).crawl(root, cacheRoot = root.resolve("cache"))
-            val manifest = root.resolve("cache/church-web-pages/manifest.json")
+            val manifest = root.resolve("cache/web-pages/manifest.json")
             Files.writeString(
                 manifest,
                 Files.readString(manifest).replace(
@@ -126,7 +126,7 @@ class ChurchWebsiteCrawlerTest {
         val root = Files.createTempDirectory("crossmap-retry")
         try {
             Files.createDirectories(root.resolve("catalog"))
-            Files.createDirectories(root.resolve("cache/church-web-pages"))
+            Files.createDirectories(root.resolve("cache/web-pages"))
             Files.writeString(
                 root.resolve("catalog/churches.json"),
                 json.encodeToString(
@@ -142,7 +142,7 @@ class ChurchWebsiteCrawlerTest {
                     )
                 ),
             )
-            Files.writeString(root.resolve("cache/church-web-pages/manifest.json"), "[]")
+            Files.writeString(root.resolve("cache/web-pages/manifest.json"), "[]")
 
             val report = ChurchWebsiteCrawler(maxConcurrency = 1, hostDelayMillis = 0).crawl(root, cacheRoot = root.resolve("cache"))
             assertEquals(1, report.fetched)
@@ -158,7 +158,7 @@ class ChurchWebsiteCrawlerTest {
         val root = Files.createTempDirectory("crossmap-excluded-listing")
         try {
             Files.createDirectories(root.resolve("catalog"))
-            Files.createDirectories(root.resolve("cache/church-web-pages"))
+            Files.createDirectories(root.resolve("cache/web-pages"))
             Files.writeString(root.resolve("catalog/excludedChurchListingDomains.txt"), "church-info.jp\n")
             Files.writeString(
                 root.resolve("catalog/churches.json"),
@@ -176,7 +176,7 @@ class ChurchWebsiteCrawlerTest {
                     ),
                 ),
             )
-            Files.writeString(root.resolve("cache/church-web-pages/manifest.json"), "[]")
+            Files.writeString(root.resolve("cache/web-pages/manifest.json"), "[]")
 
             val report = ChurchWebsiteCrawler(maxConcurrency = 1, hostDelayMillis = 0)
                 .crawl(root, cacheRoot = root.resolve("cache"))
@@ -197,7 +197,7 @@ class ChurchWebsiteCrawlerTest {
         val root = Files.createTempDirectory("crossmap-social-websites")
         try {
             Files.createDirectories(root.resolve("catalog"))
-            Files.createDirectories(root.resolve("cache/church-web-pages"))
+            Files.createDirectories(root.resolve("cache/web-pages"))
             Files.writeString(root.resolve("catalog/excludedChurchListingDomains.txt"), "")
             val socialUrls = listOf(
                 "https://www.facebook.com/TKBCJapaneseSection/",
@@ -224,7 +224,7 @@ class ChurchWebsiteCrawlerTest {
                     },
                 ),
             )
-            Files.writeString(root.resolve("cache/church-web-pages/manifest.json"), "[]")
+            Files.writeString(root.resolve("cache/web-pages/manifest.json"), "[]")
 
             val report = ChurchWebsiteCrawler(maxConcurrency = 2, hostDelayMillis = 0)
                 .crawl(root, cacheRoot = root.resolve("cache"))
@@ -250,14 +250,14 @@ class ChurchWebsiteCrawlerTest {
             val html = "<html><head><title>聖アンデレ教会</title></head><body>礼拝スケジュール 子供と祝うユーカリスト</body></html>".toByteArray()
             val hash = html.sha256()
             Files.createDirectories(root.resolve("catalog"))
-            Files.createDirectories(root.resolve("cache/church-web-pages/pages"))
-            Files.write(root.resolve("cache/church-web-pages/pages/$hash.html"), html)
-            Files.writeString(root.resolve("cache/church-web-pages/url-cache-map.json"), json.encodeToString(mapOf(website.sha1() to hash)))
+            Files.createDirectories(root.resolve("cache/web-pages/pages"))
+            Files.write(root.resolve("cache/web-pages/pages/$hash.html"), html)
+            Files.writeString(root.resolve("cache/web-pages/url-cache-map.json"), json.encodeToString(mapOf(website.sha1() to hash)))
             Files.writeString(
                 root.resolve("catalog/churches.json"),
                 json.encodeToString(listOf(ChurchRecord("google:2225537460932230335", name = "日本聖公会東京聖アンデレ教会", englishName = "Tokyo St Andrew's Church", address = "〒105-0011 東京都港区芝公園３丁目６−１８", location = GeoPoint(35.6601808, 139.743601), websiteUrl = website))),
             )
-            Files.writeString(root.resolve("cache/church-web-pages/manifest.json"), "[]")
+            Files.writeString(root.resolve("cache/web-pages/manifest.json"), "[]")
 
             val report = ChurchWebsiteCrawler(maxConcurrency = 1, hostDelayMillis = 0).crawl(root, cacheRoot = root.resolve("cache"))
 
@@ -265,7 +265,7 @@ class ChurchWebsiteCrawlerTest {
             assertEquals(0, requests.get())
             val church = json.decodeFromString<List<ChurchRecord>>(Files.readString(root.resolve("catalog/churches.json"))).single()
             assertTrue(church.pages.single().text.contains("ユーカリスト"))
-            val manifest = json.decodeFromString<List<CrawlManifestEntry>>(Files.readString(root.resolve("cache/church-web-pages/manifest.json")))
+            val manifest = json.decodeFromString<List<CrawlManifestEntry>>(Files.readString(root.resolve("cache/web-pages/manifest.json")))
             assertEquals("IMPORTED_CACHE", manifest.single().acquisition)
         } finally {
             server.stop(0)
@@ -287,7 +287,7 @@ class ChurchWebsiteCrawlerTest {
         try {
             val website = "http://127.0.0.1:${server.address.port}/"
             Files.createDirectories(root.resolve("catalog"))
-            Files.createDirectories(root.resolve("cache/church-web-pages"))
+            Files.createDirectories(root.resolve("cache/web-pages"))
             Files.writeString(
                 root.resolve("catalog/churches.json"),
                 json.encodeToString(
@@ -297,7 +297,7 @@ class ChurchWebsiteCrawlerTest {
                     ),
                 ),
             )
-            Files.writeString(root.resolve("cache/church-web-pages/manifest.json"), "[]")
+            Files.writeString(root.resolve("cache/web-pages/manifest.json"), "[]")
 
             val report = ChurchWebsiteCrawler(maxConcurrency = 2, hostDelayMillis = 0)
                 .crawl(root, cacheRoot = root.resolve("cache"))

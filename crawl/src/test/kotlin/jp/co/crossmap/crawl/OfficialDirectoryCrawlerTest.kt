@@ -59,12 +59,12 @@ class OfficialDirectoryCrawlerTest {
         try {
             val url = "https://www.bapren.jp/church/"
             val contentHash = "cached-page"
-            Files.createDirectories(root.resolve("church-web-pages/pages"))
-            Files.writeString(root.resolve("church-web-pages/pages/$contentHash.html"), "<p>cached</p>")
-            Files.writeString(root.resolve("church-web-pages/url-cache-map.json"), json.encodeToString(mapOf(url.sha1() to contentHash)))
+            Files.createDirectories(root.resolve("web-pages/pages"))
+            Files.writeString(root.resolve("web-pages/pages/$contentHash.html"), "<p>cached</p>")
+            Files.writeString(root.resolve("web-pages/url-cache-map.json"), json.encodeToString(mapOf(url.sha1() to contentHash)))
             var fallbackCalls = 0
 
-            val page = CachedDirectoryPageLoader(root.resolve("church-web-pages"), DirectoryPageLoader {
+            val page = CachedDirectoryPageLoader(root.resolve("web-pages"), DirectoryPageLoader {
                 fallbackCalls++
                 error("HTTP fallback must not run")
             }).load(url)

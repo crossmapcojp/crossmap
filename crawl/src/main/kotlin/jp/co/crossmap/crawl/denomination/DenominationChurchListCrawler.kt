@@ -1,9 +1,5 @@
 package jp.co.crossmap.crawl.denomination
 
-import java.net.URI
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
@@ -14,6 +10,9 @@ import java.time.Instant
 import jp.co.crossmap.ChurchMinister
 import jp.co.crossmap.LocalizedName
 import jp.co.crossmap.SocialProfile
+import jp.co.crossmap.crawl.HttpFetcher
+import jp.co.crossmap.crawl.sha256
+import jp.co.crossmap.crawl.sha1
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -118,10 +117,7 @@ internal object DenominationDirectoryCachePolicy {
 
 class CachedHttpDenominationChurchPageLoader(
     private val cacheDirectory: Path,
-    private val client: HttpClient = HttpClient.newBuilder()
-        .connectTimeout(Duration.ofSeconds(15))
-        .followRedirects(HttpClient.Redirect.NORMAL)
-        .build(),
+    private val httpFetcher: HttpFetcher = HttpFetcher(),
     private val json: Json = Json { ignoreUnknownKeys = true; prettyPrint = true; encodeDefaults = true },
     private val now: () -> Instant = Instant::now,
 ) : DenominationChurchPageLoader {
@@ -144,24 +140,18 @@ class CachedHttpDenominationChurchPageLoader(
             }
         }
 
-        val request = HttpRequest.newBuilder(URI(url))
-            .timeout(Duration.ofSeconds(45))
-            .header("User-Agent", "CrossmapCrawler/1.0 (+https://crossmap.jp)")
-            .GET()
-            .build()
-        val response = client.send(request, HttpResponse.BodyHandlers.ofByteArray())
-        require(response.statusCode() in 200..299) { "HTTP ${response.statusCode()} for $url" }
+        val fetchedPage = httpFetcher.fetch(url)
         val fetchedAt = now().toString()
-        val contentType = response.headers().firstValue("content-type").orElse("")
-        val html = decodeHtml(response.body(), contentType)
-        require(response.body().isNotEmpty()) { "Official denomination directory returned an empty page: $url" }
+        val contentType = fetchedPage.contentType
+        val html = decodeHtml(fetchedPage.html.toByteArray(Charsets.UTF_8), contentType)
+        require(fetchedPage.html.isNotEmpty()) { "Official denomination directory returned an empty page: $url" }
         Files.createDirectories(cacheDirectory)
-        atomicWrite(pageFile, response.body())
+        atomicWrite(pageFile, fetchedPage.html.toByteArray(Charsets.UTF_8))
         atomicWrite(
             metadataFile,
-            json.encodeToString(DenominationChurchPageCacheMetadata(url, fetchedAt, response.body().sha256(), contentType)),
+            json.encodeToString(DenominationChurchPageCacheMetadata(url, fetchedAt, fetchedPage.html.toByteArray(Charsets.UTF_8).sha256(), contentType)),
         )
-        return LoadedDenominationChurchPage(response.uri().toString(), html, fetchedAt, cacheHit = false, bytes = response.body())
+        return LoadedDenominationChurchPage(fetchedPage.finalUrl.ifBlank { url }, html, fetchedAt, cacheHit = false, bytes = fetchedPage.html.toByteArray(Charsets.UTF_8))
     }
 
     private fun decodeHtml(bytes: ByteArray, contentType: String): String =
@@ -192,6 +182,7 @@ data class DenominationChurchListCrawlResult(
 
 class DenominationChurchListCrawlerRunner(
     private val pageLoader: DenominationChurchPageLoader? = null,
+    private val httpFetcher: HttpFetcher = HttpFetcher(),
     private val json: Json = Json { ignoreUnknownKeys = true; prettyPrint = true; encodeDefaults = true },
 ) {
     private val personalNameTransliterators = mutableMapOf<Path, PersonalNameTransliterator>()
@@ -204,10 +195,11 @@ class DenominationChurchListCrawlerRunner(
     ): DenominationChurchListCrawlResult {
         require(crawler.pageUrls.isNotEmpty()) { "${crawler.denominationId} official directory has no page URLs" }
         if (forceRefresh) {
-            crawler.pageUrls.forEach { invalidateLegacyCache(cacheRoot.resolve("church-web-pages"), it) }
+            crawler.pageUrls.forEach { invalidateLegacyCache(cacheRoot.resolve("web-pages"), it) }
         }
         val loader = pageLoader ?: CachedHttpDenominationChurchPageLoader(
             cacheRoot.resolve("denomination-church-lists/${crawler.denominationId.lowercase()}"),
+            httpFetcher = httpFetcher,
             json = json,
         )
         val listPages = crawler.pageUrls.map { loadPage(it, resourcesRoot, loader, forceRefresh) }
@@ -320,12 +312,3 @@ internal fun decodeDenominationHtml(bytes: ByteArray, contentType: String): Stri
     }.first()
     return bytes.toString(charset)
 }
-
-private fun String.sha1(): String = digest("SHA-1")
-private fun String.sha256(): String = digest("SHA-256")
-private fun ByteArray.sha256(): String = MessageDigest.getInstance("SHA-256")
-    .digest(this)
-    .joinToString("") { "%02x".format(it) }
-private fun String.digest(algorithm: String): String = MessageDigest.getInstance(algorithm)
-    .digest(toByteArray())
-    .joinToString("") { "%02x".format(it) }

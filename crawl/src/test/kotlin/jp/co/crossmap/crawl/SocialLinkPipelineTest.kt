@@ -22,7 +22,7 @@ class SocialLinkPipelineTest {
         val cache = root.resolve("cache")
         Files.createDirectories(root.resolve("catalog"))
         Files.createDirectories(root.resolve("evidence"))
-        Files.createDirectories(cache.resolve("church-web-pages/pages"))
+        Files.createDirectories(cache.resolve("web-pages/pages"))
         val church = ChurchRecord(
             id = "google:906297735827744432",
             name = "岡山バプテスト教会",
@@ -39,9 +39,9 @@ class SocialLinkPipelineTest {
         )
         Files.writeString(root.resolve("catalog/churches.json"), json.encodeToString(listOf(church)))
         Files.writeString(root.resolve("evidence/social-accounts.json"), json.encodeToString(listOf(account)))
-        Files.writeString(cache.resolve("church-web-pages/pages/page.html"), "<html><a href='https://www.youtube.com/channel/UCCBpKmS8N-lP4FRdOWy1MRQ/'>YouTube</a></html>")
+        Files.writeString(cache.resolve("web-pages/pages/page.html"), "<html><a href='https://www.youtube.com/channel/UCCBpKmS8N-lP4FRdOWy1MRQ/'>YouTube</a></html>")
         Files.writeString(
-            cache.resolve("church-web-pages/manifest.json"),
+            cache.resolve("web-pages/manifest.json"),
             json.encodeToString(
                 listOf(
                     CrawlManifestEntry(
