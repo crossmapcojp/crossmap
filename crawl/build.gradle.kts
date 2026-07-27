@@ -145,6 +145,12 @@ tasks.register("googleSavedPlacesDataCleanup") {
     dependsOn("googleSavedPlacesSource", "promoteGoogleSavedPlaces")
 }
 
+tasks.register("googleSavedPlaces") {
+    group = "crossmap"
+    description = "Run the complete Google Saved Places workflow (reads Takeout CSV files, resolves CIDs, and promotes clean catalog)"
+    dependsOn("googleSavedPlacesDataCleanup")
+}
+
 val dataCleanup by tasks.registering(JavaExec::class) {
     group = "crossmap"
     description = "Populate and validate every church English name with deterministic rules and CAT via Ollama"
