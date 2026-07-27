@@ -70,6 +70,44 @@ class GoogleMapsPlaceResolverTest {
     }
 
     @Test
+    fun parsesFetchedGoogleMapsHtmlFixture6971423385760493187() {
+        val resourcePath = Path.of("src/test/resources/googlesavedplaces/6971423385760493187.html")
+        val html = if (Files.exists(resourcePath)) {
+            Files.readString(resourcePath)
+        } else {
+            javaClass.getResourceAsStream("/googlesavedplaces/6971423385760493187.html")?.bufferedReader()?.readText()
+                ?: error("Test fixture 6971423385760493187.html not found")
+        }
+
+        val seed = GoogleSavedPlaceCrawl(
+            id = "google:6971423385760493187",
+            googleCid = "6971423385760493187",
+            title = "ASSEMBLEIA DE DEUS BELÉM ANJO-SHI",
+            googleMapsUrl = "https://www.google.com/maps/place/ASSEMBLEIA+DE+DEUS+BEL%C3%89M+ANJO-SHI/data=!4m2!3m1!1s0x60049792f5d9ea4f:0x60bf78a2171aee83",
+            sourceLists = listOf("教会"),
+        )
+
+        val resources = generateSequence(Path.of("").toAbsolutePath().normalize()) { it.parent }
+            .first { Files.isRegularFile(it.resolve("settings.gradle.kts")) }
+            .resolve("resources")
+        val dictionaries = ChurchNameEnglishDictionary.load(resources)
+        val localizer = MultilingualChurchNameLocalizer(
+            dictionaries = dictionaries,
+            congregationTerms = CongregationTermDictionary.load(resources),
+            denominations = emptyList(),
+            geonames = mapOf("安城" to "Anjo"),
+        )
+
+        val candidate = GoogleMapsPlaceParser(localizer).parse(seed, html, now = "2026-07-27T00:00:00Z")
+
+        assertEquals("安城アッセンブレイア・デ・デウスベレン", candidate.name)
+        assertEquals("〒446-0024 愛知県安城市河野町下リ道", candidate.address)
+        assertEquals(GeoPoint(34.9304274, 137.1143805), candidate.location)
+        assertEquals("https://www.adbelemjapao.com/anjo", candidate.websiteUrl)
+        assertEquals("キリスト教会", candidate.category)
+    }
+
+    @Test
     fun removesTrailingChurchNamesFromGooglePlaceAddresses() {
         val cases = listOf(
             Triple(

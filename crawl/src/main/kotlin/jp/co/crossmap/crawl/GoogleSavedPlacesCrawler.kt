@@ -110,9 +110,16 @@ fun interface GoogleMapsPageSource {
 
 class CachedGoogleMapsPageSource(
     private val httpFetcher: HttpFetcher,
+    private val legacyCacheDir: Path? = null,
 ) : GoogleMapsPageSource {
     override fun load(seed: GoogleSavedPlaceCrawl): GoogleMapsPage {
         val pageCid = if (seed.googleCid == "3576720766476721565") "6907614827878617439" else seed.googleCid
+        if (legacyCacheDir != null) {
+            val legacyFile = legacyCacheDir.resolve("pages/$pageCid.html")
+            if (Files.isRegularFile(legacyFile)) {
+                return GoogleMapsPage(Files.readString(legacyFile), cacheHit = true)
+            }
+        }
         val url = "https://www.google.com/maps?cid=$pageCid"
         val fetched = httpFetcher.fetch(url)
         val html = fetched.html
@@ -186,12 +193,14 @@ class GoogleMapsPlaceParser(
             if (text.isNotBlank()) text else label.ifBlank { null }
         } else null
 
+        val explicitPostalMatch = EXPLICIT_POSTAL_ARRAY.find(html)?.groupValues?.get(1)?.trim()
         val postalMatch = POSTAL_CODE_ADDRESS.find(html)?.groupValues?.get(0)
 
         val rawAddress = titleParts.getOrNull(1)?.trim()?.ifBlank { null }
             ?: addressFromDom
-            ?: addressFromPath.ifBlank { null }
+            ?: explicitPostalMatch
             ?: postalMatch
+            ?: addressFromPath.ifBlank { null }
 
         val address = GooglePlaceAddressNormalizer.normalize(rawAddress.orEmpty())
         require(address.isNotBlank()) { "Google place address is blank" }
@@ -266,6 +275,9 @@ class GoogleMapsPlaceParser(
         )
         private val ALT_COORDINATES_2 = Regex(
             """3d(-?\d+\.\d+)(?:!4d|%214d)(-?\d+\.\d+)""",
+        )
+        private val EXPLICIT_POSTAL_ARRAY = Regex(
+            """\[\\?"(〒\d{3}-\d{4}\s+[^\\"'\n]+)\\?"\]""",
         )
         private val POSTAL_CODE_ADDRESS = Regex("""〒\d{3}-\d{4}\s+[^\<\"'\n\\]+""")
         private val ENCODED_WEBSITE = Regex(
@@ -493,6 +505,7 @@ class GoogleSavedPlacesCrawler(
                 manualCacheDir = paths.webPagesManual,
                 cloudflareBlockedLog = paths.cloudflareBlockedLog,
             ),
+            legacyCacheDir = paths.cacheRoot.resolve("google-maps-pages"),
         )
         val parser = GoogleMapsPlaceParser(
             multilingualNameLocalizer,
