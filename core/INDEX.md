@@ -2,7 +2,7 @@
 
 This document is the maintained contract for the Crossmap lucene-kmp church index. Update it whenever a source, field, analyzer, schema version, snapshot layout, or query use changes.
 
-The current schema is `ChurchIndex.SCHEMA_VERSION = 11`. One snapshot contains five independent indexes with the same documents and field names:
+The current schema is `ChurchIndex.SCHEMA_VERSION = 14`. One snapshot contains eight independent indexes with the same documents and field names:
 
 ```text
 cache/search-indexes/churches/<version>/
@@ -11,7 +11,10 @@ cache/search-indexes/churches/<version>/
 │   ├── en/  EnglishAnalyzer
 │   ├── ko/  KoreanAnalyzer (analysis-nori)
 │   ├── pt/  PortugueseAnalyzer
-│   └── id/  IndonesianAnalyzer
+│   ├── id/  IndonesianAnalyzer
+│   ├── vi/  VietnameseAnalyzer (analysis-extra)
+│   ├── zh-Hans/  SmartChineseAnalyzer
+│   └── zh-Hant/  SmartChineseAnalyzer
 ├── geonames.json
 └── manifest.json
 ```
@@ -24,7 +27,7 @@ Each language index has one Lucene `Document` per canonical `ChurchRecord`. The 
 flowchart TD
     A[Google Saved Places CSV and crawl sources] --> B[crawl cleanup and entity resolution]
     H[Cached church HTML and social evidence] --> B
-    D[Denomination catalogs for ja en ko pt id] --> B
+    D[Denomination catalogs for ja en ko pt id vi zh-Hans zh-Hant] --> B
     B --> C[resources/catalog/churches.json<br/>ChurchRecord list]
 
     G1[GeoNames JP.txt] --> GC[buildGeoCatalog]
@@ -135,9 +138,11 @@ The important output is not only display text. Prefecture, municipality, and des
 | `ko`    | `KoreanAnalyzer`     | Nori morphological analysis for Korean names and translated metadata.             |
 | `pt`    | `PortugueseAnalyzer` | Portuguese analysis for names and translated metadata.                            |
 | `id`    | `IndonesianAnalyzer` | Indonesian analysis for names and translated metadata.                            |
+| `vi`    | `VietnameseAnalyzer` | Vietnamese tokenization, stop-word filtering, normalization, and stemming from `lucene-kmp-analysis-extra`. |
+| `zh-Hans`, `zh-Hant` | `SmartChineseAnalyzer` | Chinese segmentation plus canonical Simplified cross-script fields. |
 | unknown | `StandardAnalyzer`   | Defensive fallback; not a supported published index.                              |
 
-The wrapper explicitly routes `name_ja`, `name_en`, `name_ko`, `name_pt`, and `name_id` through their matching analyzer. `StringField` values are never tokenized regardless of the wrapper.
+The wrapper explicitly routes `name_ja`, `name_en`, `name_ko`, `name_pt`, `name_id`, `name_vi`, `name_zh_hans`, and `name_zh_hant` through their matching analyzer. `StringField` values are never tokenized regardless of the wrapper.
 
 ## Field specification
 
@@ -150,7 +155,7 @@ The wrapper explicitly routes `name_ja`, `name_en`, `name_ko`, `name_pt`, and `n
 | `id`                                                                | exact / yes                  | `ChurchRecord.id`                                                                                   | Exact church-detail lookup and stored identity.                                                                                                |
 | `name_exact`                                                        | exact / no, multi-valued     | Every name selected for the current language, normalized by trim + lowercase + collapsed whitespace; normalized spaces are removed for Japanese-script values | Tier 1 exact-name query; boosted `1,000,000`. Japanese spacing is optional, while non-Japanese word boundaries remain significant.             |
 | `name`                                                              | analyzed / yes, multi-valued | Current-language name list                                                                          | Tier 2 all-name-token query; boosted `1,000`. Also gives a human-readable stored name, although response decoding uses `record`.               |
-| `name_ja`, `name_en`, `name_ko`, `name_pt`, `name_id`, `name_other` | analyzed / no                | Same values as `name`, routed to an explicit field analyzer                                         | Language-explicit compatibility/experimentation fields. The schema-11 hot path uses `name` because each directory is already language-specific. |
+| `name_ja`, `name_en`, `name_ko`, `name_pt`, `name_id`, `name_vi`, `name_zh_hans`, `name_zh_hant`, `name_other` | analyzed / no | Same values as `name`, routed to an explicit field analyzer | Language-explicit compatibility/experimentation fields. The schema-14 hot path uses `name` because each directory is already language-specific. |
 | `name_reading`                                                       | analyzed / no, multi-valued  | Kuromoji hiragana readings of Japanese canonical/localized names                                    | Japanese name-token matching for kana input such as `かぬき 教会` and `せまる 教会`; queried with the other tier-2 name fields.                 |
 | `name_reading_exact`                                                 | exact / no, multi-valued     | Compact Kuromoji hiragana readings with spaces removed                                               | Tier 1 kana whole-name matching without sending the reading back through `JapaneseAnalyzer`.                                                     |
 | `localized_name`                                                    | exact / no, multi-valued     | Lowercased whitespace chunks of current-language names                                              | Compatibility/filter experimentation field; not on the schema-10 hot query path.                                                               |
@@ -237,7 +242,7 @@ For full query-planning details and geographic disambiguation, see [SEARCH.md](S
 - schema and index versions;
 - lucene-kmp version;
 - creation timestamp and document count;
-- all five language codes;
+- all eight language codes;
 - exact canonical-catalog SHA-256;
 - archive name, size, and SHA-256.
 

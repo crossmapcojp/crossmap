@@ -40,7 +40,7 @@ class MultilingualChurchNameLocalizer(
     private val multilingualGeonames: Map<String, Map<String, String>> = emptyMap(),
     branchGeonames: Set<String> = emptySet(),
 ) {
-    private val supportedTargets = listOf("en", "ko", "pt", "id", "zh-Hans", "zh-Hant")
+    private val supportedTargets = listOf("en", "ko", "pt", "id", "vi", "zh-Hans", "zh-Hant")
     private val geonameEnglishTranslations = geonames.values.toSet()
     private val latinToJapaneseTerms = buildMap {
         listOf("en", "ko", "pt", "id", "es", "fr", "de", "it", "tl").forEach { sourceLanguage ->
@@ -139,8 +139,11 @@ class MultilingualChurchNameLocalizer(
                     } else {
                         composed
                     },
-                    metadata = if (Language.fromCode(language) in chineseLanguages) {
-                        chineseMetadata(components, language)
+                    metadata = if (
+                        Language.fromCode(language) in chineseLanguages ||
+                        Language.fromCode(language) == Language.VIETNAMESE
+                    ) {
+                        generatedMetadata(components, language)
                     } else {
                         null
                     },
@@ -310,10 +313,10 @@ class MultilingualChurchNameLocalizer(
             components
         }
         val terminalTranslation = withoutLocationConnector.lastOrNull()?.translations?.get(targetLanguage).orEmpty()
-        val terminalChurchPrefix = targetLanguage in setOf("pt", "id") &&
-            (terminalTranslation.startsWith("Igreja ") || terminalTranslation.startsWith("Gereja "))
+        val terminalChurchPrefix = targetLanguage in setOf("pt", "id", "vi") &&
+            (terminalTranslation.startsWith("Igreja ") || terminalTranslation.startsWith("Gereja ") || terminalTranslation.startsWith("Hội Thánh "))
         val orderedComponents = if (
-            targetLanguage in setOf("pt", "id") &&
+            targetLanguage in setOf("pt", "id", "vi") &&
             (withoutLocationConnector.lastOrNull()?.role == MultilingualNameComponentRole.CONGREGATION || terminalChurchPrefix)
         ) {
             listOf(withoutLocationConnector.last()) + withoutLocationConnector.dropLast(1)
@@ -331,7 +334,7 @@ class MultilingualChurchNameLocalizer(
         return translated.filter(String::isNotBlank).joinToString(separator).takeIf(String::isNotBlank)
     }
 
-    private fun chineseMetadata(
+    private fun generatedMetadata(
         components: List<MultilingualNameComponent>,
         targetLanguage: String,
     ): LocalizedNameMetadata {
@@ -342,7 +345,9 @@ class MultilingualChurchNameLocalizer(
         val unmatched = components.filterNot { it in matched }.map(MultilingualNameComponent::source)
         val reviewReasons = buildList {
             if (unmatched.isNotEmpty()) add("Unmatched source segments were preserved")
-            if (unmatched.any(japaneseKana::containsMatchIn)) add("Chinese output retains Japanese Kana")
+            if (unmatched.any(japaneseKana::containsMatchIn)) {
+                add("${Language.fromCode(targetLanguage)?.displayName ?: targetLanguage} output retains Japanese Kana")
+            }
         }
         return LocalizedNameMetadata(
             source = LocalizedNameSource.GENERATED,
@@ -351,7 +356,7 @@ class MultilingualChurchNameLocalizer(
             } else {
                 LocalizedNameGenerationMethod.ORIGINAL_FALLBACK
             },
-            dictionaryVersion = CHINESE_DICTIONARY_VERSION,
+            dictionaryVersion = LOCALIZATION_DICTIONARY_VERSION,
             confidence = if (unmatched.isEmpty()) 0.9 else 0.6,
             reviewStatus = if (unmatched.isEmpty()) {
                 LocalizedNameReviewStatus.UNREVIEWED
@@ -464,6 +469,7 @@ class MultilingualChurchNameLocalizer(
         Language.KOREAN -> "가톨릭교회"
         Language.PORTUGUESE -> "Igreja Católica"
         Language.INDONESIAN -> "Gereja Katolik"
+        Language.VIETNAMESE -> "Nhà thờ Công giáo"
         Language.CHINESE_SIMPLIFIED -> "天主教堂"
         Language.CHINESE_TRADITIONAL -> "天主教堂"
     }
@@ -479,7 +485,7 @@ class MultilingualChurchNameLocalizer(
     private companion object {
         val chineseLanguages = setOf(Language.CHINESE_SIMPLIFIED, Language.CHINESE_TRADITIONAL)
         val japaneseKana = Regex("[ぁ-ゟ゠-ヿ]")
-        const val CHINESE_DICTIONARY_VERSION = "2026-07-28"
+        const val LOCALIZATION_DICTIONARY_VERSION = "2026-07-28"
     }
 
 }

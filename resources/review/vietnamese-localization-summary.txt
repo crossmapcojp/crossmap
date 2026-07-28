@@ -1,0 +1,8 @@
+Vietnamese localization dry run
+churches processed: 9464
+vi generated: 0
+reviewed/official preserved: 0
+ministers localized: 0
+churches requiring review: 5952
+indexing changes: 0
+dictionary coverage: 76.96%

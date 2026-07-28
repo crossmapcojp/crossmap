@@ -38,6 +38,7 @@ class CrawlReportLoggingTest {
                 "address-normalization",
                 "build-snapshot",
                 "chinese-localization",
+                "vietnamese-localization",
                 "chinese-dictionary-validation",
             ),
             (CrawlReport.entries - specializedReports).map(CrawlReport::fileSuffix).toSet(),

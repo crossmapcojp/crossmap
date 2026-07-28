@@ -53,6 +53,7 @@ class LocalizedStaticSiteGeneratorTest {
             assertTrue(html.contains("class=\"language-switch\""))
             assertTrue(html.contains("hreflang=\"zh-Hans\""))
             assertTrue(html.contains("hreflang=\"zh-Hant\""))
+            assertTrue(html.contains("hreflang=\"vi\""))
             assertFalse(html.contains("id=\"localized-name-options\""))
             assertFalse(html.contains("navigator.language"))
             assertFalse(html.contains("id=\"language-chooser\""))
@@ -62,6 +63,8 @@ class LocalizedStaticSiteGeneratorTest {
             assertEquals("Church", jsonLd["@type"]?.toString()?.trim('"'))
         }
         assertTrue(Files.isRegularFile(output.resolve("ja/index.html")))
+        assertTrue(Files.isRegularFile(output.resolve("vi/index.html")))
+        assertTrue(Files.readString(output.resolve("vi/index.html")).contains("Tìm Hội Thánh"))
         assertTrue(Files.isRegularFile(output.resolve("en/result.html")))
         assertTrue(Files.readString(output.resolve("ja/index.html")).contains("id=\"search-form\""))
         val resultHtml = Files.readString(output.resolve("en/result.html"))
@@ -88,6 +91,7 @@ class LocalizedStaticSiteGeneratorTest {
             Language.KOREAN to "독립 교회",
             Language.PORTUGUESE to "Independente",
             Language.INDONESIAN to "Independen",
+            Language.VIETNAMESE to "Độc lập",
             Language.CHINESE_SIMPLIFIED to "独立教会",
             Language.CHINESE_TRADITIONAL to "獨立教會",
         )

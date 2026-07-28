@@ -36,6 +36,7 @@ kotlin {
             implementation(libs.lucene.kmp.core)
             implementation(libs.lucene.kmp.queryparser)
             implementation(libs.lucene.kmp.analysis.common)
+            implementation(libs.lucene.kmp.analysis.extra)
             implementation(libs.lucene.kmp.analysis.kuromoji)
             implementation(libs.lucene.kmp.analysis.nori)
             implementation(libs.lucene.kmp.analysis.smartcn)

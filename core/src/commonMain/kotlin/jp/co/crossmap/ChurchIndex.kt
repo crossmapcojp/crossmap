@@ -11,6 +11,8 @@ import org.gnit.lucenekmp.analysis.miscellaneous.PerFieldAnalyzerWrapper
 import org.gnit.lucenekmp.analysis.pt.PortugueseAnalyzer
 import org.gnit.lucenekmp.analysis.standard.StandardAnalyzer
 import org.gnit.lucenekmp.analysis.cn.smart.SmartChineseAnalyzer
+import org.gnit.lucenekmp.analysis.vi.VietnameseAnalyzer
+import org.gnit.lucenekmp.analysis.vi.VietnameseConfig
 import org.gnit.lucenekmp.document.Document
 import org.gnit.lucenekmp.document.Field
 import org.gnit.lucenekmp.document.LatLonDocValuesField
@@ -23,7 +25,7 @@ import org.gnit.lucenekmp.index.IndexWriterConfig
 import org.gnit.lucenekmp.store.FSDirectory
 
 object ChurchIndex {
-    const val SCHEMA_VERSION = 13
+    const val SCHEMA_VERSION = 14
     const val FIELD_ID = "id"
     const val FIELD_NAME = "name"
     const val FIELD_NAME_EXACT = "name_exact"
@@ -33,6 +35,7 @@ object ChurchIndex {
     const val FIELD_NAME_EN = "name_en"
     const val FIELD_NAME_PT = "name_pt"
     const val FIELD_NAME_ID = "name_id"
+    const val FIELD_NAME_VI = "name_vi"
     const val FIELD_NAME_ZH_HANS = "name_zh_hans"
     const val FIELD_NAME_ZH_HANT = "name_zh_hant"
     const val FIELD_NAME_ZH_CANONICAL = "name_zh_canonical"
@@ -77,6 +80,7 @@ object ChurchIndex {
         FIELD_NAME_EN,
         FIELD_NAME_PT,
         FIELD_NAME_ID,
+        FIELD_NAME_VI,
         FIELD_NAME_ZH_HANS,
         FIELD_NAME_ZH_HANT,
         FIELD_NAME_ZH_CANONICAL,
@@ -91,6 +95,7 @@ object ChurchIndex {
             FIELD_NAME_EN to EnglishAnalyzer(),
             FIELD_NAME_PT to PortugueseAnalyzer(),
             FIELD_NAME_ID to IndonesianAnalyzer(),
+            FIELD_NAME_VI to VietnameseAnalyzer(VietnameseConfig()),
             FIELD_NAME_ZH_HANS to SmartChineseAnalyzer(),
             FIELD_NAME_ZH_HANT to SmartChineseAnalyzer(),
             FIELD_NAME_ZH_CANONICAL to SmartChineseAnalyzer(),
@@ -105,12 +110,14 @@ object ChurchIndex {
         Language.ENGLISH -> EnglishAnalyzer()
         Language.PORTUGUESE -> PortugueseAnalyzer()
         Language.INDONESIAN -> IndonesianAnalyzer()
+        Language.VIETNAMESE -> VietnameseAnalyzer(VietnameseConfig())
         null -> when (languageCode.substringBefore('-').lowercase()) {
         "ja" -> JapaneseAnalyzer()
         "ko" -> KoreanAnalyzer()
         "en" -> EnglishAnalyzer()
         "pt" -> PortugueseAnalyzer()
         "id" -> IndonesianAnalyzer()
+        "vi" -> VietnameseAnalyzer(VietnameseConfig())
         else -> StandardAnalyzer()
         }
     }
@@ -121,6 +128,7 @@ object ChurchIndex {
         Language.ENGLISH -> FIELD_NAME_EN
         Language.PORTUGUESE -> FIELD_NAME_PT
         Language.INDONESIAN -> FIELD_NAME_ID
+        Language.VIETNAMESE -> FIELD_NAME_VI
         Language.CHINESE_SIMPLIFIED -> FIELD_NAME_ZH_HANS
         Language.CHINESE_TRADITIONAL -> FIELD_NAME_ZH_HANT
         null -> FIELD_NAME_OTHER

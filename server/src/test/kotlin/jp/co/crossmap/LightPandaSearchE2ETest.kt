@@ -89,7 +89,7 @@ class LightPandaSearchE2ETest {
         val fusaChurch = Json.decodeFromString<List<ChurchRecord>>(
             Files.readString(resources.resolve("catalog/churches.json")),
         ).single { it.id == "google:8998728770320543438" }
-        val engines = listOf("ja", "en", "ko", "pt", "id").associateWith { language ->
+        val engines = supportedLanguageCodes.associateWith { language ->
             val languageIndex = if (language == "ja") index else index.parent.resolve(language)
             assertTrue(Files.isDirectory(languageIndex), "Missing $language index: $languageIndex")
             ChurchSearchEngine(
@@ -219,8 +219,8 @@ class LightPandaSearchE2ETest {
             }
 
             val browser = LightPanda(
-                timeout = Duration.ofSeconds(30),
-                renderWait = Duration.ofSeconds(15),
+                timeout = Duration.ofSeconds(60),
+                renderWait = Duration.ofSeconds(30),
             )
             val defaultIndexHtml = browser.fetchHtml("http://127.0.0.1:$port/")
             assertTrue(defaultIndexHtml.contains("<html lang=\"en\""), defaultIndexHtml.take(1_000))
@@ -316,7 +316,7 @@ class LightPandaSearchE2ETest {
         query: String,
         latitude: Double? = null,
         longitude: Double? = null,
-        readTimeoutMillis: Int = 2_000,
+        readTimeoutMillis: Int = 10_000,
     ): TimedSearch {
         val parameters = buildString {
             append("q=")

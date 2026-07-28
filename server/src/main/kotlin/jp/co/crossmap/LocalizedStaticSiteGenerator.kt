@@ -390,6 +390,7 @@ class LocalizedStaticSiteGenerator(
         Language.KOREAN -> "ko_KR"
         Language.PORTUGUESE -> "pt_BR"
         Language.INDONESIAN -> "id_ID"
+        Language.VIETNAMESE -> "vi_VN"
         Language.CHINESE_SIMPLIFIED -> "zh_CN"
         Language.CHINESE_TRADITIONAL -> "zh_TW"
     }

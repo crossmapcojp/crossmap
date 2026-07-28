@@ -482,8 +482,9 @@ class GeoName(
             "ko" to "korean",
             "pt" to "portuguese",
             "id" to "indonesian",
+            "vi" to "vietnamese",
         )
-        val MULTILINGUAL_TARGET_LANGUAGES = listOf("en", "ko", "pt", "id")
+        val MULTILINGUAL_TARGET_LANGUAGES = listOf("en", "ko", "pt", "id", "vi")
         val CHURCH_RELATED_FEATURE_CODES = setOf("CH", "MSTY", "CTRR")
     }
 }

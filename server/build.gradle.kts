@@ -85,7 +85,7 @@ tasks.register<JavaExec>("generateChurchPages") {
 
 tasks.register<JavaExec>("validateI18n") {
     group = "verification"
-    description = "Validate the five canonical UI message catalogs"
+    description = "Validate all canonical UI message catalogs"
     classpath = sourceSets.main.get().runtimeClasspath
     mainClass = "jp.co.crossmap.I18nValidatorCli"
     workingDir = rootProject.projectDir

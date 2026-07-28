@@ -65,7 +65,7 @@ class SnapshotManager(
         if (fileSystem.metadataOrNull(activePointer)?.isRegularFile != true) return null
         val version = fileSystem.read(activePointer) { readUtf8() }.trim()
         val directory = snapshots / version
-        val language = languageCode.substringBefore('-').lowercase().takeIf { it in SUPPORTED_LANGUAGES } ?: "ja"
+        val language = Language.fromCode(languageCode)?.code?.takeIf { it in SUPPORTED_LANGUAGES } ?: "ja"
         val index = directory / "index" / language
         if (fileSystem.metadataOrNull(index)?.isDirectory != true) return null
         val geonames = json.decodeFromString<List<GeoName>>(fileSystem.read(directory / "geonames.json") { readUtf8() })
@@ -79,6 +79,6 @@ class SnapshotManager(
     }
 
     private companion object {
-        val SUPPORTED_LANGUAGES = setOf("ja", "en", "ko", "pt", "id")
+        val SUPPORTED_LANGUAGES = supportedLanguageCodes.toSet()
     }
 }

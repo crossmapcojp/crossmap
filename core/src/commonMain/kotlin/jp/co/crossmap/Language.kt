@@ -6,6 +6,7 @@ enum class Language(val code: String, val displayName: String) {
     KOREAN("ko", "한국어"),
     PORTUGUESE("pt", "Português"),
     INDONESIAN("id", "Bahasa Indonesia"),
+    VIETNAMESE("vi", "Tiếng Việt"),
     CHINESE_SIMPLIFIED("zh-Hans", "简体中文"),
     CHINESE_TRADITIONAL("zh-Hant", "繁體中文"),
     ;
@@ -108,6 +109,7 @@ class LocalizedText private constructor(
             indonesian: String,
             chineseSimplified: String = japanese,
             chineseTraditional: String = japanese,
+            vietnamese: String = english,
         ): LocalizedText = LocalizedText(
             mapOf(
                 Language.JAPANESE to japanese,
@@ -115,6 +117,7 @@ class LocalizedText private constructor(
                 Language.KOREAN to korean,
                 Language.PORTUGUESE to portuguese,
                 Language.INDONESIAN to indonesian,
+                Language.VIETNAMESE to vietnamese,
                 Language.CHINESE_SIMPLIFIED to chineseSimplified,
                 Language.CHINESE_TRADITIONAL to chineseTraditional,
             ),

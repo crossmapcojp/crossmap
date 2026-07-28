@@ -28,7 +28,7 @@ with invented coordinates or English names.
 - `JELC`, `JCC` (`CCJ` catalog ID), `SDAJP`, `TLEA`, and `HEJ` parse their single-page official directories.
 - `JECA`, `JCCJ`, and `KCCJ` aggregate their regional or paginated official directories; KCCJ explicitly excludes
   the non-church institutions published after its church rows.
-- `ChurchMinisterParser` records clergy names and structured roles with JA/EN/KO/PT/ID labels. The runner uses the
+- `ChurchMinisterParser` records clergy names and structured roles with JA/EN/KO/PT/ID/VI labels. The runner uses the
   personal-name dictionaries to add localized readings and the shared romaji-to-Hangul converter before reconciliation.
 - `CachedHttpDenominationChurchPageLoader` stores current HTML and fetch metadata under
   `cache/denomination-church-lists/<denomination>/`.

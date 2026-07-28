@@ -1,0 +1,37 @@
+<resources>
+    <string name="site_name">Tìm kiếm Hội Thánh Crossmap</string>
+    <string name="search_heading">Tìm Hội Thánh</string>
+    <string name="search_placeholder">Tên Hội Thánh, hệ phái hoặc địa điểm</string>
+    <string name="search_button">Tìm kiếm</string>
+    <string name="search_results_title">Kết quả tìm kiếm cho “%1$s”</string>
+    <string name="search_results_nearby_title">Kết quả tìm kiếm “%2$s” gần %1$s</string>
+    <string name="search_results_count">%1$s Hội Thánh</string>
+    <string name="no_results">Không tìm thấy Hội Thánh. Hãy thử tên hoặc địa điểm khác.</string>
+    <string name="loading">Đang tải…</string>
+    <string name="back_to_search">Quay lại tìm kiếm</string>
+    <string name="previous_page">Trang trước</string>
+    <string name="next_page">Trang sau</string>
+    <string name="language_picker">Ngôn ngữ hiển thị</string>
+    <string name="language_picker_aria">Chọn ngôn ngữ hiển thị</string>
+    <string name="church_label">Hội Thánh</string>
+    <string name="church_address">Địa chỉ</string>
+    <string name="church_denomination">Hệ phái</string>
+    <string name="church_independent">Độc lập</string>
+    <string name="church_website">Trang web</string>
+    <string name="church_social_links">Liên kết mạng xã hội</string>
+    <string name="download_index_prompt">Tải dữ liệu tìm kiếm để tìm ngoại tuyến trên thiết bị này.</string>
+    <string name="download_index_button">Tải dữ liệu tìm kiếm</string>
+    <string name="download_failed">Không thể tải dữ liệu tìm kiếm.</string>
+    <string name="index_unavailable">Chỉ mục tìm kiếm hiện không khả dụng.</string>
+    <string name="search_failed">Tìm kiếm thất bại. Vui lòng thử lại.</string>
+    <string name="church_detail_unavailable">Thông tin Hội Thánh hiện không khả dụng.</string>
+    <string name="distance_km">%1$s km</string>
+    <string name="home_title">Tìm Hội Thánh · Crossmap</string>
+    <string name="home_description">Tìm Hội Thánh tại Nhật Bản theo tên, hệ phái hoặc địa điểm.</string>
+    <string name="results_title">Kết quả tìm kiếm Hội Thánh · Crossmap</string>
+    <string name="results_description">Xem các Hội Thánh phù hợp trong Tìm kiếm Hội Thánh Crossmap.</string>
+    <string name="church_page_title">%1$s · Crossmap</string>
+    <string name="church_page_description">Thông tin về %1$s: hệ phái, địa chỉ, trang web và liên kết mạng xã hội.</string>
+    <string name="choose_language">Chọn ngôn ngữ</string>
+    <string name="server_error">Dịch vụ tạm thời không khả dụng. Vui lòng thử lại.</string>
+</resources>

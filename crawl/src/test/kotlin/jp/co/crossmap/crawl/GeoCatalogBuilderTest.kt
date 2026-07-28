@@ -80,7 +80,8 @@ class GeoCatalogBuilderTest {
                     "english": "Chuo Ward, Fukuoka",
                     "korean": "후쿠오카 주오구",
                     "portuguese": "Fukuoka, distrito de Chuo",
-                    "indonesian": "Distrik Kota Chuo, Fukuoka"
+                    "indonesian": "Distrik Kota Chuo, Fukuoka",
+                    "vietnamese": "Quận Chuo, Fukuoka"
                   }
                 }
                 """.trimIndent(),
@@ -114,6 +115,7 @@ class GeoCatalogBuilderTest {
             assertEquals(fukuoka, fukuokaWard.center)
             assertTrue("福岡市中央区" in fukuokaWard.aliases)
             assertEquals("Chuo Ward, Fukuoka", fukuokaWard.translations["en"])
+            assertEquals("Quận Chuo, Fukuoka", fukuokaWard.translations["vi"])
             assertEquals("401307", result.single { it.name == "福岡市" }.code)
         } finally {
             root.toFile().deleteRecursively()

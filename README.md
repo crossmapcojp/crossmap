@@ -26,7 +26,7 @@ The repository-local instance uses `local.properties` for its Bolt credentials a
 
 All crawled church-page text is searchable. A query is parsed longest-name-first against all 47 prefectures and the generated municipality/ward catalog. Exact and all-name-token tiers keep the complete query. The final geographic tier selects one intended address entity and filters its stable geoname code; the remaining words are scored inside that area. Duplicate municipality and ward names are resolved from browser/app coordinates when available, and otherwise remain unresolved instead of silently searching several unrelated areas. A geoname-only query such as `東京` or `Tokyo` uses the geographic filter with no text requirement.
 
-Localized church names share one downloadable snapshot containing seven indexes: `JapaneseAnalyzer` for Japanese, analysis-nori `KoreanAnalyzer` for Korean, analysis-common analyzers for English, Portuguese, and Indonesian, and `SmartChineseAnalyzer` indexes for `zh-Hans` and `zh-Hant`. Chinese records retain exact script-specific fields while both query scripts also search a canonical Simplified field. Query-language detection is independent of the UI display language and routes each query to its matching index/analyzer; an explicit CLI `--language` can still override automatic detection.
+Localized church names share one downloadable snapshot containing eight indexes: `JapaneseAnalyzer` for Japanese, analysis-nori `KoreanAnalyzer` for Korean, analysis-common analyzers for English, Portuguese, and Indonesian, analysis-extra `VietnameseAnalyzer` for Vietnamese, and `SmartChineseAnalyzer` indexes for `zh-Hans` and `zh-Hant`. Chinese records retain exact script-specific fields while both query scripts also search a canonical Simplified field. Query-language detection is independent of the UI display language and recognizes Vietnamese orthography before the overlapping Portuguese Latin-script heuristics; an explicit CLI `--language` can still override automatic detection.
 
 If no geoname is present, the browser or app may request device location and retry with a default 25 km radius. A geoname in the query always takes precedence over device location.
 
@@ -64,6 +64,16 @@ Chinese localization is an explicit, reviewable migration. Validate and dry-run 
 ```
 
 The migration is idempotent and preserves official, manual, and reviewed values. See [`docs/development/chinese-localization.md`](docs/development/chinese-localization.md) for dictionary precedence, reports, corrections, reindexing, and rollback.
+
+Vietnamese localization uses the same reviewable boundary with direct JA→VI dictionaries, denomination and GeoName catalogs, and compact provenance in `churches.json`:
+
+```sh
+./gradlew :crawl:dryRunVietnameseLocalizedNames
+./gradlew :crawl:generateVietnameseLocalizedNames
+./gradlew :crawl:reindexVietnameseFields
+```
+
+The dry run writes `resources/review/vietnamese-localization-report.json` and must report `indexingChanges=0` after an applied migration. The static Vietnamese home page is `/vi/index.html`; rebuild Neo4j projections and run `:server:generateChurchPages` after catalog changes.
 
 Most official denomination directories are configured in `resources/sources/denominations.json`. UCCJ and JBC use validated table-specific crawlers because their complete official lists are also authoritative negative evidence. Use `--force-refresh --dedicated-only` to invalidate and refetch just those two pages before reconciling the catalog:
 
@@ -159,7 +169,7 @@ The CLI automatically locates the latest local Crossmap snapshot unless an expli
 
 `:server:run` first rebuilds and publishes the `development` search snapshot from the current canonical catalog. At startup the server accepts `latest.json` only when its schema is current, its index directory exists, and its source-catalog SHA-256 matches `resources/catalog/churches.json`; it never silently serves a stale index.
 
-Open `/` to select a supported browser language initially. `zh-CN`, `zh-SG`, and ambiguous `zh` map to `zh-Hans`; `zh-TW`, `zh-HK`, and `zh-MO` map to `zh-Hant`. Every page exposes an explicit locale switch, persists that choice in local storage, and lets it override later browser detection. Without JavaScript the root provides an English search fallback. `/ja/`, `/en/`, `/ko/`, `/pt/`, `/id/`, `/zh-Hans/`, and `/zh-Hant/` can also be opened directly. Each directory contains generated `index.html`, `result.html`, and stable-English-slug church pages with canonical and `hreflang` links. Query language is detected independently by the server, so an English query on `/ja/result.html` still uses the English analyzer while results remain Japanese; Chinese results display the selected script and retain the original Japanese name as secondary text.
+Open `/` to select a supported browser language initially. `vi-VN` maps to `vi`; `zh-CN`, `zh-SG`, and ambiguous `zh` map to `zh-Hans`; `zh-TW`, `zh-HK`, and `zh-MO` map to `zh-Hant`. Every page exposes an explicit locale switch, persists that choice in local storage, and lets it override later browser detection. Without JavaScript the root provides an English search fallback. `/ja/`, `/en/`, `/ko/`, `/pt/`, `/id/`, `/vi/`, `/zh-Hans/`, and `/zh-Hant/` can also be opened directly. Each directory contains generated `index.html`, `result.html`, and stable-English-slug church pages with canonical and `hreflang` links. Query language is detected independently by the server, so an English query on `/ja/result.html` still uses the English analyzer while results remain Japanese; Vietnamese queries use `VietnameseAnalyzer`, and Chinese results display the selected script while retaining the original Japanese name as secondary text.
 
 Chrome asks the user to allow location access the first time Crossmap requests it. Use `http://localhost:8080`, not the wildcard bind address `http://0.0.0.0:8080`; the client redirects the latter to `localhost` because browser geolocation requires HTTPS or a trusted local-development origin. If permission is denied or location times out, search remains nationwide and no nearby-area heading is shown.
 
@@ -244,7 +254,7 @@ The `Module(s)` column names every module that a task directly operates or orche
 | --- | --- | --- | --- | --- |
 | `server`, `core`, `webclient` | `./gradlew :server:runCurrentIndex` | Starts Ktor with the latest already-built compatible snapshot and serves the vanilla-JavaScript client. | Does not crawl, invoke Ollama, rebuild the index, or regenerate static pages. Best choice for local search iteration and benchmarks. | HTTP server on the configured host/port and request/query timing logs. |
 | `server`, `core`, `crawl`, `resources`, `webclient` | `./gradlew :server:run` | Rebuilds data-dependent artifacts and then starts the complete web application. | Depends on `:crawl:buildSearchSnapshot` and the read-only `generateChurchPages` task. | Current snapshot, generated church pages, logs, and running HTTP server. |
-| `server`, `crawl`, `resources`, `webclient` | `./gradlew :server:generateChurchPages` | Generates the auto-localizing root plus every localized index, result, church-detail page, manifest, and sitemap in a bounded CPU-sized worker pool. | Reads the canonical catalog without running cleanup or invalidating the current snapshot; defaults to all JVM processors and accepts `-PcrossmapStaticSiteParallelism=N`; the site origin is only an optional SEO override. | Deployable `webclient/` tree with generated `ja/en/ko/pt/id` directories. |
+| `server`, `crawl`, `resources`, `webclient` | `./gradlew :server:generateChurchPages` | Generates the auto-localizing root plus every localized index, result, church-detail page, manifest, and sitemap in a bounded CPU-sized worker pool. | Reads the canonical catalog without running cleanup or invalidating the current snapshot; defaults to all JVM processors and accepts `-PcrossmapStaticSiteParallelism=N`; the site origin is only an optional SEO override. | Deployable `webclient/` tree with generated `ja/en/ko/pt/id/vi/zh-Hans/zh-Hant` directories. |
 | `server`, `core` | `./gradlew :server:test` | Runs API, startup-safety, snapshot, static-site, and server integration tests. | Does not opt into the external Lightpanda flow. | `server/build/reports/tests`. |
 | `server`, `core`, `crawl`, `resources`, `webclient` | `./gradlew :server:lightpandaE2eTest` | Runs the real index-to-JSON-to-results-to-static-detail browser flow. | Rebuilds the snapshot/pages and inherits their cleanup side effects; requires Lightpanda. | E2E test report under `server/build/reports/tests`. |
 

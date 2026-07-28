@@ -7,6 +7,7 @@
       "ko": ["교회"],
       "pt": ["Igreja"],
       "id": ["Gereja"],
+      "vi": ["Hội Thánh", "Nhà thờ"],
       "es": ["Iglesia"],
       "fr": ["Église"],
       "de": ["Kirche"],
@@ -24,6 +25,7 @@
       "ko": ["예배당"],
       "pt": ["Capela"],
       "id": ["Kapel"],
+      "vi": ["Nhà nguyện"],
       "es": ["Capilla"],
       "zh-hans": ["礼拜堂"],
       "zh-hant": ["禮拜堂"]
@@ -37,6 +39,7 @@
       "ko": ["집회"],
       "pt": ["Assembleia", "Assembléia"],
       "id": ["Persekutuan"],
+      "vi": ["Hội chúng"],
       "zh-hans": ["聚会"],
       "zh-hant": ["聚會"]
     }
@@ -44,11 +47,12 @@
   {
     "id": "mission",
     "names": {
-      "ja": ["ミッション", "宣教"],
+      "ja": ["ミッション", "宣教", "伝道所", "伝道"],
       "en": ["Mission"],
       "ko": ["선교"],
       "pt": ["Missão"],
       "id": ["Misi"],
+      "vi": ["Hội Truyền giáo"],
       "zh-hans": ["宣教"],
       "zh-hant": ["宣教"]
     }
@@ -61,6 +65,7 @@
       "ko": ["하나님의 성회"],
       "pt": ["Assembleia de Deus", "Assembléia de Deus", "Assembreia de Deus"],
       "id": ["Sidang Jemaat Allah"],
+      "vi": ["Hội đồng Đức Chúa Trời"],
       "zh-hans": ["神召会"],
       "zh-hant": ["神召會"]
     }
@@ -73,6 +78,7 @@
       "ko": ["하나님은 사랑이시다 오순절 교회"],
       "pt": ["Igreja Pentecostal Deus É Amor", "Igreja Pentecostal Deus é Amor", "Igreja Pentecostal Deus E Amor"],
       "id": ["Gereja Pentakosta Allah adalah Kasih"],
+      "vi": ["Hội Thánh Ngũ Tuần Đức Chúa Trời là Tình Yêu"],
       "zh-hans": ["神是爱五旬节教会"],
       "zh-hant": ["神是愛五旬節教會"]
     }
@@ -85,6 +91,7 @@
       "ko": ["하나님은 사랑이시다 교회"],
       "pt": ["Igreja Deus É Amor", "Igreja Deus é Amor", "Igreja Deus E Amor"],
       "id": ["Gereja Allah adalah Kasih"],
+      "vi": ["Hội Thánh Đức Chúa Trời là Tình Yêu"],
       "zh-hans": ["神是爱教会"],
       "zh-hant": ["神是愛教會"]
     }

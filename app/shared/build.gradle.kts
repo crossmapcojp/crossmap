@@ -13,6 +13,11 @@ plugins {
 val prepareComposeI18n by tasks.registering(Sync::class) {
     from(rootProject.layout.projectDirectory.dir("resources/i18n")) {
         exclude("README.md")
+        eachFile {
+            path = path
+                .replace("values-zh-Hans/", "values-zh-rCN/")
+                .replace("values-zh-Hant/", "values-zh-rTW/")
+        }
     }
     into(layout.buildDirectory.dir("generated/compose-i18n"))
 }

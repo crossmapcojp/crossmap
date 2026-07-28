@@ -58,6 +58,10 @@
 
 - [x] Complete the `zh-Hans`/`zh-Hant` acceptance audit: first-class church/GeoName/minister records, direct paired dictionaries and validation, provenance/review reporting, idempotent dry-run migration, static UI/switching, cross-script Lucene ranking/display, golden fixtures, reproducible reindexing, full relevant suites, and operational documentation.
 
+### Vietnamese localization
+
+- [x] Add `vi` as a first-class data, UI, static-page, GeoName, denomination, and Lucene-KMP locale using `VietnameseAnalyzer`, then prove the eighth snapshot and browser flow end to end.
+
 ## 3. Japanese geonames
 
 - [x] Use the official headerless GeoNames `JP.txt` dump plus language-tagged `alternatenames/JP.zip`; download and extract either cache when absent and join records by `geonameid`.

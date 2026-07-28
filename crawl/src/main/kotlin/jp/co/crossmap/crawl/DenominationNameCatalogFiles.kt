@@ -51,7 +51,11 @@ object DenominationNameCatalogFiles {
             val localizedParts = localizedNames.mapValues { (language, value) -> denominationNamePart(value, language) }
             val record = metadata.getValue(id)
             val evidence = Language.entries.associateWith { language ->
-                val item = requireNotNull(record.evidence[language.code] ?: record.evidence[Language.JAPANESE.code]) {
+                val item = requireNotNull(
+                    record.evidence[language.code]
+                        ?: record.evidence[Language.ENGLISH.code]
+                        ?: record.evidence[Language.JAPANESE.code],
+                ) {
                     "$id is missing ${language.code} provenance and Japanese fallback provenance"
                 }
                 DenominationNameEvidence(
@@ -78,6 +82,7 @@ object DenominationNameCatalogFiles {
         indonesian = getValue(Language.INDONESIAN),
         chineseSimplified = getValue(Language.CHINESE_SIMPLIFIED),
         chineseTraditional = getValue(Language.CHINESE_TRADITIONAL),
+        vietnamese = getValue(Language.VIETNAMESE),
     )
 }
 

@@ -186,6 +186,7 @@ class GeoCatalogBuilder(private val json: Json = Json { prettyPrint = true; enco
                     "ko" to fields["korean"]?.jsonPrimitive?.content.orEmpty(),
                     "pt" to fields["portuguese"]?.jsonPrimitive?.content.orEmpty(),
                     "id" to fields["indonesian"]?.jsonPrimitive?.content.orEmpty(),
+                    "vi" to fields["vietnamese"]?.jsonPrimitive?.content.orEmpty(),
                 ).filterValues(String::isNotBlank),
             )
         }

@@ -11,7 +11,10 @@ This directory is the single source of truth for user-interface text used by the
 | Korean (`ko`) | `values-ko/` |
 | Portuguese (`pt`) | `values-pt/` |
 | Indonesian (`id`) | `values-id/` |
+| Vietnamese (`vi`) | `values-vi/` |
+| Simplified Chinese (`zh-Hans`) | `values-zh-Hans/` |
+| Traditional Chinese (`zh-Hant`) | `values-zh-Hant/` |
 
 Keys use semantic snake-case names. Values are plain text without HTML. Dynamic arguments use numbered Compose placeholders such as `%1$s`; every translation of a key must have the same placeholder set as English.
 
-To add a message, add the same nonblank key to all five files and run `./gradlew :server:validateI18n`. To add a language, first add it to the core `Language` enum, then add the matching qualified directory and translations. `:server:generateChurchPages` validates and consumes these catalogs for static pages; app resource generation consumes the same directory.
+To add a message, add the same nonblank key to all eight files and run `./gradlew :server:validateI18n`. To add a language, first add it to the core `Language` enum, then add the matching qualified directory and translations. `:server:generateChurchPages` validates and consumes these catalogs for static pages; app resource generation consumes the same directory.

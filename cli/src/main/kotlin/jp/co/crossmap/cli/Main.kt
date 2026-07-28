@@ -41,7 +41,9 @@ private class Index : CliktCommand(name = "index") {
 
 private abstract class IndexCommand(name: String) : CliktCommand(name = name) {
     private val configuredIndexPath by option("--index", envvar = "CROSSMAP_INDEX_DIR")
-    protected val language by option("--language").choice("auto", "ja", "en", "ko", "pt", "id").default("auto")
+    protected val language by option("--language")
+        .choice("auto", "ja", "en", "ko", "pt", "id", "vi", "zh-Hans", "zh-Hant")
+        .default("auto")
     protected val geonamesPath by option("--geonames", envvar = "CROSSMAP_GEONAMES")
         .default("resources/geonames/japan.json")
     protected val indexPath: String

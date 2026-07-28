@@ -11,6 +11,9 @@ object QueryLanguageDetector {
     private val englishWords = setOf(
         "assembly", "baptist", "chapel", "christ", "christian", "church", "fellowship", "gospel", "mission",
     )
+    private val vietnameseWords = setOf(
+        "chúa", "cơ", "đấng", "đức", "giáo", "hội", "nhà", "nhật", "phúc", "thánh", "tin",
+    )
 
     fun detect(query: String, preferredLanguage: String = "ja"): String {
         val preferred = Language.fromCode(preferredLanguage)?.code
@@ -25,6 +28,7 @@ object QueryLanguageDetector {
         val words = normalized.split(Regex("[^\\p{L}]+"))
             .filter(String::isNotBlank)
             .toSet()
+        if (normalized.any { it in "ăđơư" } || words.count { it in vietnameseWords } >= 2) return "vi"
         if (normalized.any { it in "ãõáàâéêíóôúç" } || words.any { it in portugueseWords }) return "pt"
         if (words.any { it in indonesianWords }) return "id"
         if (words.any { it in englishWords }) return "en"
@@ -39,5 +43,5 @@ object QueryLanguageDetector {
     private fun isHan(character: Char): Boolean =
         character in '\u3400'..'\u4DBF' || character in '\u4E00'..'\u9FFF'
 
-    private val LATIN_LANGUAGES = setOf("en", "pt", "id")
+    private val LATIN_LANGUAGES = setOf("en", "pt", "id", "vi")
 }

@@ -341,6 +341,7 @@ class ApplicationTest {
                     LocalizedName("ko", "도쿄 세인트 앤드류 교회"),
                     LocalizedName("pt", "Igreja de Santo André de Tóquio"),
                     LocalizedName("id", "Gereja Santo Andreas Tokyo"),
+                    LocalizedName("vi", "Hội Thánh Thánh An-rê Tokyo"),
                     LocalizedName("zh-Hans", "东京圣安德烈教会"),
                     LocalizedName("zh-Hant", "東京聖安德烈教會"),
                 ),
@@ -351,6 +352,7 @@ class ApplicationTest {
                     LocalizedName("ko", "일본성공회"),
                     LocalizedName("pt", "Igreja Anglicana no Japão"),
                     LocalizedName("id", "Gereja Anglikan di Jepang"),
+                    LocalizedName("vi", "Giáo hội Anh giáo tại Nhật Bản"),
                     LocalizedName("zh-Hans", "日本圣公会"),
                     LocalizedName("zh-Hant", "日本聖公會"),
                 ),
@@ -364,6 +366,7 @@ class ApplicationTest {
                 "ko" to "미나토구",
                 "pt" to "Distrito de Minato",
                 "id" to "Distrik Minato",
+                "vi" to "Quận Minato",
                 "zh-Hans" to "港区",
                 "zh-Hant" to "港區",
             )
@@ -373,6 +376,7 @@ class ApplicationTest {
                 "ko" to "일본성공회",
                 "pt" to "Igreja Anglicana no Japão",
                 "id" to "Gereja Anglikan di Jepang",
+                "vi" to "Giáo hội Anh giáo tại Nhật Bản",
                 "zh-Hans" to "日本圣公会",
                 "zh-Hant" to "日本聖公會",
             )

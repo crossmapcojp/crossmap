@@ -306,6 +306,6 @@ class ChurchGeoNameTranslationCatalog(
     }
 
     companion object {
-        val TARGET_LANGUAGES = listOf("en", "ko", "pt", "id")
+        val TARGET_LANGUAGES = listOf("en", "ko", "pt", "id", "vi")
     }
 }

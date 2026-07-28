@@ -1376,6 +1376,65 @@ private class LocalizeChineseNames : CrawlCommand("localize-chinese-names", Craw
     }
 }
 
+private class LocalizeVietnameseNames : CrawlCommand("localize-vietnamese-names", CrawlReport.VIETNAMESE_LOCALIZATION) {
+    private val resources by option("--resources").default("resources")
+    private val dryRun by option("--dry-run", help = "Produce reports without replacing churches.json").flag()
+
+    override fun execute(audit: CrawlCommandAudit) {
+        val root = Path.of(resources)
+        val paths = CrossmapPaths(root)
+        val dictionaries = ChurchNameEnglishDictionary.load(root)
+        val denominations = json.decodeFromString<List<Denomination>>(Files.readString(paths.denominationCatalog))
+        val localizer = MultilingualChurchNameLocalizer(
+            dictionaries = dictionaries,
+            congregationTerms = CongregationTermDictionary.load(root),
+            denominations = denominations,
+            denominationNames = DenominationNameCatalogFiles.load(root),
+            geonames = loadChurchNameGeonames(paths) + dictionaries.geonames,
+            multilingualGeonames = mergeReviewedChurchGeoNames(
+                createGeoName(paths).readMultilingualLexicon(paths.geoNameMultilingualLexicon),
+                loadReviewedChurchGeoNames(paths),
+            ),
+            branchGeonames = loadChurchNameGeoAliases(paths) + dictionaries.geonames.keys,
+        )
+        val churches = json.decodeFromString<List<ChurchRecord>>(Files.readString(paths.churchCatalog))
+        val result = VietnameseLocalizationMigration(localizer).process(churches)
+        val reportPath = root.resolve("review/vietnamese-localization-report.json")
+        val summaryPath = root.resolve("review/vietnamese-localization-summary.txt")
+        writeJsonAtomically(reportPath, result.report)
+        writeTextAtomically(
+            summaryPath,
+            """
+            Vietnamese localization ${if (dryRun) "dry run" else "migration"}
+            churches processed: ${result.report.churchesProcessed}
+            vi generated: ${result.report.viNamesGenerated}
+            reviewed/official preserved: ${result.report.namesPreservedBecauseReviewedOrOfficial}
+            ministers localized: ${result.report.ministersLocalized}
+            churches requiring review: ${result.report.churchesRequiringReview}
+            indexing changes: ${result.report.indexingChanges}
+            dictionary coverage: ${"%.2f".format(java.util.Locale.ROOT, result.report.dictionaryCoverageRate * 100)}%
+            """.trimIndent() + "\n",
+        )
+        if (!dryRun) writeJsonAtomically(paths.churchCatalog, result.churches)
+        audit.input("catalog", paths.churchCatalog.toAbsolutePath().normalize())
+        audit.setting("dry_run", dryRun)
+        audit.metric("churches_processed", result.report.churchesProcessed)
+        audit.metric("vi_generated", result.report.viNamesGenerated)
+        audit.metric("preserved", result.report.namesPreservedBecauseReviewedOrOfficial)
+        audit.metric("requires_review", result.report.churchesRequiringReview)
+        audit.metric("indexing_changes", result.report.indexingChanges)
+        audit.metric("dictionary_coverage_rate", result.report.dictionaryCoverageRate)
+        audit.output("review_report", reportPath.toAbsolutePath().normalize())
+        audit.output("summary", summaryPath.toAbsolutePath().normalize())
+        if (!dryRun) audit.output("catalog", paths.churchCatalog.toAbsolutePath().normalize())
+        echo(
+            "Vietnamese localization: ${result.report.churchesProcessed} churches, " +
+                "${result.report.viNamesGenerated} vi names, " +
+                "${result.report.churchesRequiringReview} require review${if (dryRun) " (dry run)" else ""}",
+        )
+    }
+}
+
 private val reportJson = Json { prettyPrint = true; encodeDefaults = true }
 private val catalogJson = Json { prettyPrint = false; encodeDefaults = false }
 
@@ -1383,6 +1442,9 @@ private fun writeJsonAtomically(path: Path, value: ChineseDictionaryValidationRe
     writeTextAtomically(path, reportJson.encodeToString(value))
 
 private fun writeJsonAtomically(path: Path, value: ChineseLocalizationMigrationReport) =
+    writeTextAtomically(path, reportJson.encodeToString(value))
+
+private fun writeJsonAtomically(path: Path, value: VietnameseLocalizationMigrationReport) =
     writeTextAtomically(path, reportJson.encodeToString(value))
 
 private fun writeJsonAtomically(path: Path, value: List<ChurchRecord>) =
@@ -1442,5 +1504,5 @@ fun main(args: Array<String>) = Crawl().subcommands(
     ReadGoogleSavedPlaces(), ResolveGoogleSavedPlaces(), PromoteGoogleSavedPlaces(), Refresh(), CrawlDenominationDirectories(), BuildGeonames(), CleanupLlm(), OverrideDenomination(), MergeSocialExports(), LinkSocial(),
     PopulateEnglishNames(), AnalyzeEnglishNames(), PopulateDenominationEnglishNames(), PrepareGeoNameCache(), BuildChurchGeonames(), NormalizeAddresses(), BuildSnapshot(),
     CatalogNeo4jHealth(), CatalogNeo4jMigrate(), CatalogNeo4jImport(), CatalogNeo4jExport(), CatalogNeo4jParity(), CatalogNeo4jIntegrity(),
-    ValidateChineseDictionaries(), LocalizeChineseNames(), FetchUrl(),
+    ValidateChineseDictionaries(), LocalizeChineseNames(), LocalizeVietnameseNames(), FetchUrl(),
 ).main(args)

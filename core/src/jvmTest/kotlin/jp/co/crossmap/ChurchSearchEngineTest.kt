@@ -62,6 +62,7 @@ class ChurchSearchEngineTest {
                     LocalizedName("ko", "도쿄 희망 교회"),
                     LocalizedName("pt", "Igreja Esperança de Tóquio"),
                     LocalizedName("id", "Gereja Harapan Tokyo"),
+                    LocalizedName("vi", "Hội Thánh Hy Vọng Tokyo"),
                 ),
                 address = "東京都新宿区",
                 location = GeoPoint(35.69, 139.70),
@@ -76,6 +77,7 @@ class ChurchSearchEngineTest {
                             LocalizedName("ko", "사토 다로"),
                             LocalizedName("pt", "Tarou Satou"),
                             LocalizedName("id", "Tarou Satou"),
+                            LocalizedName("vi", "Tarou Satou"),
                         ),
                         roleId = "pastor",
                         roleName = "牧師",
@@ -83,7 +85,7 @@ class ChurchSearchEngineTest {
                     ),
                 ),
             )
-            val queries = mapOf("ja" to "佐藤 太郎", "en" to "Tarou Satou", "ko" to "사토 다로", "pt" to "Tarou Satou", "id" to "Tarou Satou")
+            val queries = mapOf("ja" to "佐藤 太郎", "en" to "Tarou Satou", "ko" to "사토 다로", "pt" to "Tarou Satou", "id" to "Tarou Satou", "vi" to "Tarou Satou")
             queries.forEach { (language, query) ->
                 val index = root.resolve("index-$language")
                 ChurchIndex.build(index.toString().toPath(), listOf(church), languageCode = language)
@@ -133,6 +135,7 @@ class ChurchSearchEngineTest {
                         LocalizedName("ko", "도쿄 세인트 앤드류 교회"),
                         LocalizedName("pt", "Igreja de Santo André de Tóquio"),
                         LocalizedName("id", "Gereja Santo Andreas Tokyo"),
+                        LocalizedName("vi", "Hội Thánh Thánh An-rê Tokyo"),
                     ),
                     localizedDenominationNames = listOf(
                         LocalizedName("ja", "日本聖公会"),
@@ -140,6 +143,7 @@ class ChurchSearchEngineTest {
                         LocalizedName("ko", "일본성공회"),
                         LocalizedName("pt", "Igreja Anglicana no Japão"),
                         LocalizedName("id", "Gereja Anglikan di Jepang"),
+                        LocalizedName("vi", "Giáo hội Anh giáo tại Nhật Bản"),
                     ),
                     titleLanguages = listOf("ja", "en"),
                     denominationId = "ANGLICAN_JP",
@@ -193,6 +197,7 @@ class ChurchSearchEngineTest {
                         "ko" -> listOf("미나토구")
                         "pt" -> listOf("Distrito de Minato")
                         "id" -> listOf("Distrik Minato")
+                        "vi" -> listOf("Quận Minato")
                         "zh-Hans" -> listOf("港区")
                         "zh-Hant" -> listOf("港區")
                         else -> emptyList()
@@ -228,6 +233,21 @@ class ChurchSearchEngineTest {
             assertEquals("google:2225537460932230335", koreanDenomination.hits.single().churchId)
             val koreanAddressGeoName = localizedEngine("ko").search(ChurchSearchRequest("미나토구"))
             assertEquals("google:2225537460932230335", koreanAddressGeoName.hits.single().churchId)
+
+            val vietnamese = localizedEngine("vi")
+            assertEquals(
+                "google:2225537460932230335",
+                vietnamese.search(ChurchSearchRequest("Hội Thánh Thánh An-rê Tokyo")).hits.single().churchId,
+            )
+            assertEquals(
+                "google:2225537460932230335",
+                vietnamese.search(ChurchSearchRequest("Giáo hội Anh giáo tại Nhật Bản")).hits.single().churchId,
+            )
+            assertEquals(
+                "google:2225537460932230335",
+                vietnamese.search(ChurchSearchRequest("Quận Minato")).hits.single().churchId,
+            )
+            assertContains(vietnamese.explainQuery(ChurchSearchRequest("Hội Thánh")), "analyzer=VietnameseAnalyzer")
 
             val englishInflection = localizedEngine("en").search(ChurchSearchRequest("Tokyo churches"))
             assertTrue(englishInflection.hits.any { it.churchId == "google:2225537460932230335" })

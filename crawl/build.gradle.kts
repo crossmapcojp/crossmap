@@ -224,7 +224,7 @@ val buildGeoCatalog by tasks.registering(JavaExec::class) {
 
 val prepareChurchGeoNames by tasks.registering(JavaExec::class) {
     group = "crossmap"
-    description = "Collect title/address geonames and merge official/reviewed JA-EN-KO-PT-ID translations"
+    description = "Collect title/address geonames and merge official/reviewed JA-EN-KO-PT-ID-VI translations"
     classpath = sourceSets.main.get().runtimeClasspath
     mainClass = "jp.co.crossmap.crawl.MainKt"
     workingDir = rootProject.projectDir
@@ -341,6 +341,45 @@ tasks.register("produceChineseReviewReport") {
     group = "crossmap"
     description = "Produce machine-readable and human-readable Chinese localization review reports"
     dependsOn("dryRunChineseLocalizedNames")
+}
+
+tasks.register<JavaExec>("dryRunVietnameseLocalizedNames") {
+    group = "crossmap"
+    description = "Preview Vietnamese church/minister localization and produce review reports without changing the catalog"
+    classpath = sourceSets.main.get().runtimeClasspath
+    mainClass = "jp.co.crossmap.crawl.MainKt"
+    workingDir = rootProject.projectDir
+    args(
+        "localize-vietnamese-names",
+        "--resources",
+        providers.gradleProperty("crossmapResources").orElse("resources").get(),
+        "--dry-run",
+    )
+}
+
+tasks.register<JavaExec>("generateVietnameseLocalizedNames") {
+    group = "crossmap"
+    description = "Idempotently generate Vietnamese church/minister names while preserving official and reviewed values"
+    classpath = sourceSets.main.get().runtimeClasspath
+    mainClass = "jp.co.crossmap.crawl.MainKt"
+    workingDir = rootProject.projectDir
+    args(
+        "localize-vietnamese-names",
+        "--resources",
+        providers.gradleProperty("crossmapResources").orElse("resources").get(),
+    )
+}
+
+tasks.register("produceVietnameseReviewReport") {
+    group = "crossmap"
+    description = "Produce machine-readable and human-readable Vietnamese localization review reports"
+    dependsOn("dryRunVietnameseLocalizedNames")
+}
+
+tasks.register("reindexVietnameseFields") {
+    group = "crossmap"
+    description = "Rebuild the reproducible search snapshot including VietnameseAnalyzer fields"
+    dependsOn("buildSearchSnapshot")
 }
 
 tasks.register("reindexChineseFields") {

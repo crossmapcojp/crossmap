@@ -67,9 +67,11 @@ class LanguageTest {
 
     @Test
     fun supportedLanguageCodesComeOnlyFromLanguageEnum() {
-        assertEquals(listOf("ja", "en", "ko", "pt", "id", "zh-Hans", "zh-Hant"), supportedLanguageCodes)
+        assertEquals(listOf("ja", "en", "ko", "pt", "id", "vi", "zh-Hans", "zh-Hant"), supportedLanguageCodes)
         assertEquals(Language.JAPANESE, Language.fromCode("ja-JP"))
         assertEquals(Language.PORTUGUESE, Language.fromCode("pt_BR"))
+        assertEquals(Language.VIETNAMESE, Language.fromCode("vi-VN"))
+        assertEquals("Tiếng Việt", Language.VIETNAMESE.displayName)
         assertEquals(Language.ENGLISH, Language.fromCodeOrEnglish("fr-FR"))
     }
 
@@ -91,6 +93,7 @@ class LanguageTest {
         assertEquals("루터교", ChurchTradition.LUTHERAN.name(Language.KOREAN))
         assertEquals("루터", ChurchTradition.LUTHERAN.namePart(Language.KOREAN))
         assertEquals("Gereja Lutheran", ChurchTradition.LUTHERAN.name(Language.INDONESIAN))
+        assertEquals("Hội Thánh Luther", ChurchTradition.LUTHERAN.name(Language.VIETNAMESE))
     }
 
     @Test

@@ -568,6 +568,7 @@ class ChurchSearchEngine(
         "ko" -> "KoreanAnalyzer"
         "pt" -> "PortugueseAnalyzer"
         "id" -> "IndonesianAnalyzer"
+        "vi" -> "VietnameseAnalyzer"
         "zh-Hans", "zh-Hant" -> "SmartChineseAnalyzer"
         else -> "StandardAnalyzer"
     }
@@ -694,6 +695,7 @@ class ChurchSearchEngine(
             "ko" to listOf("교회", "채플"),
             "pt" to listOf("igreja", "igrejas", "capela"),
             "id" to listOf("gereja", "kapel"),
+            "vi" to listOf("nhà thờ", "hội thánh", "nhà nguyện"),
             "zh-Hans" to listOf("教会", "礼拜堂"),
             "zh-Hant" to listOf("教會", "禮拜堂"),
         )

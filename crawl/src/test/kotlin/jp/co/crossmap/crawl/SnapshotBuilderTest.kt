@@ -6,13 +6,14 @@ import jp.co.crossmap.supportedLanguageCodes
 
 class SnapshotBuilderTest {
     @Test
-    fun geonamesAreUniqueInAllSevenLanguageIndexes() {
+    fun geonamesAreUniqueInAllEightLanguageIndexes() {
         val geonamesByLanguage = mapOf(
             "ja" to listOf("大阪", " 大阪 ", "東京"),
             "en" to listOf("Osaka", "osaka", "Ｏｓａｋａ", "Tokyo"),
             "ko" to listOf("오사카", " 오사카 ", "도쿄"),
             "pt" to listOf("Osaka", "OSAKA", "Tóquio"),
             "id" to listOf("Osaka", "osaka", "Tokyo"),
+            "vi" to listOf("Osaka", "osaka", "Tokyo"),
             "zh-Hans" to listOf("大阪", " 大阪 ", "东京"),
             "zh-Hant" to listOf("大阪", "大阪", "東京"),
         )
@@ -24,6 +25,7 @@ class SnapshotBuilderTest {
         assertEquals(listOf("오사카", "도쿄"), unique.getValue("ko"))
         assertEquals(listOf("Osaka", "Tóquio"), unique.getValue("pt"))
         assertEquals(listOf("Osaka", "Tokyo"), unique.getValue("id"))
+        assertEquals(listOf("Osaka", "Tokyo"), unique.getValue("vi"))
         assertEquals(listOf("大阪", "东京"), unique.getValue("zh-Hans"))
         assertEquals(listOf("大阪", "東京"), unique.getValue("zh-Hant"))
         assertEquals(supportedLanguageCodes.toSet(), unique.keys)
