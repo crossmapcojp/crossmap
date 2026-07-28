@@ -313,12 +313,16 @@ class OfficialDenominationChurchListReconciler(
         name = comparableName(name, denominationId),
         address = address,
         websiteUrl = websiteUrl,
+        alternateNames = (listOf(englishName) + localizedNames.map { it.name })
+            .map { comparableName(it, denominationId) },
     )
 
     private fun OfficialEntry.toIdentity() = ChurchIdentity(
         name = comparableName(church.name, list.denominationId),
         address = church.address,
         websiteUrl = church.websiteUrl,
+        alternateNames = (listOf(church.officialEnglishName()) + church.localizedNames.map { it.name })
+            .map { comparableName(it, list.denominationId) },
     )
 
     private fun comparableName(value: String, denominationId: String): String {

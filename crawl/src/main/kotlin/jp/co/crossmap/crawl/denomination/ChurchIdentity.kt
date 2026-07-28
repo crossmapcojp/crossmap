@@ -2,17 +2,22 @@ package jp.co.crossmap.crawl.denomination
 
 import java.net.URI
 import jp.co.crossmap.crawl.JapaneseEntityNormalizer
+import jp.co.crossmap.crawl.EnglishJapaneseAddressMatcher
 
 /** Comparable identity evidence shared by catalog and official-directory church records. */
 data class ChurchIdentity(
     val name: String,
     val address: String,
     val websiteUrl: String,
+    val alternateNames: List<String> = emptyList(),
 ) {
     private val normalizedWebsite = comparableWebsite(websiteUrl)
     private val normalizedPostalCode = postalCode(address)
     private val normalizedName = JapaneseEntityNormalizer.name(name)
-    private val normalizedStem = comparisonStem(normalizedName)
+    private val normalizedNames = (listOf(normalizedName) + alternateNames.map(JapaneseEntityNormalizer::name))
+        .filter(String::isNotBlank)
+        .distinct()
+    private val normalizedStems = normalizedNames.map(::comparisonStem).filter(String::isNotBlank).distinct()
     private val normalizedAddress = JapaneseEntityNormalizer.address(address)
 
     fun matches(other: ChurchIdentity): Boolean = matchConfidence(other) != null
@@ -25,26 +30,33 @@ data class ChurchIdentity(
         val rightPostalCode = other.normalizedPostalCode
         if (leftPostalCode != null && rightPostalCode != null && leftPostalCode != rightPostalCode) return null
 
-        val leftName = normalizedName
-        val rightName = other.normalizedName
-        val exactName = leftName.isNotBlank() && leftName == rightName
-        val leftStem = normalizedStem
-        val rightStem = other.normalizedStem
-        val stemScore = when {
-            leftStem.isBlank() || rightStem.isBlank() -> 0.0
-            leftStem == rightStem -> 1.0
-            minOf(leftStem.length, rightStem.length) >= 2 &&
-                (leftStem.contains(rightStem) || rightStem.contains(leftStem)) -> 0.95
-            else -> JapaneseEntityNormalizer.deterministicNormalizedNameScore(leftStem, rightStem).toDouble()
-        }
+        val exactName = normalizedNames.any { it in other.normalizedNames }
+        val stemScore = normalizedStems.maxOfOrNull { leftStem ->
+            other.normalizedStems.maxOfOrNull { rightStem ->
+                when {
+                    leftStem == rightStem -> 1.0
+                    minOf(leftStem.length, rightStem.length) >= 2 &&
+                        (leftStem.contains(rightStem) || rightStem.contains(leftStem)) -> 0.95
+                    else -> JapaneseEntityNormalizer.deterministicNormalizedNameScore(leftStem, rightStem).toDouble()
+                }
+            } ?: 0.0
+        } ?: 0.0
         val nameScore = maxOf(
-            JapaneseEntityNormalizer.deterministicNormalizedNameScore(leftName, rightName).toDouble(),
+            normalizedNames.maxOfOrNull { leftName ->
+                other.normalizedNames.maxOfOrNull { rightName ->
+                    JapaneseEntityNormalizer.deterministicNormalizedNameScore(leftName, rightName).toDouble()
+                } ?: 0.0
+            } ?: 0.0,
             stemScore,
         )
-        val addressScore = JapaneseEntityNormalizer.deterministicNormalizedAddressScore(
-            normalizedAddress,
-            other.normalizedAddress,
-        ).toDouble()
+        val addressScore = maxOf(
+            JapaneseEntityNormalizer.deterministicNormalizedAddressScore(
+                normalizedAddress,
+                other.normalizedAddress,
+            ).toDouble(),
+            EnglishJapaneseAddressMatcher.similarity(address, other.address),
+            EnglishJapaneseAddressMatcher.similarity(other.address, address),
+        )
         val samePostalCode = leftPostalCode != null && leftPostalCode == rightPostalCode
 
         return when {

@@ -38,6 +38,7 @@
 
 ### Official UCCJ and JBC church lists
 
+- [x] Add `JCOB_JP` to the denomination catalogs, implement and register its dedicated official-directory crawler, add reusable scored English↔Japanese address matching for reconciliation, cover both with regression fixtures, and validate the live church list before publication (33 churches, 0 live errors).
 - [x] Define the shared `DenominationChurchListCrawler` API and typed official-list JSON model.
 - [x] Implement fresh, cache-aware `UCCJDenominationChurchListCrawler` parsing `https://uccj.org/diocese` into `resources/crawl/uccj-churches.json`.
 - [x] Implement fresh, cache-aware `JBCDenominationChurchListCrawler` parsing `https://bapren.jp/church/` into `resources/crawl/jbc-churches.json`.

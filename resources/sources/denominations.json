@@ -2704,6 +2704,20 @@
     "lastVerifiedAt": "2026-07-26"
   },
   {
+    "id": "jcob_jp",
+    "denominationId": "JCOB_JP",
+    "denominationName": "Jesus Christ Our Banner Japan",
+    "denominationWebsiteUrl": "https://jcobjapan.com/",
+    "churchListUrlList": ["https://jcobjapan.com/churches.html"],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 103,
+    "lastVerifiedAt": "2026-07-28"
+  },
+  {
     "id": "xlsx_9321cb4c0350",
     "denominationId": "SFDK",
     "denominationName": "世界福音伝道会",

@@ -1774,7 +1774,7 @@
             }
         }
     },
-    "COG_JP": {
+  "COG_JP": {
         "tradition": null,
         "evidence": {
             "ja": {
@@ -1797,8 +1797,33 @@
                 "method": "TRANSLATED",
                 "note": "Reviewed Indonesian organization-name translation."
             }
-        }
-    },
+    }
+  },
+  "JCOB_JP": {
+    "tradition": null,
+    "evidence": {
+      "ja": {
+        "method": "TRANSLATED",
+        "note": "Reviewed Japanese transliteration of the official English organization name."
+      },
+      "en": {
+        "method": "OFFICIAL_WEBSITE",
+        "sourceUrl": "https://jcobjapan.com/"
+      },
+      "ko": {
+        "method": "TRANSLATED",
+        "note": "Reviewed Korean organization-name translation."
+      },
+      "pt": {
+        "method": "TRANSLATED",
+        "note": "Reviewed Portuguese organization-name translation."
+      },
+      "id": {
+        "method": "TRANSLATED",
+        "note": "Reviewed Indonesian organization-name translation."
+      }
+    }
+  },
     "SFDK": {
         "tradition": null,
         "evidence": {

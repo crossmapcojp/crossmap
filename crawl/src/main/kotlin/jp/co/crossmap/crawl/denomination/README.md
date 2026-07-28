@@ -130,6 +130,7 @@ but excluding:
 - [x] MENNONITE_BRETHREN_COUNCIL_JP 日本メノナイト・キリスト教会協議会 - https://www.mennonite.jp/church/
 - [x] CHRIST_EVANGELIZATION_TEAM キリスト伝道隊 - https://dendoutai.org/churches/
 - [x] COG_JP チャーチ・オブ・ゴッド - https://www.cogjapan.com/2515223646259452025012539125111249112473124881252212540.html
+- [x] JCOB_JP Jesus Christ Our Banner Japan（2026-07-28 live crawl: 33 churches） - https://jcobjapan.com/churches.html
 - [x] SFDK 世界福音伝道会 - https://www.sfdk.org/
 - [x] CCG カルバリーチャペルグループ - https://www.yamatocalvarychapel.com/service/branch_01.php
 - [x] GFA 福音交友会 - http://fkk-web.net/church/church.html

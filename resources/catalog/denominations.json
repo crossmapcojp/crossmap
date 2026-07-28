@@ -854,6 +854,14 @@
     ]
   },
   {
+    "id": "JCOB_JP",
+    "name": "Jesus Christ Our Banner Japan",
+    "aliases": ["JCOB", "JCOB Japan", "Jesus Christ Our Banner Church"],
+    "officialWebsite": "https://jcobjapan.com/",
+    "proposed": false,
+    "churchListUrlList": ["https://jcobjapan.com/churches.html"]
+  },
+  {
     "id": "SFDK",
     "name": "世界福音伝道会",
     "aliases": [],
