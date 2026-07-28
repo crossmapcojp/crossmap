@@ -3,8 +3,9 @@ IMPORTANT: When applicable, prefer using intellij-index MCP tools for code navig
 use ax instead of curl when you read webpage, and use ax skill for that
 
 Modules:
+* README.md lists things need to be known by those who operate whole data pipeline of crawling, clearnup/merge/translate data, indexing, generating static webpages, run server. if any of them updated in the codebase, you must update the README.md to reflect those changes.
 * core, app, cli modules are written in Kotlin/Common, so use kotlin standard libraries and KMP libraries only, do not write JDK specific Kotlin/JVM which will not work in other platforms. use KotlinLogging for log.
-* crawl, server modules are written in Kotlin/JVM so you can use any JDK features with Kotlin/JVM and any KMP libraries. use logback for log.
+* crawl, server modules are written in Kotlin/JVM so you can use any JDK features with Kotlin/JVM and any KMP libraries. use logback for log. when you change any crawling logic, update crawl/README.md to reflect the changes.
 
 Denomination crawler conventions:
 * Treat every denomination crawler as a first-class crawler. Do not introduce `Additional*` crawler base types, files, collections, report fields, or other categories for newly implemented denominations.
