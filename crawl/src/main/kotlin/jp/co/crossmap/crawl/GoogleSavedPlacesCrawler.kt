@@ -492,7 +492,8 @@ class GoogleSavedPlacesCrawler(
                 else -> "parsed"
             }
             val name = result.candidate?.name?.let { " → $it" } ?: ""
-            println("[${index + 1}/$total] ${seed.title} (${seed.googleCid}) — $status$name")
+            val cacheFile = paths.webPages.resolve("${seed.googleMapsUrl.sha256()}.html").toAbsolutePath()
+            println("[${index + 1}/$total] ${seed.title} (${seed.googleCid}) — $status$name\n  $cacheFile")
             if (result.fetched && index < total - 1) {
                 val delay = throttleMs + (Math.random() * throttleMs).toLong()
                 Thread.sleep(delay)

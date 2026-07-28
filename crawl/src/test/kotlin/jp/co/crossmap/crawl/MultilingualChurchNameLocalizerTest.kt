@@ -390,6 +390,22 @@ class MultilingualChurchNameLocalizerTest {
         assertTrue(senbonHama.components.none { it.role == MultilingualNameComponentRole.DENOMINATION })
     }
 
+    @Test
+    fun tokyoTranslatesToTraditionalKanjiNotSimplifiedChinese() {
+        // Simulate real-world scenario: loadChurchNameGeonames deduplicates by English value,
+        // keeping only the traditional form. The localizer then sees only 東京 in geonames.
+        val geonames = mapOf("東京" to "Tokyo")
+        val multilingualGeonames = mapOf(
+            "東京" to mapOf("en" to "Tokyo", "pt" to "Tóquio", "id" to "Tokyo", "ko" to "도쿄"),
+            "\u4E1C\u4EAC" to mapOf("en" to "Tokyo", "pt" to "Tóquio", "id" to "Tokyo", "ko" to "도쿄"),
+        )
+        val loc = localizer(geonames = geonames, multilingualGeonames = multilingualGeonames)
+        val result = loc.localize("Assembléia de Deus -AD Tokyo Ministério")
+        val ja = result.localizedNames.single { it.languageCode == "ja" }.name
+        assertTrue(ja.contains("\u6771\u4EAC"), "Expected traditional kanji 東京 but got: $ja")
+        assertTrue(!ja.contains("\u4E1C"), "Should not contain simplified 东 (U+4E1C): $ja")
+    }
+
     private fun localizer(
         geonames: Map<String, String>,
         denominations: List<Denomination> = emptyList(),

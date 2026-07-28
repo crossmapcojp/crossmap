@@ -37,6 +37,7 @@ class MultilingualChurchNameLocalizer(
     branchGeonames: Set<String> = emptySet(),
 ) {
     private val supportedTargets = listOf("en", "ko", "pt", "id")
+    private val geonameEnglishTranslations = geonames.values.toSet()
     private val latinToJapaneseTerms = buildMap {
         listOf("en", "ko", "pt", "id", "es", "fr", "de", "it", "tl").forEach { sourceLanguage ->
             ChurchNameDictionaryCategory.entries.forEach { category ->
@@ -47,7 +48,15 @@ class MultilingualChurchNameLocalizer(
         geonames.forEach { (japanese, latin) ->
             put("$latin-shi", japanese.removeSuffix("市"))
         }
-        multilingualGeonames.entries.sortedWith(compareBy({ it.key.length }, { it.key })).forEach { (japanese, translations) ->
+        multilingualGeonames.entries
+            .filter { (japanese, translations) ->
+                // Skip alternative forms (e.g. simplified Chinese) of an authoritative geoname.
+                // When the same English translation already exists in the canonical geonames map
+                // under a different Japanese key, prefer the canonical form.
+                val english = translations["en"].orEmpty()
+                english.isBlank() || japanese in geonames || english !in geonameEnglishTranslations
+            }
+            .sortedWith(compareBy({ it.key.length }, { it.key })).forEach { (japanese, translations) ->
             translations.forEach { (language, translated) ->
                 // English romaji is already handled by the authoritative geoname map.
                 // Prefer the shortest Japanese base name when a localized alias is
@@ -369,7 +378,13 @@ class MultilingualChurchNameLocalizer(
         geonames.forEach { (japanese, english) ->
             add(japanese, MultilingualNameComponentRole.GEONAME, "en", english)
         }
-        multilingualGeonames.forEach { (japanese, translations) ->
+        multilingualGeonames
+            .filter { (japanese, translations) ->
+                // Skip alternative forms (e.g. simplified Chinese) of an authoritative geoname.
+                val english = translations["en"].orEmpty()
+                english.isBlank() || japanese in geonames || english !in geonameEnglishTranslations
+            }
+            .forEach { (japanese, translations) ->
             translations.forEach { (language, translated) ->
                 if (language in supportedTargets) {
                     add(japanese, MultilingualNameComponentRole.GEONAME, language, translated)

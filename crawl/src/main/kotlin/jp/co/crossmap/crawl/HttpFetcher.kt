@@ -105,7 +105,10 @@ class HttpFetcher(
         if (cached != null && isFresh(cached.fetchedAt)) {
             log("Cache hit (fresh, fetched ${cached.fetchedAt})")
             val result = cached.toFetchedPage(contentFile, via = "cache")
-                ?: fetchUncached(url)
+                ?: run {
+                    log("Cache metadata fresh but content missing — re-fetching and storing")
+                    fetchAndStore(url, contentFile, metadataFile)
+                }
             logResult(url, result, cacheDir)
             return result
         }

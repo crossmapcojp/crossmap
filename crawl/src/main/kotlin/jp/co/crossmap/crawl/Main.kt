@@ -1095,8 +1095,14 @@ private fun analyzeChurchNames(
 
 private fun loadChurchNameGeonames(paths: CrossmapPaths): Map<String, String> {
     val cleaner = JapaneseGeoNameCleaner.fromCsv(paths.geoNameDuplicatedChurchNames)
-    return (ChurchNameEnglishLexicon.geonames + createGeoName(paths).readLexicon(paths.geoNameEnglishLexicon))
+    val raw = (ChurchNameEnglishLexicon.geonames + createGeoName(paths).readLexicon(paths.geoNameEnglishLexicon))
         .filterKeys(cleaner::isUsable)
+    // Remove entries whose Japanese key contains simplified Chinese characters (東 U+4E1C, 关 U+5173)
+    // that have traditional Japanese kanji counterparts. This prevents the simplified forms from
+    // bypassing the deduplication filter in MultilingualChurchNameLocalizer, where
+    // `japanese in geonames` would return true for both simplified and traditional forms.
+    val simplifiedChinese = setOf('\u4e1c', '\u5173')
+    return raw.filterKeys { key -> key.none { it in simplifiedChinese } }
 }
 
 private fun loadReviewedChurchGeoNames(paths: CrossmapPaths): Map<String, Map<String, String>> {
