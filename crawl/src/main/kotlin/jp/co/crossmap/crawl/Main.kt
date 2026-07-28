@@ -114,7 +114,6 @@ private class ResolveGoogleSavedPlaces : CrawlCommand("resolve-google-saved-plac
         val report = GoogleSavedPlacesCrawler(json = json).resolve(
             resourcesRoot = root,
             cacheRoot = paths.cacheRoot,
-            concurrency = concurrency,
             offline = offline,
             multilingualNameLocalizer = localizer,
         )

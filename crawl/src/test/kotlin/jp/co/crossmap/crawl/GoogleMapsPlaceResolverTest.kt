@@ -330,7 +330,6 @@ class GoogleMapsPlaceResolverTest {
             val report = GoogleSavedPlacesCrawler(json = json).resolve(
                 resourcesRoot = root,
                 cacheRoot = root.resolve("cache"),
-                concurrency = 2,
                 pageSource = GoogleMapsPageSource { seed -> GoogleMapsPage(pages.getValue(seed.id), cacheHit = true) },
             )
             val candidates = json.decodeFromString<List<GooglePlaceChurchCandidate>>(

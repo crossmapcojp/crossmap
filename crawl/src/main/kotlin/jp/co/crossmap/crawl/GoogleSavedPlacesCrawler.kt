@@ -10,7 +10,6 @@ import java.time.Instant
 import jp.co.crossmap.ChurchWebsitePolicy
 import jp.co.crossmap.GeoPoint
 import jp.co.crossmap.JapaneseAddressNormalizer
-import jp.co.crossmap.LightPanda
 import jp.co.crossmap.LocalizedName
 import kotlin.io.path.extension
 import kotlin.io.path.nameWithoutExtension
@@ -106,25 +105,6 @@ data class GoogleMapsPage(val html: String, val cacheHit: Boolean)
 
 fun interface GoogleMapsPageSource {
     fun load(seed: GoogleSavedPlaceCrawl): GoogleMapsPage
-}
-
-class CachedGoogleMapsPageSource(
-    private val httpFetcher: HttpFetcher,
-    private val legacyCacheDir: Path? = null,
-) : GoogleMapsPageSource {
-    override fun load(seed: GoogleSavedPlaceCrawl): GoogleMapsPage {
-        val pageCid = if (seed.googleCid == "3576720766476721565") "6907614827878617439" else seed.googleCid
-        if (legacyCacheDir != null) {
-            val legacyFile = legacyCacheDir.resolve("pages/$pageCid.html")
-            if (Files.isRegularFile(legacyFile)) {
-                return GoogleMapsPage(Files.readString(legacyFile), cacheHit = true)
-            }
-        }
-        val url = "https://www.google.com/maps?cid=$pageCid"
-        val fetched = httpFetcher.fetch(url)
-        val html = fetched.html
-        return GoogleMapsPage(html, cacheHit = fetched.via == "cache")
-    }
 }
 
 class GoogleMapsPlaceParser(
@@ -347,36 +327,7 @@ internal object GooglePlaceChurchNameNormalizer {
 
 class GoogleSavedPlacesCrawler(
     private val json: Json = Json { prettyPrint = true; encodeDefaults = true },
-    private val resourcesRoot: Path? = null,
-    private val inputDirectory: Path? = null,
 ) {
-
-    fun readDirectory(
-        resourcesRoot: Path,
-        inputDirectory: Path,
-        cacheRoot: Path = CrossmapPaths.defaultCacheRoot(resourcesRoot),
-        includedLists: Set<String>? = null,
-        concurrency: Int = 6,
-        offline: Boolean = false,
-        multilingualNameLocalizer: MultilingualChurchNameLocalizer? = null,
-    ): GoogleSavedPlacesResolutionPipelineReport {
-        val readReport = readDirectory(
-            inputDirectory = inputDirectory,
-            output = CrossmapPaths(resourcesRoot, cacheRoot).googleSavedPlaces.resolve("seeds.json"),
-            includedLists = includedLists,
-        )
-        val resolutionReport = resolve(
-            resourcesRoot = resourcesRoot,
-            cacheRoot = cacheRoot,
-            concurrency = concurrency,
-            offline = offline,
-            multilingualNameLocalizer = multilingualNameLocalizer,
-        )
-        return GoogleSavedPlacesResolutionPipelineReport(
-            crawlReport = readReport,
-            resolutionReport = resolutionReport,
-        )
-    }
 
     fun readDirectory(
         inputDirectory: Path,
@@ -469,7 +420,6 @@ class GoogleSavedPlacesCrawler(
     fun resolve(
         resourcesRoot: Path,
         cacheRoot: Path = CrossmapPaths.defaultCacheRoot(resourcesRoot),
-        concurrency: Int = 6,
         offline: Boolean = false,
         multilingualNameLocalizer: MultilingualChurchNameLocalizer? = null,
         pageSource: GoogleMapsPageSource? = null,
@@ -478,10 +428,8 @@ class GoogleSavedPlacesCrawler(
     ): GoogleMapsResolutionReport {
         val ownPlaywright = if (playwright == null && pageSource == null) PlaywrightBrowser() else null
         val effectivePlaywright = playwright ?: ownPlaywright
-        try {
+        ownPlaywright.use {
             return resolveInternal(resourcesRoot, cacheRoot, offline, multilingualNameLocalizer, pageSource, throttleMs, effectivePlaywright)
-        } finally {
-            ownPlaywright?.close()
         }
     }
 
@@ -498,15 +446,18 @@ class GoogleSavedPlacesCrawler(
         val seeds = json.decodeFromString<List<GoogleSavedPlaceCrawl>>(Files.readString(raw.resolve("seeds.json")))
         val excludedGooglePlaces = ExcludedGooglePlaces.load(resourcesRoot)
         val paths = CrossmapPaths(resourcesRoot, cacheRoot)
-        val effectivePageSource = pageSource ?: CachedGoogleMapsPageSource(
-            HttpFetcher(
-                cacheDir = paths.webPages,
-                playwright = playwright,
-                manualCacheDir = paths.webPagesManual,
-                cloudflareBlockedLog = paths.cloudflareBlockedLog,
-            ),
-            legacyCacheDir = paths.cacheRoot.resolve("google-maps-pages"),
+        val httpFetcher = HttpFetcher(
+            cacheDir = paths.webPages,
+            playwright = playwright,
+            manualCacheDir = paths.webPagesManual,
+            cloudflareBlockedLog = paths.cloudflareBlockedLog,
         )
+        val effectivePageSource = pageSource ?: GoogleMapsPageSource { seed ->
+            val pageCid = if (seed.googleCid == "3576720766476721565") "6907614827878617439" else seed.googleCid
+            val url = "https://www.google.com/maps?cid=$pageCid"
+            val fetched = httpFetcher.fetch(url)
+            GoogleMapsPage(fetched.html, cacheHit = fetched.via == "cache")
+        }
         val parser = GoogleMapsPlaceParser(
             multilingualNameLocalizer,
             ExcludedChurchListingDomains.policy(resourcesRoot),
@@ -690,9 +641,3 @@ class GoogleSavedPlacesCrawler(
         }
     }
 }
-
-@Serializable
-data class GoogleSavedPlacesResolutionPipelineReport(
-    val crawlReport: GoogleSavedPlacesCrawlReport,
-    val resolutionReport: GoogleMapsResolutionReport,
-)
