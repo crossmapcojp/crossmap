@@ -160,6 +160,13 @@ class GoogleMapsPlaceParser(
                 longitude = altCoords.groupValues[2].toDoubleOrNull()
             }
         }
+        if (latitude == null || longitude == null) {
+            val appInitCoords = APP_INIT_COORDINATES.find(html)
+            if (appInitCoords != null) {
+                longitude = appInitCoords.groupValues[1].toDoubleOrNull()
+                latitude = appInitCoords.groupValues[2].toDoubleOrNull()
+            }
+        }
         requireNotNull(latitude) { "Google preview URL or HTML has no latitude" }
         requireNotNull(longitude) { "Google preview URL or HTML has no longitude" }
 
@@ -255,6 +262,9 @@ class GoogleMapsPlaceParser(
         )
         private val ALT_COORDINATES_2 = Regex(
             """3d(-?\d+\.\d+)(?:!4d|%214d)(-?\d+\.\d+)""",
+        )
+        private val APP_INIT_COORDINATES = Regex(
+            """APP_INITIALIZATION_STATE=\[\[\[[-\d.eE+]+,(-?\d+\.\d+),(-?\d+\.\d+)""",
         )
         private val EXPLICIT_POSTAL_ARRAY = Regex(
             """\[\\?"(〒\d{3}-\d{4}\s+[^\\"'\n]+)\\?"\]""",
@@ -453,9 +463,7 @@ class GoogleSavedPlacesCrawler(
             cloudflareBlockedLog = paths.cloudflareBlockedLog,
         )
         val effectivePageSource = pageSource ?: GoogleMapsPageSource { seed ->
-            val pageCid = if (seed.googleCid == "3576720766476721565") "6907614827878617439" else seed.googleCid
-            val url = "https://www.google.com/maps?cid=$pageCid"
-            val fetched = httpFetcher.fetch(url)
+            val fetched = httpFetcher.fetch(seed.googleMapsUrl)
             GoogleMapsPage(fetched.html, cacheHit = fetched.via == "cache")
         }
         val parser = GoogleMapsPlaceParser(

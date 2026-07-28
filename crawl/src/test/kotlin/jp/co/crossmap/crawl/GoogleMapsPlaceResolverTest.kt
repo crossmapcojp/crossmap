@@ -424,4 +424,37 @@ class GoogleMapsPlaceResolverTest {
         <html><head><meta content="$name · $address" property="og:title"><meta content="カトリック教会" property="og:description"></head>
         <body>https://www.google.com/maps/preview/place/${java.net.URLEncoder.encode("$address $name", Charsets.UTF_8)}/@$lat,$lng,100a</body></html>
     """.trimIndent()
+
+    @Test
+    fun parsesFreshlyFetchedGoogleMapsHtml6971423385760493187() {
+        val cacheFile = Path.of("cache/web-pages/9e7555a470ea6aaec648423405223a6e0d5d8e429c7417849612650616b27df5.html")
+        if (!Files.exists(cacheFile)) return
+        val html = Files.readString(cacheFile)
+
+        val seed = GoogleSavedPlaceCrawl(
+            id = "google:6971423385760493187",
+            googleCid = "6971423385760493187",
+            title = "ASSEMBLEIA DE DEUS BELÉM ANJO-SHI",
+            googleMapsUrl = "https://www.google.com/maps/place/Igreja+Evang%C3%A9lica+Assembleia+de+Deus+miss%C3%A3o+Bel%C3%A9m+De+Anjo_JP/data=!4m2!3m1!1s0x600497cb4b702d03:0xc7628bf08de04343",
+            sourceLists = listOf("教会"),
+        )
+
+        val resources = generateSequence(Path.of("").toAbsolutePath().normalize()) { it.parent }
+            .first { Files.isRegularFile(it.resolve("settings.gradle.kts")) }
+            .resolve("resources")
+        val dictionaries = ChurchNameEnglishDictionary.load(resources)
+        val localizer = MultilingualChurchNameLocalizer(
+            dictionaries = dictionaries,
+            congregationTerms = CongregationTermDictionary.load(resources),
+            denominations = emptyList(),
+            geonames = mapOf("安城" to "Anjo"),
+        )
+
+        val candidate = GoogleMapsPlaceParser(localizer).parse(seed, html, now = "2026-07-28T00:00:00Z")
+
+        assertTrue(candidate.name.isNotBlank(), "name should not be blank")
+        assertTrue(candidate.address.isNotBlank(), "address should not be blank")
+        assertTrue(candidate.location.latitude != 0.0, "latitude should be non-zero")
+        assertTrue(candidate.location.longitude != 0.0, "longitude should be non-zero")
+    }
 }
