@@ -204,6 +204,7 @@ class LocalizedStaticSiteGenerator(
             "canonicalUrl" to absolute(path),
             "xDefaultUrl" to absolute("/"),
             "alternates" to alternateModels(fileName),
+            "languagePicker" to messages.text(language, MessageKey.LANGUAGE_PICKER),
             "ogLocale" to ogLocale(language),
             "siteName" to messages.text(language, MessageKey.SITE_NAME),
             "heading" to messages.text(language, MessageKey.SEARCH_HEADING),
@@ -219,6 +220,7 @@ class LocalizedStaticSiteGenerator(
         "canonicalUrl" to absolute("/${language.code}/result.html"),
         "xDefaultUrl" to absolute("/"),
         "alternates" to alternateModels("result.html"),
+        "languagePicker" to messages.text(language, MessageKey.LANGUAGE_PICKER),
         "siteName" to messages.text(language, MessageKey.SITE_NAME),
         "searchPlaceholder" to messages.text(language, MessageKey.SEARCH_PLACEHOLDER),
         "searchButton" to messages.text(language, MessageKey.SEARCH_BUTTON),
@@ -294,6 +296,7 @@ class LocalizedStaticSiteGenerator(
             "canonicalUrl" to canonicalUrl,
             "xDefaultUrl" to absolute("/en/$pageFile"),
             "alternates" to alternateModels(pageFile),
+            "languagePicker" to messages.text(language, MessageKey.LANGUAGE_PICKER),
             "ogLocale" to ogLocale(language),
             "backToSearch" to messages.text(language, MessageKey.BACK_TO_SEARCH),
             "churchLabel" to messages.text(language, MessageKey.CHURCH_LABEL),
@@ -336,7 +339,11 @@ class LocalizedStaticSiteGenerator(
     })
 
     private fun alternateModels(fileName: String): List<Map<String, String>> = Language.entries.map {
-        mapOf("languageCode" to it.code, "url" to absolute("/${it.code}/$fileName"))
+        mapOf(
+            "languageCode" to it.code,
+            "displayName" to it.displayName,
+            "url" to absolute("/${it.code}/$fileName"),
+        )
     }
 
     private fun sitemap(slugs: Map<ChurchRecord, String>): String = buildString {
@@ -383,6 +390,8 @@ class LocalizedStaticSiteGenerator(
         Language.KOREAN -> "ko_KR"
         Language.PORTUGUESE -> "pt_BR"
         Language.INDONESIAN -> "id_ID"
+        Language.CHINESE_SIMPLIFIED -> "zh_CN"
+        Language.CHINESE_TRADITIONAL -> "zh_TW"
     }
     private fun safeJson(value: Any): String = when (value) {
         is kotlinx.serialization.json.JsonElement -> json.encodeToString(value)

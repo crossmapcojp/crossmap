@@ -35,10 +35,13 @@
 - [x] Reserve typed sermon metadata and corpus-aware manifests so future sermon crawling/search can use a separate index without breaking church search.
 - [x] Add offline crawler fixtures and deterministic import tests.
 - [x] Add deterministic refresh tests.
+- [x] Replace home-page-only website refresh with configurable breadth-first same-domain depth 0–3, persist page depth/language/outgoing links, and import stable Neo4j `Webpage`/`LINKS_TO` graph evidence.
+- [x] Extract official church-shaped headings from linked locale home pages and regress CID `14933925210831204897` as `Tokyo Multicultural Church (TMC)` / `東京マルチカルチャル教会` / `東京多元文化基督教會` without overwriting reviewed names.
 
 ### Official UCCJ and JBC church lists
 
 - [x] Add `JCOB_JP` to the denomination catalogs, implement and register its dedicated official-directory crawler, add reusable scored English↔Japanese address matching for reconciliation, cover both with regression fixtures, and validate the live church list before publication (33 churches, 0 live errors).
+- [x] Add `JCCC` (華人教会) as a first-class dedicated crawler from `https://tokyo-jcc.com/link5-j/`, register/catalog it uniformly, and validate 126 live churches with no crawler errors.
 - [x] Define the shared `DenominationChurchListCrawler` API and typed official-list JSON model.
 - [x] Implement fresh, cache-aware `UCCJDenominationChurchListCrawler` parsing `https://uccj.org/diocese` into `resources/crawl/uccj-churches.json`.
 - [x] Implement fresh, cache-aware `JBCDenominationChurchListCrawler` parsing `https://bapren.jp/church/` into `resources/crawl/jbc-churches.json`.
@@ -50,6 +53,10 @@
 - [x] Extract clergy names and roles from list/detail pages, localize role labels and personal names into JA/EN/KO/PT/ID, and reconcile them into the church catalog.
 - [x] Share rule-based romaji-to-Hangul transliteration across geonames, church names, and clergy names, including long-vowel and Hepburn regression coverage.
 - [x] Index localized clergy names in every language-specific Lucene index and prove pastor-name lookup in all five languages.
+
+### Chinese localization
+
+- [x] Complete the `zh-Hans`/`zh-Hant` acceptance audit: first-class church/GeoName/minister records, direct paired dictionaries and validation, provenance/review reporting, idempotent dry-run migration, static UI/switching, cross-script Lucene ranking/display, golden fixtures, reproducible reindexing, full relevant suites, and operational documentation.
 
 ## 3. Japanese geonames
 

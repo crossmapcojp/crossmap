@@ -78,6 +78,9 @@ class Neo4jStaticChurchCatalogSource(
                 contentType = page.nullableString("contentType")?.let(CrawledContentType::valueOf)
                     ?: CrawledContentType.WEBSITE_PAGE,
                 sermon = page.nullableString("sermonJson")?.let { json.decodeFromString<SermonMetadata>(it) },
+                depth = page.number("depth", 0).toInt(),
+                outgoingLinks = page.stringList("outgoingLinks"),
+                languageCode = page.nullableString("languageCode"),
             )
         }.sortedWith(compareBy(CrawledPage::url, CrawledPage::fetchedAt))
         val socialProfiles = row.listOfMaps("socialAccounts").map { account ->

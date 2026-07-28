@@ -38,6 +38,9 @@ data class CrawledPage(
     val error: String? = null,
     val contentType: CrawledContentType = CrawledContentType.WEBSITE_PAGE,
     val sermon: SermonMetadata? = null,
+    val depth: Int = 0,
+    val outgoingLinks: List<String> = emptyList(),
+    val languageCode: String? = null,
 )
 
 @Serializable
@@ -73,9 +76,40 @@ data class FieldDetermination(
 )
 
 @Serializable
+enum class LocalizedNameSource { OFFICIAL, MANUAL, GENERATED, IMPORTED }
+
+@Serializable
+enum class LocalizedNameGenerationMethod {
+    EXACT_OVERRIDE,
+    DENOMINATION_DICTIONARY,
+    GEO_DICTIONARY,
+    CONCEPT_DICTIONARY,
+    TOKEN_RULE,
+    SCRIPT_CONVERSION,
+    ORIGINAL_FALLBACK,
+}
+
+@Serializable
+enum class LocalizedNameReviewStatus { REVIEWED, NEEDS_REVIEW, UNREVIEWED, REJECTED }
+
+@Serializable
+data class LocalizedNameMetadata(
+    val source: LocalizedNameSource,
+    val generationMethod: LocalizedNameGenerationMethod,
+    val dictionaryVersion: String = "",
+    val confidence: Double,
+    val reviewStatus: LocalizedNameReviewStatus,
+    val generatedAt: String = "",
+    val reviewReasons: List<String> = emptyList(),
+    val matchedDictionaryEntries: List<String> = emptyList(),
+    val unmatchedSegments: List<String> = emptyList(),
+)
+
+@Serializable
 data class LocalizedName(
     val languageCode: String,
     val name: String,
+    val metadata: LocalizedNameMetadata? = null,
 )
 
 @Serializable

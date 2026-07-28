@@ -17,6 +17,7 @@
 </head>
 <body class="home-page">
   <main class="home-main">
+    <nav class="language-switch" aria-label="${languagePicker?html}"><#list alternates as alternate><a lang="${alternate.languageCode?html}" hreflang="${alternate.languageCode?html}" href="${alternate.url?html}">${alternate.displayName?html}</a><#sep> · </#sep></#list></nav>
     <p class="wordmark">${siteName?html}</p>
     <h1>${heading?html}</h1>
     <form id="search-form" class="search-form" action="<#if rootEntry>en/result.html<#else>result.html</#if>" method="get">

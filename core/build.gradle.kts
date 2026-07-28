@@ -38,6 +38,7 @@ kotlin {
             implementation(libs.lucene.kmp.analysis.common)
             implementation(libs.lucene.kmp.analysis.kuromoji)
             implementation(libs.lucene.kmp.analysis.nori)
+            implementation(libs.lucene.kmp.analysis.smartcn)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

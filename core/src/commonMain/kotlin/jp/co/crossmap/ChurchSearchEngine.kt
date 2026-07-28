@@ -49,7 +49,7 @@ class ChurchSearchEngine(
 ) {
     private val resolver = GeoNameResolver(geonames)
     private val json = Json { ignoreUnknownKeys = true }
-    private val normalizedLanguage = languageCode.substringBefore('-').lowercase()
+    private val normalizedLanguage = Language.fromCode(languageCode)?.code ?: languageCode.substringBefore('-').lowercase()
     private val analyzer = ChurchIndex.analyzer(normalizedLanguage)
     private val directoryHolder = lazy { FSDirectory.open(indexPath) }
     private val readerHolder = lazy { StandardDirectoryReader.open(directoryHolder.value, null, null) }
@@ -317,6 +317,16 @@ class ChurchSearchEngine(
                 BoostQuery(TermQuery(Term(ChurchIndex.FIELD_NAME_EXACT, term)), EXACT_NAME_FIELD_BOOST),
                 BooleanClause.Occur.SHOULD,
             )
+            if (Language.fromCode(normalizedLanguage) in chineseLanguages) {
+                val canonical = ChurchIndex.normalizeExactName(ChineseScriptNormalizer.toSimplified(fullQuery))
+                add(
+                    BoostQuery(
+                        TermQuery(Term(ChurchIndex.FIELD_NAME_ZH_CANONICAL_EXACT, canonical)),
+                        CHINESE_CANONICAL_EXACT_BOOST,
+                    ),
+                    BooleanClause.Occur.SHOULD,
+                )
+            }
             if (normalizedLanguage == "ja") {
                 add(
                     BoostQuery(TermQuery(Term(ChurchIndex.FIELD_NAME_READING_EXACT, term)), EXACT_NAME_READING_BOOST),
@@ -422,6 +432,8 @@ class ChurchSearchEngine(
 
     private fun nameSearchFields(): LinkedHashMap<String, Float> = linkedMapOf(
         ChurchIndex.FIELD_NAME to 8f,
+        ChurchIndex.localizedNameField(normalizedLanguage) to 9f,
+        ChurchIndex.FIELD_NAME_ZH_CANONICAL to 7f,
         ChurchIndex.FIELD_NAME_READING to 7f,
         ChurchIndex.FIELD_MINISTER to 6f,
     )
@@ -556,11 +568,13 @@ class ChurchSearchEngine(
         "ko" -> "KoreanAnalyzer"
         "pt" -> "PortugueseAnalyzer"
         "id" -> "IndonesianAnalyzer"
+        "zh-Hans", "zh-Hant" -> "SmartChineseAnalyzer"
         else -> "StandardAnalyzer"
     }
 
     private fun withTitleLanguageFilter(query: Query, titleLanguages: List<String>): Query {
-        val normalized = titleLanguages.map { it.substringBefore('-').lowercase() }.filter(String::isNotBlank).distinct()
+        val normalized = titleLanguages.map { Language.fromCode(it)?.code ?: it.substringBefore('-').lowercase() }
+            .filter(String::isNotBlank).distinct()
         if (normalized.isEmpty()) return query
         val languages = BooleanQuery.Builder().apply {
             normalized.forEach { language ->
@@ -604,13 +618,21 @@ class ChurchSearchEngine(
     }
 
     private fun analyzedTokens(text: String): List<String> = buildList {
-            analyzer.tokenStream(ChurchIndex.FIELD_NAME, text).use { stream ->
+        val variants = buildList {
+            add(text)
+            if (Language.fromCode(normalizedLanguage) in chineseLanguages) {
+                add(ChineseScriptNormalizer.toSimplified(text))
+            }
+        }.distinct()
+        variants.forEach { variant ->
+            analyzer.tokenStream(ChurchIndex.FIELD_NAME, variant).use { stream ->
                 val term = stream.addAttribute(CharTermAttribute::class)
                 stream.reset()
                 while (stream.incrementToken()) add(term.toString())
                 stream.end()
             }
-        }.distinct()
+        }
+    }.distinct()
 
     private fun analyzedAcrossFieldsQuery(tokens: List<String>, fields: Map<String, Float>): Query {
         return BooleanQuery.Builder().apply {
@@ -659,6 +681,7 @@ class ChurchSearchEngine(
         private const val EXACT_NAME_STAGE_BOOST = 1_000_000f
         private const val ALL_NAME_TOKENS_STAGE_BOOST = 1_000f
         private const val EXACT_NAME_FIELD_BOOST = 100f
+        private const val CHINESE_CANONICAL_EXACT_BOOST = 80f
         private const val EXACT_NAME_READING_BOOST = 50f
         private const val EXACT_DENOMINATION_READING_BOOST = 10f
         private const val EXACT_CATEGORY_READING_BOOST = 5f
@@ -671,7 +694,10 @@ class ChurchSearchEngine(
             "ko" to listOf("교회", "채플"),
             "pt" to listOf("igreja", "igrejas", "capela"),
             "id" to listOf("gereja", "kapel"),
+            "zh-Hans" to listOf("教会", "礼拜堂"),
+            "zh-Hant" to listOf("教會", "禮拜堂"),
         )
+        private val chineseLanguages = setOf(Language.CHINESE_SIMPLIFIED, Language.CHINESE_TRADITIONAL)
     }
 
     private data class QueryAnalysis(

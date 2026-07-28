@@ -13,9 +13,13 @@ object QueryLanguageDetector {
     )
 
     fun detect(query: String, preferredLanguage: String = "ja"): String {
-        val preferred = preferredLanguage.substringBefore('-').lowercase()
+        val preferred = Language.fromCode(preferredLanguage)?.code
+            ?: preferredLanguage.substringBefore('-').lowercase()
         if (query.any(::isHangul)) return "ko"
-        if (query.any(::isJapanese)) return "ja"
+        if (query.any(::isKana)) return "ja"
+        if (query.any(::isHan)) {
+            return preferred.takeIf { it == "zh-Hans" || it == "zh-Hant" } ?: "ja"
+        }
 
         val normalized = query.lowercase()
         val words = normalized.split(Regex("[^\\p{L}]+"))
@@ -30,8 +34,10 @@ object QueryLanguageDetector {
     private fun isHangul(character: Char): Boolean =
         character in '\u1100'..'\u11FF' || character in '\u3130'..'\u318F' || character in '\uAC00'..'\uD7AF'
 
-    private fun isJapanese(character: Char): Boolean =
-        character in '\u3040'..'\u30FF' || character in '\u3400'..'\u4DBF' || character in '\u4E00'..'\u9FFF'
+    private fun isKana(character: Char): Boolean = character in '\u3040'..'\u30FF'
+
+    private fun isHan(character: Char): Boolean =
+        character in '\u3400'..'\u4DBF' || character in '\u4E00'..'\u9FFF'
 
     private val LATIN_LANGUAGES = setOf("en", "pt", "id")
 }

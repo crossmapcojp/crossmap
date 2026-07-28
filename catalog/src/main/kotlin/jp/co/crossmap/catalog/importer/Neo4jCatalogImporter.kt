@@ -107,7 +107,8 @@ class Neo4jCatalogImporter(
                     put("address", record.address)
                     put("email", record.email)
                     put("updatedAt", record.updatedAt)
-                    record.names.values.forEach { (language, value) -> put("name_$language", value) }
+                    put("localizedNamesJson", json.encodeToString(record.localizedNames))
+                    record.names.values.forEach { (language, value) -> put("name_${language.replace('-', '_')}", value) }
                 },
                 "latitude" to record.latitude,
                 "longitude" to record.longitude,
@@ -198,6 +199,41 @@ class Neo4jCatalogImporter(
                     MERGE (website)-[:HAS_PAGE]->(page)
                     """.trimIndent(),
                     mapOf("rows" to pageRows),
+                )
+            }
+        }
+        val pageLinkRows = websites.flatMap { (_, website) ->
+            website.pages.flatMap { page ->
+                page.outgoingLinks.map { targetUrl ->
+                    mapOf(
+                        "sourceId" to webpageId(page.url),
+                        "targetId" to webpageId(targetUrl),
+                        "targetUrl" to targetUrl,
+                        "targetNormalizedUrl" to normalizeUrl(targetUrl, retainFragment = true),
+                    )
+                }
+            }
+        }.distinctBy { it["sourceId"] to it["targetId"] }
+        val sourcePageIds = pageRows.mapNotNull { it["id"] as? String }.distinct()
+        if (sourcePageIds.isNotEmpty()) {
+            transactions.write("catalog-import.batch$batchIndex.page-links-delete") { runner ->
+                runner.query(
+                    "UNWIND ${'$'}sourceIds AS sourceId MATCH (source:Webpage {id: sourceId})-[link:LINKS_TO]->() DELETE link",
+                    mapOf("sourceIds" to sourcePageIds),
+                )
+            }
+        }
+        if (pageLinkRows.isNotEmpty()) {
+            transactions.write("catalog-import.batch$batchIndex.page-links") { runner ->
+                runner.query(
+                    """
+                    UNWIND ${'$'}rows AS row
+                    MATCH (source:Webpage {id: row.sourceId})
+                    MERGE (target:Webpage {id: row.targetId})
+                    ON CREATE SET target.url = row.targetUrl, target.normalizedUrl = row.targetNormalizedUrl, target.discoveredOnly = true
+                    MERGE (source)-[:LINKS_TO]->(target)
+                    """.trimIndent(),
+                    mapOf("rows" to pageLinkRows),
                 )
             }
         }
@@ -368,6 +404,9 @@ class Neo4jCatalogImporter(
                 "error" to page.error,
                 "contentType" to page.contentType.name,
                 "sermonJson" to page.sermon?.let { json.encodeToString(it) },
+                "depth" to page.depth,
+                "outgoingLinks" to page.outgoingLinks,
+                "languageCode" to page.languageCode,
             ),
         )
     }
@@ -403,6 +442,7 @@ class Neo4jCatalogImporter(
                     MATCH (:Church)-[link:HAS_WEBSITE]->(:Website)-[:HAS_PAGE]->(node)
                     WHERE node.id IN coalesce(link.pageIds, [])
                 }
+                AND NOT (:Webpage)-[:LINKS_TO]->(node)
                 RETURN collect(node.id) AS ids
                 """.trimIndent(),
                 """
@@ -411,6 +451,7 @@ class Neo4jCatalogImporter(
                     MATCH (:Church)-[link:HAS_WEBSITE]->(:Website)-[:HAS_PAGE]->(node)
                     WHERE node.id IN coalesce(link.pageIds, [])
                 }
+                AND NOT (:Webpage)-[:LINKS_TO]->(node)
                 DETACH DELETE node
                 """.trimIndent(),
             ),
@@ -440,7 +481,9 @@ class Neo4jCatalogImporter(
             "Denomination" to records.mapNotNull { it.denomination?.id }.distinct().size,
             "Location" to records.size,
             "Website" to records.mapNotNull(ChurchImportRecord::website).distinctBy(WebsiteImportRecord::id).size,
-            "Webpage" to records.flatMap { it.website?.pages.orEmpty() }.distinctBy(CrawledPage::url).size,
+            "Webpage" to records.flatMap { record ->
+                record.website?.pages.orEmpty().flatMap { page -> listOf(page.url) + page.outgoingLinks }
+            }.distinct().size,
             "SocialMediaAccount" to records.flatMap(ChurchImportRecord::socialAccounts).distinctBy(SocialAccountImportRecord::id).size,
             "Person" to records.sumOf { it.ministers.size },
             "SourceRecord" to records.size,
@@ -452,6 +495,9 @@ class Neo4jCatalogImporter(
             "BELONGS_TO_DENOMINATION" to records.count { it.denomination != null },
             "HAS_WEBSITE" to records.count { it.website != null },
             "HAS_PAGE" to records.sumOf { it.website?.pages?.size ?: 0 },
+            "LINKS_TO" to records.flatMap { record ->
+                record.website?.pages.orEmpty().flatMap { page -> page.outgoingLinks.map { page.url to it } }
+            }.distinct().size,
             "HAS_SOCIAL_ACCOUNT" to records.sumOf { it.socialAccounts.size },
             "HELD_ROLE" to records.sumOf { it.ministers.size },
             "ROLE_AT" to records.sumOf { it.ministers.size },
@@ -466,7 +512,6 @@ private fun normalizeSearchText(value: String): String = value.trim().lowercase(
 private fun hashId(namespace: String, value: String): String = "$namespace:${MessageDigest.getInstance("SHA-256")
     .digest(value.toByteArray()).joinToString("") { "%02x".format(it) }.take(24)}"
 
-private fun webpageId(page: CrawledPage): String = hashId(
-    "webpage",
-    normalizeUrl(page.url, retainFragment = true) + "|" + page.contentHash,
-)
+private fun webpageId(page: CrawledPage): String = webpageId(page.url)
+
+private fun webpageId(url: String): String = hashId("webpage", normalizeUrl(url, retainFragment = true))

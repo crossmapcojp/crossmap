@@ -19,15 +19,22 @@ object DenominationNameCatalogFiles {
     fun path(resourcesRoot: Path, language: Language): Path =
         resourcesRoot.resolve("catalog/denomination-${language.code}-names.json")
 
-    fun load(resourcesRoot: Path): Map<Language, Map<String, String>> =
-        Language.entries.associateWith { language ->
-            json.decodeFromString<Map<String, String>>(Files.readString(path(resourcesRoot, language)))
+    fun load(resourcesRoot: Path): Map<Language, Map<String, String>> {
+        val japanese = json.decodeFromString<Map<String, String>>(Files.readString(path(resourcesRoot, Language.JAPANESE)))
+        return Language.entries.associateWith { language ->
+            val catalogPath = path(resourcesRoot, language)
+            if (Files.isRegularFile(catalogPath)) {
+                json.decodeFromString<Map<String, String>>(Files.readString(catalogPath))
+            } else {
+                japanese
+            }
                 .also { names ->
                     require(names.values.none(String::isBlank)) {
-                        "Blank denomination name in ${path(resourcesRoot, language)}"
+                        "Blank denomination name in $catalogPath"
                     }
                 }
         }
+    }
 
     fun metadataPath(resourcesRoot: Path): Path =
         resourcesRoot.resolve("catalog/denomination-name-metadata.json")
@@ -44,7 +51,9 @@ object DenominationNameCatalogFiles {
             val localizedParts = localizedNames.mapValues { (language, value) -> denominationNamePart(value, language) }
             val record = metadata.getValue(id)
             val evidence = Language.entries.associateWith { language ->
-                val item = requireNotNull(record.evidence[language.code]) { "$id is missing ${language.code} provenance" }
+                val item = requireNotNull(record.evidence[language.code] ?: record.evidence[Language.JAPANESE.code]) {
+                    "$id is missing ${language.code} provenance and Japanese fallback provenance"
+                }
                 DenominationNameEvidence(
                     method = DenominationNameMethod.valueOf(item.method),
                     sourceUrl = item.sourceUrl,
@@ -67,6 +76,8 @@ object DenominationNameCatalogFiles {
         korean = getValue(Language.KOREAN),
         portuguese = getValue(Language.PORTUGUESE),
         indonesian = getValue(Language.INDONESIAN),
+        chineseSimplified = getValue(Language.CHINESE_SIMPLIFIED),
+        chineseTraditional = getValue(Language.CHINESE_TRADITIONAL),
     )
 }
 

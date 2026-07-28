@@ -13,6 +13,42 @@ import okio.Path.Companion.toPath
 
 class ChurchSearchEngineTest {
     @Test
+    fun ChineseIndexesCrossMatchScriptsAndRankSelectedScriptExactAboveCanonicalFallback() {
+        val root = Files.createTempDirectory("crossmap-chinese-index")
+        try {
+            fun church(id: String, localizedName: LocalizedName) = ChurchRecord(
+                id = id,
+                name = "東京恩典教会",
+                englishName = "Tokyo Grace Church $id",
+                localizedNames = listOf(localizedName),
+                address = "東京都",
+                location = GeoPoint(35.68, 139.76),
+                websiteUrl = "https://example.com/$id",
+            )
+            val simplified = church("fixture:simplified", LocalizedName("zh-Hans", "东京恩典教会"))
+            val traditional = church("fixture:traditional", LocalizedName("zh-Hant", "東京恩典教會"))
+
+            listOf(
+                Triple("zh-Hans", "东京恩典教会", simplified.id),
+                Triple("zh-Hant", "東京恩典教會", traditional.id),
+            ).forEach { (language, query, exactChurchId) ->
+                val index = root.resolve(language)
+                ChurchIndex.build(index.toString().toPath(), listOf(traditional, simplified), languageCode = language)
+                val engine = ChurchSearchEngine(index.toString().toPath(), emptyList(), languageCode = language)
+                try {
+                    val result = engine.search(ChurchSearchRequest(query))
+                    assertEquals(2, result.total)
+                    assertEquals(exactChurchId, result.hits.first().churchId)
+                } finally {
+                    engine.close()
+                }
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun localizedPastorNamesFindTheChurchInEveryLanguageIndex() {
         val root = Files.createTempDirectory("crossmap-minister-index")
         try {
@@ -157,6 +193,8 @@ class ChurchSearchEngineTest {
                         "ko" -> listOf("미나토구")
                         "pt" -> listOf("Distrito de Minato")
                         "id" -> listOf("Distrik Minato")
+                        "zh-Hans" -> listOf("港区")
+                        "zh-Hant" -> listOf("港區")
                         else -> emptyList()
                     },
                 )
@@ -168,6 +206,11 @@ class ChurchSearchEngineTest {
                     languageCode = language,
                 )
             }
+
+            val traditionalChineseGeoName = localizedEngine("zh-Hant")
+                .search(ChurchSearchRequest("港區"))
+            assertEquals(1, traditionalChineseGeoName.total)
+            assertEquals("google:2225537460932230335", traditionalChineseGeoName.hits.single().churchId)
 
             val name = engine.search(ChurchSearchRequest("東京 教会"))
             assertEquals(2, name.total)

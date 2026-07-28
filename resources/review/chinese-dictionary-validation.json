@@ -1,0 +1,13 @@
+{
+    "filesChecked": 2,
+    "entriesChecked": 20,
+    "errors": [],
+    "reviewSignals": [
+        "concept 'キリスト': Simplified and Traditional targets are identical ('基督')",
+        "concept '希望': Simplified and Traditional targets are identical ('盼望')",
+        "concept '平和': Simplified and Traditional targets are identical ('和平')",
+        "concept '恵み': Simplified and Traditional targets are identical ('恩典')",
+        "concept '救い': Simplified and Traditional targets are identical ('救恩')",
+        "concept '福音': Simplified and Traditional targets are identical ('福音')"
+    ]
+}

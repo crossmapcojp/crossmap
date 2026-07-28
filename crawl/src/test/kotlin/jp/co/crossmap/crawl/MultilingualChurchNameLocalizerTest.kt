@@ -3,6 +3,8 @@ package jp.co.crossmap.crawl
 import java.nio.file.Files
 import java.nio.file.Path
 import jp.co.crossmap.Language
+import jp.co.crossmap.LocalizedName
+import jp.co.crossmap.LocalizedNameReviewStatus
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -13,6 +15,19 @@ class MultilingualChurchNameLocalizerTest {
         .resolve("resources")
     private val dictionaries = ChurchNameEnglishDictionary.load(resourcesRoot)
     private val congregationTerms = CongregationTermDictionary.load(resourcesRoot)
+
+    @Test
+    fun generatesBothChineseScriptsWithProvenanceAndReviewMetadata() {
+        val result = localizer(geonames = emptyMap()).localize("恵み教会")
+
+        val simplified = result.localizedNames.single { it.languageCode == "zh-Hans" }
+        val traditional = result.localizedNames.single { it.languageCode == "zh-Hant" }
+        assertEquals("恩典教会", simplified.name)
+        assertEquals("恩典教會", traditional.name)
+        assertEquals(LocalizedNameReviewStatus.UNREVIEWED, simplified.metadata?.reviewStatus)
+        assertTrue(simplified.metadata?.matchedDictionaryEntries.orEmpty().containsAll(listOf("恵み", "教会")))
+        assertEquals(emptyList(), simplified.metadata?.unmatchedSegments)
+    }
 
     @Test
     fun catholicChurchNameOmitsRedundantJapanQualifierInEveryLanguage() {
@@ -35,11 +50,17 @@ class MultilingualChurchNameLocalizerTest {
             multilingualGeonames = mapOf("萩" to mapOf("ko" to "하기", "pt" to "Hagi", "id" to "Hagi")),
         ).localize("萩カトリック教会")
 
+        assertEquals(
+            setOf("ja", "en", "ko", "pt", "id", "zh-Hans", "zh-Hant"),
+            result.localizedNames.map(LocalizedName::languageCode).toSet(),
+        )
         assertEquals("萩カトリック教会", result.localizedNames.single { it.languageCode == "ja" }.name)
         assertEquals("Hagi Catholic Church", result.localizedNames.single { it.languageCode == "en" }.name)
         assertEquals("하기 가톨릭교회", result.localizedNames.single { it.languageCode == "ko" }.name)
         assertEquals("Igreja Católica Hagi", result.localizedNames.single { it.languageCode == "pt" }.name)
         assertEquals("Gereja Katolik Hagi", result.localizedNames.single { it.languageCode == "id" }.name)
+        assertEquals("萩天主教堂", result.localizedNames.single { it.languageCode == "zh-Hans" }.name)
+        assertEquals("萩天主教堂", result.localizedNames.single { it.languageCode == "zh-Hant" }.name)
     }
 
     @Test
@@ -54,7 +75,7 @@ class MultilingualChurchNameLocalizerTest {
         assertEquals("日本基督教団赤羽教会", result.japaneseName)
         assertEquals("UCCJ Akabane Church", result.localizedNames.single { it.languageCode == "en" }.name)
         assertEquals("일본기독교단 아카바네 교회", result.localizedNames.single { it.languageCode == "ko" }.name)
-        assertEquals(setOf("ja", "en", "ko", "pt", "id"), result.localizedNames.map { it.languageCode }.toSet())
+        assertEquals(setOf("ja", "en", "ko", "pt", "id", "zh-Hans", "zh-Hant"), result.localizedNames.map { it.languageCode }.toSet())
         assertTrue(result.components.all { it.sourceLanguage == "ja" })
         assertEquals(
             listOf(
@@ -246,7 +267,7 @@ class MultilingualChurchNameLocalizerTest {
             "ADCD Assemblies of God Central Do Dourado Project Vinho Novo",
             composed.localizedNames.single { it.languageCode == "en" }.name,
         )
-        assertEquals(setOf("ja", "en", "ko", "pt", "id"), composed.localizedNames.map { it.languageCode }.toSet())
+        assertEquals(setOf("ja", "en", "ko", "pt", "id", "zh-Hans", "zh-Hant"), composed.localizedNames.map { it.languageCode }.toSet())
 
         val missionary = localizer.localize("ADVM Assembleia de Deus Visão Missionaria Hamamatsu")
         assertEquals(
@@ -340,7 +361,7 @@ class MultilingualChurchNameLocalizerTest {
         assertTrue(snowball.components.all { it.sourceLanguage == "pt" })
         assertEquals("山梨再臨キリスト教会", christComes.japaneseName)
         assertEquals(
-            setOf("ja", "en", "ko", "pt", "id", "es"),
+            setOf("ja", "en", "ko", "pt", "id", "es", "zh-Hans", "zh-Hant"),
             christComes.localizedNames.map { it.languageCode }.toSet(),
         )
         assertEquals(

@@ -1,5 +1,7 @@
 package jp.co.crossmap.catalog
 
+import jp.co.crossmap.Language
+
 import jp.co.crossmap.ChurchMinister
 import jp.co.crossmap.ChurchRecord
 import jp.co.crossmap.GeoPoint
@@ -54,15 +56,18 @@ data class MultilingualText(val values: Map<String, String>) {
         require(values.values.none(String::isBlank)) { "Multilingual values must not be blank" }
     }
 
-    operator fun get(languageCode: String): String? = values[languageCode.substringBefore('-').lowercase()]
+    operator fun get(languageCode: String): String? = values[canonicalLanguageCode(languageCode)]
 
     companion object {
-        private val LANGUAGE_CODE = Regex("^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$")
+        private val LANGUAGE_CODE = Regex("^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$")
 
         fun from(names: List<LocalizedName>): MultilingualText = MultilingualText(
-            names.associate { it.languageCode.substringBefore('-').lowercase() to it.name.trim() }
+            names.associate { canonicalLanguageCode(it.languageCode) to it.name.trim() }
                 .filterValues(String::isNotBlank),
         )
+
+        private fun canonicalLanguageCode(value: String): String =
+            Language.fromCode(value)?.code ?: value.substringBefore('-').lowercase()
     }
 }
 

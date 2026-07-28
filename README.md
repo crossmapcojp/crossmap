@@ -26,7 +26,7 @@ The repository-local instance uses `local.properties` for its Bolt credentials a
 
 All crawled church-page text is searchable. A query is parsed longest-name-first against all 47 prefectures and the generated municipality/ward catalog. Exact and all-name-token tiers keep the complete query. The final geographic tier selects one intended address entity and filters its stable geoname code; the remaining words are scored inside that area. Duplicate municipality and ward names are resolved from browser/app coordinates when available, and otherwise remain unresolved instead of silently searching several unrelated areas. A geoname-only query such as `東京` or `Tokyo` uses the geographic filter with no text requirement.
 
-Localized church names share one downloadable snapshot containing five indexes: `JapaneseAnalyzer` for Japanese, analysis-nori `KoreanAnalyzer` for Korean, and the analysis-common `EnglishAnalyzer`, `PortugueseAnalyzer`, and `IndonesianAnalyzer` for their respective languages. Query-language detection is independent of the UI display language and routes each query to its matching index/analyzer; an explicit CLI `--language` can still override automatic detection.
+Localized church names share one downloadable snapshot containing seven indexes: `JapaneseAnalyzer` for Japanese, analysis-nori `KoreanAnalyzer` for Korean, analysis-common analyzers for English, Portuguese, and Indonesian, and `SmartChineseAnalyzer` indexes for `zh-Hans` and `zh-Hant`. Chinese records retain exact script-specific fields while both query scripts also search a canonical Simplified field. Query-language detection is independent of the UI display language and routes each query to its matching index/analyzer; an explicit CLI `--language` can still override automatic detection.
 
 If no geoname is present, the browser or app may request device location and retry with a default 25 km radius. A geoname in the query always takes precedence over device location.
 
@@ -47,11 +47,23 @@ The maintained field-by-field build contract, data provenance, analyzers, respon
 
 ## Crawl and cleanup
 
-Build and refresh cached websites:
+Build and refresh cached websites. The default follows same-domain links through depth 1; `--max-depth 0..3` and `--max-pages-per-church` make deeper crawls explicit and bounded. Each page stores outgoing links, and catalog import materializes stable `Webpage` nodes with `LINKS_TO` relationships for future PageRank work. Locale home-page headings become official localized church names without overwriting reviewed/manual values.
 
 ```sh
-./gradlew :crawl:run --args='refresh --resources resources --max-concurrency 6'
+./gradlew :crawl:run --args='refresh --resources resources --max-concurrency 6 --max-depth 1 --max-pages-per-church 12'
 ```
+
+Chinese localization is an explicit, reviewable migration. Validate and dry-run first; the dry run writes JSON and text reports under `resources/review/` without changing `churches.json`:
+
+```sh
+./gradlew :crawl:validateChineseDictionaries
+./gradlew :crawl:dryRunChineseLocalizedNames
+./gradlew :crawl:chineseGoldenTest
+./gradlew :crawl:generateChineseLocalizedNames
+./gradlew :crawl:reindexChineseFields
+```
+
+The migration is idempotent and preserves official, manual, and reviewed values. See [`docs/development/chinese-localization.md`](docs/development/chinese-localization.md) for dictionary precedence, reports, corrections, reindexing, and rollback.
 
 Most official denomination directories are configured in `resources/sources/denominations.json`. UCCJ and JBC use validated table-specific crawlers because their complete official lists are also authoritative negative evidence. Use `--force-refresh --dedicated-only` to invalidate and refetch just those two pages before reconciling the catalog:
 
@@ -147,7 +159,7 @@ The CLI automatically locates the latest local Crossmap snapshot unless an expli
 
 `:server:run` first rebuilds and publishes the `development` search snapshot from the current canonical catalog. At startup the server accepts `latest.json` only when its schema is current, its index directory exists, and its source-catalog SHA-256 matches `resources/catalog/churches.json`; it never silently serves a stale index.
 
-Open `/` to automatically select a supported browser language. If none of the five languages matches, the root asks for browser location and selects Japanese for Japan, Korean for Korea, Indonesian for Indonesia, or Portuguese for Brazil or Portugal; denied, unavailable, timed-out, and other locations fall back to English. No page renders a manual language list; without JavaScript the root provides an English search fallback. `/ja/`, `/en/`, `/ko/`, `/pt/`, and `/id/` can also be opened directly. Each directory contains generated `index.html`, `result.html`, and stable-English-slug church pages. The UI language comes from that directory; query language is detected independently by the server, so an English query on `/ja/result.html` still uses the English analyzer while results remain Japanese. Each generated HTML document contains one UI language only. `app.js` contains behavior but no translated strings.
+Open `/` to select a supported browser language initially. `zh-CN`, `zh-SG`, and ambiguous `zh` map to `zh-Hans`; `zh-TW`, `zh-HK`, and `zh-MO` map to `zh-Hant`. Every page exposes an explicit locale switch, persists that choice in local storage, and lets it override later browser detection. Without JavaScript the root provides an English search fallback. `/ja/`, `/en/`, `/ko/`, `/pt/`, `/id/`, `/zh-Hans/`, and `/zh-Hant/` can also be opened directly. Each directory contains generated `index.html`, `result.html`, and stable-English-slug church pages with canonical and `hreflang` links. Query language is detected independently by the server, so an English query on `/ja/result.html` still uses the English analyzer while results remain Japanese; Chinese results display the selected script and retain the original Japanese name as secondary text.
 
 Chrome asks the user to allow location access the first time Crossmap requests it. Use `http://localhost:8080`, not the wildcard bind address `http://0.0.0.0:8080`; the client redirects the latter to `localhost` because browser geolocation requires HTTPS or a trusted local-development origin. If permission is denied or location times out, search remains nationwide and no nearby-area heading is shown.
 

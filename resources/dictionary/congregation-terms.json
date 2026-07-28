@@ -12,7 +12,8 @@
       "de": ["Kirche"],
       "it": ["Chiesa"],
       "tl": ["Simbahan"],
-      "zh-tw": ["教會"]
+      "zh-hans": ["教会"],
+      "zh-hant": ["教會"]
     }
   },
   {
@@ -23,7 +24,9 @@
       "ko": ["예배당"],
       "pt": ["Capela"],
       "id": ["Kapel"],
-      "es": ["Capilla"]
+      "es": ["Capilla"],
+      "zh-hans": ["礼拜堂"],
+      "zh-hant": ["禮拜堂"]
     }
   },
   {
@@ -33,7 +36,9 @@
       "en": ["Assembly"],
       "ko": ["집회"],
       "pt": ["Assembleia", "Assembléia"],
-      "id": ["Persekutuan"]
+      "id": ["Persekutuan"],
+      "zh-hans": ["聚会"],
+      "zh-hant": ["聚會"]
     }
   },
   {
@@ -43,7 +48,9 @@
       "en": ["Mission"],
       "ko": ["선교"],
       "pt": ["Missão"],
-      "id": ["Misi"]
+      "id": ["Misi"],
+      "zh-hans": ["宣教"],
+      "zh-hant": ["宣教"]
     }
   },
   {
@@ -53,7 +60,9 @@
       "en": ["Assemblies of God"],
       "ko": ["하나님의 성회"],
       "pt": ["Assembleia de Deus", "Assembléia de Deus", "Assembreia de Deus"],
-      "id": ["Sidang Jemaat Allah"]
+      "id": ["Sidang Jemaat Allah"],
+      "zh-hans": ["神召会"],
+      "zh-hant": ["神召會"]
     }
   },
   {
@@ -63,7 +72,9 @@
       "en": ["God is Love Pentecostal Church"],
       "ko": ["하나님은 사랑이시다 오순절 교회"],
       "pt": ["Igreja Pentecostal Deus É Amor", "Igreja Pentecostal Deus é Amor", "Igreja Pentecostal Deus E Amor"],
-      "id": ["Gereja Pentakosta Allah adalah Kasih"]
+      "id": ["Gereja Pentakosta Allah adalah Kasih"],
+      "zh-hans": ["神是爱五旬节教会"],
+      "zh-hant": ["神是愛五旬節教會"]
     }
   },
   {
@@ -73,7 +84,9 @@
       "en": ["God is Love Church"],
       "ko": ["하나님은 사랑이시다 교회"],
       "pt": ["Igreja Deus É Amor", "Igreja Deus é Amor", "Igreja Deus E Amor"],
-      "id": ["Gereja Allah adalah Kasih"]
+      "id": ["Gereja Allah adalah Kasih"],
+      "zh-hans": ["神是爱教会"],
+      "zh-hant": ["神是愛教會"]
     }
   }
 ]

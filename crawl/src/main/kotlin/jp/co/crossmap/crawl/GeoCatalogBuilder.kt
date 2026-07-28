@@ -7,6 +7,7 @@ import jp.co.crossmap.GeoName
 import jp.co.crossmap.GeoNameResolver
 import jp.co.crossmap.GeoNameType
 import jp.co.crossmap.GeoPoint
+import jp.co.crossmap.withChineseTranslations
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -252,7 +253,7 @@ class GeoCatalogBuilder(private val json: Json = Json { prettyPrint = true; enco
             radius,
             translations,
             includeInPrefectureSearch,
-        )
+        ).withChineseTranslations()
     }
 
     private fun isIncludedInPrefectureSearch(prefectureCode: String, address: String): Boolean =

@@ -667,12 +667,20 @@ private class CrawlDenominationDirectories : CrawlCommand("crawl-denomination-di
 private class Refresh : CrawlCommand("refresh", CrawlReport.REFRESH) {
     private val resources by option("--resources").default("resources")
     private val concurrency by option("--max-concurrency").int().default(6)
+    private val maxDepth by option("--max-depth", help = "Same-domain hyperlink depth (0..3)").int().default(1)
+    private val maxPagesPerChurch by option("--max-pages-per-church").int().default(12)
     override fun execute(audit: CrawlCommandAudit) {
         val root = Path.of(resources)
         val paths = CrossmapPaths(root)
         audit.input("catalog", paths.churchCatalog.toAbsolutePath().normalize())
         audit.setting("max_concurrency", concurrency)
-        val report = ChurchWebsiteCrawler(concurrency).crawl(root, cacheRoot = paths.cacheRoot)
+        audit.setting("max_depth", maxDepth)
+        audit.setting("max_pages_per_church", maxPagesPerChurch)
+        val report = ChurchWebsiteCrawler(
+            maxConcurrency = concurrency,
+            maxDepth = maxDepth,
+            maxPagesPerChurch = maxPagesPerChurch,
+        ).crawl(root, cacheRoot = paths.cacheRoot)
         audit.metric("churches", report.churches)
         audit.metric("fetched", report.fetched)
         audit.metric("unchanged", report.unchanged)
@@ -1280,6 +1288,116 @@ private class PopulateDenominationEnglishNames : CrawlCommand("denomination-engl
         .trim(' ', '.', '-')
 }
 
+private class ValidateChineseDictionaries : CrawlCommand(
+    "validate-chinese-dictionaries",
+    CrawlReport.CHINESE_DICTIONARY_VALIDATION,
+) {
+    private val resources by option("--resources").default("resources")
+
+    override fun execute(audit: CrawlCommandAudit) {
+        val root = Path.of(resources)
+        val report = ChineseDictionaryValidator.validate(root)
+        val output = root.resolve("review/chinese-dictionary-validation.json")
+        writeJsonAtomically(output, report)
+        audit.input("dictionary_directory", root.resolve("dictionary").toAbsolutePath().normalize())
+        audit.metric("files_checked", report.filesChecked)
+        audit.metric("entries_checked", report.entriesChecked)
+        audit.metric("errors", report.errors.size)
+        audit.metric("review_signals", report.reviewSignals.size)
+        audit.output("report", output.toAbsolutePath().normalize())
+        report.errors.forEachIndexed { index, error -> audit.detail("error_${index + 1}", error) }
+        report.reviewSignals.take(100).forEachIndexed { index, signal -> audit.detail("review_${index + 1}", signal) }
+        require(report.valid) { "Chinese dictionary validation failed with ${report.errors.size} error(s); see $output" }
+        echo("Validated ${report.entriesChecked} Chinese dictionary entries; ${report.reviewSignals.size} review signals")
+    }
+}
+
+private class LocalizeChineseNames : CrawlCommand("localize-chinese-names", CrawlReport.CHINESE_LOCALIZATION) {
+    private val resources by option("--resources").default("resources")
+    private val dryRun by option("--dry-run", help = "Produce reports without replacing churches.json").flag()
+
+    override fun execute(audit: CrawlCommandAudit) {
+        val root = Path.of(resources)
+        val paths = CrossmapPaths(root)
+        val validation = ChineseDictionaryValidator.validate(root)
+        require(validation.valid) { "Chinese dictionaries are invalid: ${validation.errors.joinToString("; ")}" }
+        val dictionaries = ChurchNameEnglishDictionary.load(root)
+        val denominations = json.decodeFromString<List<Denomination>>(Files.readString(paths.denominationCatalog))
+        val localizer = MultilingualChurchNameLocalizer(
+            dictionaries = dictionaries,
+            congregationTerms = CongregationTermDictionary.load(root),
+            denominations = denominations,
+            denominationNames = DenominationNameCatalogFiles.load(root),
+            geonames = loadChurchNameGeonames(paths) + dictionaries.geonames,
+            multilingualGeonames = mergeReviewedChurchGeoNames(
+                createGeoName(paths).readMultilingualLexicon(paths.geoNameMultilingualLexicon),
+                loadReviewedChurchGeoNames(paths),
+            ),
+            branchGeonames = loadChurchNameGeoAliases(paths) + dictionaries.geonames.keys,
+        )
+        val churches = json.decodeFromString<List<ChurchRecord>>(Files.readString(paths.churchCatalog))
+        val result = ChineseLocalizationMigration(localizer).process(churches)
+        val reportDirectory = root.resolve("review")
+        val reportPath = reportDirectory.resolve("chinese-localization-report.json")
+        val summaryPath = reportDirectory.resolve("chinese-localization-summary.txt")
+        writeJsonAtomically(reportPath, result.report)
+        writeTextAtomically(
+            summaryPath,
+            """
+            Chinese localization ${if (dryRun) "dry run" else "migration"}
+            churches processed: ${result.report.churchesProcessed}
+            zh-Hans generated: ${result.report.zhHansNamesGenerated}
+            zh-Hant generated: ${result.report.zhHantNamesGenerated}
+            reviewed/official preserved: ${result.report.namesPreservedBecauseReviewedOrOfficial}
+            ministers localized: ${result.report.ministersLocalized}
+            churches requiring review: ${result.report.churchesRequiringReview}
+            indexing changes: ${result.report.indexingChanges}
+            dictionary coverage: ${"%.2f".format(java.util.Locale.ROOT, result.report.dictionaryCoverageRate * 100)}%
+            """.trimIndent() + "\n",
+        )
+        if (!dryRun) writeJsonAtomically(paths.churchCatalog, result.churches)
+        audit.input("catalog", paths.churchCatalog.toAbsolutePath().normalize())
+        audit.setting("dry_run", dryRun)
+        audit.metric("churches_processed", result.report.churchesProcessed)
+        audit.metric("zh_hans_generated", result.report.zhHansNamesGenerated)
+        audit.metric("zh_hant_generated", result.report.zhHantNamesGenerated)
+        audit.metric("preserved", result.report.namesPreservedBecauseReviewedOrOfficial)
+        audit.metric("requires_review", result.report.churchesRequiringReview)
+        audit.metric("indexing_changes", result.report.indexingChanges)
+        audit.metric("dictionary_coverage_rate", result.report.dictionaryCoverageRate)
+        audit.output("review_report", reportPath.toAbsolutePath().normalize())
+        audit.output("summary", summaryPath.toAbsolutePath().normalize())
+        if (!dryRun) audit.output("catalog", paths.churchCatalog.toAbsolutePath().normalize())
+        echo(
+            "Chinese localization: ${result.report.churchesProcessed} churches, " +
+                "${result.report.zhHansNamesGenerated} zh-Hans + ${result.report.zhHantNamesGenerated} zh-Hant, " +
+                "${result.report.churchesRequiringReview} require review${if (dryRun) " (dry run)" else ""}",
+        )
+    }
+}
+
+private val reportJson = Json { prettyPrint = true; encodeDefaults = true }
+
+private fun writeJsonAtomically(path: Path, value: ChineseDictionaryValidationReport) =
+    writeTextAtomically(path, reportJson.encodeToString(value))
+
+private fun writeJsonAtomically(path: Path, value: ChineseLocalizationMigrationReport) =
+    writeTextAtomically(path, reportJson.encodeToString(value))
+
+private fun writeJsonAtomically(path: Path, value: List<ChurchRecord>) =
+    writeTextAtomically(path, reportJson.encodeToString(value))
+
+private fun writeTextAtomically(path: Path, content: String) {
+    Files.createDirectories(path.parent)
+    val temporary = Files.createTempFile(path.parent, ".${path.fileName}-", ".tmp")
+    Files.writeString(temporary, content)
+    runCatching {
+        Files.move(temporary, path, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
+    }.getOrElse {
+        Files.move(temporary, path, StandardCopyOption.REPLACE_EXISTING)
+    }
+}
+
 private class FetchUrl : CliktCommand("fetch-url") {
     private val url by option("--url", help = "URL to fetch").required()
     private val resources by option("--resources").default("resources")
@@ -1323,5 +1441,5 @@ fun main(args: Array<String>) = Crawl().subcommands(
     ReadGoogleSavedPlaces(), ResolveGoogleSavedPlaces(), PromoteGoogleSavedPlaces(), Refresh(), CrawlDenominationDirectories(), BuildGeonames(), CleanupLlm(), OverrideDenomination(), MergeSocialExports(), LinkSocial(),
     PopulateEnglishNames(), AnalyzeEnglishNames(), PopulateDenominationEnglishNames(), PrepareGeoNameCache(), BuildChurchGeonames(), NormalizeAddresses(), BuildSnapshot(),
     CatalogNeo4jHealth(), CatalogNeo4jMigrate(), CatalogNeo4jImport(), CatalogNeo4jExport(), CatalogNeo4jParity(), CatalogNeo4jIntegrity(),
-    FetchUrl(),
+    ValidateChineseDictionaries(), LocalizeChineseNames(), FetchUrl(),
 ).main(args)

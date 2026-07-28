@@ -141,7 +141,7 @@ fun Application.module(
                 stepMark = timeSource.markNow()
             }
 
-            val displayLanguage = call.request.queryParameters["lang"]?.substringBefore('-')?.lowercase() ?: "ja"
+            val displayLanguage = Language.fromCode(call.request.queryParameters["lang"])?.code ?: "ja"
             val query = call.request.queryParameters["q"].orEmpty()
             finishStep("request.readQuery")
             val queryLanguage = QueryLanguageDetector.detect(query, displayLanguage)
@@ -343,7 +343,7 @@ internal fun loadChurchPageUrls(
         .filterValues(String::isNotBlank)
         .ifEmpty { if (language == Language.ENGLISH) manifest.pages else emptyMap() }
     if (pages.isEmpty() || pages.values.any { page ->
-            !page.matches(Regex("""/${language.code}/[a-z0-9]+(?:-[a-z0-9]+)*\.html"""))
+            !page.matches(Regex("""/${Regex.escape(language.code)}/[a-z0-9]+(?:-[a-z0-9]+)*\.html"""))
         }
     ) return null
     return pages

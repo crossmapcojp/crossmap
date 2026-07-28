@@ -294,3 +294,69 @@ tasks.register<JavaExec>("fetchUrl") {
         providers.gradleProperty("crossmapResources").orElse("resources").get(),
     )
 }
+
+tasks.register<JavaExec>("validateChineseDictionaries") {
+    group = "crossmap"
+    description = "Validate paired zh-Hans/zh-Hant church-name dictionaries and write a review report"
+    classpath = sourceSets.main.get().runtimeClasspath
+    mainClass = "jp.co.crossmap.crawl.MainKt"
+    workingDir = rootProject.projectDir
+    args(
+        "validate-chinese-dictionaries",
+        "--resources",
+        providers.gradleProperty("crossmapResources").orElse("resources").get(),
+    )
+}
+
+tasks.register<JavaExec>("dryRunChineseLocalizedNames") {
+    group = "crossmap"
+    description = "Preview Chinese church/minister localization and produce review reports without changing the catalog"
+    classpath = sourceSets.main.get().runtimeClasspath
+    mainClass = "jp.co.crossmap.crawl.MainKt"
+    workingDir = rootProject.projectDir
+    args(
+        "localize-chinese-names",
+        "--resources",
+        providers.gradleProperty("crossmapResources").orElse("resources").get(),
+        "--dry-run",
+    )
+    dependsOn("validateChineseDictionaries")
+}
+
+tasks.register<JavaExec>("generateChineseLocalizedNames") {
+    group = "crossmap"
+    description = "Idempotently generate Chinese church/minister names while preserving official and reviewed values"
+    classpath = sourceSets.main.get().runtimeClasspath
+    mainClass = "jp.co.crossmap.crawl.MainKt"
+    workingDir = rootProject.projectDir
+    args(
+        "localize-chinese-names",
+        "--resources",
+        providers.gradleProperty("crossmapResources").orElse("resources").get(),
+    )
+    dependsOn("validateChineseDictionaries")
+}
+
+tasks.register("produceChineseReviewReport") {
+    group = "crossmap"
+    description = "Produce machine-readable and human-readable Chinese localization review reports"
+    dependsOn("dryRunChineseLocalizedNames")
+}
+
+tasks.register("reindexChineseFields") {
+    group = "crossmap"
+    description = "Rebuild the reproducible search snapshot including Chinese script-specific and canonical fields"
+    dependsOn("buildSearchSnapshot")
+}
+
+tasks.register<Test>("chineseGoldenTest") {
+    group = "verification"
+    description = "Run Chinese church-name golden fixtures"
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    dependsOn("testClasses")
+    useJUnitPlatform()
+    filter {
+        includeTestsMatching("jp.co.crossmap.crawl.ChineseChurchNameGoldenTest")
+    }
+}

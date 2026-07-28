@@ -45,11 +45,125 @@ class ChurchWebsiteCrawlerTest {
             val church = json.decodeFromString<List<ChurchRecord>>(Files.readString(root.resolve("catalog/churches.json"))).single()
             assertEquals(setOf("岡山バプテスト教会", "教会案内"), church.pages.map { it.title }.toSet())
             assertTrue(church.pages.any { it.text.contains("バプテスト") })
+            assertEquals(setOf(0, 1), church.pages.map(CrawledPage::depth).toSet())
+            assertTrue(church.pages.single { it.depth == 0 }.outgoingLinks.contains("$website${"about"}"))
 
             val second = ChurchWebsiteCrawler(maxConcurrency = 1, hostDelayMillis = 0, cacheFreshness = Duration.ZERO)
                 .crawl(root, cacheRoot = root.resolve("cache"))
             assertEquals(2, second.unchanged)
             assertEquals(0, second.errors)
+        } finally {
+            server.stop(0)
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun configurableDepthTwoFollowsGrandchildLinksAndRecordsEveryEdge() {
+        val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
+        server.createContext("/robots.txt") { it.respond("User-agent: *\n") }
+        server.createContext("/") { it.htmlWithEtag("<html><body><a href='/j/'>日本語</a></body></html>") }
+        server.createContext("/j/") { it.htmlWithEtag("<html><body><a href='/j/about/'>教会案内</a></body></html>") }
+        server.createContext("/j/about/") { it.htmlWithEtag("<html><body>東京教会</body></html>") }
+        server.start()
+        val root = Files.createTempDirectory("crossmap-depth-two")
+        try {
+            val website = "http://127.0.0.1:${server.address.port}/"
+            Files.createDirectories(root.resolve("catalog"))
+            Files.createDirectories(root.resolve("cache/web-pages"))
+            Files.writeString(root.resolve("catalog/excludedChurchListingDomains.txt"), "")
+            Files.writeString(
+                root.resolve("catalog/churches.json"),
+                json.encodeToString(
+                    listOf(
+                        ChurchRecord(
+                            id = "google:depth-two",
+                            name = "東京教会",
+                            englishName = "Tokyo Church",
+                            address = "東京都",
+                            location = GeoPoint(35.0, 139.0),
+                            websiteUrl = website,
+                        ),
+                    ),
+                ),
+            )
+            Files.writeString(root.resolve("cache/web-pages/manifest.json"), "[]")
+
+            val report = ChurchWebsiteCrawler(maxConcurrency = 1, hostDelayMillis = 0, maxDepth = 2)
+                .crawl(root, cacheRoot = root.resolve("cache"))
+            val pages = json.decodeFromString<List<ChurchRecord>>(
+                Files.readString(root.resolve("catalog/churches.json")),
+            ).single().pages
+
+            assertEquals(3, report.fetched)
+            assertEquals(listOf(0, 1, 2), pages.map(CrawledPage::depth).sorted())
+            assertEquals("${website}j/", pages.single { it.depth == 0 }.outgoingLinks.single())
+            assertEquals("${website}j/about/", pages.single { it.depth == 1 }.outgoingLinks.single())
+        } finally {
+            server.stop(0)
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun recordsOfficialNamesFromLinkedLocaleHomePagesForTokyoMulticulturalChurch() {
+        val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
+        server.createContext("/robots.txt") { it.respond("User-agent: *\n") }
+        server.createContext("/") {
+            it.htmlWithEtag(
+                """
+                <html><head><meta property="og:site_name" content="TMC"></head><body>
+                <main><h1>Tokyo Multicultural Church</h1></main>
+                <a href="/j/">日本語</a><a href="/c/">中文</a>
+                </body></html>
+                """.trimIndent(),
+            )
+        }
+        server.createContext("/j/") {
+            it.htmlWithEtag("<html><body><main><h1>東京マルチカルチャル教会</h1></main></body></html>")
+        }
+        server.createContext("/c/") {
+            it.htmlWithEtag("<html><body><main><h1>東京多元文化基督教會</h1></main></body></html>")
+        }
+        server.start()
+        val root = Files.createTempDirectory("crossmap-tmc-official-names")
+        try {
+            val website = "http://127.0.0.1:${server.address.port}/"
+            Files.createDirectories(root.resolve("catalog"))
+            Files.createDirectories(root.resolve("cache/web-pages"))
+            Files.writeString(root.resolve("catalog/excludedChurchListingDomains.txt"), "")
+            Files.writeString(
+                root.resolve("catalog/churches.json"),
+                json.encodeToString(
+                    listOf(
+                        ChurchRecord(
+                            id = "google:14933925210831204897",
+                            googleCid = "14933925210831204897",
+                            name = "東京ムルティクルテゥラル教会",
+                            englishName = "Tokyo Multicultural Church (TMC)",
+                            address = "東京都",
+                            location = GeoPoint(35.0, 139.0),
+                            websiteUrl = website,
+                        ),
+                    ),
+                ),
+            )
+            Files.writeString(root.resolve("cache/web-pages/manifest.json"), "[]")
+
+            val report = ChurchWebsiteCrawler(maxConcurrency = 1, hostDelayMillis = 0)
+                .crawl(root, cacheRoot = root.resolve("cache"))
+            val church = json.decodeFromString<List<ChurchRecord>>(
+                Files.readString(root.resolve("catalog/churches.json")),
+            ).single()
+            val names = church.localizedNames.associate { it.languageCode to it.name }
+
+            assertEquals(3, report.fetched)
+            assertEquals("Tokyo Multicultural Church (TMC)", church.englishName)
+            assertEquals("東京マルチカルチャル教会", church.name)
+            assertEquals("Tokyo Multicultural Church (TMC)", names["en"])
+            assertEquals("東京マルチカルチャル教会", names["ja"])
+            assertEquals("東京多元文化基督教會", names["zh-Hans"])
+            assertEquals(setOf("en", "ja", "zh-Hans"), church.pages.mapNotNull(CrawledPage::languageCode).toSet())
         } finally {
             server.stop(0)
             root.toFile().deleteRecursively()

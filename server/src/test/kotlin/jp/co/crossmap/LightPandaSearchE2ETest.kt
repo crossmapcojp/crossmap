@@ -236,7 +236,7 @@ class LightPandaSearchE2ETest {
                     "en" -> fusaChurch.englishName
                     else -> assertNotNull(
                         fusaChurch.localizedNames.firstOrNull {
-                            it.languageCode.substringBefore('-').lowercase() == language
+                            Language.fromCode(it.languageCode)?.code == Language.fromCode(language)?.code
                         }?.name,
                         "Fusa church is missing its $language localized name",
                     )

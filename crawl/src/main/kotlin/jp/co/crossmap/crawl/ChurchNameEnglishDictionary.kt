@@ -61,8 +61,8 @@ object ChurchNameEnglishDictionary {
             paths.filter(Files::isRegularFile).sorted().forEach { path ->
                 val match = DICTIONARY_FILE.matchEntire(path.fileName.toString()) ?: return@forEach
                 val key = ChurchNameDictionaryKey(
-                    sourceLanguage = match.groupValues[1],
-                    targetLanguage = match.groupValues[2],
+                    sourceLanguage = match.groupValues[1].lowercase(),
+                    targetLanguage = match.groupValues[2].lowercase(),
                     category = ChurchNameDictionaryCategory.valueOf(match.groupValues[3].uppercase()),
                 )
                 multilingualEntries[key] = read(path)
@@ -107,6 +107,6 @@ object ChurchNameEnglishDictionary {
     }
 
     private val DICTIONARY_FILE = Regex(
-        """([a-z]{2})-([a-z]{2})-(churchname|concept|geoname)-dictionary\.csv""",
+        """([a-z]{2,3}(?:-[A-Z][a-z]{3})?)-([a-z]{2,3}(?:-[A-Z][a-z]{3})?)-(churchname|concept|geoname)-dictionary\.csv""",
     )
 }

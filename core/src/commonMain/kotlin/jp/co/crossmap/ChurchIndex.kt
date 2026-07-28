@@ -10,6 +10,7 @@ import org.gnit.lucenekmp.analysis.ko.KoreanAnalyzer
 import org.gnit.lucenekmp.analysis.miscellaneous.PerFieldAnalyzerWrapper
 import org.gnit.lucenekmp.analysis.pt.PortugueseAnalyzer
 import org.gnit.lucenekmp.analysis.standard.StandardAnalyzer
+import org.gnit.lucenekmp.analysis.cn.smart.SmartChineseAnalyzer
 import org.gnit.lucenekmp.document.Document
 import org.gnit.lucenekmp.document.Field
 import org.gnit.lucenekmp.document.LatLonDocValuesField
@@ -22,7 +23,7 @@ import org.gnit.lucenekmp.index.IndexWriterConfig
 import org.gnit.lucenekmp.store.FSDirectory
 
 object ChurchIndex {
-    const val SCHEMA_VERSION = 12
+    const val SCHEMA_VERSION = 13
     const val FIELD_ID = "id"
     const val FIELD_NAME = "name"
     const val FIELD_NAME_EXACT = "name_exact"
@@ -32,6 +33,10 @@ object ChurchIndex {
     const val FIELD_NAME_EN = "name_en"
     const val FIELD_NAME_PT = "name_pt"
     const val FIELD_NAME_ID = "name_id"
+    const val FIELD_NAME_ZH_HANS = "name_zh_hans"
+    const val FIELD_NAME_ZH_HANT = "name_zh_hant"
+    const val FIELD_NAME_ZH_CANONICAL = "name_zh_canonical"
+    const val FIELD_NAME_ZH_CANONICAL_EXACT = "name_zh_canonical_exact"
     const val FIELD_NAME_OTHER = "name_other"
     const val FIELD_NAME_READING = "name_reading"
     const val FIELD_NAME_READING_EXACT = "name_reading_exact"
@@ -72,6 +77,9 @@ object ChurchIndex {
         FIELD_NAME_EN,
         FIELD_NAME_PT,
         FIELD_NAME_ID,
+        FIELD_NAME_ZH_HANS,
+        FIELD_NAME_ZH_HANT,
+        FIELD_NAME_ZH_CANONICAL,
         FIELD_NAME_OTHER,
     )
 
@@ -83,26 +91,39 @@ object ChurchIndex {
             FIELD_NAME_EN to EnglishAnalyzer(),
             FIELD_NAME_PT to PortugueseAnalyzer(),
             FIELD_NAME_ID to IndonesianAnalyzer(),
+            FIELD_NAME_ZH_HANS to SmartChineseAnalyzer(),
+            FIELD_NAME_ZH_HANT to SmartChineseAnalyzer(),
+            FIELD_NAME_ZH_CANONICAL to SmartChineseAnalyzer(),
             FIELD_NAME_OTHER to StandardAnalyzer(),
         ),
     )
 
-    private fun languageAnalyzer(languageCode: String) = when (languageCode.substringBefore('-').lowercase()) {
+    private fun languageAnalyzer(languageCode: String) = when (Language.fromCode(languageCode)) {
+        Language.CHINESE_SIMPLIFIED, Language.CHINESE_TRADITIONAL -> SmartChineseAnalyzer()
+        Language.JAPANESE -> JapaneseAnalyzer()
+        Language.KOREAN -> KoreanAnalyzer()
+        Language.ENGLISH -> EnglishAnalyzer()
+        Language.PORTUGUESE -> PortugueseAnalyzer()
+        Language.INDONESIAN -> IndonesianAnalyzer()
+        null -> when (languageCode.substringBefore('-').lowercase()) {
         "ja" -> JapaneseAnalyzer()
         "ko" -> KoreanAnalyzer()
         "en" -> EnglishAnalyzer()
         "pt" -> PortugueseAnalyzer()
         "id" -> IndonesianAnalyzer()
         else -> StandardAnalyzer()
+        }
     }
 
-    fun localizedNameField(languageCode: String): String = when (languageCode.substringBefore('-').lowercase()) {
-        "ja" -> FIELD_NAME_JA
-        "ko" -> FIELD_NAME_KO
-        "en" -> FIELD_NAME_EN
-        "pt" -> FIELD_NAME_PT
-        "id" -> FIELD_NAME_ID
-        else -> FIELD_NAME_OTHER
+    fun localizedNameField(languageCode: String): String = when (Language.fromCode(languageCode)) {
+        Language.JAPANESE -> FIELD_NAME_JA
+        Language.KOREAN -> FIELD_NAME_KO
+        Language.ENGLISH -> FIELD_NAME_EN
+        Language.PORTUGUESE -> FIELD_NAME_PT
+        Language.INDONESIAN -> FIELD_NAME_ID
+        Language.CHINESE_SIMPLIFIED -> FIELD_NAME_ZH_HANS
+        Language.CHINESE_TRADITIONAL -> FIELD_NAME_ZH_HANT
+        null -> FIELD_NAME_OTHER
     }
 
     fun normalizeExactName(value: String): String {
@@ -122,7 +143,7 @@ object ChurchIndex {
         normalizedAddresses: Map<String, JapaneseAddress> = emptyMap(),
     ) {
         val directory = FSDirectory.open(indexPath)
-        val normalizedLanguage = languageCode.substringBefore('-').lowercase()
+        val normalizedLanguage = Language.fromCode(languageCode)?.code ?: languageCode.substringBefore('-').lowercase()
         val config = IndexWriterConfig(analyzer(normalizedLanguage)).apply {
             openMode = IndexWriterConfig.OpenMode.CREATE
         }
@@ -148,13 +169,16 @@ object ChurchIndex {
         normalizedAddress: JapaneseAddress,
     ): Document = Document().apply {
         add(StringField(FIELD_ID, id, Field.Store.YES))
-        titleLanguages.map { it.substringBefore('-').lowercase() }.filter(String::isNotBlank).distinct().forEach {
+        titleLanguages.map { Language.fromCode(it)?.code ?: it.substringBefore('-').lowercase() }.filter(String::isNotBlank).distinct().forEach {
             add(StringField(FIELD_TITLE_LANGUAGE, it, Field.Store.NO))
         }
-        val names = when (languageCode) {
-            "ja" -> listOf(name) + localizedNames.filter { it.languageCode.substringBefore('-').lowercase() == "ja" }.map { it.name }
-            "en" -> listOf(englishName) + localizedNames.filter { it.languageCode.substringBefore('-').lowercase() == "en" }.map { it.name }
-            else -> localizedNames.filter { it.languageCode.substringBefore('-').lowercase() == languageCode }.map { it.name }
+        val selectedLanguage = Language.fromCode(languageCode)
+        fun LocalizedName.matches(language: Language): Boolean = Language.fromCode(languageCode) == language
+        val names = when (selectedLanguage) {
+            Language.JAPANESE -> listOf(name) + localizedNames.filter { it.matches(Language.JAPANESE) }.map { it.name }
+            Language.ENGLISH -> listOf(englishName) + localizedNames.filter { it.matches(Language.ENGLISH) }.map { it.name }
+            null -> localizedNames.filter { it.languageCode.substringBefore('-').lowercase() == languageCode }.map { it.name }
+            else -> localizedNames.filter { it.matches(selectedLanguage) }.map { it.name }
         }.filter(String::isNotBlank).distinct()
         names.forEach { localizedName ->
             add(StringField(FIELD_NAME_EXACT, normalizeExactName(localizedName), Field.Store.NO))
@@ -164,32 +188,53 @@ object ChurchIndex {
                 add(StringField(FIELD_LOCALIZED_NAME, it, Field.Store.NO))
             }
         }
+        val simplifiedChineseNames = localizedNames.filter { it.matches(Language.CHINESE_SIMPLIFIED) }
+            .map(LocalizedName::name).filter(String::isNotBlank).distinct()
+        val traditionalChineseNames = localizedNames.filter { it.matches(Language.CHINESE_TRADITIONAL) }
+            .map(LocalizedName::name).filter(String::isNotBlank).distinct()
+        simplifiedChineseNames.forEach { add(TextField(FIELD_NAME_ZH_HANS, it, Field.Store.NO)) }
+        traditionalChineseNames.forEach { add(TextField(FIELD_NAME_ZH_HANT, it, Field.Store.NO)) }
+        (simplifiedChineseNames + traditionalChineseNames)
+            .map(ChineseScriptNormalizer::toSimplified)
+            .filter(String::isNotBlank)
+            .distinct()
+            .forEach { canonical ->
+                add(TextField(FIELD_NAME_ZH_CANONICAL, canonical, Field.Store.NO))
+                add(StringField(FIELD_NAME_ZH_CANONICAL_EXACT, normalizeExactName(canonical), Field.Store.NO))
+            }
         val cleanTranslatedGeoNames = translatedGeoNames
             .map(String::trim)
             .filter(String::isNotBlank)
+            .flatMap { name ->
+                if (selectedLanguage in setOf(Language.CHINESE_SIMPLIFIED, Language.CHINESE_TRADITIONAL)) {
+                    listOf(name, ChineseScriptNormalizer.toSimplified(name))
+                } else {
+                    listOf(name)
+                }
+            }
             .distinctBy { it.lowercase().replace(Regex("""\s+"""), " ") }
         cleanTranslatedGeoNames.forEach { add(TextField(FIELD_GEONAME, it, Field.Store.NO)) }
         val denominationNames = localizedDenominationNames
-            .filter { it.languageCode.substringBefore('-').lowercase() == languageCode }
+            .filter { Language.fromCode(it.languageCode)?.code == selectedLanguage?.code }
             .map { it.name.trim() }
             .filter(String::isNotBlank)
             .distinct()
         denominationNames.forEach { add(TextField(FIELD_DENOMINATION, it, Field.Store.YES)) }
         val ministerNames = ministers.flatMap { minister ->
             val localized = minister.localizedNames
-                .filter { it.languageCode.substringBefore('-').lowercase() == languageCode }
+                .filter { Language.fromCode(it.languageCode)?.code == selectedLanguage?.code }
                 .map { it.name }
-            if (languageCode == "ja") listOf(minister.name) + localized else localized
+            if (selectedLanguage == Language.JAPANESE) listOf(minister.name) + localized else localized
         }.map(String::trim).filter(String::isNotBlank).distinct()
         ministerNames.forEach { add(TextField(FIELD_MINISTER, it, Field.Store.YES)) }
-        val nameReadings = if (languageCode == "ja") readingVariants(names) else emptyList()
-        val denominationReadings = if (languageCode == "ja") readingVariants(denominationNames) else emptyList()
-        val categoryReadings = if (languageCode == "ja") {
+        val nameReadings = if (selectedLanguage == Language.JAPANESE) readingVariants(names) else emptyList()
+        val denominationReadings = if (selectedLanguage == Language.JAPANESE) readingVariants(denominationNames) else emptyList()
+        val categoryReadings = if (selectedLanguage == Language.JAPANESE) {
             readingVariants(listOfNotNull(category?.takeIf(String::isNotBlank)))
         } else {
             emptyList()
         }
-        val japaneseGeoNames = if (languageCode == "ja") {
+        val japaneseGeoNames = if (selectedLanguage == Language.JAPANESE) {
             (
                 cleanTranslatedGeoNames + listOfNotNull(
                     normalizedAddress.prefecture,
@@ -218,6 +263,9 @@ object ChurchIndex {
         }
         val compactSearchText = buildList {
             addAll(names)
+            if (selectedLanguage in setOf(Language.CHINESE_SIMPLIFIED, Language.CHINESE_TRADITIONAL)) {
+                addAll((simplifiedChineseNames + traditionalChineseNames).map(ChineseScriptNormalizer::toSimplified))
+            }
             addAll(cleanTranslatedGeoNames)
             addAll(denominationNames)
             addAll(ministerNames)
@@ -225,7 +273,7 @@ object ChurchIndex {
             addAll(denominationReadings)
             addAll(categoryReadings)
             addAll(geonameReadings)
-            if (languageCode == "ja") {
+            if (selectedLanguage == Language.JAPANESE) {
                 category?.takeIf(String::isNotBlank)?.let(::add)
                 address.takeIf(String::isNotBlank)?.let(::add)
             }
@@ -251,7 +299,7 @@ object ChurchIndex {
         normalizedAddress.locality?.let { add(StringField(FIELD_ADDRESS_LOCALITY, it, Field.Store.YES)) }
         normalizedAddress.addressNumber?.let { add(StringField(FIELD_ADDRESS_NUMBER, it, Field.Store.YES)) }
         normalizedAddress.building?.let { add(StringField(FIELD_ADDRESS_BUILDING, it, Field.Store.YES)) }
-        if (languageCode == "ja") {
+        if (selectedLanguage == Language.JAPANESE) {
             category?.takeIf { it.isNotBlank() }?.let { add(TextField(FIELD_CATEGORY, it, Field.Store.YES)) }
             add(TextField(FIELD_ADDRESS, address, Field.Store.YES))
             val searchableContent = pages.joinToString("\n") { "${it.title}\n${it.text}" }

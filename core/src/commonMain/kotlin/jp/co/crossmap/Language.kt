@@ -6,12 +6,22 @@ enum class Language(val code: String, val displayName: String) {
     KOREAN("ko", "한국어"),
     PORTUGUESE("pt", "Português"),
     INDONESIAN("id", "Bahasa Indonesia"),
+    CHINESE_SIMPLIFIED("zh-Hans", "简体中文"),
+    CHINESE_TRADITIONAL("zh-Hant", "繁體中文"),
     ;
 
     companion object {
         fun fromCode(code: String?): Language? {
-            val normalized = code?.substringBefore('-')?.substringBefore('_')?.lowercase()
-            return entries.firstOrNull { it.code == normalized }
+            val normalized = code?.trim()?.replace('_', '-')?.lowercase() ?: return null
+            entries.firstOrNull { it.code.lowercase() == normalized }?.let { return it }
+            if (normalized == "zh" || normalized.startsWith("zh-cn") || normalized.startsWith("zh-sg") || normalized.startsWith("zh-hans")) {
+                return CHINESE_SIMPLIFIED
+            }
+            if (normalized.startsWith("zh-tw") || normalized.startsWith("zh-hk") || normalized.startsWith("zh-mo") || normalized.startsWith("zh-hant")) {
+                return CHINESE_TRADITIONAL
+            }
+            val base = normalized.substringBefore('-')
+            return entries.firstOrNull { it.code == base }
         }
 
         fun fromCodeOrEnglish(code: String?): Language = fromCode(code) ?: ENGLISH
@@ -27,15 +37,52 @@ fun localizedDomainText(
     english: String? = null,
     japanese: String? = null,
 ): String? {
-    fun valueFor(target: Language): String? = localizedValues.firstOrNull {
-        Language.fromCode(it.languageCode) == target
-    }?.name?.takeIf(String::isNotBlank)
+    fun valueFor(target: Language): String? = localizedValues
+        .asSequence()
+        .filter { Language.fromCode(it.languageCode) == target && it.name.isNotBlank() }
+        .filter { it.metadata?.reviewStatus != LocalizedNameReviewStatus.REJECTED }
+        .maxWithOrNull(
+            compareBy<LocalizedName> { localizedNamePriority(it) }
+                .thenBy { it.metadata?.confidence ?: 0.0 },
+        )
+        ?.name
+    val alternateChinese = when (language) {
+        Language.CHINESE_SIMPLIFIED -> Language.CHINESE_TRADITIONAL
+        Language.CHINESE_TRADITIONAL -> Language.CHINESE_SIMPLIFIED
+        else -> null
+    }
+    if (alternateChinese != null) {
+        return valueFor(language)
+            ?: valueFor(alternateChinese)
+            ?: japanese?.takeIf(String::isNotBlank)
+            ?: valueFor(Language.JAPANESE)
+            ?: english?.takeIf(String::isNotBlank)
+            ?: valueFor(Language.ENGLISH)
+            ?: localizedValues.firstNotNullOfOrNull { it.name.takeIf(String::isNotBlank) }
+    }
     return valueFor(language)
         ?: english?.takeIf(String::isNotBlank)
         ?: valueFor(Language.ENGLISH)
         ?: japanese?.takeIf(String::isNotBlank)
         ?: valueFor(Language.JAPANESE)
         ?: localizedValues.firstNotNullOfOrNull { it.name.takeIf(String::isNotBlank) }
+}
+
+private fun localizedNamePriority(value: LocalizedName): Int {
+    val metadata = value.metadata ?: return 600
+    val reviewPriority = when (metadata.reviewStatus) {
+        LocalizedNameReviewStatus.REVIEWED -> 1_000
+        LocalizedNameReviewStatus.UNREVIEWED -> 0
+        LocalizedNameReviewStatus.NEEDS_REVIEW -> -100
+        LocalizedNameReviewStatus.REJECTED -> -10_000
+    }
+    val sourcePriority = when (metadata.source) {
+        LocalizedNameSource.MANUAL -> 800
+        LocalizedNameSource.OFFICIAL -> 700
+        LocalizedNameSource.GENERATED -> 500
+        LocalizedNameSource.IMPORTED -> 400
+    }
+    return reviewPriority + sourcePriority
 }
 
 class LocalizedText private constructor(
@@ -59,6 +106,8 @@ class LocalizedText private constructor(
             korean: String,
             portuguese: String,
             indonesian: String,
+            chineseSimplified: String = japanese,
+            chineseTraditional: String = japanese,
         ): LocalizedText = LocalizedText(
             mapOf(
                 Language.JAPANESE to japanese,
@@ -66,6 +115,8 @@ class LocalizedText private constructor(
                 Language.KOREAN to korean,
                 Language.PORTUGUESE to portuguese,
                 Language.INDONESIAN to indonesian,
+                Language.CHINESE_SIMPLIFIED to chineseSimplified,
+                Language.CHINESE_TRADITIONAL to chineseTraditional,
             ),
         )
     }

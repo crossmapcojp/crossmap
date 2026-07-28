@@ -66,6 +66,7 @@ lucene-kmp-queryparser = { module = "org.gnit.lucene-kmp:lucene-kmp-queryparser"
 lucene-kmp-analysis-common = { module = "org.gnit.lucene-kmp:lucene-kmp-analysis-common", version.ref = "lucene-kmp" }
 lucene-kmp-analysis-kuromoji = { module = "org.gnit.lucene-kmp:lucene-kmp-analysis-kuromoji", version.ref = "lucene-kmp" }
 lucene-kmp-analysis-nori = { module = "org.gnit.lucene-kmp:lucene-kmp-analysis-nori", version.ref = "lucene-kmp" }
+lucene-kmp-analysis-smartcn = { module = "org.gnit.lucene-kmp:lucene-kmp-analysis-smartcn", version.ref = "lucene-kmp" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 playwright = { module = "com.microsoft.playwright:playwright", version.ref = "playwright" }
 pdfbox = { module = "org.apache.pdfbox:pdfbox", version.ref = "pdfbox" }

@@ -31,6 +31,9 @@ tasks.register<JavaExec>("runCurrentIndex") {
 
 tasks.test {
     systemProperty("crossmap.project.root", rootProject.projectDir.absolutePath)
+    // The real catalog now carries seven localized names per church; static-site tests render
+    // all 66k locale variants and need more than Gradle's default 512 MiB test-worker heap.
+    maxHeapSize = "2g"
 }
 
 val lightpandaE2eTest by tasks.registering(Test::class) {

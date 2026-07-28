@@ -15,7 +15,7 @@ class LocalizedStaticSiteGeneratorTest {
     private val json = Json { ignoreUnknownKeys = true }
 
     @Test
-    fun generatesFiveNoJavaScriptChurchPagesWithReciprocalSeoLinks() {
+    fun generatesAllLocalizedNoJavaScriptChurchPagesWithReciprocalSeoLinksAndVisibleSwitches() {
         val church = json.decodeFromString<List<ChurchRecord>>(
             Files.readString(projectRoot.resolve("resources/catalog/churches.json")),
         ).single { it.id == "google:6646597370070891755" }
@@ -50,6 +50,9 @@ class LocalizedStaticSiteGeneratorTest {
             assertTrue(html.contains("hreflang=\"x-default\" href=\"https://churches.example/en/$slug.html\""))
             assertTrue(html.contains(church.address))
             assertTrue(html.contains(church.websiteUrl))
+            assertTrue(html.contains("class=\"language-switch\""))
+            assertTrue(html.contains("hreflang=\"zh-Hans\""))
+            assertTrue(html.contains("hreflang=\"zh-Hant\""))
             assertFalse(html.contains("id=\"localized-name-options\""))
             assertFalse(html.contains("navigator.language"))
             assertFalse(html.contains("id=\"language-chooser\""))
@@ -85,6 +88,8 @@ class LocalizedStaticSiteGeneratorTest {
             Language.KOREAN to "독립 교회",
             Language.PORTUGUESE to "Independente",
             Language.INDONESIAN to "Independen",
+            Language.CHINESE_SIMPLIFIED to "独立教会",
+            Language.CHINESE_TRADITIONAL to "獨立教會",
         )
         val output = Files.createTempDirectory("crossmap-independent-site")
         try {

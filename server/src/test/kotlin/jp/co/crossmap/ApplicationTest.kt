@@ -341,6 +341,8 @@ class ApplicationTest {
                     LocalizedName("ko", "도쿄 세인트 앤드류 교회"),
                     LocalizedName("pt", "Igreja de Santo André de Tóquio"),
                     LocalizedName("id", "Gereja Santo Andreas Tokyo"),
+                    LocalizedName("zh-Hans", "东京圣安德烈教会"),
+                    LocalizedName("zh-Hant", "東京聖安德烈教會"),
                 ),
                 denominationId = "ANGLICAN_JP",
                 localizedDenominationNames = listOf(
@@ -349,6 +351,8 @@ class ApplicationTest {
                     LocalizedName("ko", "일본성공회"),
                     LocalizedName("pt", "Igreja Anglicana no Japão"),
                     LocalizedName("id", "Gereja Anglikan di Jepang"),
+                    LocalizedName("zh-Hans", "日本圣公会"),
+                    LocalizedName("zh-Hant", "日本聖公會"),
                 ),
                 address = "〒105-0011 東京都港区芝公園３丁目６−１８",
                 location = GeoPoint(35.6601808, 139.743601),
@@ -360,6 +364,8 @@ class ApplicationTest {
                 "ko" to "미나토구",
                 "pt" to "Distrito de Minato",
                 "id" to "Distrik Minato",
+                "zh-Hans" to "港区",
+                "zh-Hant" to "港區",
             )
             val denominationQueries = mapOf(
                 "ja" to "日本聖公会",
@@ -367,6 +373,8 @@ class ApplicationTest {
                 "ko" to "일본성공회",
                 "pt" to "Igreja Anglicana no Japão",
                 "id" to "Gereja Anglikan di Jepang",
+                "zh-Hans" to "日本圣公会",
+                "zh-Hant" to "日本聖公會",
             )
             val engines = supportedLanguageCodes.associateWith { language ->
                 val index = root.resolve("index-$language")
@@ -384,12 +392,12 @@ class ApplicationTest {
                 (denominationQueries.keys).forEach { language ->
                     listOf(denominationQueries.getValue(language), geonames.getValue(language)).forEach { query ->
                         val encoded = URLEncoder.encode(query, Charsets.UTF_8.name())
-                        val response = client.get("/api/v1/churches/search?q=$encoded")
+                        val response = client.get("/api/v1/churches/search?q=$encoded&lang=$language")
                         assertEquals(HttpStatusCode.OK, response.status, "$language: $query")
                         val result = Json.decodeFromString<ChurchSearchResponse>(response.bodyAsText())
                         assertEquals(1, result.hits.size, "$language: $query")
                         assertEquals(church.id, result.hits.single().churchId, "$language: $query")
-                        assertEquals(5, result.hits.single().localizedDenominationNames.size)
+                        assertEquals(supportedLanguageCodes.size, result.hits.single().localizedDenominationNames.size)
                     }
                 }
             }

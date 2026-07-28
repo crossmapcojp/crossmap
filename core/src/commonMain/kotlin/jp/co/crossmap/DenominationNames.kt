@@ -71,6 +71,8 @@ fun denominationNamePart(value: String, language: Language): String {
         Language.KOREAN -> trimmed.removeSuffix(" 교회").removeSuffix("교회").removeSuffix(" 교단").removeSuffix("교단")
         Language.PORTUGUESE -> trimmed.removePrefix("Igreja ").removePrefix("Igrejas ")
         Language.INDONESIAN -> trimmed.removePrefix("Gereja ")
+        Language.CHINESE_SIMPLIFIED -> trimmed.removeSuffix("教会").removeSuffix("教派")
+        Language.CHINESE_TRADITIONAL -> trimmed.removeSuffix("教會").removeSuffix("教派")
     }.trim()
     return when {
         language == Language.ENGLISH && withoutCongregation.matches(Regex("[a-z][a-z0-9.-]*")) ->

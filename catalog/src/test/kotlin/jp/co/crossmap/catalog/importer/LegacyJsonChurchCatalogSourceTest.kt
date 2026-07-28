@@ -3,6 +3,10 @@ package jp.co.crossmap.catalog.importer
 import jp.co.crossmap.ChurchRecord
 import jp.co.crossmap.GeoPoint
 import jp.co.crossmap.LocalizedName
+import jp.co.crossmap.LocalizedNameGenerationMethod
+import jp.co.crossmap.LocalizedNameMetadata
+import jp.co.crossmap.LocalizedNameReviewStatus
+import jp.co.crossmap.LocalizedNameSource
 import jp.co.crossmap.SocialPlatform
 import jp.co.crossmap.SocialProfile
 import kotlin.test.Test
@@ -35,6 +39,30 @@ class LegacyJsonChurchCatalogSourceTest {
         assertFailsWith<IllegalArgumentException> {
             source.normalize(church(location = GeoPoint(91.0, 0.0)), SourceMetadata("churches.json", "checksum", 0))
         }
+    }
+
+    @Test
+    fun preservesBothChineseScriptsAndReviewedMetadataForNeo4jImport() {
+        val reviewed = LocalizedNameMetadata(
+            source = LocalizedNameSource.MANUAL,
+            generationMethod = LocalizedNameGenerationMethod.EXACT_OVERRIDE,
+            confidence = 1.0,
+            reviewStatus = LocalizedNameReviewStatus.REVIEWED,
+        )
+        val record = source.normalize(
+            church(
+                localizedNames = listOf(
+                    LocalizedName("zh-Hans", "东京恩典教会", reviewed),
+                    LocalizedName("zh-Hant", "東京恩典教會", reviewed),
+                ),
+            ),
+            SourceMetadata("churches.json", "checksum", 0),
+        )
+
+        assertEquals("东京恩典教会", record.names["zh-CN"])
+        assertEquals("東京恩典教會", record.names["zh-TW"])
+        assertEquals(setOf("zh-Hans", "zh-Hant"), record.localizedNames.map(LocalizedName::languageCode).filter { it.startsWith("zh-") }.toSet())
+        assertEquals(LocalizedNameReviewStatus.REVIEWED, record.localizedNames.single { it.languageCode == "zh-Hans" }.metadata?.reviewStatus)
     }
 
     private fun church(

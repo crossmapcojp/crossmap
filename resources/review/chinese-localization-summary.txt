@@ -1,0 +1,9 @@
+Chinese localization migration
+churches processed: 9464
+zh-Hans generated: 0
+zh-Hant generated: 0
+reviewed/official preserved: 2
+ministers localized: 0
+churches requiring review: 9382
+indexing changes: 0
+dictionary coverage: 48.98%

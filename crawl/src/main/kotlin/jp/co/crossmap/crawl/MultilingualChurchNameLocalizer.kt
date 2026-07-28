@@ -1,6 +1,10 @@
 package jp.co.crossmap.crawl
 
 import jp.co.crossmap.LocalizedName
+import jp.co.crossmap.LocalizedNameGenerationMethod
+import jp.co.crossmap.LocalizedNameMetadata
+import jp.co.crossmap.LocalizedNameReviewStatus
+import jp.co.crossmap.LocalizedNameSource
 import jp.co.crossmap.ChurchTradition
 import jp.co.crossmap.Language
 import jp.co.crossmap.denominationNamePart
@@ -36,7 +40,7 @@ class MultilingualChurchNameLocalizer(
     private val multilingualGeonames: Map<String, Map<String, String>> = emptyMap(),
     branchGeonames: Set<String> = emptySet(),
 ) {
-    private val supportedTargets = listOf("en", "ko", "pt", "id")
+    private val supportedTargets = listOf("en", "ko", "pt", "id", "zh-Hans", "zh-Hant")
     private val geonameEnglishTranslations = geonames.values.toSet()
     private val latinToJapaneseTerms = buildMap {
         listOf("en", "ko", "pt", "id", "es", "fr", "de", "it", "tl").forEach { sourceLanguage ->
@@ -135,6 +139,11 @@ class MultilingualChurchNameLocalizer(
                     } else {
                         composed
                     },
+                    metadata = if (Language.fromCode(language) in chineseLanguages) {
+                        chineseMetadata(components, language)
+                    } else {
+                        null
+                    },
                 )
             }
         }
@@ -143,11 +152,11 @@ class MultilingualChurchNameLocalizer(
         val retainedDecomposedNames = decomposed.localizedNames.filterNot { localized ->
             sourceComponents != null && localized.languageCode.substringBefore('-').lowercase() == "ja"
         }
-        val originalLanguages = retainedDecomposedNames.map { it.languageCode.substringBefore('-').lowercase() }.toSet()
+        val originalLanguages = retainedDecomposedNames.map(::canonicalLanguageCode).toSet()
         val localizedNames = (
             listOf(LocalizedName("ja", japaneseName)) +
                 retainedDecomposedNames +
-                generated.filter { it.languageCode !in originalLanguages }
+                generated.filter { canonicalLanguageCode(it.languageCode) !in originalLanguages }
             )
             .filter { it.name.isNotBlank() }
             .map { localized ->
@@ -162,7 +171,7 @@ class MultilingualChurchNameLocalizer(
                     localized
                 }
             }
-            .distinctBy { it.languageCode.substringBefore('-').lowercase() to it.name }
+            .distinctBy { canonicalLanguageCode(it.languageCode) to it.name }
         return LocalizedChurchNameResult(
             japaneseName = japaneseName,
             latinName = latinName,
@@ -311,13 +320,48 @@ class MultilingualChurchNameLocalizer(
         } else {
             withoutLocationConnector
         }
+        val isChinese = Language.fromCode(targetLanguage) in chineseLanguages
         val translated = orderedComponents.map { component ->
             component.translations[targetLanguage]
-                ?: component.translations["en"]
+                ?: (if (isChinese) null else component.translations["en"])
                 ?: component.translations[component.sourceLanguage]
                 ?: component.source
         }
-        return translated.filter(String::isNotBlank).joinToString(" ").takeIf(String::isNotBlank)
+        val separator = if (isChinese) "" else " "
+        return translated.filter(String::isNotBlank).joinToString(separator).takeIf(String::isNotBlank)
+    }
+
+    private fun chineseMetadata(
+        components: List<MultilingualNameComponent>,
+        targetLanguage: String,
+    ): LocalizedNameMetadata {
+        val matched = components.filter { component ->
+            val translated = component.translations[targetLanguage]
+            !translated.isNullOrBlank() && !(translated == component.source && japaneseKana.containsMatchIn(translated))
+        }
+        val unmatched = components.filterNot { it in matched }.map(MultilingualNameComponent::source)
+        val reviewReasons = buildList {
+            if (unmatched.isNotEmpty()) add("Unmatched source segments were preserved")
+            if (unmatched.any(japaneseKana::containsMatchIn)) add("Chinese output retains Japanese Kana")
+        }
+        return LocalizedNameMetadata(
+            source = LocalizedNameSource.GENERATED,
+            generationMethod = if (unmatched.isEmpty()) {
+                LocalizedNameGenerationMethod.TOKEN_RULE
+            } else {
+                LocalizedNameGenerationMethod.ORIGINAL_FALLBACK
+            },
+            dictionaryVersion = CHINESE_DICTIONARY_VERSION,
+            confidence = if (unmatched.isEmpty()) 0.9 else 0.6,
+            reviewStatus = if (unmatched.isEmpty()) {
+                LocalizedNameReviewStatus.UNREVIEWED
+            } else {
+                LocalizedNameReviewStatus.NEEDS_REVIEW
+            },
+            reviewReasons = reviewReasons,
+            matchedDictionaryEntries = matched.map(MultilingualNameComponent::source),
+            unmatchedSegments = unmatched,
+        )
     }
 
     private fun buildJapaneseTerms(
@@ -420,9 +464,22 @@ class MultilingualChurchNameLocalizer(
         Language.KOREAN -> "가톨릭교회"
         Language.PORTUGUESE -> "Igreja Católica"
         Language.INDONESIAN -> "Gereja Katolik"
+        Language.CHINESE_SIMPLIFIED -> "天主教堂"
+        Language.CHINESE_TRADITIONAL -> "天主教堂"
     }
 
     private fun String.removeEnglishAdministrativeSuffix(): String =
         replace(Regex("(?i)(?:[- ](?:ku|shi|cho|machi|mura)| (?:ward|city|town|village))$"), "").trim()
+
+    private fun canonicalLanguageCode(value: LocalizedName): String = canonicalLanguageCode(value.languageCode)
+
+    private fun canonicalLanguageCode(value: String): String =
+        Language.fromCode(value)?.code ?: value.substringBefore('-').lowercase()
+
+    private companion object {
+        val chineseLanguages = setOf(Language.CHINESE_SIMPLIFIED, Language.CHINESE_TRADITIONAL)
+        val japaneseKana = Regex("[ぁ-ゟ゠-ヿ]")
+        const val CHINESE_DICTIONARY_VERSION = "2026-07-28"
+    }
 
 }

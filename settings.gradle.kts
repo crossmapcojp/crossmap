@@ -41,6 +41,7 @@ if (useLocalLuceneKmp && file("../bbl-lucene/lucene-kmp").isDirectory) {
             substitute(module("org.gnit.lucene-kmp:lucene-kmp-queryparser")).using(project(":queryparser"))
             substitute(module("org.gnit.lucene-kmp:lucene-kmp-analysis-common")).using(project(":analysis:common"))
             substitute(module("org.gnit.lucene-kmp:lucene-kmp-analysis-kuromoji")).using(project(":analysis:kuromoji"))
+            substitute(module("org.gnit.lucene-kmp:lucene-kmp-analysis-smartcn")).using(project(":analysis:smartcn"))
         }
     }
 }

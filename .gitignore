@@ -60,6 +60,8 @@ resources/raw
 /webclient/ko/
 /webclient/pt/
 /webclient/id/
+/webclient/zh-Hans/
+/webclient/zh-Hant/
 /webclient/church/
 /webclient/manifest.json
 /webclient/sitemap.xml

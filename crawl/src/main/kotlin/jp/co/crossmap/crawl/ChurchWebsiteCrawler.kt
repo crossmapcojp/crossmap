@@ -19,6 +19,11 @@ import jp.co.crossmap.ChurchRecord
 import jp.co.crossmap.ChurchWebsitePolicy
 import jp.co.crossmap.CrawledContentType
 import jp.co.crossmap.CrawledPage
+import jp.co.crossmap.Language
+import jp.co.crossmap.LocalizedName
+import jp.co.crossmap.LocalizedNameReviewStatus
+import jp.co.crossmap.LocalizedNameSource
+import jp.co.crossmap.localizedDomainText
 import kotlinx.serialization.json.Json
 import org.jsoup.Jsoup
 
@@ -28,6 +33,8 @@ class ChurchWebsiteCrawler(
     private val maxConcurrency: Int = 32,
     private val hostDelayMillis: Long = 250,
     private val maxAttempts: Int = 3,
+    private val maxDepth: Int = 1,
+    private val maxPagesPerChurch: Int = 12,
     private val cacheFreshness: Duration = Duration.ofDays(30),
     private val json: Json = Json { ignoreUnknownKeys = true; prettyPrint = true; encodeDefaults = true },
     client: HttpClient? = null,
@@ -45,6 +52,8 @@ class ChurchWebsiteCrawler(
         cacheRoot: Path = CrossmapPaths.defaultCacheRoot(resourcesRoot),
     ): GooglePlacesCrawlReport {
         require(maxConcurrency in 1..32) { "maxConcurrency must be between 1 and 32" }
+        require(maxDepth in 0..3) { "maxDepth must be between 0 and 3" }
+        require(maxPagesPerChurch in 1..100) { "maxPagesPerChurch must be between 1 and 100" }
         require(!cacheFreshness.isNegative) { "cacheFreshness must not be negative" }
         fetches.clear()
         val webCache = CrossmapPaths(resourcesRoot, cacheRoot).churchWebPages
@@ -69,7 +78,8 @@ class ChurchWebsiteCrawler(
             "website_refresh event=start churches=${churches.size} crawlable_homes=${crawlableHomes.size} " +
                 "fresh_homes=$freshHomes stale_homes=${crawlableHomes.size - freshHomes - missingHomes} " +
                 "missing_homes=$missingHomes social_homes_skipped=$socialHomes unique_hosts=$uniqueHosts " +
-                "concurrency=$maxConcurrency cache_freshness_hours=${cacheFreshness.toHours()}",
+                "concurrency=$maxConcurrency max_depth=$maxDepth max_pages_per_church=$maxPagesPerChurch " +
+                    "cache_freshness_hours=${cacheFreshness.toHours()}",
         )
         val startedAt = System.nanoTime()
         val completed = AtomicInteger()
@@ -175,28 +185,35 @@ class ChurchWebsiteCrawler(
         )
         val home = sanitizedChurch.websiteUrl.takeIf(websitePolicy::isCrawlableChurchWebsite)
             ?: return ChurchRefresh(sanitizedChurch, emptyList(), 0, 0, 0)
-        val queue = ArrayDeque<String>().apply {
-            add(home)
-            sanitizedChurch.pages.map { it.url }
-                .filter { it != home && websitePolicy.isCrawlableChurchWebsite(it) }
-                .forEach(::add)
-        }
+        data class QueuedUrl(val url: String, val depth: Int)
+        val queue = ArrayDeque<QueuedUrl>().apply { add(QueuedUrl(home, 0)) }
         val visited = linkedSetOf<String>()
         val pages = mutableListOf<CrawledPage>()
+        val officialNames = mutableListOf<LocalizedName>()
         val entries = mutableListOf<CrawlManifestEntry>()
         var fetched = 0
         var unchanged = 0
         var errors = 0
-        while (queue.isNotEmpty() && visited.size < 6) {
-            val url = queue.removeFirst()
+        while (queue.isNotEmpty() && visited.size < maxPagesPerChurch) {
+            val (url, depth) = queue.removeFirst()
+            if (depth > maxDepth) continue
             if (!visited.add(url)) continue
             val previousEntry = previous[church.id to url]
             if (url.sha1() !in urlCache && previousEntry?.let(::isFresh) != true && !allowed(url)) continue
             val result = fetch(church.id, url, previousEntry, webCache)
             entries += result.entry
             result.page?.let { page ->
-                pages += page
-                if (url == home) discoverLinks(home, page.text, result.html.orEmpty()).forEach(queue::addLast)
+                val outgoingLinks = discoverLinks(home, page.finalUrl, result.html.orEmpty())
+                val officialName = ChurchWebsiteOfficialNameExtractor.extract(page.finalUrl, result.html.orEmpty())
+                officialName?.localizedName?.let(officialNames::add)
+                pages += page.copy(
+                    depth = depth,
+                    outgoingLinks = outgoingLinks,
+                    languageCode = officialName?.pageLanguageCode,
+                )
+                if (depth < maxDepth) {
+                    outgoingLinks.forEach { queue.addLast(QueuedUrl(it, depth + 1)) }
+                }
             }
             when {
                 result.entry.error != null -> errors++
@@ -205,13 +222,51 @@ class ChurchWebsiteCrawler(
             }
         }
         val finalPages = if (pages.isEmpty() && unchanged > 0) sanitizedChurch.pages else pages
+        val localizedNames = mergeOfficialNames(sanitizedChurch.localizedNames, officialNames)
+        val japaneseName = localizedDomainText(
+            Language.JAPANESE,
+            localizedNames,
+            english = sanitizedChurch.englishName,
+            japanese = sanitizedChurch.name,
+        ) ?: sanitizedChurch.name
+        val englishName = localizedDomainText(
+            Language.ENGLISH,
+            localizedNames,
+            english = sanitizedChurch.englishName,
+            japanese = japaneseName,
+        ) ?: sanitizedChurch.englishName
         return ChurchRefresh(
-            sanitizedChurch.copy(pages = finalPages, updatedAt = Instant.now().toString()),
+            sanitizedChurch.copy(
+                name = japaneseName,
+                englishName = englishName,
+                localizedNames = localizedNames,
+                pages = finalPages,
+                updatedAt = Instant.now().toString(),
+            ),
             entries,
             fetched,
             unchanged,
             errors,
         )
+    }
+
+    private fun mergeOfficialNames(
+        existing: List<LocalizedName>,
+        extracted: List<LocalizedName>,
+    ): List<LocalizedName> = extracted.distinctBy { it.languageCode to it.name }.fold(existing) { names, official ->
+        val sameLanguage = names.filter { Language.fromCode(it.languageCode) == Language.fromCode(official.languageCode) }
+        val hasProtectedName = sameLanguage.any { candidate ->
+            candidate.metadata?.source == LocalizedNameSource.MANUAL ||
+                candidate.metadata?.reviewStatus == LocalizedNameReviewStatus.REVIEWED
+        }
+        when {
+            hasProtectedName -> names
+            sameLanguage.any { it.name == official.name && it.metadata?.source == LocalizedNameSource.OFFICIAL } -> names
+            else -> names.filterNot { candidate ->
+                Language.fromCode(candidate.languageCode) == Language.fromCode(official.languageCode) &&
+                    candidate.metadata?.source != LocalizedNameSource.OFFICIAL
+            } + official
+        }
     }
 
     private data class FetchResult(val entry: CrawlManifestEntry, val page: CrawledPage?, val html: String?)
@@ -230,7 +285,7 @@ class ChurchWebsiteCrawler(
                 throw error
             }
         }
-        val cachedContent = if (result.page == null && previous == null) {
+        val cachedContent = if (result.page == null) {
             cachedContent(
                 url,
                 result.entry.finalUrl,
@@ -399,16 +454,27 @@ class ChurchWebsiteCrawler(
         throw requireNotNull(failure)
     }
 
-    private fun discoverLinks(home: String, text: String, html: String): List<String> {
+    private fun discoverLinks(home: String, pageUrl: String, html: String): List<String> {
         if (html.isBlank()) return emptyList()
         val origin = URI(home)
-        val accepted = Regex("about|belief|faith|access|contact|ministry|church|教会|私たち|信仰|アクセス|集会|礼拝", RegexOption.IGNORE_CASE)
-        return Jsoup.parse(html, home).select("a[href]").asSequence()
-            .map { it.absUrl("href").substringBefore('#') }
-            .filter { it.startsWith("http") }
-            .filter { runCatching { URI(it).host.equals(origin.host, ignoreCase = true) }.getOrDefault(false) }
-            .filter { accepted.containsMatchIn(it) || accepted.containsMatchIn(text) && it == home }
-            .distinct().take(5).toList()
+        val priority = Regex(
+            "(?:^|/)(?:ja?|jp|japanese|zh|cn?|chinese)(?:/|$)|about|belief|faith|access|contact|ministry|church|" +
+                "教会|教會|私たち|信仰|アクセス|集会|聚會|礼拝|禮拜|日本語|中文",
+            RegexOption.IGNORE_CASE,
+        )
+        return Jsoup.parse(html, pageUrl).select("a[href]").asSequence()
+            .map { link -> link.absUrl("href").substringBefore('#') to link.text() }
+            .filter { (url) -> url.startsWith("http") }
+            .filter { (url) -> runCatching { URI(url).host.equals(origin.host, ignoreCase = true) }.getOrDefault(false) }
+            .filterNot { (url) -> excludedWebAssetPattern.containsMatchIn(URI(url).path.orEmpty()) }
+            .distinctBy { (url) -> url }
+            .sortedWith(
+                compareByDescending<Pair<String, String>> { (url, label) -> priority.containsMatchIn("$url $label") }
+                    .thenBy { it.first },
+            )
+            .map(Pair<String, String>::first)
+            .take(MAX_RECORDED_OUTGOING_LINKS)
+            .toList()
     }
 
     private fun allowed(url: String): Boolean {
@@ -448,5 +514,13 @@ class ChurchWebsiteCrawler(
         Files.writeString(temp, content)
         runCatching { Files.move(temp, path, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING) }
             .getOrElse { Files.move(temp, path, StandardCopyOption.REPLACE_EXISTING) }
+    }
+
+    private companion object {
+        const val MAX_RECORDED_OUTGOING_LINKS = 100
+        val excludedWebAssetPattern = Regex(
+            """\.(?:pdf|jpe?g|png|gif|svg|webp|css|js|zip|mp[34]|wav|mov)(?:$|\?)""",
+            RegexOption.IGNORE_CASE,
+        )
     }
 }

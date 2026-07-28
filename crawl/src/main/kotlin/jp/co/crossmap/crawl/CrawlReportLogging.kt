@@ -31,6 +31,8 @@ internal enum class CrawlReport(val fileSuffix: String) {
     ENGLISH_NAMES("english-names"),
     ANALYZE_ENGLISH_NAMES("analyze-english-names"),
     DENOMINATION_ENGLISH_NAMES("denomination-english-names"),
+    CHINESE_LOCALIZATION("chinese-localization"),
+    CHINESE_DICTIONARY_VALIDATION("chinese-dictionary-validation"),
 }
 
 internal abstract class CrawlCommand(

@@ -862,6 +862,14 @@
     "churchListUrlList": ["https://jcobjapan.com/churches.html"]
   },
   {
+    "id": "JCCC",
+    "name": "華人教会",
+    "aliases": ["JCCC", "華人教會", "日本華人教会"],
+    "officialWebsite": "https://tokyo-jcc.com/",
+    "proposed": false,
+    "churchListUrlList": ["https://tokyo-jcc.com/link5-j/"]
+  },
+  {
     "id": "SFDK",
     "name": "世界福音伝道会",
     "aliases": [],

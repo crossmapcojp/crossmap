@@ -83,6 +83,19 @@ class ChurchNameEnglishDictionaryTest {
     }
 
     @Test
+    fun loadsStandardsCompliantScriptLocaleDictionaryFilenames() {
+        val root = Files.createTempDirectory("crossmap-script-dictionary")
+        val directory = Files.createDirectories(root.resolve("dictionary"))
+        Files.writeString(directory.resolve("ja-zh-Hans-concept-dictionary.csv"), "恵み,恩典\n")
+        Files.writeString(directory.resolve("ja-zh-Hant-concept-dictionary.csv"), "恵み,恩典\n")
+
+        val dictionary = ChurchNameEnglishDictionary.load(root).multilingual
+
+        assertEquals("恩典", dictionary.translate("恵み", "ja", "zh-Hans", ChurchNameDictionaryCategory.CONCEPT))
+        assertEquals("恩典", dictionary.translate("恵み", "ja", "zh-Hant", ChurchNameDictionaryCategory.CONCEPT))
+    }
+
+    @Test
     fun reviewedEntriesOverrideGenericAnalysisForRealChurchWords() {
         val dictionaries = ChurchNameEnglishDictionaries(
             concepts = mapOf("聖約" to "Seiyaku"),

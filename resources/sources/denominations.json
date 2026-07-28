@@ -2718,6 +2718,20 @@
     "lastVerifiedAt": "2026-07-28"
   },
   {
+    "id": "jccc",
+    "denominationId": "JCCC",
+    "denominationName": "華人教会",
+    "denominationWebsiteUrl": "https://tokyo-jcc.com/",
+    "churchListUrlList": ["https://tokyo-jcc.com/link5-j/"],
+    "socialUrlList": [],
+    "entrySelector": "",
+    "nameSelector": "",
+    "addressSelector": "",
+    "urlSelector": "",
+    "sourceSpreadsheetRow": 105,
+    "lastVerifiedAt": "2026-07-28"
+  },
+  {
     "id": "xlsx_9321cb4c0350",
     "denominationId": "SFDK",
     "denominationName": "世界福音伝道会",

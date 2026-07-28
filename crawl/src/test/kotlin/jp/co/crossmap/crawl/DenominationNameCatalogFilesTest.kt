@@ -13,7 +13,7 @@ import kotlinx.serialization.json.Json
 
 class DenominationNameCatalogFilesTest {
     @Test
-    fun all166DenominationsHaveNamesInAllFiveSupportedLanguages() {
+    fun everyDenominationHasNamesInEverySupportedLanguage() {
         val resources = resourcesRoot()
         val denominations = Json { ignoreUnknownKeys = true }.decodeFromString<List<Denomination>>(
             Files.readString(resources.resolve("catalog/denominations.json")),
@@ -24,7 +24,7 @@ class DenominationNameCatalogFilesTest {
             .toSet()
         val catalogs = DenominationNameCatalogFiles.load(resources)
 
-        assertEquals(166, expectedIds.size)
+        assertEquals(167, expectedIds.size)
         assertTrue(expectedIds.none { it.startsWith("XLSX_") }, "Spreadsheet row hashes must not be public IDs")
         assertTrue(
             expectedIds.all { it.matches(Regex("[A-Z][A-Z0-9_]*")) },
@@ -34,10 +34,10 @@ class DenominationNameCatalogFilesTest {
         Language.entries.forEach { language ->
             val names = catalogs.getValue(language)
             assertEquals(expectedIds, names.keys, "${language.code} denomination IDs")
-            assertEquals(166, names.size, "${language.code} denomination count")
+            assertEquals(167, names.size, "${language.code} denomination count")
             assertTrue(names.values.all(String::isNotBlank), "${language.code} contains a blank name")
         }
-        assertEquals(166 * 5, catalogs.values.sumOf(Map<*, *>::size))
+        assertEquals(167 * Language.entries.size, catalogs.values.sumOf(Map<*, *>::size))
         assertTrue(
             catalogs.getValue(Language.KOREAN).values.all { it.any { character -> character in '\uac00'..'\ud7a3' } },
             "Every Korean denomination name must contain Hangul",
@@ -53,8 +53,8 @@ class DenominationNameCatalogFilesTest {
     fun everyDenominationLanguageRecordsProvenanceAndSeparateTraditionMetadata() {
         val reviewed = DenominationNameCatalogFiles.loadReviewed(resourcesRoot())
 
-        assertEquals(166, reviewed.size)
-        assertEquals(166 * Language.entries.size, reviewed.values.sumOf { it.evidence.size })
+        assertEquals(167, reviewed.size)
+        assertEquals(167 * Language.entries.size, reviewed.values.sumOf { it.evidence.size })
         reviewed.values.forEach { denomination ->
             assertEquals(Language.entries.toSet(), denomination.evidence.keys, denomination.id)
             denomination.evidence.values.forEach { evidence ->

@@ -12,10 +12,25 @@ const escapeHtml = (value = "") => String(value).replace(/[&<>'"]/g, character =
   "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;",
 })[character]);
 
-const uiLanguage = document.documentElement.lang.toLowerCase().split("-")[0] || "en";
+const canonicalLanguage = value => {
+  const normalized = String(value || "").trim().replaceAll("_", "-").toLowerCase();
+  if (normalized === "zh" || normalized.startsWith("zh-cn") || normalized.startsWith("zh-sg") || normalized.startsWith("zh-hans")) return "zh-Hans";
+  if (normalized.startsWith("zh-tw") || normalized.startsWith("zh-hk") || normalized.startsWith("zh-mo") || normalized.startsWith("zh-hant")) return "zh-Hant";
+  return normalized.split("-")[0] || "en";
+};
+const uiLanguage = canonicalLanguage(document.documentElement.lang);
 const languageAlternates = [...document.querySelectorAll("link[rel='alternate'][hreflang]:not([hreflang='x-default'])")];
-const linkLanguage = link => (link.getAttribute("hreflang") || "").toLowerCase().split("-")[0];
+const linkLanguage = link => canonicalLanguage(link.getAttribute("hreflang"));
 const supportedLanguages = languageAlternates.map(linkLanguage).filter(Boolean);
+
+document.querySelectorAll(".language-switch a").forEach(link => {
+  link.addEventListener("click", event => {
+    try { localStorage.setItem("crossmap.language", canonicalLanguage(link.getAttribute("hreflang"))); } catch (_) { /* storage may be disabled */ }
+    if (!location.search || !link.pathname.endsWith("/result.html")) return;
+    event.preventDefault();
+    location.assign(`${link.href}${location.search}`);
+  });
+});
 
 const isInside = (latitude, longitude, south, west, north, east) =>
   latitude >= south && latitude <= north && longitude >= west && longitude <= east;
@@ -41,17 +56,24 @@ function languageFromCoordinates(latitude, longitude) {
 }
 
 if (location.pathname === "/" || location.pathname === "/index.html") {
+  let preferredLanguage = null;
+  try {
+    const storedLanguage = localStorage.getItem("crossmap.language");
+    if (storedLanguage) preferredLanguage = canonicalLanguage(storedLanguage);
+  } catch (_) { /* storage may be disabled */ }
   const browserLanguages = Array.isArray(navigator.languages) && navigator.languages.length
     ? navigator.languages
     : navigator.language ? [navigator.language] : [];
   const detectedLanguage = browserLanguages
-    .map(language => String(language).toLowerCase().split("-")[0])
+    .map(canonicalLanguage)
     .find(language => supportedLanguages.includes(language));
   const redirectToLanguage = language => {
     const destinationLanguage = supportedLanguages.includes(language) ? language : "en";
     location.replace(`/${destinationLanguage}/index.html`);
   };
-  if (detectedLanguage) {
+  if (preferredLanguage && supportedLanguages.includes(preferredLanguage)) {
+    redirectToLanguage(preferredLanguage);
+  } else if (detectedLanguage) {
     redirectToLanguage(detectedLanguage);
   } else if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
@@ -73,7 +95,10 @@ const format = (template, values) => Object.entries(values).reduce(
 
 function localizedValue(values, fallbackEnglish, fallbackJapanese) {
   const normalized = values || [];
-  const find = language => normalized.find(value => value.languageCode.toLowerCase().split("-")[0] === language)?.name?.trim();
+  const find = language => normalized.find(value => canonicalLanguage(value.languageCode) === language)?.name?.trim();
+  const alternateChinese = uiLanguage === "zh-Hans" ? "zh-Hant" : uiLanguage === "zh-Hant" ? "zh-Hans" : null;
+  if (alternateChinese) return find(uiLanguage) || find(alternateChinese) || fallbackJapanese?.trim() || find("ja")
+    || fallbackEnglish?.trim() || find("en") || normalized.find(value => value.name?.trim())?.name.trim() || "";
   return find(uiLanguage) || fallbackEnglish?.trim() || find("en") || fallbackJapanese?.trim() || find("ja")
     || normalized.find(value => value.name?.trim())?.name.trim() || "";
 }

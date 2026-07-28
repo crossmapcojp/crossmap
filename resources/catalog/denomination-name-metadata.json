@@ -1824,6 +1824,39 @@
       }
     }
   },
+  "JCCC": {
+    "tradition": null,
+    "evidence": {
+      "ja": {
+        "method": "OFFICIAL_WEBSITE",
+        "sourceUrl": "https://tokyo-jcc.com/link5-j/"
+      },
+      "en": {
+        "method": "TRANSLATED",
+        "note": "Reviewed English organization-name translation."
+      },
+      "ko": {
+        "method": "TRANSLATED",
+        "note": "Reviewed Korean organization-name translation."
+      },
+      "pt": {
+        "method": "TRANSLATED",
+        "note": "Reviewed Portuguese organization-name translation."
+      },
+      "id": {
+        "method": "TRANSLATED",
+        "note": "Reviewed Indonesian organization-name translation."
+      },
+      "zh-Hans": {
+        "method": "TRANSLATED",
+        "note": "Reviewed Simplified Chinese organization-name translation."
+      },
+      "zh-Hant": {
+        "method": "OFFICIAL_WEBSITE",
+        "sourceUrl": "https://tokyo-jcc.com/link5-j/"
+      }
+    }
+  },
     "SFDK": {
         "tradition": null,
         "evidence": {

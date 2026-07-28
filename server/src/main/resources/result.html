@@ -13,6 +13,7 @@
 <body class="results-page">
   <header class="search-header">
     <a class="wordmark" href="index.html">${siteName?html}</a>
+    <nav class="language-switch" aria-label="${languagePicker?html}"><#list alternates as alternate><a lang="${alternate.languageCode?html}" hreflang="${alternate.languageCode?html}" href="${alternate.url?html}">${alternate.displayName?html}</a><#sep> · </#sep></#list></nav>
     <form id="result-search-form" class="search-form" action="result.html" method="get">
       <input id="query" name="q" type="search" required placeholder="${searchPlaceholder?html}" autocomplete="off">
       <button type="submit">${searchButton?html}</button>

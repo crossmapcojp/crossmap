@@ -90,7 +90,7 @@ class CatalogIntegrityService(private val transactions: GraphTransactionRunner) 
             ),
             CheckDefinition(
                 "orphan-webpages",
-                "MATCH (page:Webpage) WHERE NOT (:Website)-[:HAS_PAGE]->(page) RETURN count(page) AS violations, collect(page.id)[0..20] AS sampleIds",
+                "MATCH (page:Webpage) WHERE NOT (:Website)-[:HAS_PAGE]->(page) AND NOT (:Webpage)-[:LINKS_TO]->(page) RETURN count(page) AS violations, collect(page.id)[0..20] AS sampleIds",
             ),
             CheckDefinition(
                 "duplicate-normalized-website-urls",

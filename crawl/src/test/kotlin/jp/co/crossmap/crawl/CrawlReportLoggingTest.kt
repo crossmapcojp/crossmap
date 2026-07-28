@@ -37,6 +37,8 @@ class CrawlReportLoggingTest {
                 "church-geonames",
                 "address-normalization",
                 "build-snapshot",
+                "chinese-localization",
+                "chinese-dictionary-validation",
             ),
             (CrawlReport.entries - specializedReports).map(CrawlReport::fileSuffix).toSet(),
         )

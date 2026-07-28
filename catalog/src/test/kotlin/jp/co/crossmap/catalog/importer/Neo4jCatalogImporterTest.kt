@@ -4,6 +4,8 @@ import jp.co.crossmap.catalog.ChurchId
 import jp.co.crossmap.catalog.MultilingualText
 import jp.co.crossmap.catalog.neo4j.GraphQueryRunner
 import jp.co.crossmap.catalog.neo4j.GraphTransactionRunner
+import jp.co.crossmap.LocalizedName
+import jp.co.crossmap.CrawledPage
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -27,7 +29,15 @@ class Neo4jCatalogImporterTest {
         assertTrue(transactions.queries.any { it.contains("UNWIND ${'$'}rows AS row") })
         assertTrue(transactions.queries.any { it.contains("UNWIND ${'$'}churchIds AS churchId") })
         assertTrue(transactions.queries.last().contains("run.status = 'COMPLETED'"))
+        assertTrue(transactions.queries.any { it.contains("MERGE (source)-[:LINKS_TO]->(target)") })
         assertTrue(transactions.parameters.all { parameters -> parameters.keys.none { it.contains("password", true) } })
+        val churchProperties = transactions.parameters.asSequence()
+            .flatMap { (it["rows"] as? List<*>)?.asSequence() ?: emptySequence() }
+            .mapNotNull { it as? Map<*, *> }
+            .mapNotNull { it["properties"] as? Map<*, *> }
+            .first { "localizedNamesJson" in it }
+        assertEquals("简体教会", churchProperties["name_zh_Hans"])
+        assertTrue(churchProperties["localizedNamesJson"].toString().contains("zh-Hans"))
     }
 
     private fun importer(transactions: ImportRecordingTransactions) = Neo4jCatalogImporter(
@@ -42,9 +52,23 @@ class Neo4jCatalogImporterTest {
         sourceChecksum = "checksum",
         records = listOf(
             ChurchImportRecord(
-                id = ChurchId("google:1"), googlePlaceId = "1", names = MultilingualText(mapOf("ja" to "教会")),
+                id = ChurchId("google:1"), googlePlaceId = "1",
+                names = MultilingualText(mapOf("ja" to "教会", "zh-Hans" to "简体教会", "zh-Hant" to "繁體教會")),
+                localizedNames = listOf(LocalizedName("zh-Hans", "简体教会"), LocalizedName("zh-Hant", "繁體教會")),
                 primaryName = "教会", englishName = "Church", titleLanguages = listOf("ja"), denomination = null,
-                category = null, address = "Tokyo", latitude = 35.0, longitude = 139.0, website = null,
+                category = null, address = "Tokyo", latitude = 35.0, longitude = 139.0,
+                website = WebsiteImportRecord(
+                    id = "website:1",
+                    url = "https://example.com/",
+                    normalizedUrl = "https://example.com/",
+                    pages = listOf(
+                        CrawledPage(
+                            url = "https://example.com/",
+                            contentHash = "hash",
+                            outgoingLinks = listOf("https://example.com/j/"),
+                        ),
+                    ),
+                ),
                 email = null, socialAccounts = emptyList(), ministers = emptyList(), determinations = emptyList(),
                 updatedAt = "2026-07-25T00:00:00Z", source = SourceMetadata("churches.json", "checksum", 0),
             ),

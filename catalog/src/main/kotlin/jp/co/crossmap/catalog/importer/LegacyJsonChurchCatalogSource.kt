@@ -8,6 +8,8 @@ import jp.co.crossmap.ChurchMinister
 import jp.co.crossmap.CrawledPage
 import jp.co.crossmap.FieldDetermination
 import jp.co.crossmap.LocalizedName
+import jp.co.crossmap.Language
+import jp.co.crossmap.localizedDomainText
 import jp.co.crossmap.SocialPlatform
 import jp.co.crossmap.SocialProfile
 import jp.co.crossmap.catalog.ChurchId
@@ -25,7 +27,7 @@ data class SourceMetadata(
 
 data class DenominationImportRef(
     val id: DenominationId,
-    val localizedNames: List<LocalizedName>,
+    val localizedNames: List<LocalizedName> = emptyList(),
 )
 
 data class WebsiteImportRecord(
@@ -51,6 +53,7 @@ data class ChurchImportRecord(
     val id: ChurchId,
     val googlePlaceId: String?,
     val names: MultilingualText,
+    val localizedNames: List<LocalizedName>,
     val primaryName: String,
     val englishName: String,
     val titleLanguages: List<String>,
@@ -131,9 +134,21 @@ class LegacyJsonChurchCatalogSource(
             addAll(church.localizedNames)
             add(LocalizedName("ja", church.name.trim()))
             church.englishName.trim().takeIf(String::isNotBlank)?.let { add(LocalizedName("en", it)) }
-        }.map { LocalizedName(it.languageCode.substringBefore('-').lowercase(), it.name.trim()) }
+        }.map { localized ->
+            localized.copy(
+                languageCode = Language.fromCode(localized.languageCode)?.code
+                    ?: localized.languageCode.substringBefore('-').lowercase(),
+                name = localized.name.trim(),
+            )
+        }
             .filter { it.name.isNotBlank() }
-            .distinctBy(LocalizedName::languageCode)
+            .groupBy(LocalizedName::languageCode)
+            .map { (languageCode, candidates) ->
+                val language = Language.fromCode(languageCode)
+                val selected = language?.let { localizedDomainText(it, candidates) }
+                candidates.firstOrNull { it.name == selected } ?: candidates.first()
+            }
+            .sortedBy(LocalizedName::languageCode)
         require(names.isNotEmpty()) { "Missing name for ${id.value}" }
         val website = church.websiteUrl.trim().takeIf(String::isNotBlank)?.let { url ->
             val normalizedUrl = normalizeUrl(url, retainFragment = true)
@@ -156,6 +171,7 @@ class LegacyJsonChurchCatalogSource(
             id = id,
             googlePlaceId = church.googleCid?.trim()?.takeIf(String::isNotBlank),
             names = MultilingualText(names.associate { it.languageCode to it.name }),
+            localizedNames = names,
             primaryName = church.name.trim(),
             englishName = church.englishName.trim(),
             titleLanguages = church.titleLanguages.map(String::trim).filter(String::isNotBlank).distinct().sorted(),

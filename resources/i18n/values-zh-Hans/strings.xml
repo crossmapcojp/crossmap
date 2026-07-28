@@ -1,0 +1,37 @@
+<resources>
+    <string name="site_name">Crossmap 教会搜索</string>
+    <string name="search_heading">寻找教会</string>
+    <string name="search_placeholder">教会名称、宗派或地点</string>
+    <string name="search_button">搜索</string>
+    <string name="search_results_title">“%1$s”的搜索结果</string>
+    <string name="search_results_nearby_title">%1$s附近“%2$s”的搜索结果</string>
+    <string name="search_results_count">%1$s所教会</string>
+    <string name="no_results">未找到教会。请尝试其他名称或地点。</string>
+    <string name="loading">正在加载…</string>
+    <string name="back_to_search">返回搜索</string>
+    <string name="previous_page">上一页</string>
+    <string name="next_page">下一页</string>
+    <string name="language_picker">显示语言</string>
+    <string name="language_picker_aria">选择显示语言</string>
+    <string name="church_label">教会</string>
+    <string name="church_address">地址</string>
+    <string name="church_denomination">宗派</string>
+    <string name="church_independent">独立教会</string>
+    <string name="church_website">网站</string>
+    <string name="church_social_links">社交链接</string>
+    <string name="download_index_prompt">下载搜索数据，以便在此设备上离线搜索。</string>
+    <string name="download_index_button">下载搜索数据</string>
+    <string name="download_failed">无法下载搜索数据。</string>
+    <string name="index_unavailable">搜索索引不可用。</string>
+    <string name="search_failed">搜索失败，请重试。</string>
+    <string name="church_detail_unavailable">教会详细信息不可用。</string>
+    <string name="distance_km">%1$s公里</string>
+    <string name="home_title">寻找教会 · Crossmap</string>
+    <string name="home_description">按名称、宗派或地点搜索日本的教会。</string>
+    <string name="results_title">教会搜索结果 · Crossmap</string>
+    <string name="results_description">查看 Crossmap 教会搜索中的匹配教会。</string>
+    <string name="church_page_title">%1$s · Crossmap</string>
+    <string name="church_page_description">%1$s的教会信息：宗派、地址、网站和社交链接。</string>
+    <string name="choose_language">选择语言</string>
+    <string name="server_error">服务暂时不可用，请稍后重试。</string>
+</resources>
