@@ -11,6 +11,8 @@ import jp.co.crossmap.ChurchWebsitePolicy
 import jp.co.crossmap.GeoPoint
 import jp.co.crossmap.JapaneseAddressNormalizer
 import jp.co.crossmap.LocalizedName
+import jp.co.crossmap.SocialPlatform
+import jp.co.crossmap.SocialProfile
 import kotlin.io.path.extension
 import kotlin.io.path.nameWithoutExtension
 import kotlinx.serialization.Serializable
@@ -81,6 +83,7 @@ data class GooglePlaceChurchCandidate(
     val denominationHint: String? = null,
     val sourceLists: List<String>,
     val resolvedAt: String,
+    val socialProfiles: List<SocialProfile> = emptyList(),
 )
 
 @Serializable
@@ -190,9 +193,13 @@ class GoogleMapsPlaceParser(
             ?: addressFromPath.ifBlank { null }
 
         val address = GooglePlaceAddressNormalizer.normalize(rawAddress.orEmpty())
-        require(address.isNotBlank()) { "Google place address is blank" }
+        if (address.isBlank()) {
+            System.err.println("[parse] Warning: address is blank for '${seed.title}' (CID: ${seed.googleCid})")
+        }
 
-        val website = websitePolicy.publicWebsiteUrl(extractWebsite(document, html), seed.googleCid, seed.id)
+        val rawWebsite = extractWebsite(document, html)
+        val website = websitePolicy.publicWebsiteUrl(rawWebsite, seed.googleCid, seed.id)
+        val socialProfile = rawWebsite?.let { socialProfileFromUrl(it) }
         val ogDescEl = document.selectFirst("meta[property=og:description]")
         val categoryFromOg = if (ogDescEl != null) {
             val content = ogDescEl.attr("content").trim()
@@ -237,6 +244,7 @@ class GoogleMapsPlaceParser(
             denominationHint = GoogleSavedPlacesLists.deterministicDenominationId(seed.sourceLists),
             sourceLists = seed.sourceLists,
             resolvedAt = now,
+            socialProfiles = socialProfile?.let { listOf(it) }.orEmpty(),
         )
     }
 
@@ -251,6 +259,21 @@ class GoogleMapsPlaceParser(
         return ENCODED_WEBSITE.find(html)?.groupValues?.get(1)
             ?.let { URLDecoder.decode(it, Charsets.UTF_8) }
             ?.replace("\\u0026", "&")
+    }
+
+    private fun socialProfileFromUrl(url: String): SocialProfile? {
+        val host = url.substringAfter("://").substringBefore("/").substringBefore("?").lowercase().removePrefix("www.")
+        return when {
+            host == "facebook.com" || host.endsWith(".facebook.com") ->
+                SocialProfile(SocialPlatform.FACEBOOK, url)
+            host == "x.com" || host.endsWith(".x.com") || host == "twitter.com" || host.endsWith(".twitter.com") ->
+                SocialProfile(SocialPlatform.X, url)
+            host == "instagram.com" || host.endsWith(".instagram.com") ->
+                SocialProfile(SocialPlatform.INSTAGRAM, url)
+            host == "youtube.com" || host.endsWith(".youtube.com") || host == "youtu.be" ->
+                SocialProfile(SocialPlatform.YOUTUBE, url)
+            else -> null
+        }
     }
 
     companion object {

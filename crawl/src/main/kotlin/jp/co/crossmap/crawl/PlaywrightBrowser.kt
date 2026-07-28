@@ -99,6 +99,15 @@ class PlaywrightBrowser : Closeable {
         } catch (_: Exception) {
             // Continue with whatever we have
         }
+        // Wait for JS-rendered address element to appear in DOM
+        try {
+            page.waitForSelector(
+                "[data-item-id=address]",
+                Page.WaitForSelectorOptions().apply { timeout = 10_000.0 },
+            )
+        } catch (_: Exception) {
+            // Address may not exist for all places — continue with blank
+        }
         // Give extra time for JavaScript-rendered content to settle
         page.waitForTimeout(2_000.0)
     }

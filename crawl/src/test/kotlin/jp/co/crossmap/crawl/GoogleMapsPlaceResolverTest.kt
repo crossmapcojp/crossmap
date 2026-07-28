@@ -4,6 +4,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import jp.co.crossmap.GeoPoint
 import jp.co.crossmap.ChurchWebsitePolicy
+import jp.co.crossmap.SocialPlatform
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -456,5 +457,87 @@ class GoogleMapsPlaceResolverTest {
         assertTrue(candidate.address.isNotBlank(), "address should not be blank")
         assertTrue(candidate.location.latitude != 0.0, "latitude should be non-zero")
         assertTrue(candidate.location.longitude != 0.0, "longitude should be non-zero")
+    }
+
+    @Test
+    fun parsesPageWithBlankAddress() {
+        val resourcePath = Path.of("src/test/resources/googlesavedplaces/3842555701760964595.html")
+        val html = if (Files.exists(resourcePath)) {
+            Files.readString(resourcePath)
+        } else {
+            javaClass.getResourceAsStream("/googlesavedplaces/3842555701760964595.html")?.bufferedReader()?.readText()
+                ?: error("Test fixture 3842555701760964595.html not found")
+        }
+
+        val seed = GoogleSavedPlaceCrawl(
+            id = "google:3842555701760964595",
+            googleCid = "3842555701760964595",
+            title = "Assembléia de Deus Iwata",
+            googleMapsUrl = "https://www.google.com/maps/place/Assembl%C3%A9ia+de+Deus+Iwata/data=!4m2!3m1!1s0x601ae424ec0b1881:0x3553800d511d37f3",
+            sourceLists = listOf("教会"),
+        )
+
+        val candidate = GoogleMapsPlaceParser().parse(seed, html, now = "2026-07-28T00:00:00Z")
+
+        assertTrue(candidate.name.isNotBlank(), "name should not be blank")
+        assertEquals("", candidate.address, "address is blank when HTML lacks rendered address")
+        assertTrue(candidate.location.latitude != 0.0, "latitude should be non-zero")
+        assertTrue(candidate.location.longitude != 0.0, "longitude should be non-zero")
+    }
+
+    @Test
+    fun parsesPageWithRenderedAddress() {
+        val seed = GoogleSavedPlaceCrawl(
+            id = "google:3842555701760964595",
+            googleCid = "3842555701760964595",
+            title = "Assembléia de Deus Iwata",
+            googleMapsUrl = "https://www.google.com/maps/place/Assembl%C3%A9ia+de+Deus+Iwata/data=!4m2!3m1!1s0x601ae424ec0b1881:0x3553800d511d37f3",
+            sourceLists = listOf("教会"),
+        )
+        val html = """
+            <html itemscope="" itemtype="http://schema.org/Place" lang="ja"><head>
+              <meta content="Assembléia de Deus Iwata · 〒438-0086 静岡県磐田市見付３９９４" property="og:title">
+              <meta content="教会" property="og:description">
+              <title>Assembléia de Deus Iwata - Google マップ</title>
+            </head><body>
+              <h1 class="DUwDvf">Assembléia de Deus Iwata</h1>
+              <div class="RcCsl fVHpi w4vB1d NOE9ve M0S7ae AG25L">
+                <button class="CsEnBe" aria-label="住所: 〒438-0086 静岡県磐田市見付３９９４ " data-item-id="address">
+                  <div class="AeaXub">
+                    <div class="rogA2c ">
+                      <div class="Io6YTe fontBodyMedium kR99db fdkmkc">〒438-0086 静岡県磐田市見付３９９４</div>
+                    </div>
+                  </div>
+                </button>
+              </div>
+              <div class="RcCsl fVHpi w4vB1d NOE9ve M0S7ae AG25L">
+                <a class="CsEnBe" data-item-id="authority" href="https://m.facebook.com/jmead.iwatashi?ref=bookmarks">
+                  <div class="AeaXub">
+                    <div class="rogA2c ITvuef">
+                      <div class="Io6YTe fontBodyMedium kR99db fdkmkc">m.facebook.com</div>
+                    </div>
+                  </div>
+                </a>
+              </div>
+              https://www.google.com/maps/preview/place/%E3%80%92438-0086+%E9%9D%99%E5%B2%A1%E7%9C%8C%E7%A3%AF%E7%94%B0%E5%B8%82%E8%A6%8B%E4%BB%98%EF%BC%93%EF%BC%99%EF%BC%99%EF%BC%94/@34.7258351,137.8510563,17z
+              /url?q\\u003dhttps://m.facebook.com/jmead.iwatashi\\u0026opi\\u003d79508299
+            </body></html>
+        """.trimIndent()
+
+        val candidate = GoogleMapsPlaceParser().parse(seed, html, now = "2026-07-28T00:00:00Z")
+
+        assertTrue(candidate.name.isNotBlank(), "name should not be blank")
+        assertEquals("〒438-0086 静岡県磐田市見付３９９４", candidate.address)
+        assertEquals(GeoPoint(34.7258351, 137.8510563), candidate.location)
+        // facebook URL should be excluded from websiteUrl (treated as social platform)
+        assertTrue(
+            candidate.websiteUrl.contains("google.com/maps") || !candidate.websiteUrl.contains("facebook.com"),
+            "social platform URLs should not be stored as websiteUrl"
+        )
+        // facebook URL should be captured as a social profile
+        assertEquals(1, candidate.socialProfiles.size)
+        assertEquals(SocialPlatform.FACEBOOK, candidate.socialProfiles[0].platform)
+        assertEquals("https://m.facebook.com/jmead.iwatashi?ref=bookmarks", candidate.socialProfiles[0].url)
+        assertEquals("教会", candidate.category)
     }
 }

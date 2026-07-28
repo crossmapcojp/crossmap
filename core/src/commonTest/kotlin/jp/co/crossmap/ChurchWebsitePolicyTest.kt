@@ -59,4 +59,21 @@ class ChurchWebsitePolicyTest {
         assertFalse(policy.isSocialPlatform("https://tokyo-church.example/"))
         assertTrue(policy.isCrawlableChurchWebsite("https://tokyo-church.example/"))
     }
+
+    @Test
+    fun socialPlatformWebsiteUrlFallsBackToGooglePlacePage() {
+        listOf(
+            "https://www.facebook.com/TKBCJapaneseSection/",
+            "https://m.facebook.com/tokyo.church",
+            "https://instagram.com/tokyo_church",
+            "https://x.com/tokyo_church",
+            "https://youtube.com/channel/UC123",
+        ).forEach { url ->
+            assertEquals(
+                "https://www.google.com/maps?cid=8998728770320543438",
+                policy.publicWebsiteUrl(url, "8998728770320543438"),
+                "social URL: $url",
+            )
+        }
+    }
 }

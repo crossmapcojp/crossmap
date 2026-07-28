@@ -12,6 +12,7 @@ import jp.co.crossmap.ChurchRecord
 import jp.co.crossmap.DeterminationSource
 import jp.co.crossmap.FieldDetermination
 import jp.co.crossmap.LocalizedName
+import jp.co.crossmap.SocialProfile
 import jp.co.crossmap.crawl.denomination.OfficialDenominationChurchListPipeline
 import kotlinx.serialization.json.Json
 import kotlin.time.DurationUnit
@@ -316,9 +317,8 @@ class GoogleSavedPlacesCleanupWorkflow(
                 location = candidate.location,
                 websiteUrl = candidate.websiteUrl,
                 pages = previous?.pages.orEmpty().filterNot { websitePolicy.isExcluded(it.url) },
-                socialProfiles = previous?.socialProfiles.orEmpty(),
+                socialProfiles = (previous?.socialProfiles.orEmpty() + candidate.socialProfiles).distinctBy { it.url },
                 determinations = determinations,
-                updatedAt = determinedAt,
             )
         }
         val nonGoogle = existing.filter { it.googleCid == null }.map { church ->

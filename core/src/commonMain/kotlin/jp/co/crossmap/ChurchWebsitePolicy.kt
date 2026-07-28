@@ -29,7 +29,7 @@ class ChurchWebsitePolicy(excludedDomains: Collection<String>) {
 
     fun publicWebsiteUrl(url: String?, googleCid: String?, churchId: String? = null): String {
         val candidate = url.orEmpty().trim()
-        if (candidate.isNotBlank() && !isExcluded(candidate)) return candidate
+        if (candidate.isNotBlank() && !isExcluded(candidate) && !isSocialPlatform(candidate)) return candidate
         val cid = googleCid?.takeIf(String::isNotBlank)
             ?: churchId?.takeIf { it.startsWith("google:") }?.removePrefix("google:")
         return cid?.let(::googleMapsPlaceUrl).orEmpty()
