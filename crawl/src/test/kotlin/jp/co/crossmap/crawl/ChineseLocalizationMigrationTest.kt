@@ -10,6 +10,7 @@ import jp.co.crossmap.LocalizedNameReviewStatus
 import jp.co.crossmap.LocalizedNameSource
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class ChineseLocalizationMigrationTest {
     @Test
@@ -45,6 +46,13 @@ class ChineseLocalizationMigrationTest {
         assertEquals(2, first.report.ministersLocalized)
         assertEquals(1, first.report.churchesRequiringReview)
         assertEquals(mapOf("東京" to 2), first.report.unmatchedTokenFrequency)
+        assertEquals(listOf("fallback"), first.report.reviewEntries.single().reviewReasons)
+        assertEquals(listOf("教会"), first.report.reviewEntries.single().matchedDictionaryEntries)
+        assertEquals(listOf("東京"), first.report.reviewEntries.single().unmatchedSegments)
+        val catalogMetadata = migrated.localizedNames.single { it.languageCode == "zh-Hant" }.metadata!!
+        assertTrue(catalogMetadata.reviewReasons.isEmpty())
+        assertTrue(catalogMetadata.matchedDictionaryEntries.isEmpty())
+        assertTrue(catalogMetadata.unmatchedSegments.isEmpty())
         assertEquals(first.churches, second.churches)
         assertEquals(0, second.report.indexingChanges)
     }

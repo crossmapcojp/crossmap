@@ -1377,6 +1377,7 @@ private class LocalizeChineseNames : CrawlCommand("localize-chinese-names", Craw
 }
 
 private val reportJson = Json { prettyPrint = true; encodeDefaults = true }
+private val catalogJson = Json { prettyPrint = false; encodeDefaults = false }
 
 private fun writeJsonAtomically(path: Path, value: ChineseDictionaryValidationReport) =
     writeTextAtomically(path, reportJson.encodeToString(value))
@@ -1385,7 +1386,7 @@ private fun writeJsonAtomically(path: Path, value: ChineseLocalizationMigrationR
     writeTextAtomically(path, reportJson.encodeToString(value))
 
 private fun writeJsonAtomically(path: Path, value: List<ChurchRecord>) =
-    writeTextAtomically(path, reportJson.encodeToString(value))
+    writeTextAtomically(path, catalogJson.encodeToString(value) + "\n")
 
 private fun writeTextAtomically(path: Path, content: String) {
     Files.createDirectories(path.parent)

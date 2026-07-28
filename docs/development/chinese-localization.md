@@ -60,7 +60,7 @@ The validator reports malformed locales, duplicate/unpaired sources, conflicts, 
 
 The dry run writes:
 
-- `resources/review/chinese-localization-report.json`: per-church generated variants, confidence, reasons, rules, unmatched segments, coverage, and unmatched-token frequency;
+- `resources/review/chinese-localization-report.json`: per-church generated variants, confidence, reasons, rules, unmatched segments, coverage, and unmatched-token frequency. These verbose diagnostics live only in the review report; `resources/catalog/churches.json` retains compact source/method/confidence/review-status provenance and is serialized without formatting or default-valued fields so the canonical catalog stays below GitHub's large-file warning threshold;
 - `resources/review/chinese-localization-summary.txt`: human-readable totals;
 - `resources/review/chinese-dictionary-validation.json`: validation errors and review signals.
 

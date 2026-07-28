@@ -53,7 +53,7 @@ Build and refresh cached websites. The default follows same-domain links through
 ./gradlew :crawl:run --args='refresh --resources resources --max-concurrency 6 --max-depth 1 --max-pages-per-church 12'
 ```
 
-Chinese localization is an explicit, reviewable migration. Validate and dry-run first; the dry run writes JSON and text reports under `resources/review/` without changing `churches.json`:
+Chinese localization is an explicit, reviewable migration. Validate and dry-run first; the dry run writes JSON and text reports under `resources/review/` without changing `churches.json`. Detailed rule matches, unmatched segments, and explanations stay in that review report, while the canonical catalog retains compact provenance and is written without formatting/default-valued fields:
 
 ```sh
 ./gradlew :crawl:validateChineseDictionaries

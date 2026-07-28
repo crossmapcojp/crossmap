@@ -64,7 +64,8 @@ class ChineseLocalizationMigration(
         val migrated = churches.map { church ->
             val generated = localize(church)
             val generatedChinese = generated.localizedNames.filter(::isChinese)
-            val mergedChurchNames = mergeChineseNames(church.localizedNames, generatedChinese) { language, outcome ->
+            val compactGeneratedChinese = generatedChinese.map { it.withoutReviewDiagnostics() }
+            val mergedChurchNames = mergeChineseNames(church.localizedNames, compactGeneratedChinese) { language, outcome ->
                 when (outcome) {
                     MergeOutcome.PRESERVED -> preserved++
                     MergeOutcome.UNCHANGED -> Unit
@@ -93,7 +94,12 @@ class ChineseLocalizationMigration(
             }
             val updated = church.copy(localizedNames = mergedChurchNames, ministers = migratedMinisters)
             if (updated != church) indexingChanges++
-            reviewEntry(church, mergedChurchNames)?.let(reviewEntries::add)
+            val reportNames = chineseLanguages.mapNotNull { language ->
+                church.localizedNames.firstOrNull {
+                    Language.fromCode(it.languageCode) == language && isProtected(it)
+                } ?: generatedChinese.firstOrNull { Language.fromCode(it.languageCode) == language }
+            }
+            reviewEntry(church, reportNames)?.let(reviewEntries::add)
             updated
         }
         return ChineseLocalizationMigrationResult(
@@ -166,6 +172,18 @@ class ChineseLocalizationMigration(
             generationMethods = metadata.map { it.generationMethod.name }.distinct(),
         )
     }
+
+    /**
+     * Detailed rule matches and review explanations live in the migration report. The canonical
+     * catalog retains only the provenance fields needed by indexing and later migration runs.
+     */
+    private fun LocalizedName.withoutReviewDiagnostics(): LocalizedName = copy(
+        metadata = metadata?.copy(
+            reviewReasons = emptyList(),
+            matchedDictionaryEntries = emptyList(),
+            unmatchedSegments = emptyList(),
+        ),
+    )
 
     private fun isProtected(name: LocalizedName): Boolean = name.metadata?.let { metadata ->
         metadata.source in setOf(LocalizedNameSource.MANUAL, LocalizedNameSource.OFFICIAL) ||
