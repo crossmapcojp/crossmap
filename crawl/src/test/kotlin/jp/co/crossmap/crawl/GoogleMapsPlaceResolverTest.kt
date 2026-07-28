@@ -263,6 +263,29 @@ class GoogleMapsPlaceResolverTest {
     }
 
     @Test
+    fun fetchedCanonicalNameReplacesPromotionalSavedPlaceTitle() {
+        val seed = GoogleSavedPlaceCrawl(
+            id = "google:17018403239113972009",
+            googleCid = "17018403239113972009",
+            title = "Lifehouse Hiroshima International Church - Online Services every week.\n" +
+                "毎週オンライン礼拝をやってます！",
+            japaneseName = "毎週オンライン礼拝をやってます!",
+            latinName = "Lifehouse Hiroshima International Church - Online Services every week.",
+            googleMapsUrl = "https://www.google.com/maps?cid=17018403239113972009",
+            sourceLists = listOf("教会"),
+        )
+
+        val candidate = GoogleMapsPlaceParser().parse(
+            seed,
+            html("ライフハウス広島インターナショナルチャーチ", "広島県広島市", 34.39, 132.46),
+            now = "2026-07-28T00:00:00Z",
+        )
+
+        assertEquals("ライフハウス広島インターナショナルチャーチ", candidate.name)
+        assertEquals("Lifehouse Hiroshima International Church", candidate.latinName)
+    }
+
+    @Test
     fun resolverParserOwnsMultilingualLocalizationFromRawGoogleTitle() {
         val resources = generateSequence(Path.of("").toAbsolutePath().normalize()) { it.parent }
             .first { Files.isRegularFile(it.resolve("settings.gradle.kts")) }

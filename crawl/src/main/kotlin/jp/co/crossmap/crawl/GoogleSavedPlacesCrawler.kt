@@ -221,12 +221,26 @@ class GoogleMapsPlaceParser(
         val decomposed = localized?.let {
             DecomposedChurchName(localizationName, it.japaneseName, it.latinName, it.localizedNames, it.pattern)
         } ?: nameDecomposer.decompose(localizationName)
+        val fetchedName = ChurchPublicNameNormalizer.normalize(rawName)
+        val fetchedDecomposed = nameDecomposer.decompose(fetchedName)
+        val fetchedCanonicalJapaneseName = fetchedDecomposed.japaneseName?.takeIf {
+            seed.japaneseName != null && fetchedName != localizationName &&
+                fetchedName.any { character -> character.code in 0x3040..0x30ff || character.code in 0x4e00..0x9fff }
+        }
+        val savedLatinName = (decomposed.latinName ?: seed.latinName)?.let(::withoutPromotionalSuffix)
         val seedHasRicherName = localized == null &&
             (seed.japaneseName != null || seed.latinName != null || seed.localizedNames.isNotEmpty()) &&
             (decomposed.pattern == ChurchNamePattern.SINGLE_NAME ||
                 (decomposed.latinName != null && decomposed.latinName == seed.latinName))
-        val japaneseName = if (seedHasRicherName) seed.japaneseName else decomposed.japaneseName
-        val latinName = if (seedHasRicherName) seed.latinName else decomposed.latinName
+        val japaneseName = fetchedCanonicalJapaneseName
+            ?: if (seedHasRicherName) seed.japaneseName else decomposed.japaneseName
+        val latinName = if (fetchedCanonicalJapaneseName != null) {
+            savedLatinName
+        } else if (seedHasRicherName) {
+            seed.latinName
+        } else {
+            decomposed.latinName
+        }
         val localizedNames = if (seedHasRicherName) seed.localizedNames else decomposed.localizedNames
         return GooglePlaceChurchCandidate(
             id = seed.id,
@@ -296,7 +310,17 @@ class GoogleMapsPlaceParser(
         private val ENCODED_WEBSITE = Regex(
             """/url\?q\\\\u003d(https?://.+?)\\\\u0026opi""",
         )
+        private val CHURCH_NAME_TERM = Regex(
+            """\b(church|chapel|cathedral|mission|parish|fellowship|ministry|ministries)\b""",
+            RegexOption.IGNORE_CASE,
+        )
     }
+
+    private fun withoutPromotionalSuffix(name: String): String {
+        val canonical = name.substringBefore(" - ").trim()
+        return canonical.takeIf { CHURCH_NAME_TERM.containsMatchIn(it) } ?: name
+    }
+
 }
 
 internal object GooglePlaceAddressNormalizer {
