@@ -9,18 +9,16 @@ There are two inputs to understand:
 1. **Current bootstrap data:** `resources/catalog/churches.json` was created once from the clean data under the old gmap `output` directory. The copied HTML now lives in `cache/web-pages`. Crossmap does not need the gmap project at runtime.
 2. **Permanent repeatable starting point:** the personal Google Takeout Saved Places CSV directory (containing files such as `教会.csv` and `カトリック教会.csv`) is passed to `read-google-saved-places`. Crossmap reads the real Japanese `タイトル,メモ,URL,コメント` schema, extracts stable Google CIDs, merges duplicates across lists, and writes seeds and audit output under `cache/google-saved-places`.
 
-The CSV reader, CID-page resolver, and promotion workflow are standalone Crossmap stages. Resolution prefers the copied gmap CID HTML cache, uses plain HTTP and then Lightpanda only for missing pages, extracts the same Google place fields as gmap, and writes raw candidates plus an audit report. Promotion normalizes/deduplicates candidates, reuses prior evidence, resolves every mandatory English name, runs the existing website/directory/denomination cleanup, and atomically replaces the canonical catalog only after all gates pass. Crossmap never imports or calls gmap code.
+The CSV reader, CID-page resolver, and promotion workflow are standalone Crossmap stages. Resolution fetches pages through `HttpFetcher` with cache-first acquisition at `cache/web-pages/`, extracts the same Google place fields as gmap, and writes raw candidates plus an audit report. Promotion normalizes/deduplicates candidates, reuses prior evidence, resolves every mandatory English name, runs the existing website/directory/denomination cleanup, and atomically replaces the canonical catalog only after all gates pass. Crossmap never imports or calls gmap code.
 
 ```mermaid
 flowchart LR
-    A[Google Takeout<br/>Saved Places CSV directory] --> B[GoogleSavedPlacesSeedReader]
+    A[Google Takeout<br/>Saved Places CSV directory] --> B[GoogleSavedPlacesCrawler]
     B --> C[cache/google-saved-places/seeds.json<br/>raw source fields only]
-    G[gmap clean output<br/>one-time bootstrap only] --> F[Current catalog]
-    H[gmap CID HTML cache<br/>copy once] --> D[Google Maps seed resolution]
-    C --> D
+    C --> D[Google Maps seed resolution]
     D -- localized names + typed name parts,<br/>lat/lng, address, sanitized website, category --> E[Resolved church candidates]
     E --> I[GoogleSavedPlacesCleanupWorkflow]
-    F --> I
+    F[Current catalog] --> I
     I --> J[resources/catalog/churches.json]
 ```
 
@@ -29,18 +27,15 @@ flowchart LR
 ```mermaid
 flowchart TD
     subgraph SOURCE[Google Saved Places source workflow]
-        A[Takeout/Saved/*.csv] --> B["Read Japanese CSV + exclusions<br/>(GoogleSavedPlacesSeedReader)"]
-        B --> C["Extract CID + merge duplicate lists<br/>(GoogleSavedPlacesSeedReader)"]
-        C --> D{CID HTML cached?}
-        D -->|yes| E["Read copied cache<br/>(GoogleMapsPlaceResolver)"]
-        D -->|no| F["HTTP fetch; Lightpanda fallback<br/>(GoogleMapsPlaceResolver)"]
-        F --> E
-        E --> G["Parse Google title and place fields<br/>(GoogleMapsPlaceResolver)"]
+        A[Takeout/Saved/*.csv] --> B["Read Japanese CSV + exclusions<br/>(GoogleSavedPlacesCrawler)"]
+        B --> C["Extract CID + merge duplicate lists<br/>(GoogleSavedPlacesCrawler)"]
+        C --> D["Fetch Google Maps pages<br/>cache/web-pages/ → HttpFetcher"]
+        D --> G["Parse Google title and place fields<br/>(GoogleMapsPlaceParser)"]
         G --> G2["Detect each name-part language;<br/>translate with reviewed dictionaries + GeoNames<br/>(MultilingualChurchNameLocalizer)"]
         G2 --> H["Normalize + deduplicate resolved candidates<br/>(GoogleSavedPlacesCleanupWorkflow)"]
     end
     subgraph CLEANUP[One integrated Crossmap cleanup workflow]
-        H --> I["WebsiteRefresher<br/>(WebsiteRefresher)"]
+        H --> I["ChurchWebsiteCrawler<br/>(ChurchWebsiteCrawler)"]
         I --> J[Website/about-page evidence cache]
         J --> K["Official denomination/district/parish lists<br/>(dedicated + generic crawlers)"]
         K --> L["Programmatic denomination and entity rules<br/>(DataCleanup)"]
@@ -241,7 +236,7 @@ Use `--input /another/Takeout/saved` to override `local.properties` for one dire
 |---|---|---|---|---|---|
 | `fetch-url` | [`HttpFetcher.kt`](src/main/kotlin/jp/co/crossmap/crawl/HttpFetcher.kt) | Fetch and test a single web page or Google Maps URL through the HTTP/Playwright fetch pipeline with verbose logging. | `--url` parameter (or `-Purl="<URL>"`) | Fetched HTML content in console/cache | Console verbose logs |
 | `google-saved-places` | [`GoogleSavedPlacesCrawler.kt`](src/main/kotlin/jp/co/crossmap/crawl/GoogleSavedPlacesCrawler.kt) | Run the complete Google Saved Places workflow based on Takeout CSV files (CSV reading, CID resolution, and catalog promotion). | `crossmap.googleSavedPlaces` path in `local.properties`; Saved-list CSV files | `resources/catalog/churches.json` and pipeline logs | `logs/YYYY-MM-DD-HH-mm-*.log` |
-| `refresh` | [`WebsiteRefresher.kt`](src/main/kotlin/jp/co/crossmap/crawl/WebsiteRefresher.kt) | Download or reuse actual church webpages concurrently; listing aggregators and Google Maps fallback URLs are never fetched. | catalog, exclusion catalog, prior crawl manifest/cache | `crawl/pages`, `crawl/manifest.json`, URL cache map, sanitized page evidence | `logs/YYYY-MM-DD-HH-mm-refresh.log` |
+| `refresh` | [`ChurchWebsiteCrawler.kt`](src/main/kotlin/jp/co/crossmap/crawl/ChurchWebsiteCrawler.kt) | Download or reuse actual church webpages concurrently; listing aggregators and Google Maps fallback URLs are never fetched. | catalog, exclusion catalog, prior crawl manifest/cache | `cache/web-pages`, `cache/web-pages/manifest.json`, URL cache map, sanitized page evidence | `logs/YYYY-MM-DD-HH-mm-refresh.log` |
 | `crawl-denomination-directories` | [`denomination/OfficialDenominationChurchListPipeline.kt`](src/main/kotlin/jp/co/crossmap/crawl/denomination/OfficialDenominationChurchListPipeline.kt), [`OfficialDirectoryCrawler.kt`](src/main/kotlin/jp/co/crossmap/crawl/OfficialDirectoryCrawler.kt) | Parse authoritative UCCJ/JBC tables and the JBBF address book, replace their stale candidates, reconcile the catalog one-to-one, then crawl other configured directories unless `--dedicated-only` is set. `--force-refresh` invalidates and refetches all three authoritative pages. | official UCCJ/JBC/JBBF pages, `sources/denominations.json`, exclusion catalog, catalog | `crawl/uccj-churches.json`, `crawl/jbc-churches.json`, `crawl/jbbf-churches.json`, `cleanup/denomination-candidates.json`, corrected catalog | `logs/YYYY-MM-DD-HH-mm-crawl-denomination-directories.log` |
 | `cleanup-llm` | [`DataCleanup.kt`](src/main/kotlin/jp/co/crossmap/crawl/DataCleanup.kt) | Resolve denomination fields with programmatic rules, optional Ollama fallback, and human overrides. | catalog, denomination catalog, candidates, rules, overrides | updated catalog, `cleanup/decisions.json` | `logs/YYYY-MM-DD-HH-mm-cleanup-llm.log` |
 | `override-denomination` | [`DataCleanup.kt`](src/main/kotlin/jp/co/crossmap/crawl/DataCleanup.kt) | Record a reviewed denomination correction. | command arguments, prior overrides | `cleanup/human-overrides.json` | `logs/YYYY-MM-DD-HH-mm-override-denomination.log` |
@@ -254,6 +249,12 @@ Use `--input /another/Takeout/saved` to override `local.properties` for one dire
 | `church-geonames` | [`ChurchGeoNameTranslationCatalog.kt`](src/main/kotlin/jp/co/crossmap/crawl/ChurchGeoNameTranslationCatalog.kt) | Collect cleaned longest-match title/address geonames, merge GeoNames, JMA, and reviewed translations, fill otherwise-missing Korean names from English romaji pronunciation, and maintain separate title-first and address-only review queues. A geoname used in both is listed only in the title queue. | candidates, cleaned multilingual lexicon, reviewed exclusion/translation CSV values | `resources/geonames/church-ja-all.json`, `church-usage.json`, eight `church-ja-{en,ko,pt,id}-{title,address}-missing.csv` files | `logs/YYYY-MM-DD-HH-mm-church-geonames.log`, `logs/YYYY-MM-DD-HH-mm-geoname-translation-coverage.log` |
 | `normalize-addresses` | [`JapaneseAddressNormalizationPipeline.kt`](src/main/kotlin/jp/co/crossmap/crawl/JapaneseAddressNormalizationPipeline.kt) | Run the locally cloned Geolonia normalizer in resumable batches, then enrich each result with typed Crossmap address parts and exact geoname codes. | church catalog, `geonames/japan.json`, `/home/joel/code/normalize-japanese-addresses` (override with `--normalizer-dir`) | `cache/address-normalization/normalized-addresses.json` | `logs/YYYY-MM-DD-HH-mm-address-normalization.log` with one church entry, level counts, and detailed failures |
 | `build-snapshot` | [`SnapshotBuilder.kt`](src/main/kotlin/jp/co/crossmap/crawl/SnapshotBuilder.kt) | Build/package separate JA/EN/KO/PT/ID Lucene indexes; Japanese includes address/pages and every index receives deduplicated translated geoname terms plus exact normalized-address entity fields. | complete catalog, geonames, translation catalog/usage, optional normalized-address cache | `cache/search-indexes/churches/VERSION/index/{ja,en,ko,pt,id}` and latest metadata | `logs/YYYY-MM-DD-HH-mm-build-snapshot.log` |
+| `catalog-neo4j-health` | [`CatalogNeo4jCommands.kt`](src/main/kotlin/jp/co/crossmap/crawl/CatalogNeo4jCommands.kt) | Check Neo4j reachability and schema health. | Neo4j connection via `local.properties` or environment variables | console health report | console output |
+| `catalog-neo4j-migrate` | [`CatalogNeo4jCommands.kt`](src/main/kotlin/jp/co/crossmap/crawl/CatalogNeo4jCommands.kt) | Apply versioned Cypher schema migrations to Neo4j. | Neo4j connection | schema version report | console output |
+| `catalog-neo4j-import` | [`CatalogNeo4jCommands.kt`](src/main/kotlin/jp/co/crossmap/crawl/CatalogNeo4jCommands.kt) | Import legacy `churches.json` catalog into Neo4j. `--dry-run` validates without writing. | Neo4j connection, `--input` churches.json path | import report under `build/reports/catalog-import` | console output |
+| `catalog-neo4j-export` | [`CatalogNeo4jCommands.kt`](src/main/kotlin/jp/co/crossmap/crawl/CatalogNeo4jCommands.kt) | Export Neo4j catalog to JSON. | Neo4j connection | `build/reports/catalog-export/churches.json` | console output |
+| `catalog-neo4j-parity` | [`CatalogNeo4jCommands.kt`](src/main/kotlin/jp/co/crossmap/crawl/CatalogNeo4jCommands.kt) | Compare Neo4j catalog against legacy JSON field-by-field. | Neo4j connection, `--input` churches.json path | parity report under `build/reports/catalog-parity` | console output |
+| `catalog-neo4j-integrity` | [`CatalogNeo4jCommands.kt`](src/main/kotlin/jp/co/crossmap/crawl/CatalogNeo4jCommands.kt) | Run 10 data integrity checks (missing IDs, duplicates, orphan websites, etc.). | Neo4j connection | integrity report under `build/reports/catalog-integrity` | console output |
 
 Every command log uses the same review-oriented key/value envelope: `command`, `status`, `started_at`, `finished_at`, and `duration_seconds`; normalized `input.*`, `setting.*`, `metric.*`, and `output.*` entries follow. Commands add domain metrics such as rows and duplicates, cache hits and HTTP fetches, unresolved denominations before/after, deterministic/LLM/human acceptance counts, translation coverage, or index document count and SHA-256. A failed command still writes its collected context plus `error.type` and a single-line `error.message`, then rethrows the failure. All entries are written to the command-specific file and printed identically on the console by Logback.
 
@@ -262,6 +263,7 @@ Gradle orchestration:
 - `./gradlew :crawl:dataCleanup` is the production English-name cleanup task. It runs `df -h /media/joel/llms` immediately before Ollama work.
 - `./gradlew :crawl:prepareChurchGeoNames` first rebuilds `japan.json` from JMA data (including designated-city wards), then refreshes the reviewable title/address translation catalog. `./gradlew :crawl:normalizeChurchAddresses` depends on it and reads `crossmap.geoloniaNormalizerDir` from `local.properties`. `:crawl:buildSearchSnapshot` depends on all stages before creating the five language indexes.
 - `./gradlew :server:generateChurchPages` is read-only with respect to the canonical catalog, depends only on geoname preparation, validates the reviewed denomination catalogs, applies the shared public-website policy, and renders independent files with all JVM processors by default. Use `-PcrossmapStaticSiteParallelism=N` to cap its worker pool.
+- Neo4j commands (`catalog-neo4j-*`) require a running Neo4j instance. Credentials are configured via `local.properties` (`neo4j.uri`, `neo4j.username`, `neo4j.password`, `neo4j.database`) or environment variables (`NEO4J_URI`, `NEO4J_USERNAME`, `NEO4J_PASSWORD`, `NEO4J_DATABASE`). Mutable database files live under `cache/neo4j-data/`. See [`docs/development/neo4j-local.md`](../docs/development/neo4j-local.md) for start, import, parity, integrity, generation, and stop commands.
 - Cleanup reports are emitted through [`src/main/resources/logback.xml`](src/main/resources/logback.xml). A report-specific Logback sifting appender writes `logs/YYYY-MM-DD-HH-mm-{report}.log`, while the console appender prints the identical content; reports emitted by one run share the timestamp established by its first report.
 - `logs/YYYY-MM-DD-HH-mm-data-cleanup-stat.log` contains deterministic and LLM counts, unresolved count, errors, LLM timeouts, duration, and throughput.
 - Each successful cleanup also leaves `logs/YYYY-MM-DD-HH-mm-llm-composed-name-detail.log`, with one Japanese-name parent entry and ordered typed child parts showing Japanese text, English text, evidence, and whether the source was denomination data, GeoNames data, a reviewed dictionary, another deterministic method, or LLM.
@@ -281,17 +283,14 @@ Gradle orchestration:
 - `CrawlCommandAudit` renders consistent inputs, settings, metrics, outputs, timestamps, duration, and error fields; individual commands supply their domain-specific quality indicators.
 - `CrawlReportLogging` configures the run timestamp and log directory, then uses the Logback sifting appender to route each `CrawlReport` to its command-specific file and the console.
 
-### [`GoogleSavedPlacesSeedReader.kt`](src/main/kotlin/jp/co/crossmap/crawl/GoogleSavedPlacesSeedReader.kt)
+### [`GoogleSavedPlacesCrawler.kt`](src/main/kotlin/jp/co/crossmap/crawl/GoogleSavedPlacesCrawler.kt)
 
 - `GoogleSavedPlacesCrawler` implements the standalone first stage of the former gmap workflow: RFC 4180 CSV parsing, Japanese/English header aliases, CID extraction from Takeout or canonical Maps URLs, cross-list deduplication, and durable raw JSON.
 - `GoogleSavedPlaceCrawl` intentionally contains only fields present in the dump. It is not a partially valid `ChurchRecord`; Google-page resolution must supply the remaining place evidence first.
 - `GoogleSavedPlacesCrawlReport` and `GoogleSavedPlacesCrawlError` preserve row counts, duplicates, and malformed-row diagnostics without stopping valid rows.
-
-### [`GoogleMapsPlaceResolver.kt`](src/main/kotlin/jp/co/crossmap/crawl/GoogleMapsPlaceResolver.kt)
-
-- `GoogleMapsPageSource` fetches Google Maps pages via HTTP with cache-first acquisition; the verified CID redirect edge case is handled inline.
+- `GoogleMapsPageSource` fetches Google Maps pages via HTTP with cache-first acquisition at `cache/web-pages/`.
 - `GoogleMapsPlaceParser` extracts the Google place title, coordinates, address, website, and category, immediately applies [`ChurchWebsitePolicy`](../core/src/commonMain/kotlin/jp/co/crossmap/ChurchWebsitePolicy.kt), then invokes the authoritative multilingual name workflow. An excluded or missing website becomes `https://www.google.com/maps?cid=<googleCid>`.
-- `GoogleMapsPlaceResolver` resolves with bounded concurrency, applies gmap's Catholic-list non-church filter, and atomically writes candidates plus name-pattern/language counts in `GoogleMapsResolutionReport`.
+- `GoogleSavedPlacesCrawler.resolve` resolves with bounded concurrency, applies the Catholic-list non-church filter, and atomically writes candidates plus name-pattern/language counts in `GoogleMapsResolutionReport`.
 - `MultilingualChurchNameLocalizer` performs all title-name work together: decomposition, per-part source language and role detection, deterministic phrase translation, and ordered `localizedNames` composition. It preserves the original-language title and emits exactly one nonblank JA/EN/KO/PT/ID name per language; recognized structural parts are translated and unresolved proper-name parts are retained or romanized instead of blocking the whole target name. Internal `NOT_DETERMINED`/`INDEPENDENT_CHURCH` sentinels are never composed, and catalog classifications with `useAsChurchNamePrefix=false` (for example `キリストの教会（無楽器派）`) are stripped when they appear as an outsider-supplied title prefix. For Portuguese, Spanish, and Indonesian structures, Japanese composition moves a terminal geoname to the front and converts a leading `Igreja`/`Iglesia`/`Gereja` into trailing `教会`; acronym-plus-geoname names retain their source order when no Romance church/concept structure is present.
 - `ChurchNameDecomposer` obtains Latin denomination abbreviations from `resources/catalog/denominations.json`; mixed titles such as `JELC大阪教会` and branch names such as `HCCライブチャーチ津山` retain their abbreviations and structure.
 - `LatinChurchNameJapaneseComposer` uses longest reviewed phrase first across GeoNames, every `resources/dictionary/<source>-ja-*.csv`, and `congregation-terms.json`; ICU is limited to unmatched proper-name components.
@@ -305,7 +304,7 @@ Gradle orchestration:
 - It applies `ExcludedChurchListingDomains` before any name, evidence, or LLM processing; exact-deduplicates normalized name/address candidates; retains non-Google records; reuses evidence by CID; stages work under `resources/cleanup`; and promotes atomically only after mandatory fields are complete.
 - `GoogleSavedPlacesPromotionReport` and `PreparationReport` expose candidate, evidence, website, denomination, English-name, and promotion completeness counts.
 
-### [`LightPanda.kt`](src/main/kotlin/jp/co/crossmap/crawl/LightPanda.kt)
+### [`LightPanda.kt`](../core/src/jvmMain/kotlin/jp/co/crossmap/LightPanda.kt)
 
 - `LightPanda` is the lightweight JavaScript-rendering fallback. It invokes `lightpanda fetch --dump html URL`, validates HTTP(S) input, drains bounded stdout/stderr concurrently, enforces a timeout, terminates hung processes, and returns rendered HTML.
 - Set `LIGHTPANDA_BINARY` when the executable is not on `PATH`. `TestLightPanda.kt` covers the command contract and errors; set `CROSSMAP_LIGHTPANDA_INTEGRATION=1` to exercise the installed binary.
@@ -328,10 +327,10 @@ Gradle orchestration:
 - `CrawlManifestEntry` records source URL, HTTP status, hash/cache path, acquisition mode, timestamps, and errors for reproducible cached crawling.
 - `sha256` supplies stable content-addressed cache and snapshot hashes.
 
-### [`WebsiteRefresher.kt`](src/main/kotlin/jp/co/crossmap/crawl/WebsiteRefresher.kt)
+### [`ChurchWebsiteCrawler.kt`](src/main/kotlin/jp/co/crossmap/crawl/ChurchWebsiteCrawler.kt)
 
 - `ExcludedChurchListingDomains` loads the reviewed exact/subdomain exclusions from `resources/catalog/excludedChurchListingDomains.txt` into the shared core policy.
-- `ChurchWebsiteCrawler` sanitizes records and removes excluded prior page evidence before scheduling work. It never fetches listing/search/map aggregators or the Google Maps fallback; only eligible church-owned websites can enter the HTML cache and index content.
+- `ChurchWebsiteCrawler` sanitizes records and removes excluded prior page evidence before scheduling work. It never fetches listing/search/map aggregators or the Google Maps fallback; only eligible church-owned websites can enter the HTML cache and index content. Cached pages are stored under `cache/web-pages/` with a `manifest.json` tracking URL, status, cache path, hash, acquisition mode, and failure metadata.
 - `ChurchWebsitePolicy` is also applied by `SnapshotBuilder`, the Ktor API, and static-site generation as defense against stale catalogs or indexes. The app consumes the same sanitized `ChurchRecord` snapshot.
 - `GooglePlacesCrawlReport`, `ChurchRefresh`, and `FetchResult` carry aggregate and per-fetch outcomes.
 

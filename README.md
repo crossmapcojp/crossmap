@@ -2,11 +2,12 @@
 
 Crossmap is a standalone Kotlin Multiplatform church-search system for Japan. It crawls and normalizes church data, builds a downloadable lucene-kmp index, and exposes the same search behavior through the `cm` CLI, an on-device Compose app, and a Ktor JSON API used by a vanilla-JavaScript web client.
 
-Crossmap does not require the former gmap project at build time or runtime. Existing HTTP responses were copied once as content-addressed cache files so repeated requests can be avoided.
+Crossmap does not require the former gmap project at build time or runtime.
 
 ## Modules
 
 - `core`: serializable records, Japanese geoname resolution, Lucene schema/indexing, and the shared search engine.
+- `catalog`: Neo4j-backed catalog storage, schema migration, import/export, parity validation, and integrity checks.
 - `crawl`: website refresh, official-directory crawling, evidence/candidate resolution, denomination cleanup, Koog/Ollama fallback, social linking, and snapshot construction.
 - `cli`: the `cm` developer command.
 - `server`: Ktor JSON API backed by lucene-kmp on JVM.
@@ -36,8 +37,7 @@ The maintained field-by-field build contract, data provenance, analyzers, respon
 ## Resource layout
 
 - `resources/raw`: immutable acquisition inputs.
-- `resources/crawl/pages`: content-addressed cached HTML.
-- `resources/crawl/manifest.json`: URL, status, cache path, hash, acquisition mode, and failure metadata.
+- `cache/web-pages`: content-addressed cached HTML, manifest, and URL cache map.
 - `resources/catalog/churches.json`: canonical church records.
 - `resources/catalog/denominations.json`: standalone data-driven denomination catalog.
 - `resources/geonames/japan.json`: generated prefecture and municipality/ward aliases and geo areas.
