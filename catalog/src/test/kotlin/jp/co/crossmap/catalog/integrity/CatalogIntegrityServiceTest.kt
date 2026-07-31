@@ -5,6 +5,7 @@ import jp.co.crossmap.catalog.neo4j.GraphTransactionRunner
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 
 class CatalogIntegrityServiceTest {
@@ -14,7 +15,8 @@ class CatalogIntegrityServiceTest {
         val report = CatalogIntegrityService(transactions).inspect()
         assertFalse(report.passed)
         assertEquals(1L, report.checks.first().violations)
-        assertEquals(12, transactions.reads.size)
+        assertTrue(transactions.reads.size >= 12)
+        assertTrue(report.checks.any { it.name == "revision-logical-content-hash" })
     }
 }
 

@@ -6,6 +6,12 @@ import jp.co.crossmap.DeterminationSource
 import jp.co.crossmap.FieldDetermination
 import jp.co.crossmap.GeoPoint
 import jp.co.crossmap.LocalizedName
+import jp.co.crossmap.catalog.canonical.CanonicalChurchCatalogHasher
+import jp.co.crossmap.catalog.canonical.CanonicalChurchCatalogSnapshot
+import jp.co.crossmap.catalog.canonical.CatalogCommitResult
+import jp.co.crossmap.catalog.canonical.CatalogOperationMetadata
+import jp.co.crossmap.catalog.canonical.CatalogRevision
+import jp.co.crossmap.catalog.canonical.CatalogRevisionToken
 import jp.co.crossmap.SocialPlatform
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -44,7 +50,11 @@ class GoogleSavedPlacesCleanupWorkflowTest {
                     englishNameResolver = resolver,
                 ),
                 englishNameResolver = resolver,
-            ).preparePendingCatalog(root, root.resolve("cache"))
+        ).preparePendingCatalog(
+            root,
+            root.resolve("cache"),
+            emptyList(),
+        )
 
             val recorded = json.decodeFromString<List<ChurchRecord>>(
                 Files.readString(root.resolve("cache/cleanup/google-saved-places-pending.json")),
@@ -92,7 +102,11 @@ class GoogleSavedPlacesCleanupWorkflowTest {
                     englishNameResolver = resolver,
                 ),
                 englishNameResolver = resolver,
-            ).preparePendingCatalog(root, root.resolve("cache"))
+        ).preparePendingCatalog(
+            root,
+            root.resolve("cache"),
+            emptyList(),
+        )
 
             val promoted = json.decodeFromString<List<ChurchRecord>>(
                 Files.readString(root.resolve("cache/cleanup/google-saved-places-pending.json")),
@@ -164,12 +178,14 @@ class GoogleSavedPlacesCleanupWorkflowTest {
             val resolver = ChurchEnglishNameResolver(
                 translator = { church -> error("Existing English name should be reused for ${church.id}") },
             )
+            val canonical = TestCanonicalCatalog(existing)
             val workflow = GoogleSavedPlacesCleanupWorkflow(
                 postCrawlCleanup = PostCrawlCleanup(
                     matcher = EntityMatcher { EntityMatchDecision(null, 0.0, reasoning = "LLM disabled") },
                     englishNameResolver = resolver,
                 ),
                 englishNameResolver = resolver,
+                canonicalCatalog = canonical,
                 now = { "2026-07-14T09:00:00Z" },
             )
 
@@ -180,9 +196,7 @@ class GoogleSavedPlacesCleanupWorkflowTest {
                 crawlDirectories = false,
                 cacheRoot = root.resolve("cache"),
             )
-            val promoted = json.decodeFromString<List<ChurchRecord>>(
-                Files.readString(root.resolve("catalog/churches.json")),
-            ).associateBy(ChurchRecord::id)
+            val promoted = canonical.churches.associateBy(ChurchRecord::id)
 
             assertTrue(report.promoted)
             assertEquals(2, report.existingEvidenceReused)
@@ -246,6 +260,9 @@ class GoogleSavedPlacesCleanupWorkflowTest {
             val resolver = ChurchEnglishNameResolver(
                 translator = { error("The resolved candidate English name must be deterministic") },
             )
+            val canonical = TestCanonicalCatalog(
+                json.decodeFromString(Files.readString(root.resolve("catalog/churches.json"))),
+            )
             val youtube = root.resolve("youtube.csv")
             Files.writeString(
                 youtube,
@@ -259,6 +276,7 @@ class GoogleSavedPlacesCleanupWorkflowTest {
                     englishNameResolver = resolver,
                 ),
                 englishNameResolver = resolver,
+                canonicalCatalog = canonical,
             ).run(
                 resourcesRoot = root,
                 enableLlm = false,
@@ -268,9 +286,7 @@ class GoogleSavedPlacesCleanupWorkflowTest {
                 socialInputs = SocialExportInputPaths(youtube, null, null, null, null),
                 cacheRoot = root.resolve("cache"),
             )
-            val promoted = json.decodeFromString<List<ChurchRecord>>(
-                Files.readString(root.resolve("catalog/churches.json")),
-            ).single()
+            val promoted = canonical.churches.single()
 
             assertTrue(report.promoted)
             assertEquals("JBBF", promoted.denominationId)
@@ -317,4 +333,32 @@ class GoogleSavedPlacesCleanupWorkflowTest {
         location = candidate.location,
         websiteUrl = candidate.websiteUrl,
     )
+}
+
+private class TestCanonicalCatalog(initial: List<ChurchRecord>) : CrawlCanonicalCatalogGateway {
+    var churches: List<ChurchRecord> = initial
+        private set
+    private var sequence = 1L
+    private var revisionId = "catalog:test-1"
+    private var contentHash = CanonicalChurchCatalogHasher.contentHash(initial)
+
+    override suspend fun readCommittedSnapshot() = CanonicalChurchCatalogSnapshot(
+        churches = churches,
+        revisionId = revisionId,
+        revisionSequence = sequence,
+        contentHash = contentHash,
+    )
+
+    override suspend fun replace(
+        expectedRevision: CatalogRevisionToken,
+        churches: List<ChurchRecord>,
+        operation: CatalogOperationMetadata,
+    ): CatalogCommitResult {
+        check(expectedRevision == CatalogRevisionToken(revisionId, sequence))
+        this.churches = churches
+        sequence += 1
+        revisionId = "catalog:test-$sequence"
+        contentHash = CanonicalChurchCatalogHasher.contentHash(churches)
+        return CatalogCommitResult(CatalogRevision(revisionId, sequence, contentHash), changed = true)
+    }
 }

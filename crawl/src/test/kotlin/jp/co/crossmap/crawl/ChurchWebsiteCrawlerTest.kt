@@ -11,6 +11,8 @@ import jp.co.crossmap.ChurchRecord
 import jp.co.crossmap.CrawledPage
 import jp.co.crossmap.GeoPoint
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -40,7 +42,7 @@ class ChurchWebsiteCrawlerTest {
             )
             Files.writeString(root.resolve("cache/web-pages/manifest.json"), "[]")
 
-            val first = ChurchWebsiteCrawler(maxConcurrency = 1, hostDelayMillis = 0).crawl(root, cacheRoot = root.resolve("cache"))
+        val first = ChurchWebsiteCrawler(maxConcurrency = 1, hostDelayMillis = 0).crawlFixture(root, cacheRoot = root.resolve("cache"))
             assertEquals(2, first.fetched)
             val church = json.decodeFromString<List<ChurchRecord>>(Files.readString(root.resolve("catalog/churches.json"))).single()
             assertEquals(setOf("岡山バプテスト教会", "教会案内"), church.pages.map { it.title }.toSet())
@@ -49,7 +51,7 @@ class ChurchWebsiteCrawlerTest {
             assertTrue(church.pages.single { it.depth == 0 }.outgoingLinks.contains("$website${"about"}"))
 
             val second = ChurchWebsiteCrawler(maxConcurrency = 1, hostDelayMillis = 0, cacheFreshness = Duration.ZERO)
-                .crawl(root, cacheRoot = root.resolve("cache"))
+            .crawlFixture(root, cacheRoot = root.resolve("cache"))
             assertEquals(2, second.unchanged)
             assertEquals(0, second.errors)
         } finally {
@@ -90,7 +92,7 @@ class ChurchWebsiteCrawlerTest {
             Files.writeString(root.resolve("cache/web-pages/manifest.json"), "[]")
 
             val report = ChurchWebsiteCrawler(maxConcurrency = 1, hostDelayMillis = 0, maxDepth = 2)
-                .crawl(root, cacheRoot = root.resolve("cache"))
+            .crawlFixture(root, cacheRoot = root.resolve("cache"))
             val pages = json.decodeFromString<List<ChurchRecord>>(
                 Files.readString(root.resolve("catalog/churches.json")),
             ).single().pages
@@ -151,7 +153,7 @@ class ChurchWebsiteCrawlerTest {
             Files.writeString(root.resolve("cache/web-pages/manifest.json"), "[]")
 
             val report = ChurchWebsiteCrawler(maxConcurrency = 1, hostDelayMillis = 0)
-                .crawl(root, cacheRoot = root.resolve("cache"))
+            .crawlFixture(root, cacheRoot = root.resolve("cache"))
             val church = json.decodeFromString<List<ChurchRecord>>(
                 Files.readString(root.resolve("catalog/churches.json")),
             ).single()
@@ -203,7 +205,7 @@ class ChurchWebsiteCrawlerTest {
                 ),
             )
             Files.writeString(root.resolve("cache/web-pages/manifest.json"), "[]")
-            ChurchWebsiteCrawler(maxConcurrency = 1, hostDelayMillis = 0).crawl(root, cacheRoot = root.resolve("cache"))
+        ChurchWebsiteCrawler(maxConcurrency = 1, hostDelayMillis = 0).crawlFixture(root, cacheRoot = root.resolve("cache"))
             val manifest = root.resolve("cache/web-pages/manifest.json")
             Files.writeString(
                 manifest,
@@ -214,7 +216,7 @@ class ChurchWebsiteCrawlerTest {
             )
 
             val cached = ChurchWebsiteCrawler(maxConcurrency = 1, hostDelayMillis = 0)
-                .crawl(root, cacheRoot = root.resolve("cache"))
+            .crawlFixture(root, cacheRoot = root.resolve("cache"))
 
             assertEquals(1, requests.get())
             assertEquals(1, cached.unchanged)
@@ -258,7 +260,7 @@ class ChurchWebsiteCrawlerTest {
             )
             Files.writeString(root.resolve("cache/web-pages/manifest.json"), "[]")
 
-            val report = ChurchWebsiteCrawler(maxConcurrency = 1, hostDelayMillis = 0).crawl(root, cacheRoot = root.resolve("cache"))
+        val report = ChurchWebsiteCrawler(maxConcurrency = 1, hostDelayMillis = 0).crawlFixture(root, cacheRoot = root.resolve("cache"))
             assertEquals(1, report.fetched)
             assertEquals(3, attempts.get())
         } finally {
@@ -293,7 +295,7 @@ class ChurchWebsiteCrawlerTest {
             Files.writeString(root.resolve("cache/web-pages/manifest.json"), "[]")
 
             val report = ChurchWebsiteCrawler(maxConcurrency = 1, hostDelayMillis = 0)
-                .crawl(root, cacheRoot = root.resolve("cache"))
+            .crawlFixture(root, cacheRoot = root.resolve("cache"))
             val church = json.decodeFromString<List<ChurchRecord>>(
                 Files.readString(root.resolve("catalog/churches.json")),
             ).single()
@@ -341,7 +343,7 @@ class ChurchWebsiteCrawlerTest {
             Files.writeString(root.resolve("cache/web-pages/manifest.json"), "[]")
 
             val report = ChurchWebsiteCrawler(maxConcurrency = 2, hostDelayMillis = 0)
-                .crawl(root, cacheRoot = root.resolve("cache"))
+            .crawlFixture(root, cacheRoot = root.resolve("cache"))
             val churches = json.decodeFromString<List<ChurchRecord>>(Files.readString(root.resolve("catalog/churches.json")))
 
             assertEquals(0, report.fetched)
@@ -373,7 +375,7 @@ class ChurchWebsiteCrawlerTest {
             )
             Files.writeString(root.resolve("cache/web-pages/manifest.json"), "[]")
 
-            val report = ChurchWebsiteCrawler(maxConcurrency = 1, hostDelayMillis = 0).crawl(root, cacheRoot = root.resolve("cache"))
+        val report = ChurchWebsiteCrawler(maxConcurrency = 1, hostDelayMillis = 0).crawlFixture(root, cacheRoot = root.resolve("cache"))
 
             assertEquals(1, report.fetched)
             assertEquals(0, requests.get())
@@ -414,7 +416,7 @@ class ChurchWebsiteCrawlerTest {
             Files.writeString(root.resolve("cache/web-pages/manifest.json"), "[]")
 
             val report = ChurchWebsiteCrawler(maxConcurrency = 2, hostDelayMillis = 0)
-                .crawl(root, cacheRoot = root.resolve("cache"))
+            .crawlFixture(root, cacheRoot = root.resolve("cache"))
 
             assertEquals(1, requests.get())
             assertEquals(2, report.fetched)
@@ -422,7 +424,7 @@ class ChurchWebsiteCrawlerTest {
             assertTrue(churches.all { it.pages.single().title == "共同サイト" })
 
             val cachedReport = ChurchWebsiteCrawler(maxConcurrency = 2, hostDelayMillis = 0)
-                .crawl(root, cacheRoot = root.resolve("cache"))
+            .crawlFixture(root, cacheRoot = root.resolve("cache"))
             assertEquals(1, requests.get())
             assertEquals(2, cachedReport.unchanged)
         } finally {
@@ -446,5 +448,17 @@ class ChurchWebsiteCrawlerTest {
         responseHeaders.add("Content-Type", "text/html; charset=utf-8")
         responseHeaders.add("ETag", "\"fixture-v1\"")
         respond(body)
+    }
+}
+
+private fun ChurchWebsiteCrawler.crawlFixture(
+    resourcesRoot: java.nio.file.Path,
+    cacheRoot: java.nio.file.Path,
+): GooglePlacesCrawlReport {
+    val json = Json { ignoreUnknownKeys = true; prettyPrint = true; encodeDefaults = true }
+    val catalog = resourcesRoot.resolve("catalog/churches.json")
+    val churches = json.decodeFromString<List<ChurchRecord>>(Files.readString(catalog))
+    return crawl(resourcesRoot, churches, cacheRoot).also { report ->
+        Files.writeString(catalog, json.encodeToString(report.updatedChurches))
     }
 }

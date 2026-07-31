@@ -243,3 +243,14 @@
 - [x] Cover Japanese name, denomination, address, website body, prefecture, city, ambiguous city, location-only, pagination, and no-result scenarios.
 - [x] Run a real Lightpanda browser flow for all five localized church names and denomination searches, and verify all five denomination labels on the generated church detail page.
 - [x] Document build, crawl, snapshot, CLI, server, web, Android, and iOS usage in the README.
+
+### Neo4j sole-source-of-truth completion
+
+- [x] Add the exact reversible canonical language-tag to Neo4j `name_*` property convention and mapping tests.
+- [x] Add committed catalog revisions, optimistic expected-revision writes, authoritative deletion, and failure-safe publication semantics.
+- [x] Move normal crawler, cleanup, localization, social merge, denomination merge, and English-name workflows from `churches.json` to the canonical Neo4j reader/writer.
+- [x] Build Lucene and static-page projections from one pinned committed revision and record matching revision/hash metadata in both manifests.
+- [x] Remove Ktor and snapshot freshness dependencies on `resources/catalog/churches.json`, retaining JSON only for bootstrap, explicit export, fixtures, and rollback.
+- [x] Store Church, Denomination, Person, and RoleEvent multilingual names as direct properties with stale-property removal; remove canonical person/role JSON blobs.
+- [x] Complete integrity, architecture, replacement, projection-consistency, runtime-boundary, migration, backup/restore, and browser acceptance verification.
+- [x] Reconcile README, crawl README, index/search docs, local Neo4j runbook, migration report, and final source-of-truth audit with the completed implementation.

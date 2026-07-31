@@ -16,6 +16,8 @@ data class Neo4jHealth(
     val reachable: Boolean,
     val schemaVersion: Int?,
     val catalogImported: Boolean,
+    val catalogRevision: String?,
+    val catalogContentHash: String?,
 )
 
 class Neo4jDriverManager(
@@ -51,15 +53,17 @@ class Neo4jDriverManager(
                 """
                 OPTIONAL MATCH (migration:SchemaMigration)
                 WITH max(migration.version) AS schemaVersion
-                OPTIONAL MATCH (run:ImportRun {status: 'COMPLETED'})
-                RETURN schemaVersion, count(run) > 0 AS catalogImported
+                OPTIONAL MATCH (:CatalogState {name: 'catalog'})-[:CURRENT_REVISION]->(revision:CatalogRevision {status: 'COMMITTED'})
+                RETURN schemaVersion, revision.id AS catalogRevision, revision.contentHash AS catalogContentHash
                 """.trimIndent(),
             ).single()
             Neo4jHealth(
                 reachable = true,
                 schemaVersion = result["schemaVersion"].takeUnless { it.isNull }?.asInt(),
-                catalogImported = result["catalogImported"].asBoolean() &&
+                catalogImported = !result["catalogRevision"].isNull &&
                     result["schemaVersion"].takeUnless { it.isNull }?.asInt() == expectedSchemaVersion,
+                catalogRevision = result["catalogRevision"].takeUnless { it.isNull }?.asString(),
+                catalogContentHash = result["catalogContentHash"].takeUnless { it.isNull }?.asString(),
             )
         }
     }

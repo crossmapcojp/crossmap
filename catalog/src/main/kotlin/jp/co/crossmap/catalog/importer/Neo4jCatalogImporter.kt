@@ -1,11 +1,23 @@
 package jp.co.crossmap.catalog.importer
 
 import java.security.MessageDigest
+import java.util.UUID
 import jp.co.crossmap.ChurchMinister
+import jp.co.crossmap.ChurchRecord
 import jp.co.crossmap.CrawledPage
+import jp.co.crossmap.GeoPoint
+import jp.co.crossmap.SocialProfile
+import jp.co.crossmap.catalog.canonical.CanonicalChurchCatalogHasher
+import jp.co.crossmap.catalog.canonical.CatalogOperationMetadata
+import jp.co.crossmap.catalog.canonical.CatalogRevisionMismatchException
+import jp.co.crossmap.catalog.canonical.CatalogRevisionToken
+import jp.co.crossmap.catalog.neo4j.GraphQueryRunner
 import jp.co.crossmap.catalog.neo4j.GraphTransactionRunner
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
+import jp.co.crossmap.toNeo4jNameProperties
+import jp.co.crossmap.toCanonicalNameMap
 import kotlinx.serialization.json.Json
 
 @Serializable
@@ -22,6 +34,9 @@ data class CatalogImportReport(
     val durationMillis: Long,
     val schemaVersion: Int,
     val database: String,
+    val revisionId: String? = null,
+    val revisionSequence: Long? = null,
+    val contentHash: String = sourceChecksum,
 )
 
 class Neo4jCatalogImporter(
@@ -31,22 +46,49 @@ class Neo4jCatalogImporter(
     private val batchSize: Int = 250,
     private val json: Json = Json { encodeDefaults = true },
 ) {
+    private var activeReplacementRunner: GraphQueryRunner? = null
+
     init {
         require(batchSize > 0) { "Catalog import batch size must be positive" }
     }
 
-    suspend fun import(catalog: NormalizedCatalogImport, dryRun: Boolean = false): CatalogImportReport {
+    suspend fun import(
+        catalog: NormalizedCatalogImport,
+        dryRun: Boolean = false,
+        expectedRevision: CatalogRevisionToken? = null,
+        operation: CatalogOperationMetadata = CatalogOperationMetadata(
+            operation = "legacy-json-bootstrap",
+            actor = "catalog-neo4j-bootstrap-from-legacy-json",
+            source = catalog.sourcePath,
+        ),
+    ): CatalogImportReport {
         val started = System.nanoTime()
         val records = catalog.records
+        val contentHash = CanonicalChurchCatalogHasher.contentHash(records.map { it.toChurchRecord() })
         val entityCounts = entityCounts(records)
         val relationshipCounts = relationshipCounts(records)
+        var committedRevisionSequence: Long? = null
+        var revisionId: String? = null
         if (!dryRun) {
-            val runId = "catalog:${catalog.sourceChecksum}"
-            startRun(runId, catalog)
+            val runId = "catalog:${UUID.randomUUID()}"
+            revisionId = runId
             try {
-                records.chunked(batchSize).forEachIndexed { index, batch -> importBatch(runId, index, batch) }
-                cleanupManagedOrphans()
-                completeRun(runId, entityCounts, relationshipCounts)
+                check(activeReplacementRunner == null) { "A catalog replacement is already active" }
+                transactions.write("catalog-import.authoritative-replacement") { runner ->
+                    activeReplacementRunner = runner
+                    try {
+                        runBlocking {
+                            lockAndVerifyExpectedRevision(expectedRevision)
+                            startRun(runId, contentHash, catalog, operation)
+                            records.chunked(batchSize).forEachIndexed { index, batch -> importBatch(runId, index, batch) }
+                            removeAbsentManagedChurches(records.map { it.id.value })
+                            cleanupManagedOrphans()
+                            committedRevisionSequence = completeRun(runId, contentHash, entityCounts, relationshipCounts)
+                        }
+                    } finally {
+                        activeReplacementRunner = null
+                    }
+                }
             } catch (failure: Throwable) {
                 failRun(runId, failure)
                 throw failure
@@ -65,26 +107,91 @@ class Neo4jCatalogImporter(
             durationMillis = (System.nanoTime() - started) / 1_000_000,
             schemaVersion = schemaVersion,
             database = database,
+            revisionId = revisionId,
+            revisionSequence = committedRevisionSequence,
+            contentHash = contentHash,
         )
     }
 
-    private suspend fun startRun(runId: String, catalog: NormalizedCatalogImport) {
-        transactions.write("catalog-import.start") { runner ->
+    private suspend fun <T> catalogRead(name: String, block: (GraphQueryRunner) -> T): T {
+        val runner = activeReplacementRunner
+        return if (runner != null) block(runner) else transactions.read(name, block)
+    }
+
+    private suspend fun <T> catalogWrite(name: String, block: (GraphQueryRunner) -> T): T {
+        val runner = activeReplacementRunner
+        return if (runner != null) block(runner) else transactions.write(name, block)
+    }
+
+    private suspend fun lockAndVerifyExpectedRevision(expectedRevision: CatalogRevisionToken?) {
+        val actual = catalogWrite("catalog-import.lock-state") { runner ->
+            runner.query(
+                """
+                MERGE (state:CatalogState {name: 'catalog'})
+                ON CREATE SET state.nextSequence = 1, state.writeLock = 0
+                SET state.writeLock = coalesce(state.writeLock, 0) + 1
+                WITH state
+                OPTIONAL MATCH (state)-[:CURRENT_REVISION]->(revision:CatalogRevision {status: 'COMMITTED'})
+                RETURN revision.id AS revisionId, revision.sequence AS revisionSequence
+                """.trimIndent(),
+            ).singleOrNull()?.let { row ->
+                val revisionId = row["revisionId"]?.toString()?.takeIf(String::isNotBlank) ?: return@let null
+                CatalogRevisionToken(revisionId, (row["revisionSequence"] as Number).toLong())
+            }
+        }
+        if (expectedRevision != null && actual != expectedRevision) {
+            throw CatalogRevisionMismatchException(expectedRevision, actual)
+        }
+    }
+
+    private suspend fun startRun(
+        runId: String,
+        contentHash: String,
+        catalog: NormalizedCatalogImport,
+        operation: CatalogOperationMetadata,
+    ) {
+        catalogWrite("catalog-import.start") { runner ->
             runner.query(
                 """
                 MERGE (run:ImportRun {id: ${'$'}id})
                 SET run.sourcePath = ${'$'}sourcePath,
                     run.sourceChecksum = ${'$'}sourceChecksum,
                     run.schemaVersion = ${'$'}schemaVersion,
+                    run.operation = ${'$'}operation,
+                    run.actor = ${'$'}actor,
+                    run.operationSource = ${'$'}operationSource,
                     run.status = 'RUNNING',
                     run.startedAt = datetime(),
                     run.completedAt = null,
                     run.error = null
+                MERGE (state:CatalogState {name: 'catalog'})
+                ON CREATE SET state.nextSequence = 1
+                WITH run, state, coalesce(state.nextSequence, 1) AS nextSequence
+                MERGE (revision:CatalogRevision {id: ${'$'}id})
+                ON CREATE SET revision.sequence = nextSequence
+                SET revision.status = 'BUILDING',
+                    revision.contentHash = ${'$'}contentHash,
+                    revision.churchCount = ${'$'}churchCount,
+                    revision.operation = ${'$'}operation,
+                    revision.actor = ${'$'}actor,
+                    revision.operationSource = ${'$'}operationSource,
+                    revision.startedAt = datetime(),
+                    revision.committedAt = null,
+                    revision.error = null
+                SET state.nextSequence = CASE
+                    WHEN revision.sequence = nextSequence THEN nextSequence + 1
+                    ELSE state.nextSequence
+                END
                 """.trimIndent(),
                 mapOf(
                     "id" to runId,
                     "sourcePath" to catalog.sourcePath,
                     "sourceChecksum" to catalog.sourceChecksum,
+                    "contentHash" to contentHash,
+                    "churchCount" to catalog.records.size,
+                    "operation" to operation.operation,
+                    "actor" to operation.actor,
+                    "operationSource" to operation.source,
                     "schemaVersion" to schemaVersion,
                 ),
             )
@@ -98,6 +205,7 @@ class Neo4jCatalogImporter(
                 "id" to record.id.value,
                 "locationId" to "church-location:${record.id.value}",
                 "properties" to buildMap<String, Any?> {
+                    put("id", record.id.value)
                     put("googlePlaceId", record.googlePlaceId)
                     put("primaryName", record.primaryName)
                     put("englishName", record.englishName)
@@ -107,21 +215,24 @@ class Neo4jCatalogImporter(
                     put("address", record.address)
                     put("email", record.email)
                     put("updatedAt", record.updatedAt)
-                    put("localizedNamesJson", json.encodeToString(record.localizedNames))
-                    record.names.values.forEach { (language, value) -> put("name_${language.replace('-', '_')}", value) }
+                    putAll(record.names.values.toNeo4jNameProperties())
                 },
                 "latitude" to record.latitude,
                 "longitude" to record.longitude,
             )
         }
-        transactions.write("catalog-import.batch$batchIndex.churches") { runner ->
+        catalogWrite("catalog-import.batch$batchIndex.churches") { runner ->
             runner.query(
                 """
                 UNWIND ${'$'}rows AS row
                 MERGE (church:Church {id: row.id})
-                SET church += row.properties
+                SET church = row.properties,
+                    church.catalogManaged = true
                 MERGE (location:Location {id: row.locationId})
-                SET location.latitude = row.latitude, location.longitude = row.longitude, location.address = row.properties.address
+                SET location.latitude = row.latitude,
+                    location.longitude = row.longitude,
+                    location.address = row.properties.address,
+                    location.catalogManaged = true
                 MERGE (church)-[:LOCATED_AT]->(location)
                 """.trimIndent(),
                 mapOf("rows" to churchRows),
@@ -140,20 +251,22 @@ class Neo4jCatalogImporter(
                 "churchId" to churchId,
                 "id" to denomination.id.value,
                 "properties" to buildMap<String, Any?> {
+                    put("id", denomination.id.value)
                     put("normalizedName", normalizeSearchText(denomination.id.value))
-                    denomination.localizedNames.forEach { put("name_${it.languageCode.substringBefore('-').lowercase()}", it.name) }
+                    putAll(denomination.localizedNames.toCanonicalNameMap().toNeo4jNameProperties())
                 },
             )
         }
         boundedRelationshipDelete(batchIndex, churchIds, "BELONGS_TO_DENOMINATION")
         if (rows.isEmpty()) return
-        transactions.write("catalog-import.batch$batchIndex.denominations") { runner ->
+            catalogWrite("catalog-import.batch$batchIndex.denominations") { runner ->
             runner.query(
                 """
                 UNWIND ${'$'}rows AS row
                 MATCH (church:Church {id: row.churchId})
                 MERGE (denomination:Denomination {id: row.id})
-                SET denomination += row.properties
+                SET denomination = row.properties,
+                    denomination.catalogManaged = true
                 MERGE (church)-[:BELONGS_TO_DENOMINATION]->(denomination)
                 """.trimIndent(),
                 mapOf("rows" to rows),
@@ -174,7 +287,7 @@ class Neo4jCatalogImporter(
                 "pageIds" to website.pages.map(::webpageId).distinct(),
             )
         }
-        transactions.write("catalog-import.batch$batchIndex.websites") { runner ->
+            catalogWrite("catalog-import.batch$batchIndex.websites") { runner ->
             runner.query(
                 """
                 UNWIND ${'$'}rows AS row
@@ -189,7 +302,7 @@ class Neo4jCatalogImporter(
         }
         val pageRows = websites.flatMap { (_, website) -> website.pages.map { page -> pageRow(website.id, page) } }
         if (pageRows.isNotEmpty()) {
-            transactions.write("catalog-import.batch$batchIndex.pages") { runner ->
+            catalogWrite("catalog-import.batch$batchIndex.pages") { runner ->
                 runner.query(
                     """
                     UNWIND ${'$'}rows AS row
@@ -216,7 +329,7 @@ class Neo4jCatalogImporter(
         }.distinctBy { it["sourceId"] to it["targetId"] }
         val sourcePageIds = pageRows.mapNotNull { it["id"] as? String }.distinct()
         if (sourcePageIds.isNotEmpty()) {
-            transactions.write("catalog-import.batch$batchIndex.page-links-delete") { runner ->
+            catalogWrite("catalog-import.batch$batchIndex.page-links-delete") { runner ->
                 runner.query(
                     "UNWIND ${'$'}sourceIds AS sourceId MATCH (source:Webpage {id: sourceId})-[link:LINKS_TO]->() DELETE link",
                     mapOf("sourceIds" to sourcePageIds),
@@ -224,7 +337,7 @@ class Neo4jCatalogImporter(
             }
         }
         if (pageLinkRows.isNotEmpty()) {
-            transactions.write("catalog-import.batch$batchIndex.page-links") { runner ->
+            catalogWrite("catalog-import.batch$batchIndex.page-links") { runner ->
                 runner.query(
                     """
                     UNWIND ${'$'}rows AS row
@@ -260,7 +373,7 @@ class Neo4jCatalogImporter(
             )
         } }
         if (rows.isEmpty()) return
-        transactions.write("catalog-import.batch$batchIndex.social") { runner ->
+            catalogWrite("catalog-import.batch$batchIndex.social") { runner ->
             runner.query(
                 """
                 UNWIND ${'$'}rows AS row
@@ -277,7 +390,7 @@ class Neo4jCatalogImporter(
 
     private suspend fun replaceMinisters(batchIndex: Int, churchIds: List<String>, records: List<ChurchImportRecord>) {
         val rows = records.flatMap { record -> record.ministers.map { minister -> ministerRow(record.id.value, minister) } }
-        transactions.write("catalog-import.batch$batchIndex.minister-links") { runner ->
+        catalogWrite("catalog-import.batch$batchIndex.minister-links") { runner ->
             runner.query(
                 """
                 UNWIND ${'$'}churchIds AS churchId
@@ -289,15 +402,17 @@ class Neo4jCatalogImporter(
             )
         }
         if (rows.isEmpty()) return
-        transactions.write("catalog-import.batch$batchIndex.ministers") { runner ->
+            catalogWrite("catalog-import.batch$batchIndex.ministers") { runner ->
             runner.query(
                 """
                 UNWIND ${'$'}rows AS row
                 MATCH (church:Church {id: row.churchId})
                 MERGE (person:Person {id: row.personId})
-                SET person.name = row.name, person.localizedNamesJson = row.localizedNamesJson
+                SET person = row.personProperties,
+                    person.catalogManaged = true
                 MERGE (role:RoleEvent {id: row.roleEventId})
-                SET role.roleId = row.roleId, role.roleName = row.roleName, role.localizedRoleNamesJson = row.localizedRoleNamesJson
+                SET role = row.roleProperties,
+                    role.catalogManaged = true
                 MERGE (person)-[:HELD_ROLE]->(role)
                 MERGE (role)-[:ROLE_AT]->(church)
                 """.trimIndent(),
@@ -318,7 +433,7 @@ class Neo4jCatalogImporter(
                 "determinationsJson" to json.encodeToString(record.determinations),
             )
         }
-        transactions.write("catalog-import.batch$batchIndex.sources") { runner ->
+        catalogWrite("catalog-import.batch$batchIndex.sources") { runner ->
             runner.query(
                 """
                 UNWIND ${'$'}rows AS row
@@ -335,7 +450,7 @@ class Neo4jCatalogImporter(
 
     private suspend fun boundedRelationshipDelete(batchIndex: Int, churchIds: List<String>, relationship: String) {
         require(relationship in REPLACEABLE_CHURCH_RELATIONSHIPS)
-        transactions.write("catalog-import.batch$batchIndex.clear-${relationship.lowercase()}") { runner ->
+        catalogWrite("catalog-import.batch$batchIndex.clear-${relationship.lowercase()}") { runner ->
             runner.query(
                 """
                 UNWIND ${'$'}churchIds AS churchId
@@ -348,28 +463,60 @@ class Neo4jCatalogImporter(
         }
     }
 
-    private suspend fun completeRun(runId: String, entities: Map<String, Int>, relationships: Map<String, Int>) {
-        transactions.write("catalog-import.complete") { runner ->
+    private suspend fun removeAbsentManagedChurches(authoritativeChurchIds: List<String>) {
+        catalogWrite("catalog-import.remove-absent-churches") { runner ->
             runner.query(
                 """
-                MATCH (run:ImportRun {id: ${'$'}id})
-                SET run.status = 'COMPLETED', run.completedAt = datetime(),
-                    run.entityCountsJson = ${'$'}entityCountsJson,
-                    run.relationshipCountsJson = ${'$'}relationshipCountsJson
+                MATCH (church:Church {catalogManaged: true})
+                WHERE NOT church.id IN ${'$'}churchIds
+                DETACH DELETE church
                 """.trimIndent(),
-                mapOf("id" to runId, "entityCountsJson" to json.encodeToString(entities), "relationshipCountsJson" to json.encodeToString(relationships)),
+                mapOf("churchIds" to authoritativeChurchIds),
             )
         }
     }
 
+    private suspend fun completeRun(
+        runId: String,
+        contentHash: String,
+        entities: Map<String, Int>,
+        relationships: Map<String, Int>,
+    ): Long = catalogWrite("catalog-import.complete") { runner ->
+            runner.query(
+                """
+                MATCH (run:ImportRun {id: ${'$'}id})
+                MATCH (revision:CatalogRevision {id: ${'$'}id})
+                SET run.status = 'COMPLETED', run.completedAt = datetime(),
+                    run.entityCountsJson = ${'$'}entityCountsJson,
+                    run.relationshipCountsJson = ${'$'}relationshipCountsJson,
+                    revision.status = 'COMMITTED',
+                    revision.contentHash = ${'$'}contentHash,
+                    revision.committedAt = datetime()
+                MERGE (state:CatalogState {name: 'catalog'})
+                SET state.updatedAt = datetime()
+                WITH state, revision
+                OPTIONAL MATCH (state)-[old:CURRENT_REVISION]->(:CatalogRevision)
+                DELETE old
+                MERGE (state)-[:CURRENT_REVISION]->(revision)
+                RETURN revision.sequence AS revisionSequence
+                """.trimIndent(),
+                mapOf(
+                    "id" to runId,
+                    "contentHash" to contentHash,
+                    "entityCountsJson" to json.encodeToString(entities),
+                    "relationshipCountsJson" to json.encodeToString(relationships),
+                ),
+            ).singleOrNull()?.get("revisionSequence").let { (it as? Number)?.toLong() ?: 0L }
+        }
+
     private suspend fun cleanupManagedOrphans() {
         ORPHAN_CLEANUPS.forEach { cleanup ->
-            val ids = transactions.read("catalog-import.cleanup.${cleanup.name}.find") { runner ->
-                val row = runner.query(cleanup.findCypher).single()
-                (row["ids"] as? List<*>)?.map(Any?::toString).orEmpty()
+            val ids = catalogRead("catalog-import.cleanup.${cleanup.name}.find") { runner ->
+                val row = runner.query(cleanup.findCypher).singleOrNull()
+                (row?.get("ids") as? List<*>)?.map(Any?::toString).orEmpty()
             }
             if (ids.isNotEmpty()) {
-                transactions.write("catalog-import.cleanup.${cleanup.name}.delete") { runner ->
+                catalogWrite("catalog-import.cleanup.${cleanup.name}.delete") { runner ->
                     runner.query(cleanup.deleteCypher, mapOf("ids" to ids))
                 }
             }
@@ -378,14 +525,49 @@ class Neo4jCatalogImporter(
 
     private suspend fun failRun(runId: String, failure: Throwable) {
         runCatching {
-            transactions.write("catalog-import.fail") { runner ->
+            catalogWrite("catalog-import.fail") { runner ->
                 runner.query(
-                    "MATCH (run:ImportRun {id: ${'$'}id}) SET run.status = 'FAILED', run.completedAt = datetime(), run.error = ${'$'}error",
+                    "MERGE (run:ImportRun {id: ${'$'}id}) SET run.status = 'FAILED', run.completedAt = datetime(), run.error = ${'$'}error",
+                    mapOf("id" to runId, "error" to (failure.message ?: failure::class.simpleName).orEmpty().take(2_000)),
+                )
+                runner.query(
+                    "MERGE (revision:CatalogRevision {id: ${'$'}id}) SET revision.status = 'FAILED', revision.completedAt = datetime(), revision.error = ${'$'}error",
                     mapOf("id" to runId, "error" to (failure.message ?: failure::class.simpleName).orEmpty().take(2_000)),
                 )
             }
         }
     }
+
+    private fun ChurchImportRecord.toChurchRecord(): ChurchRecord = ChurchRecord(
+        id = id.value,
+        googleCid = googlePlaceId,
+        name = primaryName,
+        englishName = englishName,
+        localizedNames = localizedNames,
+        localizedDenominationNames = denomination?.localizedNames.orEmpty(),
+        titleLanguages = titleLanguages,
+        denominationId = denomination?.id?.value,
+        category = category,
+        address = address,
+        location = GeoPoint(latitude, longitude),
+        websiteUrl = website?.url.orEmpty(),
+        email = email,
+        pages = website?.pages.orEmpty(),
+        socialProfiles = socialAccounts.map { account ->
+            SocialProfile(
+                platform = account.platform,
+                url = account.url,
+                handle = account.handle,
+                displayName = account.displayName,
+                description = account.description,
+                discoveredAt = account.discoveredAt,
+                contentHash = account.contentHash,
+            )
+        },
+        ministers = ministers,
+        determinations = determinations,
+        updatedAt = updatedAt,
+    )
 
     private fun pageRow(websiteId: String, page: CrawledPage): Map<String, Any?> {
         val normalizedUrl = normalizeUrl(page.url)
@@ -413,15 +595,23 @@ class Neo4jCatalogImporter(
 
     private fun ministerRow(churchId: String, minister: ChurchMinister): Map<String, Any?> {
         val identity = "$churchId|${minister.name.trim()}|${minister.roleId.trim()}"
+        val personId = hashId("person", identity)
+        val roleEventId = hashId("role", identity)
         return mapOf(
             "churchId" to churchId,
-            "personId" to hashId("person", identity),
-            "roleEventId" to hashId("role", identity),
-            "name" to minister.name.trim(),
-            "localizedNamesJson" to json.encodeToString(minister.localizedNames),
-            "roleId" to minister.roleId.trim(),
-            "roleName" to minister.roleName.trim(),
-            "localizedRoleNamesJson" to json.encodeToString(minister.localizedRoleNames),
+            "personId" to personId,
+            "roleEventId" to roleEventId,
+            "personProperties" to buildMap<String, Any?> {
+                put("id", personId)
+                put("name", minister.name.trim())
+                putAll(minister.localizedNames.toCanonicalNameMap().toNeo4jNameProperties())
+            },
+            "roleProperties" to buildMap<String, Any?> {
+                put("id", roleEventId)
+                put("roleId", minister.roleId.trim())
+                put("roleName", minister.roleName.trim())
+                putAll(minister.localizedRoleNames.toCanonicalNameMap().toNeo4jNameProperties())
+            },
         )
     }
 
@@ -429,6 +619,11 @@ class Neo4jCatalogImporter(
         private data class OrphanCleanup(val name: String, val findCypher: String, val deleteCypher: String)
 
         private val ORPHAN_CLEANUPS = listOf(
+            OrphanCleanup(
+                "locations",
+                "MATCH (node:Location {catalogManaged: true}) WHERE NOT (:Church)-[:LOCATED_AT]->(node) RETURN collect(node.id) AS ids",
+                "MATCH (node:Location {catalogManaged: true}) WHERE node.id IN ${'$'}ids AND NOT (:Church)-[:LOCATED_AT]->(node) DETACH DELETE node",
+            ),
             OrphanCleanup(
                 "websites",
                 "MATCH (node:Website) WHERE NOT (:Church)-[:HAS_WEBSITE]->(node) RETURN collect(node.id) AS ids",

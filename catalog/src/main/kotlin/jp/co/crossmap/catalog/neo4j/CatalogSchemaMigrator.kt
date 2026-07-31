@@ -94,6 +94,7 @@ class CatalogSchemaMigrator(
     companion object {
         val DEFAULT_MIGRATIONS = listOf(
             CatalogSchemaMigration(1, "initial_catalog_schema", "/catalog-migrations/V001__initial_catalog_schema.cypher"),
+            CatalogSchemaMigration(2, "canonical_catalog_revisions", "/catalog-migrations/V002__canonical_catalog_revisions.cypher"),
         )
         val EXPECTED_VERSION: Int = DEFAULT_MIGRATIONS.last().version
     }

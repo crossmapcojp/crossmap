@@ -96,6 +96,7 @@ data class CleanupReport(
     val uncertain: Int,
     val humanOverrides: Int,
     val errors: Int,
+    val updatedChurches: List<ChurchRecord>,
 )
 
 data class ProgrammaticDecision(
@@ -261,16 +262,14 @@ class PostCrawlCleanup(
 
     suspend fun run(
         resourcesRoot: Path,
+        churches: List<ChurchRecord>,
         limit: Int = Int.MAX_VALUE,
-        applyChanges: Boolean = true,
         enableLlm: Boolean = true,
-        catalogFile: Path = resourcesRoot.resolve("catalog/churches.json"),
         cacheRoot: Path = CrossmapPaths.defaultCacheRoot(resourcesRoot),
     ): CleanupReport {
         val paths = CrossmapPaths(resourcesRoot, cacheRoot)
         val cleanupDir = paths.cleanup
         Files.createDirectories(cleanupDir)
-        val churches = json.decodeFromString<List<ChurchRecord>>(Files.readString(catalogFile))
         val candidates = readList<DenominationCandidate>(cleanupDir.resolve("denomination-candidates.json"))
         val normalizedCandidates = candidates.map(::NormalizedDenominationCandidate)
         val rules = readList<DenominationRule>(paths.denominationRules)
@@ -382,7 +381,6 @@ class PostCrawlCleanup(
             )
         }
 
-        if (applyChanges) atomicWrite(catalogFile, json.encodeToString(updated))
         atomicWrite(cleanupDir.resolve("decisions.json"), json.encodeToString(audit))
         return CleanupReport(
             total = updated.size,
@@ -393,6 +391,7 @@ class PostCrawlCleanup(
             uncertain = audit.count { it.source == DeterminationSource.LLM && !it.accepted },
             humanOverrides = audit.count { it.source == DeterminationSource.HUMAN },
             errors = errors,
+            updatedChurches = updated,
         )
     }
 

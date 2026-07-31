@@ -10,12 +10,16 @@ import jp.co.crossmap.LocalizedName
 import jp.co.crossmap.SermonMetadata
 import jp.co.crossmap.SocialPlatform
 import jp.co.crossmap.SocialProfile
+import jp.co.crossmap.neo4jNamePropertiesToLocalizedNames
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 data class StaticChurchCatalogSnapshot(
     val churches: List<ChurchRecord>,
     val sourceChecksum: String,
+    val catalogRevision: String = "",
+    val catalogRevisionSequence: Long = 0,
+    val catalogContentHash: String = sourceChecksum,
 )
 
 class Neo4jStaticChurchCatalogSource(
@@ -28,31 +32,34 @@ class Neo4jStaticChurchCatalogSource(
     }
 
     suspend fun read(): StaticChurchCatalogSnapshot {
-        val metadata = transactions.read("static-catalog.metadata") { runner ->
-            runner.query(
+        return transactions.read("static-catalog.committed-snapshot") { runner ->
+            val metadata = runner.query(
                 """
-                MATCH (run:ImportRun {status: 'COMPLETED'})
-                RETURN run.sourceChecksum AS sourceChecksum
-                ORDER BY run.completedAt DESC
-                LIMIT 1
+                MATCH (state:CatalogState {name: 'catalog'})-[:CURRENT_REVISION]->(revision:CatalogRevision {status: 'COMMITTED'})
+                RETURN revision.id AS catalogRevision,
+                       revision.sequence AS catalogRevisionSequence,
+                       revision.contentHash AS catalogContentHash,
+                       revision.contentHash AS sourceChecksum
                 """.trimIndent(),
-            ).singleOrNull() ?: error("Neo4j catalog has no completed import")
-        }
-        val count = transactions.read("static-catalog.count") { runner ->
-            (runner.query("MATCH (church:Church) RETURN count(church) AS count").single().getValue("count") as Number).toInt()
-        }
-        val churches = ArrayList<ChurchRecord>(count)
-        for (offset in 0 until count step pageSize) {
-            val rows = transactions.read("static-catalog.page") { runner ->
-                runner.query(STATIC_DETAIL_QUERY, mapOf("offset" to offset, "limit" to pageSize))
+            ).singleOrNull() ?: error("Neo4j catalog has no committed catalog revision")
+            val count = (runner.query("MATCH (church:Church) RETURN count(church) AS count")
+                .single().getValue("count") as Number).toInt()
+            val churches = ArrayList<ChurchRecord>(count)
+            for (offset in 0 until count step pageSize) {
+                churches += runner.query(STATIC_DETAIL_QUERY, mapOf("offset" to offset, "limit" to pageSize))
+                    .map(::churchRecordFromRow)
             }
-            churches += rows.map(::churchRecordFromRow)
+            check(churches.size == count) {
+                "Committed catalog projection count mismatch: expected=$count actual=${churches.size}"
+            }
+            StaticChurchCatalogSnapshot(
+                churches = churches.sortedBy(ChurchRecord::id),
+                sourceChecksum = metadata.getValue("sourceChecksum").toString(),
+                catalogRevision = metadata.getValue("catalogRevision").toString(),
+                catalogRevisionSequence = (metadata.getValue("catalogRevisionSequence") as Number).toLong(),
+                catalogContentHash = metadata.getValue("catalogContentHash").toString(),
+            )
         }
-        check(churches.size == count) { "Static catalog projection count changed while reading: expected=$count actual=${churches.size}" }
-        return StaticChurchCatalogSnapshot(
-            churches = churches.sortedBy(ChurchRecord::id),
-            sourceChecksum = metadata.getValue("sourceChecksum").toString(),
-        )
     }
 
     internal fun churchRecordFromRow(row: Map<String, Any?>): ChurchRecord {
@@ -60,11 +67,7 @@ class Neo4jStaticChurchCatalogSource(
         val location = row.map("location")
         val denomination = row.optionalMap("denomination")
         val website = row.optionalMap("website")
-        val names = church.entries.asSequence()
-            .filter { (key, value) -> key.startsWith("name_") && value is String && value.isNotBlank() }
-            .map { (key, value) -> LocalizedName(key.removePrefix("name_"), value.toString()) }
-            .sortedBy(LocalizedName::languageCode)
-            .toList()
+        val names = church.neo4jNamePropertiesToLocalizedNames()
         val pages = row.listOfMaps("pages").map { page ->
             CrawledPage(
                 url = page.string("url"),
@@ -99,12 +102,10 @@ class Neo4jStaticChurchCatalogSource(
             val role = entry.map("role")
             ChurchMinister(
                 name = person.string("name"),
-                localizedNames = person.nullableString("localizedNamesJson")
-                    ?.let { json.decodeFromString<List<LocalizedName>>(it) }.orEmpty(),
+                localizedNames = person.neo4jNamePropertiesToLocalizedNames(),
                 roleId = role.string("roleId"),
                 roleName = role.string("roleName"),
-                localizedRoleNames = role.nullableString("localizedRoleNamesJson")
-                    ?.let { json.decodeFromString<List<LocalizedName>>(it) }.orEmpty(),
+                localizedRoleNames = role.neo4jNamePropertiesToLocalizedNames(),
             )
         }.sortedWith(compareBy(ChurchMinister::name, ChurchMinister::roleId))
         val source = row.optionalMap("source")
@@ -200,8 +201,4 @@ private fun Map<String, Any?>.rawString(key: String, default: String = ""): Stri
 private fun Map<String, Any?>.nullableString(key: String): String? = get(key)?.toString()?.takeIf(String::isNotBlank)
 private fun Map<String, Any?>.number(key: String, default: Number = 0): Number = get(key) as? Number ?: default
 private fun Map<String, Any?>.stringList(key: String): List<String> = (get(key) as? List<*>)?.map(Any?::toString).orEmpty()
-private fun Map<String, Any?>.localizedNames(): List<LocalizedName> = entries.asSequence()
-    .filter { (key, value) -> key.startsWith("name_") && value is String && value.isNotBlank() }
-    .map { (key, value) -> LocalizedName(key.removePrefix("name_"), value.toString()) }
-    .sortedBy(LocalizedName::languageCode)
-    .toList()
+private fun Map<String, Any?>.localizedNames(): List<LocalizedName> = neo4jNamePropertiesToLocalizedNames()

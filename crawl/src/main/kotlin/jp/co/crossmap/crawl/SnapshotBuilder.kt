@@ -26,10 +26,27 @@ class SnapshotBuilder(private val json: Json = Json { ignoreUnknownKeys = true; 
     fun build(
         resourcesRoot: Path,
         version: String,
+        churches: List<ChurchRecord>,
+        catalogRevision: String,
+        catalogContentHash: String,
         cacheRoot: Path = CrossmapPaths.defaultCacheRoot(resourcesRoot),
+    ): IndexManifest = buildProjection(
+        resourcesRoot = resourcesRoot,
+        version = version,
+        churches = churches,
+        catalogRevision = catalogRevision,
+        catalogContentHash = catalogContentHash,
+        cacheRoot = cacheRoot,
+    )
+
+    private fun buildProjection(
+        resourcesRoot: Path,
+        version: String,
+        churches: List<ChurchRecord>,
+        catalogRevision: String,
+        catalogContentHash: String,
+        cacheRoot: Path,
     ): IndexManifest {
-        val catalogBytes = Files.readAllBytes(resourcesRoot.resolve("catalog/churches.json"))
-        val churches = json.decodeFromString<List<ChurchRecord>>(catalogBytes.toString(Charsets.UTF_8))
         val denominationNames = DenominationNameCatalogFiles.load(resourcesRoot)
         val websitePolicy = ExcludedChurchListingDomains.policy(resourcesRoot)
         val indexedChurches = churches.map { church ->
@@ -98,7 +115,9 @@ class SnapshotBuilder(private val json: Json = Json { ignoreUnknownKeys = true; 
             createdAt = Instant.now().toString(),
             documentCount = churches.size,
             languages = supportedLanguageCodes,
-            sourceSha256 = catalogBytes.sha256(),
+            sourceSha256 = catalogContentHash,
+            catalogRevision = catalogRevision,
+            catalogContentHash = catalogContentHash,
             archiveFile = "churches-$version.zip",
         )
         Files.createDirectories(snapshotDir)

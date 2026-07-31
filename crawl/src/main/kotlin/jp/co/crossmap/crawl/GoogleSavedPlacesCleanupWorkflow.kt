@@ -13,6 +13,7 @@ import jp.co.crossmap.DeterminationSource
 import jp.co.crossmap.FieldDetermination
 import jp.co.crossmap.LocalizedName
 import jp.co.crossmap.SocialProfile
+import jp.co.crossmap.catalog.canonical.CatalogOperationMetadata
 import jp.co.crossmap.crawl.denomination.OfficialDenominationChurchListPipeline
 import kotlinx.serialization.json.Json
 import kotlin.time.DurationUnit
@@ -53,6 +54,7 @@ class GoogleSavedPlacesCleanupWorkflow(
     private val englishNameResolver: ChurchEnglishNameResolver,
     private val churchWebsiteCrawler: ChurchWebsiteCrawler = ChurchWebsiteCrawler(),
     private val directoryCrawler: OfficialDenominationChurchListPipeline = OfficialDenominationChurchListPipeline(),
+    private val canonicalCatalog: CrawlCanonicalCatalogGateway = CrawlCanonicalCatalog,
     private val now: () -> String = { Instant.now().toString() },
     private val json: Json = Json { ignoreUnknownKeys = true; prettyPrint = true; encodeDefaults = true },
 ) {
@@ -70,21 +72,29 @@ class GoogleSavedPlacesCleanupWorkflow(
         val totalMark = TimeSource.Monotonic.markNow()
         val stageDurations = linkedMapOf<String, Double>()
         val progress = PipelineProgress("promote-google-saved-places")
+        val canonicalSnapshot = canonicalCatalog.readCommittedSnapshot()
         var stageMark = TimeSource.Monotonic.markNow()
         progress.start("prepare_load_inputs")
-        val prepared = preparePendingCatalog(resourcesRoot, cacheRoot) { stage -> progress.start("prepare_$stage") }
+        val prepared = preparePendingCatalog(resourcesRoot, cacheRoot, canonicalSnapshot.churches) { stage ->
+            progress.start("prepare_$stage")
+        }
         stageDurations += prepared.stageDurationsSeconds.mapKeys { "prepare_${it.key}" }
         stageDurations["prepare_total"] = stageMark.elapsedNow().toDouble(DurationUnit.SECONDS)
         val staging = pendingCatalog(resourcesRoot, cacheRoot)
         stageMark = TimeSource.Monotonic.markNow()
         progress.start("website_refresh")
-        val website = if (refreshWebsites) churchWebsiteCrawler.crawl(resourcesRoot, staging, cacheRoot) else null
+        val website = if (refreshWebsites) {
+            val stagedChurches = json.decodeFromString<List<ChurchRecord>>(Files.readString(staging))
+            churchWebsiteCrawler.crawl(resourcesRoot, stagedChurches, cacheRoot).also { result ->
+                atomicWrite(staging, json.encodeToString(result.updatedChurches))
+            }
+        } else null
         stageDurations["website_refresh"] = stageMark.elapsedNow().toDouble(DurationUnit.SECONDS)
         stageMark = TimeSource.Monotonic.markNow()
         progress.start("directory_crawl")
         val directory = if (crawlDirectories) {
             // Crawl/cache official inputs here, then reconcile exactly once after denomination cleanup below.
-            directoryCrawler.run(resourcesRoot, cacheRoot, catalogFile = null)
+            directoryCrawler.run(resourcesRoot, cacheRoot, churches = null)
         } else {
             null
         }
@@ -92,31 +102,36 @@ class GoogleSavedPlacesCleanupWorkflow(
         stageMark = TimeSource.Monotonic.markNow()
         progress.start("denomination_cleanup")
         val cleanup = if (cleanupDenominations) {
+            val stagedChurches = json.decodeFromString<List<ChurchRecord>>(Files.readString(staging))
             postCrawlCleanup.run(
                 resourcesRoot = resourcesRoot,
+                churches = stagedChurches,
                 limit = llmLimit,
-                applyChanges = true,
                 enableLlm = enableLlm,
-                catalogFile = staging,
                 cacheRoot = cacheRoot,
-            )
+            ).also { result -> atomicWrite(staging, json.encodeToString(result.updatedChurches)) }
         } else {
             null
         }
         stageDurations["denomination_cleanup"] = stageMark.elapsedNow().toDouble(DurationUnit.SECONDS)
         stageMark = TimeSource.Monotonic.markNow()
         progress.start("directory_reconcile")
-        if (directory != null) directoryCrawler.reconcileGeneratedLists(staging, resourcesRoot)
+        if (directory != null) {
+            val stagedChurches = json.decodeFromString<List<ChurchRecord>>(Files.readString(staging))
+            directoryCrawler.reconcileGeneratedLists(stagedChurches, resourcesRoot).also { result ->
+                atomicWrite(staging, json.encodeToString(result.updatedChurches))
+            }
+        }
         stageDurations["directory_reconcile"] = stageMark.elapsedNow().toDouble(DurationUnit.SECONDS)
         stageMark = TimeSource.Monotonic.markNow()
         progress.start("social_merge")
         val social = socialInputs?.let { inputs ->
+            val stagedChurches = json.decodeFromString<List<ChurchRecord>>(Files.readString(staging))
             GoogleSocialDataMergePipeline(json).run(
                 resourcesRoot = resourcesRoot,
+                churches = stagedChurches,
                 inputs = inputs,
-                applyChanges = true,
-                catalogFile = staging,
-            )
+            ).also { result -> atomicWrite(staging, json.encodeToString(result.updatedChurches)) }
         }
         stageDurations["social_merge"] = stageMark.elapsedNow().toDouble(DurationUnit.SECONDS)
         stageMark = TimeSource.Monotonic.markNow()
@@ -128,7 +143,14 @@ class GoogleSavedPlacesCleanupWorkflow(
         stageMark = TimeSource.Monotonic.markNow()
         progress.start("promote_catalog")
         if (promote) {
-            atomicWrite(resourcesRoot.resolve("catalog/churches.json"), json.encodeToString(completed))
+            canonicalCatalog.replace(
+                expectedRevision = canonicalSnapshot.revisionToken,
+                churches = completed,
+                operation = CatalogOperationMetadata(
+                    operation = "promote-google-saved-places",
+                    actor = "crawl:promote-google-saved-places",
+                ),
+            )
         }
         stageDurations["promote_catalog"] = stageMark.elapsedNow().toDouble(DurationUnit.SECONDS)
         stageDurations["total"] = totalMark.elapsedNow().toDouble(DurationUnit.SECONDS)
@@ -173,6 +195,7 @@ class GoogleSavedPlacesCleanupWorkflow(
     suspend fun preparePendingCatalog(
         resourcesRoot: Path,
         cacheRoot: Path = CrossmapPaths.defaultCacheRoot(resourcesRoot),
+        existingChurches: List<ChurchRecord>,
         onStage: (String) -> Unit = {},
     ): PreparationReport {
         val stageDurations = linkedMapOf<String, Double>()
@@ -190,13 +213,8 @@ class GoogleSavedPlacesCleanupWorkflow(
         } else {
             emptyMap()
         }
-        val catalog = resourcesRoot.resolve("catalog/churches.json")
-        val existing = if (Files.isRegularFile(catalog)) {
-            json.decodeFromString<List<ChurchRecord>>(Files.readString(catalog)).filterNot { church ->
-                ExcludedGooglePlaces.contains(excludedGooglePlaces, church.id, church.googleCid)
-            }
-        } else {
-            emptyList()
+        val existing = existingChurches.filterNot { church ->
+            ExcludedGooglePlaces.contains(excludedGooglePlaces, church.id, church.googleCid)
         }
         val existingByCid = existing.mapNotNull { church -> church.googleCid?.let { it to church } }.toMap()
         stageDurations["load_inputs"] = stageMark.elapsedNow().toDouble(DurationUnit.SECONDS)

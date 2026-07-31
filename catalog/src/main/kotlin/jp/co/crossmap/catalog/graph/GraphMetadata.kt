@@ -5,6 +5,7 @@ import jp.co.crossmap.catalog.ChurchId
 import jp.co.crossmap.catalog.DenominationId
 import jp.co.crossmap.catalog.EntityRef
 import jp.co.crossmap.catalog.MultilingualText
+import jp.co.crossmap.toNeo4jNameProperties
 import kotlin.reflect.KClass
 
 interface NodeMetadata<T : Any> {
@@ -84,9 +85,6 @@ object ChurchGraphMetadata : NodeMetadata<Church> {
     }
 }
 
-fun MultilingualText.toNeo4jNameProperties(): Map<String, String> = values.toSortedMap().mapKeys { (language, _) ->
-    "name_${language.replace('-', '_')}"
-}
+fun MultilingualText.toNeo4jNameProperties(): Map<String, String> = values.toNeo4jNameProperties()
 
 internal fun normalizeName(value: String): String = value.trim().lowercase().replace(Regex("[\\s　]+"), "")
-

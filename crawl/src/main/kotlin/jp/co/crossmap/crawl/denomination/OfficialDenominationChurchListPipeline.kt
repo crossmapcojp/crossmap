@@ -10,6 +10,7 @@ import jp.co.crossmap.crawl.DirectoryCrawlReport
 import jp.co.crossmap.crawl.GoogleSavedPlaceCrawl
 import jp.co.crossmap.crawl.OfficialDirectoryCrawler
 import jp.co.crossmap.crawl.loadDenominationDirectorySources
+import jp.co.crossmap.ChurchRecord
 import kotlinx.serialization.json.Json
 
 data class OfficialDenominationChurchListPipelineReport(
@@ -66,7 +67,7 @@ class OfficialDenominationChurchListPipeline(
     fun run(
         resourcesRoot: Path,
         cacheRoot: Path = CrossmapPaths.defaultCacheRoot(resourcesRoot),
-        catalogFile: Path? = resourcesRoot.resolve("catalog/churches.json").takeIf(Files::isRegularFile),
+        churches: List<ChurchRecord>? = null,
         forceRefresh: Boolean = false,
         crawlGenericDirectories: Boolean = true,
         denominationIds: Set<String>? = null,
@@ -89,7 +90,7 @@ class OfficialDenominationChurchListPipeline(
         }
         val lists = results.map(DenominationChurchListCrawlResult::list)
         val googlePlaceTitles = loadGooglePlaceTitles(cacheRoot)
-        val reconciliation = catalogFile?.takeIf(Files::isRegularFile)?.takeIf { denominationIds == null }?.let {
+        val reconciliation = churches?.takeIf { denominationIds == null }?.let {
             reconciler.reconcile(it, lists, googlePlaceTitles)
         }
         return OfficialDenominationChurchListPipelineReport(
@@ -104,7 +105,7 @@ class OfficialDenominationChurchListPipeline(
         )
     }
 
-    fun reconcileGeneratedLists(catalogFile: Path, resourcesRoot: Path): OfficialDenominationReconciliationReport {
+    fun reconcileGeneratedLists(churches: List<ChurchRecord>, resourcesRoot: Path): OfficialDenominationReconciliationReport {
         val dedicatedCrawlers = dedicatedCrawlers(resourcesRoot)
         val lists = dedicatedCrawlers.map { crawler ->
             val file = resourcesRoot.resolve("crawl/${crawler.outputFileName}")
@@ -112,7 +113,7 @@ class OfficialDenominationChurchListPipeline(
             json.decodeFromString<OfficialDenominationChurchList>(Files.readString(file))
         }
         return reconciler.reconcile(
-            catalogFile,
+            churches,
             lists,
             loadGooglePlaceTitles(CrossmapPaths.defaultCacheRoot(resourcesRoot)),
         )

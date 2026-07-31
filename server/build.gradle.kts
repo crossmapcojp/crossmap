@@ -18,7 +18,7 @@ application {
 tasks.named<JavaExec>("run") {
     workingDir = rootProject.projectDir
     // Ktor serves the materialized snapshot/static output and never requires a live Neo4j connection.
-    dependsOn(":crawl:buildSearchSnapshot")
+    dependsOn("publishCrossmapArtifacts")
 }
 
 tasks.register<JavaExec>("runCurrentIndex") {
@@ -81,6 +81,29 @@ tasks.register<JavaExec>("generateChurchPages") {
         siteBaseUrl.get(),
         staticSiteParallelism.get(),
     )
+}
+
+tasks.named("generateChurchPages") {
+    mustRunAfter(":crawl:buildSearchSnapshot")
+}
+
+val verifyCatalogProjectionManifests by tasks.registering(JavaExec::class) {
+    group = "verification"
+    description = "Require search and static-page artifacts to use one committed Neo4j catalog revision"
+    dependsOn(":crawl:buildSearchSnapshot", "generateChurchPages")
+    classpath = sourceSets.main.get().runtimeClasspath
+    mainClass = "jp.co.crossmap.VerifyCatalogProjectionManifestsCli"
+    workingDir = rootProject.projectDir
+    args(
+        "cache/search-indexes/churches/latest.json",
+        "webclient/manifest.json",
+    )
+}
+
+tasks.register("publishCrossmapArtifacts") {
+    group = "crossmap"
+    description = "Build and verify search/static projections from one committed Neo4j catalog revision"
+    dependsOn(verifyCatalogProjectionManifests)
 }
 
 tasks.register<JavaExec>("validateI18n") {

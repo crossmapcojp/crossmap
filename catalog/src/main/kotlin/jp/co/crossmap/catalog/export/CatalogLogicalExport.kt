@@ -3,6 +3,8 @@ package jp.co.crossmap.catalog.export
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
+import java.security.MessageDigest
+import java.time.Instant
 import jp.co.crossmap.ChurchRecord
 import jp.co.crossmap.catalog.importer.ChurchImportRecord
 import jp.co.crossmap.catalog.importer.LegacyJsonChurchCatalogSource
@@ -15,8 +17,19 @@ import kotlinx.serialization.json.Json
 
 data class CatalogLogicalExportResult(
     val output: Path,
+    val manifest: Path,
     val churchCount: Int,
     val sourceChecksum: String,
+)
+
+@Serializable
+data class CatalogLogicalExportManifest(
+    val catalogRevisionId: String,
+    val catalogRevisionSequence: Long,
+    val catalogContentHash: String,
+    val generatedAt: String,
+    val churchCount: Int,
+    val fileSha256: String,
 )
 
 class CatalogLogicalExporter(
@@ -25,10 +38,26 @@ class CatalogLogicalExporter(
     fun write(snapshot: StaticChurchCatalogSnapshot, output: Path): CatalogLogicalExportResult {
         output.parent?.let(Files::createDirectories)
         val churches = snapshot.churches.sortedBy(ChurchRecord::id)
+        val content = json.encodeToString(churches)
         val temporary = Files.createTempFile(output.parent ?: Path.of("."), ".${output.fileName}-", ".tmp")
-        Files.writeString(temporary, json.encodeToString(churches))
+        Files.writeString(temporary, content)
         Files.move(temporary, output, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE)
-        return CatalogLogicalExportResult(output, churches.size, snapshot.sourceChecksum)
+        val manifest = output.resolveSibling("${output.fileName}.manifest.json")
+        val manifestContent = json.encodeToString(
+            CatalogLogicalExportManifest(
+                catalogRevisionId = snapshot.catalogRevision,
+                catalogRevisionSequence = snapshot.catalogRevisionSequence,
+                catalogContentHash = snapshot.catalogContentHash,
+                generatedAt = Instant.now().toString(),
+                churchCount = churches.size,
+                fileSha256 = MessageDigest.getInstance("SHA-256").digest(content.toByteArray())
+                    .joinToString("") { "%02x".format(it) },
+            ),
+        )
+        val temporaryManifest = Files.createTempFile(manifest.parent, ".${manifest.fileName}-", ".tmp")
+        Files.writeString(temporaryManifest, manifestContent)
+        Files.move(temporaryManifest, manifest, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE)
+        return CatalogLogicalExportResult(output, manifest, churches.size, snapshot.sourceChecksum)
     }
 }
 

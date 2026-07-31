@@ -20,6 +20,12 @@ import jp.co.crossmap.ChurchRecord
 import jp.co.crossmap.GeoName as SearchGeoName
 import jp.co.crossmap.crawl.denomination.OfficialDenominationChurchListPipeline
 import kotlinx.coroutines.runBlocking
+import jp.co.crossmap.catalog.canonical.Neo4jCanonicalChurchCatalogReader
+import jp.co.crossmap.catalog.canonical.CatalogOperationMetadata
+import jp.co.crossmap.catalog.neo4j.CatalogSchemaMigrator
+import jp.co.crossmap.catalog.neo4j.Neo4jConfig
+import jp.co.crossmap.catalog.neo4j.Neo4jDriverManager
+import jp.co.crossmap.catalog.neo4j.Neo4jGraphTransactionRunner
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -168,7 +174,7 @@ private class PromoteGoogleSavedPlaces : CrawlCommand("promote-google-saved-plac
         "--skip-denomination-cleanup",
         help = "Preserve existing/candidate denomination evidence without rerunning denomination matching",
     ).flag()
-    private val dryRun by option("--dry-run", help = "Complete the pending catalog but do not replace churches.json").flag()
+    private val dryRun by option("--dry-run", help = "Complete the pending catalog but do not commit a Neo4j catalog revision").flag()
 
     override fun execute(audit: CrawlCommandAudit) = runBlocking {
         val startedNanos = System.nanoTime()
@@ -176,7 +182,7 @@ private class PromoteGoogleSavedPlaces : CrawlCommand("promote-google-saved-plac
         val paths = CrossmapPaths(root)
         val socialInputs = SocialExportInputs.load()
         audit.input("candidates", paths.googleSavedPlaces.resolve("google-place-candidates.json").toAbsolutePath().normalize())
-        audit.input("catalog", paths.churchCatalog.toAbsolutePath().normalize())
+        audit.input("catalog", "neo4j:current-committed-revision")
         socialInputs.youtubeSubscribedChannelsCsv?.let { audit.input("youtube_subscriptions", it) }
         socialInputs.instagramFollowingJson?.let { audit.input("instagram_following", it) }
         socialInputs.facebookFollowingRawHtml?.let { audit.input("facebook_following_html", it) }
@@ -294,7 +300,7 @@ private class PromoteGoogleSavedPlaces : CrawlCommand("promote-google-saved-plac
         report.stageDurationsSeconds.forEach { (stage, seconds) ->
             audit.metric("duration_${stage}_seconds", "%.3f".format(java.util.Locale.ROOT, seconds))
         }
-        audit.output("catalog", paths.churchCatalog.toAbsolutePath().normalize())
+        if (!dryRun) audit.output("catalog", "neo4j:current-committed-revision")
         audit.output("pending_catalog", paths.cleanup.resolve("google-saved-places-pending.json").toAbsolutePath().normalize())
         writeDataCleanupStat(
             total = report.finalChurches,
@@ -325,11 +331,11 @@ private class BuildGeonames : CrawlCommand("build-geonames", CrawlReport.BUILD_G
     private val citiesSource by option("--cities-source").required()
     override fun execute(audit: CrawlCommandAudit) {
         val root = Path.of(resources)
-        val catalog = root.resolve("catalog/churches.json")
         val output = root.resolve("geonames/japan.json")
-        audit.input("catalog", catalog.toAbsolutePath().normalize())
+        val snapshot = runBlocking { CrawlCanonicalCatalog.readCommittedSnapshot() }
+        audit.input("catalog", "neo4j:${snapshot.revisionId}")
         audit.input("cities_source", Path.of(citiesSource).toAbsolutePath().normalize())
-        val churches = json.decodeFromString<List<ChurchRecord>>(java.nio.file.Files.readString(root.resolve("catalog/churches.json")))
+        val churches = snapshot.churches
         val paths = CrossmapPaths(root)
         val geoName = jp.co.crossmap.crawl.GeoName()
         val multilingualLexicon = geoName.readMultilingualLexicon(paths.geoNamesMultilingualLexicon)
@@ -526,14 +532,35 @@ private class BuildSnapshot : CrawlCommand("build-snapshot", CrawlReport.BUILD_S
     override fun execute(audit: CrawlCommandAudit) {
         val root = Path.of(resources)
         val paths = CrossmapPaths(root)
-        audit.input("catalog", paths.churchCatalog.toAbsolutePath().normalize())
+        audit.input("catalog", "neo4j:current-committed-revision")
         audit.input("geonames", paths.geonames.toAbsolutePath().normalize())
         audit.setting("version", version)
-        val manifest = SnapshotBuilder().build(root, version, paths.cacheRoot)
+        val snapshot = runBlocking {
+            Neo4jDriverManager(Neo4jConfig.fromEnvironmentAndLocalProperties()).use { manager ->
+                val health = manager.health(CatalogSchemaMigrator.EXPECTED_VERSION)
+                check(
+                    health.reachable &&
+                        health.schemaVersion == CatalogSchemaMigrator.EXPECTED_VERSION &&
+                        health.catalogImported
+                ) { "Neo4j canonical catalog is not ready for snapshot generation: $health" }
+                Neo4jCanonicalChurchCatalogReader(
+                    Neo4jGraphTransactionRunner(manager.driver, manager.config.database),
+                ).readCommittedSnapshot()
+            }
+        }
+        val manifest = SnapshotBuilder().build(
+            resourcesRoot = root,
+            version = version,
+            churches = snapshot.churches,
+            catalogRevision = snapshot.revisionId,
+            catalogContentHash = snapshot.contentHash,
+            cacheRoot = paths.cacheRoot,
+        )
         audit.metric("schema_version", manifest.schemaVersion)
         audit.metric("document_count", manifest.documentCount)
         audit.metric("archive_size", manifest.archiveSize)
         audit.metric("source_sha256", manifest.sourceSha256)
+        audit.metric("catalog_revision", manifest.catalogRevision)
         audit.metric("archive_sha256", manifest.sha256)
         audit.output("index_directory", paths.searchIndexes.resolve(version).toAbsolutePath().normalize())
         audit.output("archive", manifest.archiveFile.orEmpty())
@@ -556,10 +583,11 @@ private class NormalizeAddresses : CrawlCommand("normalize-addresses", CrawlRepo
             "Geolonia normalizer is not configured. Set ${GeoloniaNormalizerInput.PROPERTY} in local.properties " +
                 "or pass --normalizer-dir.",
         )
-        val churches = json.decodeFromString<List<ChurchRecord>>(Files.readString(paths.churchCatalog))
+        val snapshot = runBlocking { CrawlCanonicalCatalog.readCommittedSnapshot() }
+        val churches = snapshot.churches
         val geonames = json.decodeFromString<List<SearchGeoName>>(Files.readString(paths.geonames))
         val runner = projectLogsDirectory().parent.resolve("crawl/scripts/geolonia-normalize.mjs")
-        audit.input("church_catalog", paths.churchCatalog.toAbsolutePath().normalize())
+        audit.input("church_catalog", "neo4j:${snapshot.revisionId}")
         audit.input("geonames", paths.geonames.toAbsolutePath().normalize())
         audit.input("local_geolonia", localNormalizer)
         audit.setting("concurrency", concurrency)
@@ -621,9 +649,11 @@ private class CrawlDenominationDirectories : CrawlCommand("crawl-denomination-di
         audit.setting("force_refresh", forceRefresh)
         audit.setting("dedicated_only", dedicatedOnly)
         audit.setting("denominations", denominationIds.joinToString(",").ifBlank { "all" })
+        val snapshot = runBlocking { CrawlCanonicalCatalog.readCommittedSnapshot() }
         val report = OfficialDenominationChurchListPipeline().run(
             root,
             paths.cacheRoot,
+            churches = snapshot.churches.takeIf { denominationIds.isEmpty() },
             forceRefresh = forceRefresh,
             crawlGenericDirectories = !dedicatedOnly && denominationIds.isEmpty(),
             denominationIds = denominationIds.mapTo(linkedSetOf()) { it.uppercase() }.takeIf { it.isNotEmpty() },
@@ -638,6 +668,13 @@ private class CrawlDenominationDirectories : CrawlCommand("crawl-denomination-di
         }
         audit.metric("official_cache_hits", report.cacheHits)
         report.reconciliation?.let { reconciliation ->
+            runBlocking {
+                CrawlCanonicalCatalog.replace(
+                    snapshot.revisionToken,
+                    reconciliation.updatedChurches,
+                    CatalogOperationMetadata("crawl-denomination-directories", "crawl:crawl-denomination-directories"),
+                )
+            }
             audit.metric("official_matches", reconciliation.matchedOfficialEntries)
             audit.metric("denominations_assigned", reconciliation.assigned)
             audit.metric("unsupported_labels_removed", reconciliation.removedUnsupportedLabels)
@@ -655,7 +692,7 @@ private class CrawlDenominationDirectories : CrawlCommand("crawl-denomination-di
         audit.output("igm_churches", root.resolve("crawl/igm-churches.json").toAbsolutePath().normalize())
         audit.output("jag_churches", root.resolve("crawl/jag-churches.json").toAbsolutePath().normalize())
         audit.output("catholic_jp_churches", root.resolve("crawl/catholic_jp-churches.json").toAbsolutePath().normalize())
-        audit.output("catalog", paths.churchCatalog.toAbsolutePath().normalize())
+        report.reconciliation?.let { audit.output("catalog", "neo4j:committed-revision") }
         echo(
             "Crawled ${report.sources} denomination sources / ${report.pages} pages: ${report.candidates} candidates, " +
                 report.churchesByDenomination.entries.joinToString { "${it.key}=${it.value}" } + ", ${report.errors} errors; " +
@@ -672,7 +709,8 @@ private class Refresh : CrawlCommand("refresh", CrawlReport.REFRESH) {
     override fun execute(audit: CrawlCommandAudit) {
         val root = Path.of(resources)
         val paths = CrossmapPaths(root)
-        audit.input("catalog", paths.churchCatalog.toAbsolutePath().normalize())
+        val snapshot = runBlocking { CrawlCanonicalCatalog.readCommittedSnapshot() }
+        audit.input("catalog", "neo4j:${snapshot.revisionId}")
         audit.setting("max_concurrency", concurrency)
         audit.setting("max_depth", maxDepth)
         audit.setting("max_pages_per_church", maxPagesPerChurch)
@@ -680,7 +718,14 @@ private class Refresh : CrawlCommand("refresh", CrawlReport.REFRESH) {
             maxConcurrency = concurrency,
             maxDepth = maxDepth,
             maxPagesPerChurch = maxPagesPerChurch,
-        ).crawl(root, cacheRoot = paths.cacheRoot)
+        ).crawl(root, snapshot.churches, cacheRoot = paths.cacheRoot)
+        runBlocking {
+            CrawlCanonicalCatalog.replace(
+                snapshot.revisionToken,
+                report.updatedChurches,
+                CatalogOperationMetadata("refresh-websites", "crawl:refresh"),
+            )
+        }
         audit.metric("churches", report.churches)
         audit.metric("fetched", report.fetched)
         audit.metric("unchanged", report.unchanged)
@@ -697,13 +742,13 @@ private class CleanupLlm : CrawlCommand("cleanup-llm", CrawlReport.CLEANUP_LLM) 
     private val ollamaUrl by option("--ollama-url").default("http://localhost:11434")
     private val threshold by option("--confidence-threshold").double().default(0.80)
     private val limit by option("--limit", help = "Maximum unresolved records to send to Ollama").int().default(100)
-    private val dryRun by option("--dry-run", help = "Write the decision audit without changing churches.json").flag()
+    private val dryRun by option("--dry-run", help = "Write the decision audit without committing a Neo4j catalog revision").flag()
     private val programmaticOnly by option("--programmatic-only", help = "Run deterministic rules and human overrides without Ollama").flag()
 
     override fun execute(audit: CrawlCommandAudit) = runBlocking {
         val root = Path.of(resources)
         val paths = CrossmapPaths(root)
-        audit.input("catalog", paths.churchCatalog.toAbsolutePath().normalize())
+        audit.input("catalog", "neo4j:current-committed-revision")
         audit.input("rules", root.resolve("cleanup/denomination-rules.json").toAbsolutePath().normalize())
         audit.setting("model", if (programmaticOnly) "disabled" else model)
         audit.setting("confidence_threshold", threshold)
@@ -721,18 +766,26 @@ private class CleanupLlm : CrawlCommand("cleanup-llm", CrawlReport.CLEANUP_LLM) 
         val entityMatcher = if (programmaticOnly) {
             EntityMatcher { EntityMatchDecision(null, 0.0, reasoning = "LLM disabled") }
         } else KoogOllamaEntityMatcher(model, ollamaUrl)
+        val snapshot = CrawlCanonicalCatalog.readCommittedSnapshot()
         val report = PostCrawlCleanup(
             matcher = entityMatcher,
             confidenceThreshold = threshold,
             webpageGuesser = if (programmaticOnly) null else KoogDenominationGuesser(denominationCatalog, model, ollamaUrl),
         )
             .run(
-                Path.of(resources),
-                limit,
-                applyChanges = !dryRun,
+                resourcesRoot = root,
+                churches = snapshot.churches,
+                limit = limit,
                 enableLlm = !programmaticOnly,
                 cacheRoot = paths.cacheRoot,
             )
+        if (!dryRun) {
+            CrawlCanonicalCatalog.replace(
+                snapshot.revisionToken,
+                report.updatedChurches,
+                CatalogOperationMetadata("cleanup-llm", "crawl:cleanup-llm"),
+            )
+        }
         audit.metric("total", report.total)
         audit.metric("not_determined_before", report.notDeterminedBefore)
         audit.metric("not_determined_after", report.notDeterminedAfter)
@@ -741,7 +794,7 @@ private class CleanupLlm : CrawlCommand("cleanup-llm", CrawlReport.CLEANUP_LLM) 
         audit.metric("uncertain", report.uncertain)
         audit.metric("human_overrides", report.humanOverrides)
         audit.metric("errors", report.errors)
-        audit.output("catalog", paths.churchCatalog.toAbsolutePath().normalize())
+        if (!dryRun) audit.output("catalog", "neo4j:current-committed-revision")
         audit.output("decisions", paths.cleanup.resolve("decisions.json").toAbsolutePath().normalize())
         echo(
             "Denominations: NOT_DETERMINED ${report.notDeterminedBefore} -> ${report.notDeterminedAfter}; " +
@@ -778,35 +831,46 @@ private class LinkSocial : CrawlCommand("link-social", CrawlReport.LINK_SOCIAL) 
     private val ollamaUrl by option("--ollama-url").default("http://localhost:11434")
     private val threshold by option("--confidence-threshold").double().default(0.80)
     private val limit by option("--limit", help = "Maximum social accounts to resolve").int().default(100)
-    private val dryRun by option("--dry-run", help = "Write decisions without changing churches.json").flag()
+    private val dryRun by option("--dry-run", help = "Write decisions without committing a Neo4j catalog revision").flag()
 
     override fun execute(audit: CrawlCommandAudit) = runBlocking {
         val root = Path.of(resources)
         val paths = CrossmapPaths(root)
-        audit.input("catalog", paths.churchCatalog.toAbsolutePath().normalize())
+        audit.input("catalog", "neo4j:current-committed-revision")
         audit.input("social_candidates", paths.cleanup.resolve("social-candidates.json").toAbsolutePath().normalize())
         audit.setting("model", model)
         audit.setting("confidence_threshold", threshold)
         audit.setting("limit", limit)
         audit.setting("dry_run", dryRun)
         checkOllamaDiskSpace()
+        val snapshot = CrawlCanonicalCatalog.readCommittedSnapshot()
         val report = SocialLinkPipeline(
             llm = KoogLlmEntitySimilarityMatcher(model, ollamaUrl),
             llmThreshold = threshold.toFloat(),
             modelName = model,
         ).run(
             root,
+            snapshot.churches,
             limit,
-            applyChanges = !dryRun,
             cacheRoot = paths.cacheRoot,
         )
+        if (!dryRun) {
+            CrawlCanonicalCatalog.replace(
+                expectedRevision = snapshot.revisionToken,
+                churches = report.updatedChurches,
+                operation = CatalogOperationMetadata(
+                    operation = "link-social",
+                    actor = "crawl:link-social",
+                ),
+            )
+        }
         audit.metric("accounts_processed", report.accountsProcessed)
         audit.metric("direct_links_accepted", report.directLinksAccepted)
         audit.metric("name_links_accepted", report.nameLinksAccepted)
         audit.metric("llm_links_accepted", report.llmLinksAccepted)
         audit.metric("unmatched", report.unmatched)
         audit.output("decisions", paths.cleanup.resolve("social-decisions.json").toAbsolutePath().normalize())
-        audit.output("catalog", paths.churchCatalog.toAbsolutePath().normalize())
+        if (!dryRun) audit.output("catalog", "neo4j:current-committed-revision")
         echo(
             "Social accounts: ${report.accountsProcessed} processed; ${report.directLinksAccepted} webpage links, " +
                 "${report.nameLinksAccepted} exact/containing names, ${report.llmLinksAccepted} LLM, ${report.unmatched} unmatched"
@@ -816,19 +880,32 @@ private class LinkSocial : CrawlCommand("link-social", CrawlReport.LINK_SOCIAL) 
 
 private class MergeSocialExports : CrawlCommand("merge-social-exports", CrawlReport.LINK_SOCIAL) {
     private val resources by option("--resources").default("resources")
-    private val dryRun by option("--dry-run", help = "Parse, reconcile, and audit without changing churches.json").flag()
+    private val dryRun by option("--dry-run", help = "Parse, reconcile, and audit without committing a Neo4j catalog revision").flag()
 
     override fun execute(audit: CrawlCommandAudit) {
         val root = Path.of(resources)
         val inputs = SocialExportInputs.load()
-        audit.input("catalog", root.resolve("catalog/churches.json").toAbsolutePath().normalize())
+        audit.input("catalog", "neo4j:current-committed-revision")
         inputs.youtubeSubscribedChannelsCsv?.let { audit.input("youtube_subscriptions", it) }
         inputs.instagramFollowingJson?.let { audit.input("instagram_following", it) }
         inputs.facebookFollowingRawHtml?.let { audit.input("facebook_following_html", it) }
         inputs.facebookFollowingJson?.let { audit.input("facebook_following_json", it) }
         inputs.twitterListMembersJson?.let { audit.input("x_list_members", it) }
         audit.setting("dry_run", dryRun)
-        val report = GoogleSocialDataMergePipeline().run(root, inputs, applyChanges = !dryRun)
+        val snapshot = runBlocking { CrawlCanonicalCatalog.readCommittedSnapshot() }
+        val report = GoogleSocialDataMergePipeline().run(root, snapshot.churches, inputs)
+        if (!dryRun) {
+            runBlocking {
+                CrawlCanonicalCatalog.replace(
+                    expectedRevision = snapshot.revisionToken,
+                    churches = report.updatedChurches,
+                    operation = CatalogOperationMetadata(
+                        operation = "merge-social-exports",
+                        actor = "crawl:merge-social-exports",
+                    ),
+                )
+            }
+        }
         audit.metric("google_saved_places", report.googleSavedPlaces)
         audit.metric("social_website_urls_migrated", report.socialWebsiteUrlsMigrated)
         audit.metric("accounts_parsed", report.accountsParsed)
@@ -839,7 +916,7 @@ private class MergeSocialExports : CrawlCommand("merge-social-exports", CrawlRep
         audit.output("audit_log", report.auditLog.toAbsolutePath().normalize())
         audit.output("social_candidates", root.resolve("evidence/social-accounts.json").toAbsolutePath().normalize())
         audit.output("social_decisions", root.resolve("cleanup/social-merge-decisions.json").toAbsolutePath().normalize())
-        audit.output("catalog", root.resolve("catalog/churches.json").toAbsolutePath().normalize())
+        audit.output("catalog", "neo4j:committed-revision")
         echo(
             "Social exports: ${report.accountsParsed} parsed; ${report.exactMatches} exact, " +
                 "${report.estimatedMatches} estimated, ${report.notMatched} unmatched, ${report.excluded} excluded; " +
@@ -852,7 +929,7 @@ private class PopulateEnglishNames : CrawlCommand("english-names", CrawlReport.E
     private val resources by option("--resources").default("resources")
     private val model by option("--model").default(CAT_TRANSLATE_MODEL)
     private val ollamaUrl by option("--ollama-url").default("http://localhost:11434")
-    private val dryRun by option("--dry-run", help = "Resolve and validate every name without changing churches.json").flag()
+    private val dryRun by option("--dry-run", help = "Resolve and validate every name without committing a Neo4j catalog revision").flag()
     private val programmaticOnly by option(
         "--programmatic-only",
         help = "Do not call Ollama; fail if deterministic evidence cannot name every church",
@@ -860,16 +937,15 @@ private class PopulateEnglishNames : CrawlCommand("english-names", CrawlReport.E
 
     override fun execute(audit: CrawlCommandAudit) = runBlocking {
         val startedNanos = System.nanoTime()
-        val catalog = Path.of(resources).resolve("catalog/churches.json")
         val paths = CrossmapPaths(Path.of(resources))
-        audit.input("catalog", catalog.toAbsolutePath().normalize())
+        val snapshot = CrawlCanonicalCatalog.readCommittedSnapshot()
+        audit.input("catalog", "neo4j:${snapshot.revisionId}")
         audit.input("denominations", Path.of(resources).resolve("catalog/denominations.json").toAbsolutePath().normalize())
         audit.setting("model", if (programmaticOnly) "disabled" else model)
         audit.setting("programmatic_only", programmaticOnly)
         audit.setting("dry_run", dryRun)
-        require(Files.isRegularFile(catalog)) { "Church catalog does not exist: $catalog" }
-        val drafts = json.decodeFromString<List<ChurchRecordDraft>>(Files.readString(catalog))
-        val namingInputs = drafts.map(ChurchRecordDraft::toEnglishNameInput)
+        val churches = snapshot.churches
+        val namingInputs = churches.map(ChurchRecord::toEnglishNameInput)
         val denominations = json.decodeFromString<List<Denomination>>(
             Files.readString(Path.of(resources).resolve("catalog/denominations.json")),
         )
@@ -933,29 +1009,21 @@ private class PopulateEnglishNames : CrawlCommand("english-names", CrawlReport.E
         try {
             val resolutions = resolver.resolveInputs(namingInputs)
             val determinedAt = java.time.Instant.now().toString()
-            val resolved = drafts.map { draft ->
-                draft.toChurchRecord(requireNotNull(resolutions[draft.id]), determinedAt)
+            val resolved = churches.map { church ->
+                church.withEnglishNameResolution(requireNotNull(resolutions[church.id]), determinedAt)
             }
             val llmCount = resolved.count { church ->
                 church.determinations.lastOrNull { it.field == "englishName" }?.source == jp.co.crossmap.DeterminationSource.LLM
             }
             if (!dryRun) {
-                val encoded = Json { prettyPrint = true; encodeDefaults = true }.encodeToString(resolved)
-                val temporary = Files.createTempFile(catalog.parent, ".churches-english-names-", ".json")
-                Files.writeString(temporary, encoded)
-                runCatching {
-                    Files.move(
-                        temporary,
-                        catalog,
-                        StandardCopyOption.ATOMIC_MOVE,
-                        StandardCopyOption.REPLACE_EXISTING,
-                    )
-                }.getOrElse {
-                    Files.move(temporary, catalog, StandardCopyOption.REPLACE_EXISTING)
-                }
+                CrawlCanonicalCatalog.replace(
+                    snapshot.revisionToken,
+                    resolved,
+                    CatalogOperationMetadata("english-names", "crawl:english-names"),
+                )
             }
             val cleanupLog = writeDataCleanupStat(
-                total = drafts.size,
+                total = churches.size,
                 deterministic = deterministicCount,
                 llm = llmCount,
                 startedNanos = startedNanos,
@@ -989,7 +1057,7 @@ private class PopulateEnglishNames : CrawlCommand("english-names", CrawlReport.E
             audit.metric("errors", translationStats.errors)
             audit.metric("timeouts", translationStats.timeouts)
             audit.metric("catalog_updated", !dryRun)
-            audit.output("catalog", catalog.toAbsolutePath().normalize())
+            if (!dryRun) audit.output("catalog", "neo4j:committed-revision")
             audit.output("data_cleanup_log", cleanupLog.toAbsolutePath().normalize())
             audit.output("translation_log", translationLog.toAbsolutePath().normalize())
             audit.output("llm_detail_log", detailLog.toAbsolutePath().normalize())
@@ -997,7 +1065,7 @@ private class PopulateEnglishNames : CrawlCommand("english-names", CrawlReport.E
         } catch (error: Throwable) {
             val timeout = generateSequence(error) { it.cause }.any { it::class.simpleName.orEmpty().contains("Timeout") }
             val cleanupLog = writeDataCleanupStat(
-                total = drafts.size,
+                total = churches.size,
                 deterministic = deterministicCount,
                 llm = 0,
                 startedNanos = startedNanos,
@@ -1014,7 +1082,7 @@ private class PopulateEnglishNames : CrawlCommand("english-names", CrawlReport.E
                 startedNanos,
                 "failed: ${error.message.orEmpty().replace('\n', ' ').take(500)}",
             )
-            audit.metric("total_churches", drafts.size)
+            audit.metric("total_churches", churches.size)
             audit.metric("deterministic_names", deterministicCount)
             audit.metric("errors", translationStats.errors)
             audit.metric("timeouts", translationStats.timeouts)
@@ -1051,18 +1119,16 @@ private class AnalyzeEnglishNames : CrawlCommand("analyze-english-names", CrawlR
         val startedNanos = System.nanoTime()
         val root = Path.of(resources)
         val paths = CrossmapPaths(root)
-        audit.input("catalog", paths.churchCatalog.toAbsolutePath().normalize())
+        val snapshot = runBlocking { CrawlCanonicalCatalog.readCommittedSnapshot() }
+        audit.input("catalog", "neo4j:${snapshot.revisionId}")
         audit.input("denominations", paths.denominationCatalog.toAbsolutePath().normalize())
-        val drafts = json.decodeFromString<List<ChurchRecordDraft>>(
-            Files.readString(root.resolve("catalog/churches.json")),
-        )
         val denominations = json.decodeFromString<List<Denomination>>(
             Files.readString(root.resolve("catalog/denominations.json")),
         )
         val dictionaries = ChurchNameEnglishDictionary.load(root)
         val nameGeonames = loadChurchNameGeonames(paths) + dictionaries.geonames
         val detectionOnlyGeonames = loadChurchNameGeoAliases(paths)
-        val inputs = drafts.map(ChurchRecordDraft::toEnglishNameInput)
+        val inputs = snapshot.churches.map(ChurchRecord::toEnglishNameInput)
         val stats = analyzeChurchNames(inputs, denominations, nameGeonames, detectionOnlyGeonames, dictionaries)
         val resolver = ChurchEnglishNameResolver(
             ChurchNameEnglishTranslationRules.create(denominations, nameGeonames, dictionaries.concepts),
@@ -1314,7 +1380,7 @@ private class ValidateChineseDictionaries : CrawlCommand(
 
 private class LocalizeChineseNames : CrawlCommand("localize-chinese-names", CrawlReport.CHINESE_LOCALIZATION) {
     private val resources by option("--resources").default("resources")
-    private val dryRun by option("--dry-run", help = "Produce reports without replacing churches.json").flag()
+    private val dryRun by option("--dry-run", help = "Produce reports without committing a Neo4j catalog revision").flag()
 
     override fun execute(audit: CrawlCommandAudit) {
         val root = Path.of(resources)
@@ -1335,8 +1401,8 @@ private class LocalizeChineseNames : CrawlCommand("localize-chinese-names", Craw
             ),
             branchGeonames = loadChurchNameGeoAliases(paths) + dictionaries.geonames.keys,
         )
-        val churches = json.decodeFromString<List<ChurchRecord>>(Files.readString(paths.churchCatalog))
-        val result = ChineseLocalizationMigration(localizer).process(churches)
+        val snapshot = runBlocking { CrawlCanonicalCatalog.readCommittedSnapshot() }
+        val result = ChineseLocalizationMigration(localizer).process(snapshot.churches)
         val reportDirectory = root.resolve("review")
         val reportPath = reportDirectory.resolve("chinese-localization-report.json")
         val summaryPath = reportDirectory.resolve("chinese-localization-summary.txt")
@@ -1355,8 +1421,14 @@ private class LocalizeChineseNames : CrawlCommand("localize-chinese-names", Craw
             dictionary coverage: ${"%.2f".format(java.util.Locale.ROOT, result.report.dictionaryCoverageRate * 100)}%
             """.trimIndent() + "\n",
         )
-        if (!dryRun) writeJsonAtomically(paths.churchCatalog, result.churches)
-        audit.input("catalog", paths.churchCatalog.toAbsolutePath().normalize())
+        if (!dryRun) runBlocking {
+            CrawlCanonicalCatalog.replace(
+                snapshot.revisionToken,
+                result.churches,
+                CatalogOperationMetadata("localize-chinese-names", "crawl:localize-chinese-names"),
+            )
+        }
+        audit.input("catalog", "neo4j:${snapshot.revisionId}")
         audit.setting("dry_run", dryRun)
         audit.metric("churches_processed", result.report.churchesProcessed)
         audit.metric("zh_hans_generated", result.report.zhHansNamesGenerated)
@@ -1367,7 +1439,7 @@ private class LocalizeChineseNames : CrawlCommand("localize-chinese-names", Craw
         audit.metric("dictionary_coverage_rate", result.report.dictionaryCoverageRate)
         audit.output("review_report", reportPath.toAbsolutePath().normalize())
         audit.output("summary", summaryPath.toAbsolutePath().normalize())
-        if (!dryRun) audit.output("catalog", paths.churchCatalog.toAbsolutePath().normalize())
+        if (!dryRun) audit.output("catalog", "neo4j:committed-revision")
         echo(
             "Chinese localization: ${result.report.churchesProcessed} churches, " +
                 "${result.report.zhHansNamesGenerated} zh-Hans + ${result.report.zhHantNamesGenerated} zh-Hant, " +
@@ -1378,7 +1450,7 @@ private class LocalizeChineseNames : CrawlCommand("localize-chinese-names", Craw
 
 private class LocalizeVietnameseNames : CrawlCommand("localize-vietnamese-names", CrawlReport.VIETNAMESE_LOCALIZATION) {
     private val resources by option("--resources").default("resources")
-    private val dryRun by option("--dry-run", help = "Produce reports without replacing churches.json").flag()
+    private val dryRun by option("--dry-run", help = "Produce reports without committing a Neo4j catalog revision").flag()
 
     override fun execute(audit: CrawlCommandAudit) {
         val root = Path.of(resources)
@@ -1397,8 +1469,8 @@ private class LocalizeVietnameseNames : CrawlCommand("localize-vietnamese-names"
             ),
             branchGeonames = loadChurchNameGeoAliases(paths) + dictionaries.geonames.keys,
         )
-        val churches = json.decodeFromString<List<ChurchRecord>>(Files.readString(paths.churchCatalog))
-        val result = VietnameseLocalizationMigration(localizer).process(churches)
+        val snapshot = runBlocking { CrawlCanonicalCatalog.readCommittedSnapshot() }
+        val result = VietnameseLocalizationMigration(localizer).process(snapshot.churches)
         val reportPath = root.resolve("review/vietnamese-localization-report.json")
         val summaryPath = root.resolve("review/vietnamese-localization-summary.txt")
         writeJsonAtomically(reportPath, result.report)
@@ -1415,8 +1487,14 @@ private class LocalizeVietnameseNames : CrawlCommand("localize-vietnamese-names"
             dictionary coverage: ${"%.2f".format(java.util.Locale.ROOT, result.report.dictionaryCoverageRate * 100)}%
             """.trimIndent() + "\n",
         )
-        if (!dryRun) writeJsonAtomically(paths.churchCatalog, result.churches)
-        audit.input("catalog", paths.churchCatalog.toAbsolutePath().normalize())
+        if (!dryRun) runBlocking {
+            CrawlCanonicalCatalog.replace(
+                snapshot.revisionToken,
+                result.churches,
+                CatalogOperationMetadata("localize-vietnamese-names", "crawl:localize-vietnamese-names"),
+            )
+        }
+        audit.input("catalog", "neo4j:${snapshot.revisionId}")
         audit.setting("dry_run", dryRun)
         audit.metric("churches_processed", result.report.churchesProcessed)
         audit.metric("vi_generated", result.report.viNamesGenerated)
@@ -1426,7 +1504,7 @@ private class LocalizeVietnameseNames : CrawlCommand("localize-vietnamese-names"
         audit.metric("dictionary_coverage_rate", result.report.dictionaryCoverageRate)
         audit.output("review_report", reportPath.toAbsolutePath().normalize())
         audit.output("summary", summaryPath.toAbsolutePath().normalize())
-        if (!dryRun) audit.output("catalog", paths.churchCatalog.toAbsolutePath().normalize())
+        if (!dryRun) audit.output("catalog", "neo4j:committed-revision")
         echo(
             "Vietnamese localization: ${result.report.churchesProcessed} churches, " +
                 "${result.report.viNamesGenerated} vi names, " +
@@ -1503,6 +1581,6 @@ private class FetchUrl : CliktCommand("fetch-url") {
 fun main(args: Array<String>) = Crawl().subcommands(
     ReadGoogleSavedPlaces(), ResolveGoogleSavedPlaces(), PromoteGoogleSavedPlaces(), Refresh(), CrawlDenominationDirectories(), BuildGeonames(), CleanupLlm(), OverrideDenomination(), MergeSocialExports(), LinkSocial(),
     PopulateEnglishNames(), AnalyzeEnglishNames(), PopulateDenominationEnglishNames(), PrepareGeoNameCache(), BuildChurchGeonames(), NormalizeAddresses(), BuildSnapshot(),
-    CatalogNeo4jHealth(), CatalogNeo4jMigrate(), CatalogNeo4jImport(), CatalogNeo4jExport(), CatalogNeo4jParity(), CatalogNeo4jIntegrity(),
+    CatalogNeo4jStatus(), CatalogNeo4jMigrate(), CatalogNeo4jBootstrapFromLegacyJson(), CatalogNeo4jExportChurchProjection(), CatalogNeo4jParity(), CatalogNeo4jIntegrity(),
     ValidateChineseDictionaries(), LocalizeChineseNames(), LocalizeVietnameseNames(), FetchUrl(),
 ).main(args)

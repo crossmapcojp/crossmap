@@ -1,10 +1,10 @@
 {
     "churchesProcessed": 9464,
-    "viNamesGenerated": 0,
+    "viNamesGenerated": 9463,
     "namesPreservedBecauseReviewedOrOfficial": 0,
-    "ministersLocalized": 0,
+    "ministersLocalized": 2519,
     "churchesRequiringReview": 5952,
-    "indexingChanges": 0,
+    "indexingChanges": 9463,
     "dictionaryCoverageRate": 0.7696257139385101,
     "unmatchedTokenFrequency": {
         "の": 139,

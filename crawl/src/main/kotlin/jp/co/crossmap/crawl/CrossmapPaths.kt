@@ -26,7 +26,6 @@ data class CrossmapPaths(
     val geoNamesMultilingualLexicon: Path get() = geoNameCache.resolve("japan/geonames-multilingual-lexicon.json")
     val geoNameMultilingualLexicon: Path get() = geoNameCache.resolve("japan/church-name-multilingual-lexicon.json")
 
-    val churchCatalog: Path get() = resourcesRoot.resolve("catalog/churches.json")
     val denominationCatalog: Path get() = resourcesRoot.resolve("catalog/denominations.json")
     val denominationRules: Path get() = resourcesRoot.resolve("cleanup/denomination-rules.json")
     val humanOverrides: Path get() = resourcesRoot.resolve("cleanup/human-overrides.json")

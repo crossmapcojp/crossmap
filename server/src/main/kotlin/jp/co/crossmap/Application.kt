@@ -280,7 +280,6 @@ private class ReloadingSearchEngineRegistry(
 private fun searchIndexFingerprint(resourcesRoot: Path, cacheRoot: Path): String =
     listOf(
         cacheRoot.resolve("search-indexes/churches/latest.json"),
-        resourcesRoot.resolve("catalog/churches.json"),
     ).joinToString("|") { path ->
         if (Files.isRegularFile(path)) {
             "${Files.getLastModifiedTime(path).toMillis()}:${Files.size(path)}"
@@ -316,7 +315,13 @@ private fun loadSearchEngine(
     val indexManifest = wireJson.decodeFromString<IndexManifest>(Files.readString(manifestFile))
     // Static detail pages are an optional presentation artifact. A stale/missing page manifest
     // must not make the JSON search API unavailable; the web client can use church.html as fallback.
-    val churchPageUrls = loadChurchPageUrls(resourcesRoot, webRoot, languageCode).orEmpty()
+    val churchPageUrls = loadChurchPageUrls(
+        resourcesRoot,
+        webRoot,
+        languageCode,
+        indexManifest.catalogRevision,
+        indexManifest.catalogContentHash,
+    ).orEmpty()
     ChurchSearchEngine(
         index.toString().toPath(),
         geonames,
@@ -330,6 +335,8 @@ internal fun loadChurchPageUrls(
     resourcesRoot: Path,
     webRoot: Path,
     languageCode: String = Language.ENGLISH.code,
+    expectedCatalogRevision: String? = null,
+    expectedCatalogContentHash: String? = null,
 ): Map<String, String>? {
     val language = Language.fromCode(languageCode) ?: return null
     val manifestFile = webRoot.resolve("manifest.json")
@@ -337,8 +344,11 @@ internal fun loadChurchPageUrls(
     val manifest = runCatching {
         wireJson.decodeFromString<ChurchPageManifest>(Files.readString(manifestFile))
     }.getOrNull() ?: return null
-    val catalog = resourcesRoot.resolve("catalog/churches.json")
-    if (!Files.isRegularFile(catalog) || manifest.sourceSha256 != catalog.sha256()) return null
+    if (manifest.schemaVersion != 2 || manifest.catalogRevision.isBlank() || manifest.catalogContentHash.isBlank() ||
+        manifest.sourceSha256 != manifest.catalogContentHash
+    ) return null
+    if (expectedCatalogRevision != null && manifest.catalogRevision != expectedCatalogRevision) return null
+    if (expectedCatalogContentHash != null && manifest.catalogContentHash != expectedCatalogContentHash) return null
     val pages = manifest.localizedPages.mapValues { (_, variants) -> variants[language.code].orEmpty() }
         .filterValues(String::isNotBlank)
         .ifEmpty { if (language == Language.ENGLISH) manifest.pages else emptyMap() }
@@ -362,11 +372,17 @@ internal fun resolveServerIndex(
     if (!Files.isRegularFile(latestFile)) return null
     val manifest = runCatching { wireJson.decodeFromString<IndexManifest>(Files.readString(latestFile)) }.getOrNull() ?: return null
     if (manifest.schemaVersion != ChurchIndex.SCHEMA_VERSION) return null
-    val catalog = resourcesRoot.resolve("catalog/churches.json")
-    if (!Files.isRegularFile(catalog) || manifest.sourceSha256.isBlank() ||
-        manifest.sourceSha256 != catalog.sha256()
+    if (manifest.catalogRevision.isBlank() || manifest.catalogContentHash.isBlank() ||
+        manifest.sourceSha256 != manifest.catalogContentHash
     ) return null
-    return indexes.resolve("${manifest.indexVersion}/index/ja").takeIf(Files::isDirectory)
+    val snapshot = indexes.resolve(manifest.indexVersion)
+    val snapshotManifest = runCatching {
+        wireJson.decodeFromString<IndexManifest>(Files.readString(snapshot.resolve("manifest.json")))
+    }.getOrNull() ?: return null
+    if (snapshotManifest != manifest) return null
+    val archive = manifest.archiveFile?.let(indexes::resolve) ?: return null
+    if (!Files.isRegularFile(archive) || manifest.archiveSize != Files.size(archive) || manifest.sha256 != archive.sha256()) return null
+    return snapshot.resolve("index/ja").takeIf(Files::isDirectory)
 }
 
 private fun Path.sha256(): String {

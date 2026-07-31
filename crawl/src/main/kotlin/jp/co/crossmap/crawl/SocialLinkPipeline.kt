@@ -22,6 +22,7 @@ data class SocialLinkReport(
     val llmLinksAccepted: Int,
     val unmatched: Int,
     val decisions: List<SocialLinkDecision>,
+    val updatedChurches: List<ChurchRecord>,
 )
 
 class SocialLinkPipeline(
@@ -38,22 +39,19 @@ class SocialLinkPipeline(
 
     suspend fun run(
         resourcesRoot: Path,
+        churches: List<ChurchRecord>,
         limit: Int = Int.MAX_VALUE,
-        applyChanges: Boolean = false,
         cacheRoot: Path = CrossmapPaths.defaultCacheRoot(resourcesRoot),
     ): SocialLinkReport {
         val paths = CrossmapPaths(resourcesRoot, cacheRoot)
         require(limit > 0)
-        val churchesFile = resourcesRoot.resolve("catalog/churches.json")
         val accountsFile = resourcesRoot.resolve("evidence/social-accounts.json")
-        require(Files.isRegularFile(churchesFile)) { "Missing $churchesFile" }
         require(Files.isRegularFile(accountsFile)) { "Missing $accountsFile; create it as [] until social crawling is enabled" }
 
-        val churches = json.decodeFromString<List<ChurchRecord>>(Files.readString(churchesFile))
         val accounts = json.decodeFromString<List<SocialAccountCandidate>>(Files.readString(accountsFile)).take(limit)
         if (accounts.isEmpty()) {
             atomicWrite(paths.cleanup.resolve("social-decisions.json"), json.encodeToString(emptyList<SocialLinkDecision>()))
-            return SocialLinkReport(0, 0, 0, 0, 0, emptyList())
+            return SocialLinkReport(0, 0, 0, 0, 0, emptyList(), churches)
         }
         val links = extractCrawledPageLinks(paths.churchWebPages)
         val linker = SocialAccountLinker(llm, llmThreshold)
@@ -102,10 +100,10 @@ class SocialLinkPipeline(
         }
 
         val accepted = decisions.filter { it.matched }
-        if (applyChanges && accepted.isNotEmpty()) {
+        val updated = if (accepted.isNotEmpty()) {
             val accountsById = accounts.associateBy { it.id }
             val acceptedByChurch = accepted.groupBy { it.churchId }
-            val updated = churches.map { church ->
+            churches.map { church ->
                 val additions = acceptedByChurch[church.id].orEmpty().mapNotNull { decision ->
                     accountsById[decision.socialAccountId]?.let { it to decision }
                 }
@@ -126,8 +124,7 @@ class SocialLinkPipeline(
                     updatedAt = Instant.now().toString(),
                 )
             }
-            atomicWrite(churchesFile, json.encodeToString(updated))
-        }
+        } else churches
         atomicWrite(paths.cleanup.resolve("social-decisions.json"), json.encodeToString(decisions))
 
         return SocialLinkReport(
@@ -137,6 +134,7 @@ class SocialLinkPipeline(
             llmLinksAccepted = accepted.count { it.source == DeterminationSource.LLM },
             unmatched = accounts.count { account -> accepted.none { it.socialAccountId == account.id } },
             decisions = decisions,
+            updatedChurches = updated,
         )
     }
 

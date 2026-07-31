@@ -4,14 +4,15 @@ import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
 import java.security.MessageDigest
+import jp.co.crossmap.CanonicalNameLanguage
 import jp.co.crossmap.ChurchMinister
 import jp.co.crossmap.CrawledPage
 import jp.co.crossmap.FieldDetermination
 import jp.co.crossmap.LocalizedName
-import jp.co.crossmap.Language
-import jp.co.crossmap.localizedDomainText
 import jp.co.crossmap.SocialPlatform
 import jp.co.crossmap.SocialProfile
+import jp.co.crossmap.toCanonicalLocalizedNames
+import jp.co.crossmap.toCanonicalNameMap
 import jp.co.crossmap.catalog.ChurchId
 import jp.co.crossmap.catalog.DenominationId
 import jp.co.crossmap.catalog.MultilingualText
@@ -134,21 +135,9 @@ class LegacyJsonChurchCatalogSource(
             addAll(church.localizedNames)
             add(LocalizedName("ja", church.name.trim()))
             church.englishName.trim().takeIf(String::isNotBlank)?.let { add(LocalizedName("en", it)) }
-        }.map { localized ->
-            localized.copy(
-                languageCode = Language.fromCode(localized.languageCode)?.code
-                    ?: localized.languageCode.substringBefore('-').lowercase(),
-                name = localized.name.trim(),
-            )
-        }
-            .filter { it.name.isNotBlank() }
-            .groupBy(LocalizedName::languageCode)
-            .map { (languageCode, candidates) ->
-                val language = Language.fromCode(languageCode)
-                val selected = language?.let { localizedDomainText(it, candidates) }
-                candidates.firstOrNull { it.name == selected } ?: candidates.first()
-            }
-            .sortedBy(LocalizedName::languageCode)
+        }.filter { localized -> CanonicalNameLanguage.entries.any { it.languageTag == localized.languageCode } }
+            .toCanonicalNameMap()
+            .toCanonicalLocalizedNames()
         require(names.isNotEmpty()) { "Missing name for ${id.value}" }
         val website = church.websiteUrl.trim().takeIf(String::isNotBlank)?.let { url ->
             val normalizedUrl = normalizeUrl(url, retainFragment = true)
@@ -178,7 +167,7 @@ class LegacyJsonChurchCatalogSource(
             denomination = church.denominationId?.trim()?.takeIf(String::isNotBlank)?.let {
                 DenominationImportRef(
                     DenominationId(it),
-                    church.localizedDenominationNames.sortedWith(compareBy(LocalizedName::languageCode, LocalizedName::name)),
+                    canonicalNames(church.localizedDenominationNames),
                 )
             },
             category = church.category?.trim()?.takeIf(String::isNotBlank),
@@ -188,12 +177,25 @@ class LegacyJsonChurchCatalogSource(
             website = website,
             email = church.email?.trim()?.takeIf(String::isNotBlank),
             socialAccounts = socialAccounts,
-            ministers = church.ministers.sortedWith(compareBy(ChurchMinister::name, ChurchMinister::roleId)),
+            ministers = church.ministers.map { minister ->
+                minister.copy(
+                    name = minister.name.trim(),
+                    localizedNames = canonicalNames(minister.localizedNames),
+                    roleId = minister.roleId.trim(),
+                    roleName = minister.roleName.trim(),
+                    localizedRoleNames = canonicalNames(minister.localizedRoleNames),
+                )
+            }.sortedWith(compareBy(ChurchMinister::name, ChurchMinister::roleId)),
             determinations = church.determinations.sortedWith(compareBy(FieldDetermination::field, FieldDetermination::source)),
             updatedAt = church.updatedAt.trim(),
             source = source,
         )
     }
+
+    private fun canonicalNames(names: List<LocalizedName>): List<LocalizedName> = names
+        .filter { localized -> CanonicalNameLanguage.entries.any { it.languageTag == localized.languageCode } }
+        .toCanonicalNameMap()
+        .toCanonicalLocalizedNames()
 
     private fun normalizeSocialAccount(profile: SocialProfile): SocialAccountImportRecord? {
         val url = profile.url.trim().takeIf(String::isNotBlank) ?: return null

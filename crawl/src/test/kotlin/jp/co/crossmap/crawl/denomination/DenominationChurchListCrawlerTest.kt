@@ -586,7 +586,7 @@ class DenominationChurchListCrawlerTest {
             }
             val catalogFile = root.resolve("catalog/churches.json")
             Files.writeString(catalogFile, json.encodeToString(googleChurches))
-            val report = OfficialDenominationChurchListReconciler(json = json).reconcile(
+            val report = OfficialDenominationChurchListReconciler(json = json).reconcileFixture(
                 catalogFile,
                 listOf(
                     OfficialDenominationChurchList(
@@ -878,7 +878,7 @@ class DenominationChurchListCrawlerTest {
                 ),
             )
 
-            val report = OfficialDenominationChurchListReconciler(json = json).reconcile(
+            val report = OfficialDenominationChurchListReconciler(json = json).reconcileFixture(
                 catalogFile,
                 lists,
                 googlePlaceTitlesByChurchId = mapOf(
@@ -920,7 +920,7 @@ class DenominationChurchListCrawlerTest {
             val catalogFile = root.resolve("catalog/churches.json")
             Files.writeString(catalogFile, json.encodeToString(listOf(exact, staleDuplicate)))
 
-            OfficialDenominationChurchListReconciler(json = json).reconcile(
+            OfficialDenominationChurchListReconciler(json = json).reconcileFixture(
                 catalogFile,
                 listOf(officialList("JBC", listOf(OfficialDenominationChurch("岡山バプテスト教会", exact.address)))),
             )
@@ -946,7 +946,7 @@ class DenominationChurchListCrawlerTest {
             val catalogFile = root.resolve("catalog/churches.json")
             Files.writeString(catalogFile, json.encodeToString(listOf(original)))
 
-            OfficialDenominationChurchListReconciler(json = json).reconcile(
+            OfficialDenominationChurchListReconciler(json = json).reconcileFixture(
                 catalogFile,
                 listOf(
                     officialList(
@@ -1014,4 +1014,16 @@ class DenominationChurchListCrawlerTest {
         location = GeoPoint(35.0, 135.0),
         websiteUrl = websiteUrl,
     )
+}
+
+private fun OfficialDenominationChurchListReconciler.reconcileFixture(
+    catalogFile: java.nio.file.Path,
+    lists: List<OfficialDenominationChurchList>,
+    googlePlaceTitlesByChurchId: Map<String, String> = emptyMap(),
+): OfficialDenominationReconciliationReport {
+    val json = Json { ignoreUnknownKeys = true; prettyPrint = true; encodeDefaults = true }
+    val churches = json.decodeFromString<List<ChurchRecord>>(Files.readString(catalogFile))
+    return reconcile(churches, lists, googlePlaceTitlesByChurchId).also { report ->
+        Files.writeString(catalogFile, json.encodeToString(report.updatedChurches))
+    }
 }

@@ -17,4 +17,4 @@ if [ "$#" -ne 0 ]; then
     exit 2
 fi
 cd "$project_root"
-exec ./gradlew :crawl:run --args="catalog-neo4j-import --input $input$dry_run" --console=plain
+exec ./gradlew :crawl:run --args="catalog-neo4j-bootstrap-from-legacy-json --input $input$dry_run" --console=plain

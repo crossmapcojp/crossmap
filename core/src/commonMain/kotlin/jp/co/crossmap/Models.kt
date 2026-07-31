@@ -271,6 +271,8 @@ data class IndexManifest(
     val documentCount: Int,
     val languages: List<String> = listOf("ja"),
     val sourceSha256: String = "",
+    val catalogRevision: String = "",
+    val catalogContentHash: String = sourceSha256,
     val archiveFile: String? = null,
     val archiveSize: Long? = null,
     val sha256: String? = null,
@@ -280,6 +282,8 @@ data class IndexManifest(
 data class ChurchPageManifest(
     val schemaVersion: Int = 2,
     val sourceSha256: String,
+    val catalogRevision: String = "",
+    val catalogContentHash: String = sourceSha256,
     val pages: Map<String, String>,
     val localizedPages: Map<String, Map<String, String>> = emptyMap(),
 )

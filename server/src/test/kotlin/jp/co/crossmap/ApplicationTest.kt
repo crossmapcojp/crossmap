@@ -46,15 +46,18 @@ class ApplicationTest {
             val cache = root.resolve("cache")
             val snapshot = cache.resolve("search-indexes/churches/real-data-v1/index/ja")
             Files.createDirectories(snapshot)
-            val catalog = root.resolve("catalog/churches.json")
-            Files.createDirectories(catalog.parent)
-            Files.writeString(catalog, "[]")
-            val sourceSha256 = MessageDigest.getInstance("SHA-256").digest("[]".toByteArray())
+            val archive = cache.resolve("search-indexes/churches/churches-real-data-v1.zip")
+            Files.writeString(archive, "archive")
+            val sourceSha256 = MessageDigest.getInstance("SHA-256").digest("catalog".toByteArray())
                 .joinToString("") { "%02x".format(it) }
+            val archiveSha256 = MessageDigest.getInstance("SHA-256").digest("archive".toByteArray())
+                .joinToString("") { "%02x".format(it) }
+            val manifest = """{"schemaVersion":${ChurchIndex.SCHEMA_VERSION},"indexVersion":"real-data-v1","luceneVersion":"10.2.0-alpha14","createdAt":"2026-07-13T00:00:00Z","documentCount":9473,"sourceSha256":"$sourceSha256","catalogRevision":"catalog:r1","catalogContentHash":"$sourceSha256","archiveFile":"churches-real-data-v1.zip","archiveSize":7,"sha256":"$archiveSha256"}"""
             Files.writeString(
                 cache.resolve("search-indexes/churches/latest.json"),
-                """{"schemaVersion":${ChurchIndex.SCHEMA_VERSION},"indexVersion":"real-data-v1","luceneVersion":"10.2.0-alpha14","createdAt":"2026-07-13T00:00:00Z","documentCount":9473,"sourceSha256":"$sourceSha256"}""",
+                manifest,
             )
+            Files.writeString(snapshot.parent.parent.resolve("manifest.json"), manifest)
             assertEquals(snapshot, resolveServerIndex(root, null, cache))
         } finally {
             root.toFile().deleteRecursively()
@@ -62,7 +65,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun rejectsLatestManifestWhenCanonicalCatalogHasChanged() {
+    fun rejectsLatestManifestWithoutCanonicalRevisionMetadata() {
         val root = Files.createTempDirectory("crossmap-server-stale-catalog")
         try {
             val cache = root.resolve("cache")

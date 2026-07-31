@@ -9,7 +9,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -20,7 +19,6 @@ class SocialLinkPipelineTest {
     fun cachedWebsiteHyperlinkPublishesProgrammaticSocialProfileWithoutLlm() = runBlocking {
         val root = Files.createTempDirectory("crossmap-social-link")
         val cache = root.resolve("cache")
-        Files.createDirectories(root.resolve("catalog"))
         Files.createDirectories(root.resolve("evidence"))
         Files.createDirectories(cache.resolve("web-pages/pages"))
         val church = ChurchRecord(
@@ -37,7 +35,6 @@ class SocialLinkPipelineTest {
             url = "https://www.youtube.com/channel/UCCBpKmS8N-lP4FRdOWy1MRQ",
             accountName = "岡山バプテスト教会",
         )
-        Files.writeString(root.resolve("catalog/churches.json"), json.encodeToString(listOf(church)))
         Files.writeString(root.resolve("evidence/social-accounts.json"), json.encodeToString(listOf(account)))
         Files.writeString(cache.resolve("web-pages/pages/page.html"), "<html><a href='https://www.youtube.com/channel/UCCBpKmS8N-lP4FRdOWy1MRQ/'>YouTube</a></html>")
         Files.writeString(
@@ -58,11 +55,11 @@ class SocialLinkPipelineTest {
         )
         var llmCalls = 0
 
-        val report = SocialLinkPipeline(fakeLlm { llmCalls++; 0f }).run(root, applyChanges = true, cacheRoot = cache)
+        val report = SocialLinkPipeline(fakeLlm { llmCalls++; 0f }).run(root, listOf(church), cacheRoot = cache)
 
         assertEquals(1, report.directLinksAccepted)
         assertEquals(0, llmCalls)
-        val updated = json.decodeFromString<List<ChurchRecord>>(Files.readString(root.resolve("catalog/churches.json"))).single()
+        val updated = report.updatedChurches.single()
         assertEquals(account.url, updated.socialProfiles.single().url)
         assertEquals(DeterminationSource.PROGRAMMATIC, updated.determinations.single().source)
         assertTrue(Files.isRegularFile(cache.resolve("cleanup/social-decisions.json")))

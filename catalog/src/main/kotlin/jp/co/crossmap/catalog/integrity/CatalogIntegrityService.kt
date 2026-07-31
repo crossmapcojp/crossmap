@@ -4,6 +4,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import jp.co.crossmap.catalog.neo4j.GraphTransactionRunner
+import jp.co.crossmap.catalog.canonical.Neo4jCanonicalChurchCatalogReader
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -56,6 +57,11 @@ class CatalogIntegrityService(private val transactions: GraphTransactionRunner) 
                     sampleIds = (row["sampleIds"] as? List<*>)?.map(Any?::toString).orEmpty(),
                 )
             }
+        } + runCatching {
+            Neo4jCanonicalChurchCatalogReader(transactions).readCommittedSnapshot()
+            CatalogIntegrityCheck("revision-logical-content-hash", 0, emptyList())
+        }.getOrElse { failure ->
+            CatalogIntegrityCheck("revision-logical-content-hash", 1, listOf(failure.message.orEmpty().take(500)))
         }
         return CatalogIntegrityReport(checks, entityCounts, relationshipCounts)
     }
@@ -64,6 +70,18 @@ class CatalogIntegrityService(private val transactions: GraphTransactionRunner) 
 
     companion object {
         private val CHECKS = listOf(
+            CheckDefinition(
+                "exactly-one-catalog-state",
+                "MATCH (state:CatalogState {name:'catalog'}) WITH count(state) AS states RETURN CASE WHEN states = 1 THEN 0 ELSE 1 END AS violations, [toString(states)] AS sampleIds",
+            ),
+            CheckDefinition(
+                "committed-current-revision",
+                "OPTIONAL MATCH (:CatalogState {name:'catalog'})-[:CURRENT_REVISION]->(revision:CatalogRevision {status:'COMMITTED'}) WITH count(revision) AS revisions RETURN CASE WHEN revisions = 1 THEN 0 ELSE 1 END AS violations, [toString(revisions)] AS sampleIds",
+            ),
+            CheckDefinition(
+                "expected-schema-version",
+                "OPTIONAL MATCH (schema:CrossmapSchema {name:'catalog'}) WITH schema.version AS version RETURN CASE WHEN version = 2 THEN 0 ELSE 1 END AS violations, [coalesce(toString(version), '<missing>')] AS sampleIds",
+            ),
             CheckDefinition(
                 "missing-stable-ids",
                 "MATCH (node) WHERE any(label IN labels(node) WHERE label IN ['Church','Denomination','Location','Website','Webpage','SocialMediaAccount','Person','RoleEvent','SourceRecord','ImportRun']) AND (node.id IS NULL OR trim(toString(node.id)) = '') WITH node LIMIT 10000 RETURN count(node) AS violations, collect(coalesce(node.id, '<missing>'))[0..20] AS sampleIds",
@@ -74,7 +92,23 @@ class CatalogIntegrityService(private val transactions: GraphTransactionRunner) 
             ),
             CheckDefinition(
                 "missing-church-names",
-                "MATCH (church:Church) WHERE church.primaryName IS NULL OR trim(church.primaryName) = '' OR church.englishName IS NULL OR trim(church.englishName) = '' RETURN count(church) AS violations, collect(church.id)[0..20] AS sampleIds",
+                "MATCH (church:Church) WHERE church.name_ja IS NULL OR trim(church.name_ja) = '' OR church.name_en IS NULL OR trim(church.name_en) = '' RETURN count(church) AS violations, collect(church.id)[0..20] AS sampleIds",
+            ),
+            CheckDefinition(
+                "blank-supported-name-properties",
+                "MATCH (node) WHERE node:Church OR node:Denomination OR node:Person OR node:RoleEvent UNWIND ['name_ja','name_en','name_ko','name_pt','name_id','name_vi','name_zh_Hans','name_zh_Hant'] AS propertyName WITH node, propertyName WHERE node[propertyName] IS NOT NULL AND (NOT node[propertyName] IS :: STRING OR trim(node[propertyName]) = '') RETURN count(*) AS violations, collect(coalesce(node.id,'<missing>') + ':' + propertyName)[0..20] AS sampleIds",
+            ),
+            CheckDefinition(
+                "unsupported-name-properties",
+                "MATCH (node) WHERE node:Church OR node:Denomination OR node:Person OR node:RoleEvent UNWIND [key IN keys(node) WHERE key STARTS WITH 'name_' AND NOT key IN ['name_ja','name_en','name_ko','name_pt','name_id','name_vi','name_zh_Hans','name_zh_Hant']] AS propertyName RETURN count(*) AS violations, collect(coalesce(node.id,'<missing>') + ':' + propertyName)[0..20] AS sampleIds",
+            ),
+            CheckDefinition(
+                "canonical-name-json-blobs",
+                "MATCH (node) WHERE (node:Person AND node.localizedNamesJson IS NOT NULL) OR (node:RoleEvent AND node.localizedRoleNamesJson IS NOT NULL) RETURN count(node) AS violations, collect(node.id)[0..20] AS sampleIds",
+            ),
+            CheckDefinition(
+                "forbidden-localized-name-or-redis-nodes",
+                "MATCH (node) WHERE 'LocalizedName' IN labels(node) OR 'Redis' IN labels(node) RETURN count(node) AS violations, collect(coalesce(node.id, '<missing>'))[0..20] AS sampleIds",
             ),
             CheckDefinition(
                 "invalid-coordinates",
@@ -98,7 +132,11 @@ class CatalogIntegrityService(private val transactions: GraphTransactionRunner) 
             ),
             CheckDefinition(
                 "missing-location",
-                "MATCH (church:Church) WHERE NOT (church)-[:LOCATED_AT]->(:Location) RETURN count(church) AS violations, collect(church.id)[0..20] AS sampleIds",
+                "MATCH (church:Church) OPTIONAL MATCH (church)-[:LOCATED_AT]->(location:Location) WITH church, count(location) AS locations WHERE locations <> 1 RETURN count(church) AS violations, collect(church.id)[0..20] AS sampleIds",
+            ),
+            CheckDefinition(
+                "orphan-managed-locations",
+                "MATCH (location:Location {catalogManaged:true}) WHERE NOT (:Church)-[:LOCATED_AT]->(location) RETURN count(location) AS violations, collect(location.id)[0..20] AS sampleIds",
             ),
             CheckDefinition(
                 "missing-import-provenance",

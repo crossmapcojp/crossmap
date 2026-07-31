@@ -24,13 +24,14 @@ import jp.co.crossmap.catalog.neo4j.Neo4jGraphTransactionRunner
 import jp.co.crossmap.catalog.neo4j.Neo4jStaticChurchCatalogSource
 import kotlinx.coroutines.runBlocking
 
-internal class CatalogNeo4jHealth : CliktCommand(name = "catalog-neo4j-health") {
+internal class CatalogNeo4jStatus : CliktCommand(name = "catalog-neo4j-status") {
     override fun run() = runBlocking {
         withNeo4j { manager, _ ->
             val health = manager.health(CatalogSchemaMigrator.EXPECTED_VERSION)
             echo(
                 "Neo4j reachable=${health.reachable} schemaVersion=${health.schemaVersion ?: "none"} " +
-                    "expectedSchemaVersion=${CatalogSchemaMigrator.EXPECTED_VERSION} catalogImported=${health.catalogImported}",
+                    "expectedSchemaVersion=${CatalogSchemaMigrator.EXPECTED_VERSION} catalogImported=${health.catalogImported} " +
+                    "catalogRevision=${health.catalogRevision ?: "none"} catalogContentHash=${health.catalogContentHash ?: "none"}",
             )
         }
     }
@@ -49,8 +50,8 @@ internal class CatalogNeo4jMigrate : CliktCommand(name = "catalog-neo4j-migrate"
     }
 }
 
-internal class CatalogNeo4jImport : CliktCommand(name = "catalog-neo4j-import") {
-    private val input by option("--input", help = "Legacy churches.json path").required()
+internal class CatalogNeo4jBootstrapFromLegacyJson : CliktCommand(name = "catalog-neo4j-bootstrap-from-legacy-json") {
+    private val input by option("--input", help = "Legacy churches.json bootstrap input; never used after bootstrap").required()
     private val reportDirectory by option("--report-directory").default("build/reports/catalog-import")
     private val batchSize by option("--batch-size").int().default(250)
     private val dryRun by option("--dry-run").flag()
@@ -87,7 +88,7 @@ internal class CatalogNeo4jImport : CliktCommand(name = "catalog-neo4j-import") 
     }
 }
 
-internal class CatalogNeo4jExport : CliktCommand(name = "catalog-neo4j-export") {
+internal class CatalogNeo4jExportChurchProjection : CliktCommand(name = "catalog-neo4j-export-church-projection") {
     private val output by option("--output").default("build/reports/catalog-export/churches.json")
 
     override fun run() = runBlocking {
@@ -95,7 +96,10 @@ internal class CatalogNeo4jExport : CliktCommand(name = "catalog-neo4j-export") 
             val snapshot = Neo4jStaticChurchCatalogSource(transactions).read()
             CatalogLogicalExporter().write(snapshot, Path.of(output))
         }
-        echo("Catalog export churches=${result.churchCount} sourceChecksum=${result.sourceChecksum} output=${result.output}")
+        echo(
+            "Catalog projection export churches=${result.churchCount} sourceChecksum=${result.sourceChecksum} " +
+                "output=${result.output} manifest=${result.manifest}",
+        )
     }
 }
 

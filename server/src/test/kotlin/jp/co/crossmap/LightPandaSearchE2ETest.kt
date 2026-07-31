@@ -31,7 +31,9 @@ class LightPandaSearchE2ETest {
         val temporaryIndexes = temporaryCache.resolve("search-indexes/churches")
         Files.createDirectories(temporaryIndexes)
         val versionLink = temporaryIndexes.resolve(manifest.indexVersion)
+        val archiveLink = temporaryIndexes.resolve(requireNotNull(manifest.archiveFile))
         Files.createSymbolicLink(versionLink, publishedIndexes.resolve(manifest.indexVersion).toAbsolutePath())
+        Files.createSymbolicLink(archiveLink, publishedIndexes.resolve(requireNotNull(manifest.archiveFile)).toAbsolutePath())
         val port = ServerSocket(0).use { it.localPort }
         val server = embeddedServer(Netty, port = port, host = "127.0.0.1") {
             module(
@@ -64,6 +66,7 @@ class LightPandaSearchE2ETest {
         } finally {
             server.stop(1_000, 3_000)
             Files.deleteIfExists(versionLink)
+            Files.deleteIfExists(archiveLink)
             temporaryCache.toFile().deleteRecursively()
         }
     }

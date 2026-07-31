@@ -60,10 +60,10 @@ The validator reports malformed locales, duplicate/unpaired sources, conflicts, 
 
 The dry run writes:
 
-- `resources/review/chinese-localization-report.json`: per-church generated variants, confidence, reasons, rules, unmatched segments, coverage, and unmatched-token frequency. These verbose diagnostics live only in the review report; `resources/catalog/churches.json` retains compact source/method/confidence/review-status provenance and is serialized without formatting or default-valued fields so the canonical catalog stays below GitHub's large-file warning threshold;
+- `resources/review/chinese-localization-report.json`: per-church generated variants, confidence, reasons, rules, unmatched segments, coverage, and unmatched-token frequency. These verbose diagnostics live only in the review report; an applied run commits direct `name_zh_Hans` and `name_zh_Hant` properties through the canonical Neo4j writer;
 - `resources/review/chinese-localization-summary.txt`: human-readable totals;
 - `resources/review/chinese-dictionary-validation.json`: validation errors and review signals.
 
 Review names that use conversion/original fallback, retain Kana, contain unmatched segments, or otherwise have `NEEDS_REVIEW`. Correct dictionaries for reusable terminology and use a manual localized value for a one-church proper name. Re-run the dry run until the change is represented in the report, then apply and reindex.
 
-Generation is deterministic and idempotent: rerunning does not duplicate locales or aliases, overwrite protected names, or lower review status. Reindexing rebuilds the snapshot from the canonical catalog and validates the schema/source checksum. For rollback, restore the prior `resources/catalog/churches.json` (or its normal catalog backup), rerun `reindexChineseFields`, and regenerate static pages. Neo4j import remains a build-time operation; Ktor never translates or queries Neo4j at request time.
+Generation is deterministic and idempotent: rerunning does not duplicate locales or aliases, overwrite protected names, or lower review status. Reindexing rebuilds the snapshot from the current committed Neo4j revision and validates its revision/hash metadata. For rollback, restore the prior Neo4j database backup, run integrity, and republish both product projections. The frozen legacy JSON is not a normal rollback target. Ktor never translates or queries Neo4j at request time.

@@ -14,11 +14,11 @@ Crossmap does not require the former gmap project at build time or runtime.
 - `webclient`: `index.html` search, `result.html` results, and `church.html` detail rendering in vanilla JavaScript.
 - `app/shared`: shared Compose UI, state, snapshot management, local search, and location abstraction.
 - `app/androidApp` and `app/iosApp`: platform launchers, permissions, storage paths, and geolocation.
-- `resources`: durable inputs, crawl cache, evidence, review decisions, canonical catalogs, geonames, and versioned indexes.
+- `resources`: durable inputs, crawl evidence, review decisions, denomination/geoname configuration, and versioned generated projections.
 
 ## Neo4j boundary
 
-Neo4j is a crawler/build-time database, not a server dependency. The `crawl` module imports and enriches the catalog in Neo4j, and `:server:generateChurchPages` reads bounded Neo4j projections to materialize the localized pages built from `church.html`. The Ktor server itself reads the generated Lucene snapshot, JSON detail data, and static WebClient files; it neither opens a Neo4j driver nor requires Neo4j to be running at startup or while serving requests.
+Neo4j is the sole canonical church-catalog source of truth and is a crawler/build-time database, not a server dependency. Normal crawl, cleanup, localization, social, website, and denomination workflows read one committed revision, calculate a complete replacement, and publish it with an optimistic expected-revision check. Lucene snapshots and static pages are read-only projections of a pinned committed revision, and their manifests must agree on revision ID and logical content hash before publication. The Ktor server reads only those materialized artifacts; it neither opens a Neo4j driver nor requires Neo4j while serving requests.
 
 The repository-local instance uses `local.properties` for its Bolt credentials and keeps mutable database files under `cache/neo4j-data`. See [`docs/development/neo4j-local.md`](docs/development/neo4j-local.md) for start, import, parity, integrity, generation, and stop commands.
 
@@ -38,7 +38,7 @@ The maintained field-by-field build contract, data provenance, analyzers, respon
 
 - `resources/raw`: immutable acquisition inputs.
 - `cache/web-pages`: content-addressed cached HTML, manifest, and URL cache map.
-- `resources/catalog/churches.json`: canonical church records.
+- `resources/catalog/churches.json`: frozen legacy migration/bootstrap input. Never edit it or use it in a normal workflow; generated logical exports belong under `build/reports/catalog-export/`.
 - `resources/catalog/denominations.json`: standalone data-driven denomination catalog.
 - `resources/geonames/japan.json`: generated prefecture and municipality/ward aliases and geo areas.
 - `resources/evidence`: typed directory and social-account evidence.
@@ -53,7 +53,7 @@ Build and refresh cached websites. The default follows same-domain links through
 ./gradlew :crawl:run --args='refresh --resources resources --max-concurrency 6 --max-depth 1 --max-pages-per-church 12'
 ```
 
-Chinese localization is an explicit, reviewable migration. Validate and dry-run first; the dry run writes JSON and text reports under `resources/review/` without changing `churches.json`. Detailed rule matches, unmatched segments, and explanations stay in that review report, while the canonical catalog retains compact provenance and is written without formatting/default-valued fields:
+Chinese localization is an explicit, reviewable migration. Validate and dry-run first; the dry run writes JSON and text reports under `resources/review/` without committing a Neo4j revision. Detailed rule matches, unmatched segments, and explanations stay in that review report, while an applied run writes compact provenance through the canonical catalog writer:
 
 ```sh
 ./gradlew :crawl:validateChineseDictionaries
@@ -65,7 +65,7 @@ Chinese localization is an explicit, reviewable migration. Validate and dry-run 
 
 The migration is idempotent and preserves official, manual, and reviewed values. See [`docs/development/chinese-localization.md`](docs/development/chinese-localization.md) for dictionary precedence, reports, corrections, reindexing, and rollback.
 
-Vietnamese localization uses the same reviewable boundary with direct JA→VI dictionaries, denomination and GeoName catalogs, and compact provenance in `churches.json`:
+Vietnamese localization uses the same reviewable boundary with direct JA→VI dictionaries, denomination and GeoName catalogs, and compact provenance in the committed Neo4j revision:
 
 ```sh
 ./gradlew :crawl:dryRunVietnameseLocalizedNames
@@ -135,7 +135,7 @@ df -h /media/joel/llms
 ./gradlew :crawl:run --args='english-names --resources resources --model cat-translate:7b-q4_k_m --dry-run'
 ```
 
-Remove `--dry-run` to atomically update `resources/catalog/churches.json`. `--programmatic-only` is available for an Ollama-free completeness check.
+Remove `--dry-run` to atomically commit a new Neo4j catalog revision. `--programmatic-only` is available for an Ollama-free completeness check.
 
 The production cleanup entry point is `./gradlew :crawl:dataCleanup`. Every invocation writes a unique `logs/YYYY-MM-DD-HH-mm-data-cleanup-stat.log` report with deterministic/LLM counts, unresolved count, errors, LLM timeouts, duration, and throughput. Static page generation is intentionally read-only and consumes the current canonical catalog without invoking this cleanup gate.
 
@@ -167,7 +167,7 @@ The CLI automatically locates the latest local Crossmap snapshot unless an expli
 ./gradlew :server:run
 ```
 
-`:server:run` first rebuilds and publishes the `development` search snapshot from the current canonical catalog. At startup the server accepts `latest.json` only when its schema is current, its index directory exists, and its source-catalog SHA-256 matches `resources/catalog/churches.json`; it never silently serves a stale index.
+`:server:run` first runs `publishCrossmapArtifacts`, which builds search and static-page projections and verifies that their committed catalog revision IDs and logical hashes match. At startup the server accepts `latest.json` only when its schema is current, its index directory and archive are valid, and any deployed static-page manifest identifies the same revision/hash; it never connects to Neo4j or consults legacy JSON.
 
 Open `/` to select a supported browser language initially. `vi-VN` maps to `vi`; `zh-CN`, `zh-SG`, and ambiguous `zh` map to `zh-Hans`; `zh-TW`, `zh-HK`, and `zh-MO` map to `zh-Hant`. Every page exposes an explicit locale switch, persists that choice in local storage, and lets it override later browser detection. Without JavaScript the root provides an English search fallback. `/ja/`, `/en/`, `/ko/`, `/pt/`, `/id/`, `/vi/`, `/zh-Hans/`, and `/zh-Hant/` can also be opened directly. Each directory contains generated `index.html`, `result.html`, and stable-English-slug church pages with canonical and `hreflang` links. Query language is detected independently by the server, so an English query on `/ja/result.html` still uses the English analyzer while results remain Japanese; Vietnamese queries use `VietnameseAnalyzer`, and Chinese results display the selected script while retaining the original Japanese name as secondary text.
 
@@ -231,7 +231,7 @@ The `Module(s)` column names every module that a task directly operates or orche
 | Module(s) | Command | What it does | Dependencies and side effects | Output |
 | --- | --- | --- | --- | --- |
 | `crawl`, `resources` | `./gradlew :crawl:fetchUrl -Purl="<URL>"` | Fetches and tests a single web page or Google Maps CID URL through the full fetch pipeline (HttpClient → LightPanda → Playwright) with verbose logging. | Tests network connection, caching, rendering, and Cloudflare status. | Console fetch metrics and `cache/web-pages/`. |
-| `crawl`, `core`, `resources` | `./gradlew :crawl:googleSavedPlaces` | Runs the entire Google Saved Places workflow based on the downloaded Takeout CSV files (CSV reading, CID resolution, canonical fetched-title selection, official-directory reconciliation including scored romanized-English/Japanese address comparison, and catalog promotion). | Reads Takeout CSV path from `local.properties`; updates canonical catalog after all quality gates pass. | `resources/catalog/churches.json` and stage logs. |
+| `crawl`, `core`, `resources` | `./gradlew :crawl:googleSavedPlaces` | Runs the entire Google Saved Places workflow based on the downloaded Takeout CSV files (CSV reading, CID resolution, canonical fetched-title selection, official-directory reconciliation including scored romanized-English/Japanese address comparison, and catalog promotion). | Reads Takeout CSV path from `local.properties`; commits a new Neo4j revision after all quality gates pass. | committed Neo4j revision and stage logs. |
 | `crawl`, `resources` | `./gradlew :crawl:dataCleanup` | Runs deterministic cleanup followed by configured Koog/Ollama fallbacks and completeness checks. | May invoke Ollama and update catalog data. Run `df -h /media/joel/llms` first. | Cleanup caches and `logs/*-data-cleanup-stat.log` plus translation-detail logs. |
 | `crawl`, `resources` | `./gradlew :crawl:prepareGeoNameCache` | Downloads/prepares Japanese GeoNames inputs when absent and builds the searchable local geoname cache. | May download GeoNames archives on the first run. | Files below `cache/geoname`. |
 | `crawl`, `core`, `resources` | `./gradlew :crawl:buildGeoCatalog` | Rebuilds the runtime administrative resolver catalog from JMA municipalities and designated-city wards, restoring official JIS check digits and parent-qualified ward aliases. | Depends on `prepareGeoNameCache`; normally runs transitively before church geoname/address preparation. | `resources/geonames/japan.json` and a timestamped build-geonames log. |

@@ -42,7 +42,7 @@ class LegacyJsonChurchCatalogSourceTest {
     }
 
     @Test
-    fun preservesBothChineseScriptsAndReviewedMetadataForNeo4jImport() {
+    fun preservesBothChineseScriptsAsDirectCanonicalValuesWithoutDuplicatedMetadataBlob() {
         val reviewed = LocalizedNameMetadata(
             source = LocalizedNameSource.MANUAL,
             generationMethod = LocalizedNameGenerationMethod.EXACT_OVERRIDE,
@@ -62,7 +62,7 @@ class LegacyJsonChurchCatalogSourceTest {
         assertEquals("东京恩典教会", record.names["zh-CN"])
         assertEquals("東京恩典教會", record.names["zh-TW"])
         assertEquals(setOf("zh-Hans", "zh-Hant"), record.localizedNames.map(LocalizedName::languageCode).filter { it.startsWith("zh-") }.toSet())
-        assertEquals(LocalizedNameReviewStatus.REVIEWED, record.localizedNames.single { it.languageCode == "zh-Hans" }.metadata?.reviewStatus)
+        assertEquals(null, record.localizedNames.single { it.languageCode == "zh-Hans" }.metadata)
     }
 
     private fun church(

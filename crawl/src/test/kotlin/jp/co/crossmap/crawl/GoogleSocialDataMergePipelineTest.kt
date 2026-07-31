@@ -102,17 +102,16 @@ class GoogleSocialDataMergePipelineTest {
 
         val report = GoogleSocialDataMergePipeline(json).run(
             resourcesRoot = resources,
+            churches = json.decodeFromString(Files.readString(resources.resolve("catalog/churches.json"))),
             inputs = SocialExportInputPaths(youtube, null, null, null, null),
-            applyChanges = true,
             auditLog = audit,
         )
 
         assertEquals(1, report.socialWebsiteUrlsMigrated)
         assertEquals(1, report.exactMatches)
         assertEquals(1, report.excluded)
-        val updated = json.decodeFromString<List<ChurchRecord>>(Files.readString(resources.resolve("catalog/churches.json"))).single()
+        val updated = report.updatedChurches.single()
         assertTrue(updated.websiteUrl.isBlank())
-        assertTrue(Files.readString(resources.resolve("catalog/churches.json")).contains("\"websiteUrl\": null"))
         assertEquals(setOf(SocialPlatform.FACEBOOK, SocialPlatform.YOUTUBE), updated.socialProfiles.map { it.platform }.toSet())
         val log = Files.readString(audit)
         assertTrue(log.startsWith("google social data merge summary"))
@@ -135,16 +134,17 @@ class GoogleSocialDataMergePipelineTest {
         )
         val inputs = SocialExportInputPaths(null, null, facebook, null, null)
 
+        var churches = json.decodeFromString<List<ChurchRecord>>(Files.readString(resources.resolve("catalog/churches.json")))
         repeat(2) {
-            GoogleSocialDataMergePipeline(json).run(
+            churches = GoogleSocialDataMergePipeline(json).run(
                 resourcesRoot = resources,
+                churches = churches,
                 inputs = inputs,
-                applyChanges = true,
                 auditLog = root.resolve("social-merge-$it.log"),
-            )
+            ).updatedChurches
         }
 
-        val updated = json.decodeFromString<List<ChurchRecord>>(Files.readString(resources.resolve("catalog/churches.json"))).single()
+        val updated = churches.single()
         assertEquals(1, updated.socialProfiles.size)
         assertEquals(1, updated.determinations.count { it.field == "socialProfiles.facebook" })
     }
@@ -163,15 +163,13 @@ class GoogleSocialDataMergePipelineTest {
 
         val report = GoogleSocialDataMergePipeline(json).run(
             resourcesRoot = resources,
+            churches = json.decodeFromString(Files.readString(resources.resolve("catalog/churches.json"))),
             inputs = SocialExportInputPaths(null, null, null, facebook, null),
-            applyChanges = true,
             auditLog = root.resolve("social-merge.log"),
         )
 
         assertEquals(1, report.exactMatches)
-        val updated = json.decodeFromString<List<ChurchRecord>>(
-            Files.readString(resources.resolve("catalog/churches.json")),
-        ).single()
+        val updated = report.updatedChurches.single()
         assertTrue(updated.socialProfiles.isEmpty())
         assertTrue(Files.readString(resources.resolve("evidence/social-accounts.json")).contains("facebook-export-name:"))
     }

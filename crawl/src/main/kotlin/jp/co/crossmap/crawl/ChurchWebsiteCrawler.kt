@@ -27,7 +27,13 @@ import jp.co.crossmap.localizedDomainText
 import kotlinx.serialization.json.Json
 import org.jsoup.Jsoup
 
-data class GooglePlacesCrawlReport(val churches: Int, val fetched: Int, val unchanged: Int, val errors: Int)
+data class GooglePlacesCrawlReport(
+    val churches: Int,
+    val fetched: Int,
+    val unchanged: Int,
+    val errors: Int,
+    val updatedChurches: List<ChurchRecord>,
+)
 
 class ChurchWebsiteCrawler(
     private val maxConcurrency: Int = 32,
@@ -48,7 +54,7 @@ class ChurchWebsiteCrawler(
 
     fun crawl(
         resourcesRoot: Path,
-        catalogFile: Path = resourcesRoot.resolve("catalog/churches.json"),
+        churches: List<ChurchRecord>,
         cacheRoot: Path = CrossmapPaths.defaultCacheRoot(resourcesRoot),
     ): GooglePlacesCrawlReport {
         require(maxConcurrency in 1..32) { "maxConcurrency must be between 1 and 32" }
@@ -60,7 +66,6 @@ class ChurchWebsiteCrawler(
         val manifestFile = webCache.resolve("manifest.json")
         val urlCacheFile = webCache.resolve("url-cache-map.json")
         urlCache = if (Files.isRegularFile(urlCacheFile)) json.decodeFromString(Files.readString(urlCacheFile)) else emptyMap()
-        val churches = json.decodeFromString<List<ChurchRecord>>(Files.readString(catalogFile))
         val websitePolicy = ExcludedChurchListingDomains.policy(resourcesRoot)
         val oldManifest = if (Files.isRegularFile(manifestFile)) {
             json.decodeFromString<List<CrawlManifestEntry>>(Files.readString(manifestFile))
@@ -121,7 +126,7 @@ class ChurchWebsiteCrawler(
         } finally {
             executor.shutdown()
         }
-        atomicWrite(catalogFile, json.encodeToString(results.map { it.church }.sortedBy { it.id }))
+        val updatedChurches = results.map { it.church }.sortedBy { it.id }
         val retained = oldManifest.filter { old -> results.none { result -> result.entries.any { it.churchId == old.churchId && it.requestedUrl == old.requestedUrl } } }
         atomicWrite(manifestFile, json.encodeToString((retained + results.flatMap { it.entries }).sortedWith(compareBy({ it.churchId }, { it.requestedUrl }))))
         timings.groupBy(ChurchTiming::host)
@@ -139,6 +144,7 @@ class ChurchWebsiteCrawler(
             fetched = results.sumOf { it.fetched },
             unchanged = results.sumOf { it.unchanged },
             errors = results.sumOf { it.errors },
+            updatedChurches = updatedChurches,
         )
     }
 

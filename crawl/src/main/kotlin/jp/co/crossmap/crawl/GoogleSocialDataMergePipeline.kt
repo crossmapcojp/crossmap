@@ -41,6 +41,7 @@ data class GoogleSocialDataMergeReport(
     val excluded: Int,
     val decisions: List<SocialMergeDecision>,
     val auditLog: Path,
+    val updatedChurches: List<ChurchRecord>,
 )
 
 class GoogleSocialDataMergePipeline(
@@ -48,13 +49,11 @@ class GoogleSocialDataMergePipeline(
 ) {
     fun run(
         resourcesRoot: Path,
+        churches: List<ChurchRecord>,
         inputs: SocialExportInputPaths = SocialExportInputs.load(),
-        applyChanges: Boolean = true,
         auditLog: Path = Path.of("logs/2026-07-23-19-04-google-social-data-merge.log"),
-        catalogFile: Path = resourcesRoot.resolve("catalog/churches.json"),
     ): GoogleSocialDataMergeReport {
-        require(Files.isRegularFile(catalogFile)) { "Missing church catalog: $catalogFile" }
-        val originalChurches = json.decodeFromString<List<ChurchRecord>>(Files.readString(catalogFile))
+        val originalChurches = churches
         val migrated = originalChurches.map(::migrateSocialWebsite)
         val migratedCount = originalChurches.zip(migrated).count { (before, after) ->
             before.websiteUrl.isNotBlank() && after.websiteUrl.isBlank()
@@ -103,7 +102,6 @@ class GoogleSocialDataMergePipeline(
         val decisionsFile = resourcesRoot.resolve("cleanup/social-merge-decisions.json")
         atomicWrite(evidenceFile, json.encodeToString(accounts))
         atomicWrite(decisionsFile, json.encodeToString(decisions))
-        if (applyChanges) atomicWrite(catalogFile, json.encodeToString(updatedChurches))
         val report = GoogleSocialDataMergeReport(
             googleSavedPlaces = originalChurches.count { it.id.startsWith("google:") },
             socialWebsiteUrlsMigrated = migratedCount,
@@ -114,6 +112,7 @@ class GoogleSocialDataMergePipeline(
             excluded = decisions.count { it.status == SocialMergeStatus.EXCLUDED },
             decisions = decisions,
             auditLog = auditLog,
+            updatedChurches = updatedChurches,
         )
         SocialMergeAuditWriter.write(report, auditLog)
         return report

@@ -60,27 +60,34 @@ For a fresh empty data directory, initialize the password before first startup w
 ```sh
 ./scripts/check-neo4j.sh
 ./gradlew :crawl:run --args='catalog-neo4j-migrate'
-./scripts/catalog-import.sh resources/catalog/churches.json --dry-run
-./scripts/catalog-import.sh resources/catalog/churches.json
+./gradlew :crawl:run --args='catalog-neo4j-status'
+./scripts/catalog-bootstrap-from-legacy-json.sh resources/catalog/churches.json --dry-run
+./scripts/catalog-bootstrap-from-legacy-json.sh resources/catalog/churches.json
 ./scripts/catalog-export.sh
 ./gradlew :crawl:run --args='catalog-neo4j-parity --input resources/catalog/churches.json'
 ./scripts/catalog-integrity.sh
-./gradlew :server:generateChurchPages
+./gradlew :server:publishCrossmapArtifacts
 ```
 
 Reports are under `build/reports/catalog-import`, `catalog-export`, `catalog-parity`, and `catalog-integrity`.
+
+The bootstrap and parity commands are migration/disaster-recovery tools only. `resources/catalog/churches.json` is frozen legacy input and is never a normal pipeline dependency. Every normal mutation reads the current committed revision and publishes a new revision with an expected-revision check. `catalog-neo4j-export-church-projection` is read-only and writes a generated JSON projection plus a neighboring manifest; neither file becomes canonical.
 
 ## MCP access
 
 Codex's local Neo4j MCP is configured for `bolt://localhost:7687` with read and write tools, as explicitly requested for this development database. Keep it localhost-only and authenticated. Never point write-capable MCP configuration at a production database. The integrity service and logical export are the preferred diagnostics before any mutation.
 
-## Backup and upgrade
+## Backup, restore, rollback, and upgrade
 
-Before schema replacement, cleanup, or upgrade:
+Before bootstrap, schema replacement, cleanup, or upgrade:
 
-1. Run `scripts/catalog-export.sh` and parity/integrity checks.
-2. Stop the Crossmap instance.
-3. Copy `cache/neo4j-data` to protected backup storage, or use the backup tooling supported by the installed Community release.
-4. Upgrade Neo4j separately from the Java driver, validate configuration, and check the compatibility matrix.
-5. Start, migrate twice, import twice, and rerun parity/integrity before static generation.
+1. Run `catalog-neo4j-status`, `scripts/catalog-integrity.sh`, and `scripts/catalog-export.sh`; preserve the export and manifest together.
+2. Stop the Crossmap instance cleanly.
+3. Copy the complete `cache/neo4j-data` directory to protected, timestamped backup storage, or use the backup tooling supported by the installed Neo4j edition. Never copy a running store.
+4. Separately preserve the frozen legacy JSON before the one-time bootstrap. Record its SHA-256 alongside the Neo4j backup.
+5. Upgrade Neo4j separately from the Java driver, validate configuration, and check the compatibility matrix.
+6. Start, migrate twice, then run status and integrity. Do not routinely rerun the legacy bootstrap.
 
+To restore after database loss, stop Neo4j, move the failed store aside, restore the complete backed-up store to `cache/neo4j-data`, start Neo4j, then run migration, status, integrity, projection export, and `:server:publishCrossmapArtifacts`. If no graph backup exists, initialize an empty store and use `catalog-neo4j-bootstrap-from-legacy-json` once from the verified frozen JSON, then run parity and integrity before publishing.
+
+To roll back a bad catalog mutation, restore a known-good Neo4j backup. A generated church projection is intentionally incomplete as a future Christianity-graph backup and must not be imported as though it were authoritative. Never roll back by copying a JSON projection over `resources/catalog/churches.json` or by pointing Ktor at Neo4j.

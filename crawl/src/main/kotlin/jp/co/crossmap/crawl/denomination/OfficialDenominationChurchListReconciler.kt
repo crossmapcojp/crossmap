@@ -26,6 +26,7 @@ data class OfficialDenominationReconciliationReport(
     val assignedEntries: List<OfficialDenominationReconciliationAuditEntry> = emptyList(),
     val removedUnsupportedLabelEntries: List<OfficialDenominationReconciliationAuditEntry> = emptyList(),
     val unmatchedOfficialEntryDetails: List<OfficialDenominationReconciliationAuditEntry> = emptyList(),
+    val updatedChurches: List<ChurchRecord> = emptyList(),
 ) {
     fun toHumanReadableAuditLog(): String = buildString {
         appendAuditGroup("denominations_assigned", assignedEntries)
@@ -122,11 +123,10 @@ class OfficialDenominationChurchListReconciler(
     private val now: () -> String = { Instant.now().toString() },
 ) {
     fun reconcile(
-        catalogFile: Path,
+        churches: List<ChurchRecord>,
         lists: List<OfficialDenominationChurchList>,
         googlePlaceTitlesByChurchId: Map<String, String> = emptyMap(),
     ): OfficialDenominationReconciliationReport {
-        val churches = json.decodeFromString<List<ChurchRecord>>(Files.readString(catalogFile))
         val authoritative = lists.associateBy(OfficialDenominationChurchList::denominationId)
         val eligible = lists.flatMap { list ->
             list.churches.filter(OfficialDenominationChurch::eligibleForDenominationEvidence).mapIndexed { index, church ->
@@ -240,7 +240,7 @@ class OfficialDenominationChurchListReconciler(
             church
         }
 
-        atomicWrite(catalogFile, json.encodeToString(updated.map(CatholicChurchNameNormalizer::normalize)))
+        val normalizedChurches = updated.map(CatholicChurchNameNormalizer::normalize)
         return OfficialDenominationReconciliationReport(
             churches = churches.size,
             officialEntries = eligible.size,
@@ -258,6 +258,7 @@ class OfficialDenominationChurchListReconciler(
                     denominationCrawler = entry.toAuditData(),
                 )
             },
+            updatedChurches = normalizedChurches,
         )
     }
 

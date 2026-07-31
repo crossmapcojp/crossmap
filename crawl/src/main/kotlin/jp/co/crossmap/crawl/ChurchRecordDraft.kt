@@ -69,3 +69,24 @@ data class ChurchRecordDraft(
         updatedAt = updatedAt,
     ))
 }
+
+fun ChurchRecord.withEnglishNameResolution(
+    resolution: ResolvedChurchEnglishName,
+    determinedAt: String,
+): ChurchRecord = CatholicChurchNameNormalizer.normalize(
+    copy(
+        englishName = resolution.englishName,
+        localizedNames = (localizedNames.filterNot { it.languageCode == "en" } +
+            LocalizedName("en", resolution.englishName)).sortedBy(LocalizedName::languageCode),
+        determinations = determinations.filterNot { it.field == "englishName" } + FieldDetermination(
+            field = "englishName",
+            value = resolution.englishName,
+            source = resolution.source,
+            confidence = resolution.confidence.toDouble(),
+            evidence = resolution.evidence,
+            model = resolution.model,
+            determinedAt = determinedAt,
+        ),
+        updatedAt = determinedAt,
+    ),
+)

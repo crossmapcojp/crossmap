@@ -53,8 +53,9 @@ class DataCleanupTest {
                 else EntityMatchDecision("JBC", 0.72, reasoning = "教会名の類似性が弱い")
             }
 
-            val report = PostCrawlCleanup(matcher, confidenceThreshold = 0.80).run(root, cacheRoot = cache)
-            val updated = json.decodeFromString<List<ChurchRecord>>(Files.readString(root.resolve("catalog/churches.json"))).associateBy { it.id }
+            val input = json.decodeFromString<List<ChurchRecord>>(Files.readString(root.resolve("catalog/churches.json")))
+            val report = PostCrawlCleanup(matcher, confidenceThreshold = 0.80).run(root, input, cacheRoot = cache)
+            val updated = report.updatedChurches.associateBy { it.id }
 
             assertEquals(1, report.programmaticAccepted)
             assertEquals(1, report.llmAccepted)
@@ -160,13 +161,12 @@ class DataCleanupTest {
             )
             Files.writeString(root.resolve("cleanup/human-overrides.json"), "[]")
 
-            PostCrawlCleanup(
+            val input = json.decodeFromString<List<ChurchRecord>>(Files.readString(root.resolve("catalog/churches.json")))
+            val report = PostCrawlCleanup(
                 matcher = EntityMatcher { EntityMatchDecision(null, 0.0, reasoning = "not used") },
-            ).run(root, enableLlm = false, cacheRoot = cache)
+            ).run(root, input, enableLlm = false, cacheRoot = cache)
 
-            val updated = json.decodeFromString<List<ChurchRecord>>(
-                Files.readString(root.resolve("catalog/churches.json")),
-            ).single()
+            val updated = report.updatedChurches.single()
             assertEquals("CCJ", updated.denominationId)
         } finally {
             root.toFile().deleteRecursively()

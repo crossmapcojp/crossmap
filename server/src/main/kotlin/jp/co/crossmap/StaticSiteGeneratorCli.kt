@@ -7,7 +7,7 @@ import jp.co.crossmap.catalog.neo4j.CatalogSchemaMigrator
 import jp.co.crossmap.catalog.neo4j.Neo4jConfig
 import jp.co.crossmap.catalog.neo4j.Neo4jDriverManager
 import jp.co.crossmap.catalog.neo4j.Neo4jGraphTransactionRunner
-import jp.co.crossmap.catalog.neo4j.Neo4jStaticChurchCatalogSource
+import jp.co.crossmap.catalog.canonical.Neo4jCanonicalChurchCatalogReader
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -35,9 +35,9 @@ object StaticSiteGeneratorCli {
                 check(health.schemaVersion == CatalogSchemaMigrator.EXPECTED_VERSION && health.catalogImported) {
                     "Neo4j catalog is not ready for static generation: $health"
                 }
-                Neo4jStaticChurchCatalogSource(
+                Neo4jCanonicalChurchCatalogReader(
                     Neo4jGraphTransactionRunner(manager.driver, manager.config.database),
-                ).read()
+                ).readCommittedSnapshot()
             }
         }
         val churches = snapshot.churches
@@ -74,7 +74,9 @@ object StaticSiteGeneratorCli {
             excludedChurchListingDomains = excludedDomains,
         )
         val manifest = ChurchPageManifest(
-            sourceSha256 = snapshot.sourceChecksum,
+            sourceSha256 = snapshot.contentHash,
+            catalogRevision = snapshot.revisionId,
+            catalogContentHash = snapshot.contentHash,
             pages = generated.localizedPageUrls.mapValues { (_, variants) -> variants.getValue(Language.ENGLISH.code) },
             localizedPages = generated.localizedPageUrls,
         )
